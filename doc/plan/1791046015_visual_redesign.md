@@ -93,13 +93,13 @@ Slices 2–4 add their own checks in the task list.
 
 ### Preparation
 
-- [ ] **1. Record the product context and the direction.** Write `PRODUCT.md` from section 10 of the study. Run Impeccable's direction roll, which needs that file. Your Q1 answer decides the direction; the roll's alternatives are recorded here with one line each on what they add. Write the direction record in `.impeccable/`. Add gitignore lines for review captures.
+- [x] **1. Record the product context and the direction.** Write `PRODUCT.md` from section 10 of the study. Run Impeccable's direction roll, which needs that file. Your Q1 answer decides the direction; the roll's alternatives are recorded here with one line each on what they add. Write the direction record in `.impeccable/`. Add gitignore lines for review captures.
   - Commit: `docs: add product context and the design direction record`
   - Done when: both files exist and this plan names the direction as approved.
 
 ### Slice 1: foundation, active table, buy-in (recommended first slice)
 
-- [ ] **2. Foundation: tokens, typeface, base elements.** New `app.css` structure: tokens, base, components. Font file in `static/fonts/`. Buttons, fields, tags, lists, tables, notices with all states. Every screen takes the new look through the shared classes.
+- [x] **2. Foundation: tokens, typeface, base elements.** New `app.css` structure: tokens, base, components. Font file in `static/fonts/`. Buttons, fields, tags, lists, tables, notices with all states. Every screen takes the new look through the shared classes.
   - Commit: `feat(web): add design tokens, typeface and base components`
   - Done when: each existing screen renders with no broken layout at 390 px and 1,280 px, and the suite passes.
 - [ ] **3. Shell and motion foundations.** App bar with back link and live status. Felt field, chip token, dock, sheet (`<dialog>`), toast. Motion tokens, page transitions, reduced-motion rules. `changes.js`: the change check that drives highlights. Template tag for token colour and initials.

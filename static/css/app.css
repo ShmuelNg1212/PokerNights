@@ -1,22 +1,22 @@
 /* PokerNights: one stylesheet. Dark by default for use at a table in low light.
    Tokens first, then base elements, then components. */
 
+@font-face { font-family: Archivo; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; src: url('../fonts/archivo.woff2') format('woff2'); }
+@font-face { font-family: ArchivoFallback; src: local('Arial'); size-adjust: 100%; ascent-override: 95%; descent-override: 25%; line-gap-override: 0%; }
 :root {
-  --bg: #0f1512;
-  --surface: #18211c;
-  --surface-2: #212d26;
-  --line: #33443a;
-  --text: #eef3ef;
-  --muted: #a5b5aa;
-  --accent: #5fd38d;
-  --accent-ink: #06210f;
-  --danger: #ff8f85;
-  --danger-bg: #3a1a18;
-  --warn: #ffd166;
-  --warn-bg: #3a3014;
-  --good: #7be0a3;
-  --radius: 12px;
-  --tap: 48px;
+  --ground: oklch(0.17 0.012 60); --rail: oklch(0.215 0.014 60); --rail-2: oklch(0.265 0.016 60);
+  --line: oklch(0.55 0.018 60); --rule: oklch(0.33 0.018 60);
+  --bone: oklch(0.93 0.025 85); --bone-dim: oklch(0.74 0.028 80); --ink: oklch(0.19 0.02 60);
+  --felt: oklch(0.34 0.095 265); --felt-deep: oklch(0.25 0.08 265); --felt-ink: oklch(0.86 0.04 265);
+  --brass: oklch(0.82 0.13 85); --up: oklch(0.82 0.13 160); --down: oklch(0.76 0.14 25);
+  --c1: #9e3038; --c2: #285aa8; --c3: #267449; --c4: #e4bd48; --c5: #82409b;
+  --c6: #d48d48; --c7: #70b9bd; --c8: #dd86a1; --c9: #b4b1a6; --c10: #524b9a;
+  --bg: var(--ground); --surface: var(--rail); --surface-2: var(--rail-2);
+  --text: var(--bone); --muted: var(--bone-dim); --accent: var(--bone); --accent-ink: var(--ink);
+  --danger: var(--down); --danger-bg: oklch(0.24 0.035 25); --warn: var(--brass); --warn-bg: oklch(0.26 0.03 85); --good: var(--up);
+  --radius: 1rem; --tap: 48px;
+  --t-press: 110ms; --t-fast: 180ms; --t-sheet: 320ms; --t-focal: 600ms;
+  --ease-out: cubic-bezier(0.16,1,0.3,1); --ease-in: cubic-bezier(0.4,0,1,1);
   color-scheme: dark;
 }
 
@@ -28,7 +28,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 500 1rem/1.45 Archivo, ArchivoFallback, system-ui, sans-serif;
+  font-stretch: 100%;
 }
 
 a { color: var(--accent); }
@@ -64,13 +65,13 @@ p { margin: 0.5rem 0; }
 /* Cards and lists */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 12px 0; }
 .list { list-style: none; margin: 0; padding: 0; }
-.list > li { padding: 12px 0; border-top: 1px solid var(--line); }
+.list > li { padding: 12px 0; border-top: 1px solid var(--rule); }
 .list > li:first-child { border-top: 0; }
 
 /* Buttons */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: var(--tap); padding: 0 18px; border-radius: 10px; border: 1px solid var(--line);
+  min-height: var(--tap); padding: 0 18px; border-radius: 15px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--text); font: inherit; font-weight: 600;
   text-decoration: none; cursor: pointer;
 }
@@ -78,7 +79,7 @@ p { margin: 0.5rem 0; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn-danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
 .btn-quiet { background: transparent; }
-.btn-small { min-height: 40px; padding: 0 12px; font-size: 0.9rem; }
+.btn-small { min-height: var(--tap); padding: 0 12px; font-size: 0.9rem; }
 .btn-block { display: flex; width: 100%; }
 
 /* Forms */
@@ -102,19 +103,19 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent);
 .check { display: flex; align-items: center; gap: 12px; min-height: var(--tap); margin: 0; font-weight: 400; cursor: pointer; }
 .check.is-disabled { color: var(--muted); cursor: default; }
 .check .grow { overflow-wrap: anywhere; }
-.sticky-actions { position: sticky; bottom: 0; background: var(--surface); padding: 12px 0; border-top: 1px solid var(--line); }
+.sticky-actions { position: sticky; bottom: 0; background: var(--surface); padding: 12px 0; border-top: 1px solid var(--rule); }
 
 /* Review table: a short list of figures to check before confirming */
 table.review { width: 100%; border-collapse: collapse; }
 table.review caption { text-align: left; padding-bottom: 6px; }
-table.review th, table.review td { padding: 10px 0; border-top: 1px solid var(--line); text-align: left; font-weight: 400; vertical-align: top; }
+table.review th, table.review td { padding: 10px 0; border-top: 1px solid var(--rule); text-align: left; font-weight: 400; vertical-align: top; }
 table.review thead th { border-top: 0; color: var(--muted); font-size: 0.8rem; }
 table.review .num { text-align: right; padding-left: 8px; white-space: nowrap; }
 table.review tfoot th, table.review tfoot td { font-weight: 700; }
 
 /* Messages */
 .messages { list-style: none; margin: 0 0 12px; padding: 0; }
-.message { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); margin-bottom: 8px; }
+.message { padding: 12px 14px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface-2); margin-bottom: 8px; }
 .message-error { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
 .message-success { border-color: var(--good); }
 .notice { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--warn); background: var(--warn-bg); color: var(--warn); margin: 12px 0; }
@@ -141,3 +142,21 @@ table.review tfoot th, table.review tfoot td { font-weight: 700; }
 
 .live-status { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 16px 0 0; }
 .live-status.stale { color: var(--warn); }
+
+/* Browser affordances and base states. */
+::selection { background: var(--brass); color: var(--ink); }
+input, textarea { caret-color: var(--brass); }
+::placeholder { color: var(--muted); opacity: 1; }
+html { scrollbar-color: var(--line) var(--ground); }
+a { text-underline-offset: .22em; }
+h1, h2 { text-wrap: balance; }
+.btn { gap: .5rem; transition: transform var(--t-press) var(--ease-out), background var(--t-fast); box-shadow: 0 3px 0 oklch(0.12 0.01 60); }
+.btn-primary { box-shadow: 0 3px 0 oklch(0.65 0.035 80); }
+.btn:hover { background: color-mix(in oklch, var(--surface-2) 75%, var(--bone)); }
+.btn-primary:hover { background: oklch(0.99 0.01 85); }
+.btn:active { transform: translateY(3px); box-shadow: none; }
+.btn:disabled { transform: none; }
+.btn[aria-busy=true] { color: var(--brass); background: var(--rail-2); }
+input[aria-invalid=true] { border: 2px solid var(--down); }
+.icon { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } .btn:active { transform: none; } }

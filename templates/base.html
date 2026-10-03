@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#0f1512">
+  <meta name="theme-color" content="#191511">
   <title>{% block title %}PokerNights{% endblock %}</title>
+  <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body>
@@ -20,7 +21,7 @@
     </form>
     {% endif %}
   </header>
-  <main id="main" class="page">
+  <main id="main" class="page {% block page_class %}{% endblock %}">
     {% if messages %}
     <ul class="messages" role="status">
       {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
