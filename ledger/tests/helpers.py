@@ -20,8 +20,10 @@ class Night:
         self.go(state)
 
     def go(self, state):
-        path = {"open": [], "running": ["start"], "reconciliation": ["start", "end"]}
-        for action in path[state]:
+        """Move forward to ``state`` from wherever the session is now."""
+        order = ["open", "running", "reconciliation"]
+        actions = ["start", "end"]
+        for action in actions[order.index(self.session.state):order.index(state)]:
             self.session = games.transition(self.session.pk, self.host, action)
 
     def add_login_player(self, name):
@@ -37,3 +39,13 @@ class Night:
     def refresh(self):
         self.session.refresh_from_db()
         return self.session
+
+    def cash(self, name, chips, request_id=None, left=False):
+        return services.record_cash_out(
+            self.session.pk, self.host, self.players[name].pk, chips, request_id or uuid.uuid4(), left=left
+        )
+
+    def line(self, name):
+        from ledger import queries
+
+        return queries.summary(self.session).line_for(self.players[name].pk)

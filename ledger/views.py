@@ -36,3 +36,26 @@ def buy_in_reverse(request, session_id, buy_in_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.reverse_buy_in, session.pk, actor, buy_in_id, request.POST.get("reason", ""), success="Buy-in reversed.")
     return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def cash_out_add(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    require_host(actor)
+    try:
+        chips = int(request.POST.get("chips", "").replace(",", "").strip())
+    except ValueError:
+        messages.error(request, "Enter the number of chips, 0 or more.")
+    else:
+        attempt(
+            request, services.record_cash_out, session.pk, actor, request.POST.get("participant_id"), chips,
+            request_id_from(request), left=request.POST.get("left") == "1",
+        )
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def cash_out_reverse(request, session_id, cash_out_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.reverse_cash_out, session.pk, actor, cash_out_id, request.POST.get("reason", ""), success="Cash-out reversed.")
+    return redirect("session", session_id=session.pk)

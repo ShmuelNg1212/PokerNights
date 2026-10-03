@@ -10,6 +10,10 @@ def make_user(name):
 
 def make_group(host_name="hana", group_name="Friday Game"):
     """A group with one host. Returns (group, host_member)."""
+    n = 1
+    while get_user_model().objects.filter(username=host_name).exists():
+        n += 1
+        host_name = f"{host_name.rstrip('0123456789')}{n}"
     host = services.create_group(make_user(host_name), group_name)
     return host.group, host
 

@@ -18,7 +18,8 @@
 <div class="stats">
   <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
   <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
-  <div class="stat stat-wide"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total_centavos|peso }}</div></div>
+  <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total_centavos|peso }}</div></div>
+  <div class="stat"><div class="stat-label">Chips in play</div><div class="stat-value">{{ summary.chips_in_play|chips }}</div></div>
 </div>
 {% endif %}
 
@@ -26,6 +27,7 @@
 <div class="card">
   <div class="row"><span class="grow">Your buy-ins</span><span class="amount">{{ my_line.buy_in_total|peso }}</span></div>
   <p class="muted small">{{ my_line.buy_in_count }} buy-in{{ my_line.buy_in_count|pluralize }} · {{ my_line.chips_issued|chips }} chips received</p>
+  {% if my_line.has_cash_out %}<p class="small">Cashed out {{ my_line.chips_cashed|chips }} chips{% if my_line.cash_value %} ({% if not my_line.cash_value.1 %}about {% endif %}{{ my_line.cash_value.0|peso }}){% endif %}</p>{% endif %}
 </div>
 {% endif %}
 

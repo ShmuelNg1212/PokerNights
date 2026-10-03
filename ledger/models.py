@@ -44,3 +44,40 @@ class BuyInReversal(models.Model):
 
     def __str__(self):
         return f"Reversal of buy-in {self.buy_in_id}"
+
+
+class CashOut(models.Model):
+    """Chips a player hands in. A player can cash out in several steps. Append-only.
+
+    A cash-out of zero chips is a real record: the player lost everything.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="cash_outs")
+    participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="cash_outs")
+    chips = models.BigIntegerField()
+    request_id = models.UUIDField()
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "request_id"], name="cash_out_request_once"),
+            models.CheckConstraint(condition=Q(chips__gte=0), name="cash_out_chips_not_negative"),
+        ]
+        indexes = [models.Index(fields=["participant"], name="cash_out_participant")]
+
+    def __str__(self):
+        return f"Cash-out of {self.chips} chips for participant {self.participant_id}"
+
+
+class CashOutReversal(models.Model):
+    """Voids one cash-out, with a reason. The cash-out row stays in the log."""
+
+    cash_out = models.OneToOneField(CashOut, on_delete=models.PROTECT, related_name="reversal")
+    reason = models.CharField(max_length=255)
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reversal of cash-out {self.cash_out_id}"

@@ -14,11 +14,12 @@ from groups.errors import RuleError
 from groups.models import Member
 
 from . import money
-from .models import BuyIn, BuyInReversal
+from .models import BuyIn, BuyInReversal, CashOut, CashOutReversal
 
 State = GameSession.State
 BUY_IN_STATES = (State.OPEN, State.RUNNING)
 REVERSAL_STATES = (State.OPEN, State.RUNNING, State.RECONCILIATION)
+CASH_OUT_STATES = (State.RUNNING, State.RECONCILIATION)
 
 
 def _participant(session, participant_id) -> Participant:
@@ -101,6 +102,56 @@ def reverse_buy_in(session_id, actor: Member, buy_in_id, reason: str) -> BuyInRe
     audit.record(
         "buy_in.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
         summary=f"Reversed {buy_in.participant.member.display_name}'s buy-in of {money.format_pesos(buy_in.amount_centavos)}",
+        reason=reversal.reason,
+    )
+    games.touch(session)
+    return reversal
+
+
+@transaction.atomic
+def record_cash_out(session_id, actor: Member, participant_id, chips: int, request_id, *, left=False) -> CashOut:
+    """Record chips that a player hands in. ``left`` also marks the player as gone for the night."""
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = CashOut.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if session.state not in CASH_OUT_STATES:
+        raise RuleError("Cash-outs can be recorded only during the game or while counting chips.")
+    participant = _participant(session, participant_id)
+    if not isinstance(chips, int) or isinstance(chips, bool) or chips < 0:
+        raise RuleError("Enter the number of chips, 0 or more.")
+    if not _accepted_buy_ins(session).filter(participant=participant).exists():
+        raise RuleError(f"{participant.member.display_name} has no buy-in, so there is nothing to cash out.")
+    cash_out = CashOut.objects.create(
+        session=session, participant=participant, chips=chips, request_id=request_id, recorded_by=actor.user
+    )
+    audit.record(
+        "cash_out.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
+        summary=f"{participant.member.display_name} cashed out {chips:,} chips", data={"chips": chips},
+    )
+    games.touch(session)
+    if left and participant.status == Participant.Status.JOINED:
+        games.set_left(session.pk, actor, participant.pk)
+    return cash_out
+
+
+@transaction.atomic
+def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> CashOutReversal:
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    cash_out = CashOut.objects.select_related("participant__member").filter(session=session, pk=cash_out_id).first()
+    if cash_out is None:
+        raise RuleError("That cash-out is not in this game.")
+    existing = CashOutReversal.objects.filter(cash_out=cash_out).first()
+    if existing is not None:
+        return existing
+    if session.state not in CASH_OUT_STATES:
+        raise RuleError("This game is closed. Its records cannot change.")
+    reversal = CashOutReversal.objects.create(cash_out=cash_out, reason=_clean_reason(reason), recorded_by=actor.user)
+    audit.record(
+        "cash_out.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
+        summary=f"Reversed {cash_out.participant.member.display_name}'s cash-out of {cash_out.chips:,} chips",
         reason=reversal.reason,
     )
     games.touch(session)
