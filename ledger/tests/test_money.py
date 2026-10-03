@@ -108,3 +108,32 @@ class SplitEqualTests(SimpleTestCase):
             self.assertLessEqual(max(parts) - min(parts), 1)
         with self.assertRaises(MoneyError):
             money.split_equal(100, 0)
+
+
+class UnitAmountTests(SimpleTestCase):
+    def test_pesos_parse_and_format_as_before(self):
+        self.assertEqual(money.parse_amount("1,600.50", money.PHP), 160050)
+        self.assertEqual(money.format_amount(160050, money.PHP), "₱1,600.50")
+        self.assertEqual(money.format_signed_amount(60000, money.PHP), "+₱600")
+        self.assertEqual(money.plain_amount(160050, money.PHP), "1600.50")
+
+    def test_chips_are_whole_numbers_with_no_peso_sign(self):
+        self.assertEqual(money.parse_amount("1,500", money.CHIPS), 1500)
+        self.assertEqual(money.parse_amount(" 20 chips ", money.CHIPS), 20)
+        self.assertEqual(money.parse_amount("0", money.CHIPS), 0)
+        self.assertEqual(money.format_amount(1600, money.CHIPS), "1,600 chips")
+        self.assertEqual(money.format_amount(1, money.CHIPS), "1 chip")
+        self.assertEqual(money.format_amount(-300, money.CHIPS), "−300 chips")
+        self.assertEqual(money.format_signed_amount(600, money.CHIPS), "+600 chips")
+        self.assertEqual(money.format_signed_amount(0, money.CHIPS), "0 chips")
+        self.assertEqual(money.plain_amount(1600, money.CHIPS), "1600")
+        self.assertNotIn("₱", money.format_amount(1600, money.CHIPS))
+
+    def test_chip_input_with_decimals_or_signs_is_refused(self):
+        for text in ["10.5", "-5", "", "abc", "₱100", "1e3", "99999999999999"]:
+            with self.assertRaises(MoneyError, msg=text):
+                money.parse_amount(text, money.CHIPS)
+
+    def test_amounts_are_always_integers(self):
+        for unit in money.UNITS:
+            self.assertIsInstance(money.parse_amount("25", unit), int)

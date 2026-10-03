@@ -26,6 +26,17 @@ def chips(count):
 
 
 @register.filter
+def amount(value, unit):
+    """An amount in the game's unit: ``{{ line.buy_in_total|amount:session.unit }}``."""
+    return "" if value is None else money.format_amount(value, unit)
+
+
+@register.filter
+def signed_amount(value, unit):
+    return "" if value is None else money.format_signed_amount(value, unit)
+
+
+@register.filter
 def sign_class(value):
     """CSS class for a result: plus, minus or nothing."""
     if not value:
