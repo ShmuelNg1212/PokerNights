@@ -1,0 +1,9 @@
+# Direct dependencies, pinned. Transitive ones are resolved by pip (`pip check` must stay clean).
+
+# Framework
+Django==6.1.1
+
+# Configuration & database
+django-environ==0.14.0             # SECRET_KEY, DEBUG, ALLOWED_HOSTS ... from the environment / .env
+dj-database-url==3.1.2             # DATABASE_URL → DATABASES (SQLite fallback locally)
+psycopg[binary]==3.3.6             # PostgreSQL driver
