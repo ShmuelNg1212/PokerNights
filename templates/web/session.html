@@ -6,6 +6,7 @@
 <div id="live" data-version="{{ session.version }}" data-url="{% url 'session_state' session.pk %}">
   {% include "web/_session_live.html" %}
 </div>
+<p class="center"><a href="{% url 'session_log' session.pk %}">Full game log</a></p>
 <p id="live-status" class="live-status" aria-live="polite"></p>
 {% endblock %}
 {% block scripts %}<script src="{% static 'js/live.js' %}" defer></script>{% endblock %}

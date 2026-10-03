@@ -7,6 +7,8 @@ from django.template.loader import render_to_string
 from groups.access import member_for
 from django.utils import timezone
 
+from audit.models import AuditEvent
+
 from games import services as games
 from games.access import session_for
 from games.models import GameSession, Participant, SettingsPreset, Table
@@ -14,7 +16,9 @@ from groups.models import Invite, Member
 from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
+from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
+from settlement.models import Payment
 
 
 def home(request):
@@ -99,3 +103,29 @@ def session_state(request, session_id):
         return HttpResponse(status=204)
     html = render_to_string("web/_session_live.html", session_context(session, me), request=request)
     return JsonResponse({"version": session.version, "html": html})
+
+
+def session_log(request, session_id):
+    """Everything recorded for one session, including reversed and voided rows."""
+    session, me = session_for(request.user, session_id)
+    context = {
+        "session": session,
+        "me": me,
+        "participants": Participant.objects.filter(session=session).select_related("member"),
+        "settings_versions": session.settings_versions.select_related("created_by").order_by("number"),
+        "buy_ins": BuyIn.objects.filter(session=session).select_related(
+            "participant__member", "recorded_by", "reversal__recorded_by"
+        ),
+        "cash_outs": CashOut.objects.filter(session=session).select_related(
+            "participant__member", "recorded_by", "reversal__recorded_by"
+        ),
+        "adjustments": BalanceAdjustment.objects.filter(session=session).select_related(
+            "participant__member", "recorded_by"
+        ),
+        "outcome": settlement_queries.outcome(session),
+        "payments": Payment.objects.filter(session=session).select_related(
+            "payer__member", "payee__member", "recorded_by"
+        ),
+        "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
+    }
+    return render(request, "web/session_log.html", context)
