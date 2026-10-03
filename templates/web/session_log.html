@@ -18,7 +18,7 @@
 <ul class="list card small">
   {% for v in settings_versions %}
   <li>Version {{ v.number }} · {{ v.created_at|date:"M j, H:i" }} · {{ v.created_by.username }}<br>
-    <span class="muted">Blinds {{ v.small_blind_centavos|peso }}/{{ v.big_blind_centavos|peso }} · buy-in {{ v.min_buy_in_centavos|peso }}–{{ v.max_buy_in_centavos|peso }} · {{ v.default_buy_in_centavos|peso }} = {{ v.chips_per_buy_in|chips }} chips</span></li>
+    <span class="muted">Blinds {{ v.small_blind|amount:session.unit }}/{{ v.big_blind|amount:session.unit }} · buy-in {{ v.min_buy_in|amount:session.unit }}–{{ v.max_buy_in|amount:session.unit }} · usually {{ v.default_buy_in|amount:session.unit }}</span></li>
   {% endfor %}
 </ul>
 
@@ -26,7 +26,7 @@
 <ul class="list card small">
   {% for b in buy_ins %}
   <li>
-    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount_centavos|peso }} · {{ b.chips|chips }} chips</span></div>
+    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:session.unit }}</span></div>
     <span class="muted">Recorded by {{ b.recorded_by.username }}{% if b.reversal %} · reversed by {{ b.reversal.recorded_by.username }} at {{ b.reversal.created_at|date:"H:i" }}: {{ b.reversal.reason }}{% endif %}</span>
   </li>
   {% empty %}<li class="muted">No buy-ins.</li>
@@ -37,7 +37,7 @@
 <ul class="list card small">
   {% for c in cash_outs %}
   <li>
-    <div class="row"><span class="grow {% if c.reversal %}struck{% endif %}">{{ c.created_at|date:"H:i" }} · {{ c.participant.member.display_name }}</span><span class="num {% if c.reversal %}struck{% endif %}">{{ c.chips|chips }} chips</span></div>
+    <div class="row"><span class="grow {% if c.reversal %}struck{% endif %}">{{ c.created_at|date:"H:i" }} · {{ c.participant.member.display_name }}</span><span class="num {% if c.reversal %}struck{% endif %}">{{ c.amount|amount:session.unit }}</span></div>
     <span class="muted">Recorded by {{ c.recorded_by.username }}{% if c.reversal %} · reversed by {{ c.reversal.recorded_by.username }} at {{ c.reversal.created_at|date:"H:i" }}: {{ c.reversal.reason }}{% endif %}</span>
   </li>
   {% empty %}<li class="muted">No cash-outs.</li>
@@ -48,7 +48,7 @@
 <h2>Balance overrides</h2>
 <ul class="list card small">
   {% for a in adjustments %}
-  <li><span class="{% if a.voided_at %}struck{% endif %}">{{ a.created_at|date:"H:i" }} · {{ a.participant.member.display_name }} {{ a.chips_delta|chips }} chips ({{ a.get_mode_display }})</span><br>
+  <li><span class="{% if a.voided_at %}struck{% endif %}">{{ a.created_at|date:"H:i" }} · {{ a.participant.member.display_name }} {{ a.amount|signed_amount:session.unit }} ({{ a.get_mode_display }})</span><br>
     <span class="muted">By {{ a.recorded_by.username }}. Note: {{ a.note }}{% if a.voided_at %} · removed at {{ a.voided_at|date:"H:i" }}{% endif %}</span></li>
   {% endfor %}
 </ul>
@@ -58,15 +58,15 @@
 <h2>Results <span class="muted small">revision {{ outcome.finalization.revision }} · {{ outcome.finalization.created_at|date:"M j, H:i" }} · {{ outcome.finalization.finalized_by.username }}</span></h2>
 <ul class="list card small">
   {% for r in outcome.results %}
-  <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total_centavos|peso }} · out {{ r.cash_out_centavos|peso }}</span></span><span class="amount {{ r.net_centavos|sign_class }}">{{ r.net_centavos|signed_peso }}</span></li>
+  <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount {{ r.net|sign_class }}">{{ r.net|signed_amount:session.unit }}</span></li>
   {% endfor %}
-  <li class="row"><span class="grow muted">Total bought in = total cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in_centavos|peso }}</span></li>
+  <li class="row"><span class="grow muted">Total bought in = total cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:session.unit }}</span></li>
 </ul>
 
 <h2>Transfers <span class="badge">{{ outcome.status_label }}</span></h2>
 <ul class="list card small">
   {% for t in outcome.transfers %}
-  <li class="row"><span class="grow">{{ t.payer.member.display_name }} pays {{ t.payee.member.display_name }}</span><span class="num">{{ t.amount_centavos|peso }} · {% if t.paid %}paid{% else %}not paid{% endif %}</span></li>
+  <li class="row"><span class="grow">{{ t.payer.member.display_name }} pays {{ t.payee.member.display_name }}</span><span class="num">{{ t.amount|amount:session.unit }} · {% if t.paid %}paid{% else %}not paid{% endif %}</span></li>
   {% empty %}<li class="muted">Nobody owes anything.</li>
   {% endfor %}
 </ul>
@@ -76,7 +76,7 @@
 <h2>Payment records</h2>
 <ul class="list card small">
   {% for p in payments %}
-  <li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.member.display_name }} → {{ p.payee.member.display_name }} {{ p.amount_centavos|peso }}</span><br>
+  <li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.member.display_name }} → {{ p.payee.member.display_name }} {{ p.amount|amount:session.unit }}</span><br>
     <span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>
   {% endfor %}
 </ul>

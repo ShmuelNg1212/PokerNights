@@ -2,6 +2,7 @@
 
 Every function locks the session row first, so writes to one session run one
 at a time. Records are append-only: a correction is a reversal with a reason.
+Each amount is an integer in the session's unit (pesos or chips).
 """
 
 from django.db import transaction
@@ -39,13 +40,17 @@ def _clean_reason(reason) -> str:
     return reason
 
 
+def _is_amount(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def _accepted_buy_ins(session):
     return BuyIn.objects.filter(session=session, reversal__isnull=True)
 
 
 @transaction.atomic
-def record_buy_in(session_id, actor: Member, participant_id, amount_centavos: int, request_id) -> BuyIn:
-    """Record a buy-in or rebuy. The first accepted buy-in locks the session's chip rate."""
+def record_buy_in(session_id, actor: Member, participant_id, amount: int, request_id) -> BuyIn:
+    """Record a buy-in or rebuy, in the session's unit."""
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     repeated = BuyIn.objects.filter(session=session, request_id=request_id).first()
@@ -56,30 +61,22 @@ def record_buy_in(session_id, actor: Member, participant_id, amount_centavos: in
     participant = _participant(session, participant_id)
     if participant.status != Participant.Status.JOINED:
         raise RuleError(f"{participant.member.display_name} is not at the table.")
-    if not isinstance(amount_centavos, int) or isinstance(amount_centavos, bool):
+    if not _is_amount(amount):
         raise RuleError("Enter the buy-in amount.")
     current = games.current_settings(session)
-    if not current.min_buy_in_centavos <= amount_centavos <= current.max_buy_in_centavos:
+    if not current.min_buy_in <= amount <= current.max_buy_in:
         raise RuleError(
-            f"A buy-in must be between {money.format_pesos(current.min_buy_in_centavos)} "
-            f"and {money.format_pesos(current.max_buy_in_centavos)}."
+            f"A buy-in must be between {money.format_amount(current.min_buy_in, session.unit)} "
+            f"and {money.format_amount(current.max_buy_in, session.unit)}."
         )
-    rate = session.rate or games.chip_rate(current)
-    try:
-        chips = money.chips_for_amount(amount_centavos, rate)
-    except money.MoneyError as error:
-        raise RuleError(str(error)) from None
-    if session.rate is None:
-        session.rate_centavos, session.rate_chips = rate
-        session.save(update_fields=["rate_centavos", "rate_chips"])
     buy_in = BuyIn.objects.create(
-        session=session, participant=participant, settings_version=current, amount_centavos=amount_centavos,
-        chips=chips, request_id=request_id, recorded_by=actor.user,
+        session=session, participant=participant, settings_version=current, amount=amount,
+        request_id=request_id, recorded_by=actor.user,
     )
     audit.record(
         "buy_in.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
-        summary=f"{participant.member.display_name} bought in for {money.format_pesos(amount_centavos)} ({chips:,} chips)",
-        data={"amount_centavos": amount_centavos, "chips": chips},
+        summary=f"{participant.member.display_name} bought in for {money.format_amount(amount, session.unit)}",
+        data={"amount": amount, "unit": session.unit},
     )
     games.touch(session)
     return buy_in
@@ -87,7 +84,7 @@ def record_buy_in(session_id, actor: Member, participant_id, amount_centavos: in
 
 @transaction.atomic
 def reverse_buy_in(session_id, actor: Member, buy_in_id, reason: str) -> BuyInReversal:
-    """Void a buy-in. The row stays. When no accepted buy-in remains, the chip rate unlocks."""
+    """Void a buy-in. The row stays in the log."""
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     buy_in = BuyIn.objects.select_related("participant__member").filter(session=session, pk=buy_in_id).first()
@@ -99,12 +96,9 @@ def reverse_buy_in(session_id, actor: Member, buy_in_id, reason: str) -> BuyInRe
     if session.state not in REVERSAL_STATES:
         raise RuleError("This game is closed. Its records cannot change.")
     reversal = BuyInReversal.objects.create(buy_in=buy_in, reason=_clean_reason(reason), recorded_by=actor.user)
-    if not _accepted_buy_ins(session).exists():
-        session.rate_centavos = session.rate_chips = None
-        session.save(update_fields=["rate_centavos", "rate_chips"])
     audit.record(
         "buy_in.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
-        summary=f"Reversed {buy_in.participant.member.display_name}'s buy-in of {money.format_pesos(buy_in.amount_centavos)}",
+        summary=f"Reversed {buy_in.participant.member.display_name}'s buy-in of {money.format_amount(buy_in.amount, session.unit)}",
         reason=reversal.reason,
     )
     games.touch(session)
@@ -112,26 +106,27 @@ def reverse_buy_in(session_id, actor: Member, buy_in_id, reason: str) -> BuyInRe
 
 
 @transaction.atomic
-def record_cash_out(session_id, actor: Member, participant_id, chips: int, request_id, *, left=False) -> CashOut:
-    """Record chips that a player hands in. ``left`` also marks the player as gone for the night."""
+def record_cash_out(session_id, actor: Member, participant_id, amount: int, request_id, *, left=False) -> CashOut:
+    """Record what a player takes off the table. ``left`` also marks the player as gone for the night."""
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     repeated = CashOut.objects.filter(session=session, request_id=request_id).first()
     if repeated is not None:
         return repeated
     if session.state not in CASH_OUT_STATES:
-        raise RuleError("Cash-outs can be recorded only during the game or while counting chips.")
+        raise RuleError("Cash-outs can be recorded only during the game or while counting up.")
     participant = _participant(session, participant_id)
-    if not isinstance(chips, int) or isinstance(chips, bool) or chips < 0:
-        raise RuleError("Enter the number of chips, 0 or more.")
+    if not _is_amount(amount) or amount < 0:
+        raise RuleError("Enter the cash-out amount, 0 or more.")
     if not _accepted_buy_ins(session).filter(participant=participant).exists():
         raise RuleError(f"{participant.member.display_name} has no buy-in, so there is nothing to cash out.")
     cash_out = CashOut.objects.create(
-        session=session, participant=participant, chips=chips, request_id=request_id, recorded_by=actor.user
+        session=session, participant=participant, amount=amount, request_id=request_id, recorded_by=actor.user
     )
     audit.record(
         "cash_out.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
-        summary=f"{participant.member.display_name} cashed out {chips:,} chips", data={"chips": chips},
+        summary=f"{participant.member.display_name} cashed out {money.format_amount(amount, session.unit)}",
+        data={"amount": amount, "unit": session.unit},
     )
     games.touch(session)
     if left and participant.status == Participant.Status.JOINED:
@@ -154,7 +149,7 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     reversal = CashOutReversal.objects.create(cash_out=cash_out, reason=_clean_reason(reason), recorded_by=actor.user)
     audit.record(
         "cash_out.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
-        summary=f"Reversed {cash_out.participant.member.display_name}'s cash-out of {cash_out.chips:,} chips",
+        summary=f"Reversed {cash_out.participant.member.display_name}'s cash-out of {money.format_amount(cash_out.amount, session.unit)}",
         reason=reversal.reason,
     )
     games.touch(session)
@@ -166,7 +161,7 @@ def record_override(session_id, actor: Member, note: str, mode: str, participant
     """Let unbalanced books be finalized: the host states, with a note, who absorbs the difference.
 
     ``mode`` is ``player`` (one named player takes all of it) or ``equal``
-    (every player with a buy-in takes an equal share; chips that do not divide
+    (every player with a buy-in takes an equal share; units that do not divide
     go one each to players in join order). Nothing is adjusted without this call.
     """
     require_host(actor)
@@ -175,7 +170,7 @@ def record_override(session_id, actor: Member, note: str, mode: str, participant
     if repeated:
         return repeated
     if session.state != State.RECONCILIATION:
-        raise RuleError("An override can be recorded only while counting chips.")
+        raise RuleError("An override can be recorded only while counting up.")
     found = queries.balance(session)
     if not found.counted:
         raise RuleError(found.explanation)
@@ -197,14 +192,14 @@ def record_override(session_id, actor: Member, note: str, mode: str, participant
         raise RuleError("Select who absorbs the difference.")
     rows = [
         BalanceAdjustment.objects.create(
-            session=session, participant=participant, chips_delta=delta, mode=mode, note=note,
+            session=session, participant=participant, amount=share, mode=mode, note=note,
             request_id=request_id, recorded_by=actor.user,
         )
-        for participant, delta in shares
+        for participant, share in shares
     ]
     audit.record(
         "balance.overridden", actor=actor.user, group_id=session.group_id, session_id=session.pk,
-        summary=f"Override: {abs(found.difference):,} {found.direction} chips ({found.difference_value}) absorbed "
+        summary=f"Override: {found.difference_text} {found.direction} absorbed "
         + ("equally by all players" if mode == BalanceAdjustment.Mode.EQUAL else f"by {shares[0][0].member.display_name}"),
         reason=note, data={"difference": found.difference, "shares": {str(p.pk): d for p, d in shares}},
     )
@@ -214,11 +209,11 @@ def record_override(session_id, actor: Member, note: str, mode: str, participant
 
 @transaction.atomic
 def void_override(session_id, actor: Member) -> int:
-    """Remove the active override, for example after a count was corrected. The rows stay, marked void."""
+    """Remove the active override, for example after a cash-out was corrected. The rows stay, marked void."""
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     if session.state != State.RECONCILIATION:
-        raise RuleError("An override can be removed only while counting chips.")
+        raise RuleError("An override can be removed only while counting up.")
     count = BalanceAdjustment.objects.filter(session=session, voided_at__isnull=True).update(
         voided_at=timezone.now(), voided_by=actor.user
     )
@@ -238,22 +233,19 @@ class LedgerInvariantError(Exception):
 def write_results(session: GameSession, actor: Member) -> Finalization:
     """Freeze each player's result. Call inside a transaction, with the session locked.
 
-    Refuses unless the balance check passes. Cash-out values come from the
-    largest-remainder rule, so they sum to the total bought in to the centavo.
+    Refuses unless the balance check passes. A result is cash-outs plus any
+    override, minus buy-ins. Results always sum to zero.
     """
     found = queries.balance(session)
     if not found.ok:
         raise RuleError(found.explanation)
     lines = found.summary.money_lines
-    try:
-        payouts = money.allocate([line.chips_final for line in lines], session.rate)
-    except money.MoneyError as error:
-        raise LedgerInvariantError(str(error)) from None
-    total_buy_in = found.summary.total_centavos
-    nets = [payout - line.buy_in_total for line, payout in zip(lines, payouts)]
-    if sum(payouts) != total_buy_in or sum(nets) != 0:
+    total_buy_in = found.summary.total
+    total_cash_out = sum(line.cash_out_final for line in lines)
+    nets = [line.cash_out_final - line.buy_in_total for line in lines]
+    if total_cash_out != total_buy_in or sum(nets) != 0:
         raise LedgerInvariantError(
-            f"Session {session.pk}: cash-outs {sum(payouts)} do not equal buy-ins {total_buy_in}."
+            f"Session {session.pk}: cash-outs {total_cash_out} do not equal buy-ins {total_buy_in}."
         )
     previous = session.finalizations.order_by("-revision").first()
     if previous is not None:
@@ -262,12 +254,10 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     finalization = Finalization.objects.create(
         session=session,
         revision=previous.revision + 1 if previous else 1,
-        total_buy_in_centavos=total_buy_in,
-        total_cash_out_centavos=sum(payouts),
-        chips_issued=found.summary.chips_issued,
-        raw_difference_chips=found.raw_difference,
-        rate_centavos=session.rate_centavos,
-        rate_chips=session.rate_chips,
+        unit=session.unit,
+        total_buy_in=total_buy_in,
+        total_cash_out=total_cash_out,
+        raw_difference=found.raw_difference,
         settings_snapshot=[
             {"number": version.number, **version.stakes()} for version in session.settings_versions.order_by("number")
         ],
@@ -280,14 +270,15 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
             member_id=line.participant.member_id,
             group_id=session.group_id,
             game_date=session.game_date,
-            buy_in_total_centavos=line.buy_in_total,
+            unit=session.unit,
+            buy_in_total=line.buy_in_total,
             buy_in_count=line.buy_in_count,
-            chips_cashed=line.chips_cashed,
-            adjustment_chips=line.adjustment_chips,
-            cash_out_centavos=payout,
-            net_centavos=net,
+            cashed_out=line.cashed_out,
+            adjustment=line.adjustment,
+            cash_out=line.cash_out_final,
+            net=net,
         )
-        for line, payout, net in zip(lines, payouts, nets)
+        for line, net in zip(lines, nets)
     )
     return finalization
 

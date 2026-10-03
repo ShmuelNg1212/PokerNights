@@ -58,7 +58,7 @@ def session_new(request, group_id):
 def session_settings(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    form = StakesForm(request.POST or None, initial=services.current_settings(session).stakes())
+    form = StakesForm(request.POST or None, initial=services.current_settings(session).stakes(), unit=session.unit)
     if request.method == "POST" and form.is_valid():
         saved = attempt(request, services.update_settings, session.pk, actor, form.cleaned_data, success="Settings saved.")
         if saved is not None:

@@ -22,9 +22,9 @@ class CreateSessionTests(TestCase):
         session = make_session(self.host)
         self.assertEqual(session.state, State.SETUP)
         self.assertEqual(session.seat_count, 9)
-        self.assertIsNone(session.rate)
+        self.assertEqual(session.unit, "php")
         version = services.current_settings(session)
-        self.assertEqual((version.number, version.max_buy_in_centavos), (1, 200000))
+        self.assertEqual((version.number, version.max_buy_in), (1, 200000))
 
     def test_table_must_belong_to_the_group(self):
         _, other_host = make_group("omar", "Other")
@@ -44,8 +44,8 @@ class CreateSessionTests(TestCase):
             "table_id": table.pk, "game_date": datetime.date(2026, 10, 9), "game_type": "nlh",
             "preset_id": preset.pk, **preset.stakes(),
         })
-        services.save_preset(self.host, {"name": "10/20", "game_type": "nlh", **STAKES, "max_buy_in_centavos": 900000}, preset_id=preset.pk)
-        self.assertEqual(services.current_settings(session).max_buy_in_centavos, 200000)
+        services.save_preset(self.host, {"name": "10/20", "game_type": "nlh", **STAKES, "max_buy_in": 900000}, preset_id=preset.pk)
+        self.assertEqual(services.current_settings(session).max_buy_in, 200000)
 
 
 class LifecycleTests(TestCase):
@@ -146,8 +146,8 @@ class SettingsVersionTests(TestCase):
 
     def test_a_change_adds_a_version_and_keeps_the_old_one(self):
         session = make_session(self.host, state="open")
-        services.update_settings(session.pk, self.host, {**STAKES, "big_blind_centavos": 4000, "small_blind_centavos": 2000})
-        numbers = list(SettingsVersion.objects.filter(session=session).values_list("number", "big_blind_centavos"))
+        services.update_settings(session.pk, self.host, {**STAKES, "big_blind": 4000, "small_blind": 2000})
+        numbers = list(SettingsVersion.objects.filter(session=session).values_list("number", "big_blind"))
         self.assertEqual(numbers, [(1, 2000), (2, 4000)])
 
     def test_same_values_add_no_version(self):
@@ -155,19 +155,10 @@ class SettingsVersionTests(TestCase):
         services.update_settings(session.pk, self.host, dict(STAKES))
         self.assertEqual(session.settings_versions.count(), 1)
 
-    def test_chip_value_cannot_change_once_money_is_in(self):
-        session = make_session(self.host, state="running")
-        GameSession.objects.filter(pk=session.pk).update(rate_centavos=10, rate_chips=1)
-        with self.assertRaises(RuleError):
-            services.update_settings(session.pk, self.host, {**STAKES, "chips_per_buy_in": 20000})
-        # The same ratio with other amounts is allowed: ₱500 for 5,000 chips.
-        services.update_settings(session.pk, self.host, {**STAKES, "default_buy_in_centavos": 50000, "chips_per_buy_in": 5000})
-        self.assertEqual(session.settings_versions.count(), 2)
-
     def test_no_change_after_play_ends(self):
         session = make_session(self.host, state="reconciliation")
         with self.assertRaises(RuleError):
-            services.update_settings(session.pk, self.host, {**STAKES, "big_blind_centavos": 4000})
+            services.update_settings(session.pk, self.host, {**STAKES, "big_blind": 4000})
 
 
 class SessionViewTests(TestCase):
@@ -183,8 +174,8 @@ class SessionViewTests(TestCase):
         self.assertContains(form_page, 'value="1000"')  # the preset's usual buy-in is filled in
         response = self.client.post(reverse("session_create", args=[self.group.pk]), {
             "table_id": self.table.pk, "game_date": "2026-10-09", "location": "Miguel's place", "game_type": "plo",
-            "small_blind_centavos": "10", "big_blind_centavos": "20", "min_buy_in_centavos": "500",
-            "max_buy_in_centavos": "2000", "default_buy_in_centavos": "1000", "chips_per_buy_in": "10000",
+            "small_blind": "10", "big_blind": "20", "min_buy_in": "500",
+            "max_buy_in": "2000", "default_buy_in": "1000",
             "preset_id": self.preset.pk,
         })
         session = GameSession.objects.get()

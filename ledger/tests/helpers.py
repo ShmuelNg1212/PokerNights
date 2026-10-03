@@ -8,7 +8,7 @@ from ledger import services
 
 
 class Night:
-    """A session with a host and named players, for tests. ₱1,000 buys 10,000 chips."""
+    """A session with a host and named players, for tests. Amounts are given in whole pesos."""
 
     def __init__(self, *names, state="running", seat_count=9, **stakes):
         self.group, self.host = make_group()
@@ -40,9 +40,9 @@ class Night:
         self.session.refresh_from_db()
         return self.session
 
-    def cash(self, name, chips, request_id=None, left=False):
+    def cash(self, name, pesos, request_id=None, left=False):
         return services.record_cash_out(
-            self.session.pk, self.host, self.players[name].pk, chips, request_id or uuid.uuid4(), left=left
+            self.session.pk, self.host, self.players[name].pk, pesos * 100, request_id or uuid.uuid4(), left=left
         )
 
     def line(self, name):

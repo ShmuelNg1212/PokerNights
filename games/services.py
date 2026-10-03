@@ -10,9 +10,8 @@ from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
 from groups.services import clean_name
-from ledger import money
 
-from .models import GameSession, GameType, Participant, SettingsPreset, SettingsVersion, StakesFields, Table
+from .models import GameSession, GameType, Participant, SettingsPreset, SettingsVersion, StakesFields, Table, Unit
 
 
 def validated_stakes(data: dict) -> dict:
@@ -21,20 +20,13 @@ def validated_stakes(data: dict) -> dict:
     for name in StakesFields.STAKES_FIELDS:
         value = data.get(name)
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise RuleError("Each blind, buy-in amount and chip count must be more than zero.")
+            raise RuleError("Each blind and buy-in amount must be more than zero.")
         stakes[name] = value
-    if stakes["small_blind_centavos"] > stakes["big_blind_centavos"]:
+    if stakes["small_blind"] > stakes["big_blind"]:
         raise RuleError("The small blind cannot be more than the big blind.")
-    if not stakes["min_buy_in_centavos"] <= stakes["default_buy_in_centavos"] <= stakes["max_buy_in_centavos"]:
+    if not stakes["min_buy_in"] <= stakes["default_buy_in"] <= stakes["max_buy_in"]:
         raise RuleError("The usual buy-in must be between the minimum and the maximum buy-in.")
     return stakes
-
-
-def chip_rate(stakes) -> tuple[int, int]:
-    """The reduced chip rate that a preset or settings version defines."""
-    if not isinstance(stakes, dict):
-        stakes = stakes.stakes()
-    return money.reduce_rate(stakes["default_buy_in_centavos"], stakes["chips_per_buy_in"])
 
 
 def _game_type(value) -> str:
@@ -167,17 +159,12 @@ def create_session(actor: Member, data: dict) -> GameSession:
 
 @transaction.atomic
 def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
-    """Add a settings version. With money in the session, the value of a chip cannot change."""
+    """Add a settings version. Buy-ins already recorded keep their amounts."""
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
     if session.state not in (State.SETUP, State.OPEN, State.RUNNING):
         raise RuleError("Settings cannot change after play has ended.")
     stakes = validated_stakes(data)
-    if session.rate is not None and chip_rate(stakes) != session.rate:
-        raise RuleError(
-            "Buy-ins are already recorded, so the value of a chip cannot change. "
-            "Keep the same pesos-to-chips ratio, or reverse the buy-ins first."
-        )
     previous = current_settings(session)
     if previous.stakes() == stakes:
         return previous
@@ -206,7 +193,7 @@ ACTION_LABELS = {
     "open": "Opened the game for joining",
     "close": "Closed the game (back to setup)",
     "start": "Started play",
-    "end": "Ended play; counting chips",
+    "end": "Ended play; counting up",
     "resume": "Resumed play",
     "cancel": "Canceled the game",
 }

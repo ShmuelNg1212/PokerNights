@@ -30,18 +30,18 @@ def finalize(session_id, actor: Member) -> Finalization:
     if session.state == State.FINALIZED:
         return session.finalizations.get(is_current=True)  # a repeated tap
     if session.state != State.RECONCILIATION:
-        raise RuleError("End play and count the chips before finalizing.")
+        raise RuleError("End play and record the cash-outs before finalizing.")
     finalization = ledger.write_results(session, actor)
     results = list(finalization.results.select_related("participant").order_by("participant__join_order"))
     # No payment is recorded before finalization yet, so each balance equals the result.
-    owed = algorithm.balances({result.participant_id: result.net_centavos for result in results})
+    owed = algorithm.balances({result.participant_id: result.net for result in results})
     parties = [(result.participant_id, owed[result.participant_id]) for result in results]
     transfers = algorithm.settle(parties)
     plan = SettlementPlan.objects.create(
         finalization=finalization, proven_minimal=algorithm.is_proven_minimal(parties)
     )
     Transfer.objects.bulk_create(
-        Transfer(plan=plan, position=position, payer_id=payer, payee_id=payee, amount_centavos=amount)
+        Transfer(plan=plan, position=position, payer_id=payer, payee_id=payee, amount=amount)
         for position, (payer, payee, amount) in enumerate(transfers, start=1)
     )
     left = dict(parties)
@@ -52,9 +52,9 @@ def finalize(session_id, actor: Member) -> Finalization:
         raise ledger.LedgerInvariantError(f"Session {session.pk}: the transfers do not clear every balance.")
     audit.record(
         "session.finalized", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=finalization,
-        summary=f"Finalized: {money.format_pesos(finalization.total_buy_in_centavos)} bought in, "
+        summary=f"Finalized: {money.format_amount(finalization.total_buy_in, session.unit)} bought in, "
         f"{len(transfers)} transfer{'s' if len(transfers) != 1 else ''}",
-        data={"nets": {str(r.participant_id): r.net_centavos for r in results}},
+        data={"nets": {str(r.participant_id): r.net for r in results}},
     )
     games.mark_finalized(session)
     return finalization
@@ -71,10 +71,10 @@ def _current_transfer(session, transfer_id) -> Transfer:
     return transfer
 
 
-def _describe(transfer) -> str:
+def _describe(transfer, unit) -> str:
     return (
         f"{transfer.payer.member.display_name} → {transfer.payee.member.display_name} "
-        f"{money.format_pesos(transfer.amount_centavos)}"
+        f"{money.format_amount(transfer.amount, unit)}"
     )
 
 
@@ -93,12 +93,12 @@ def mark_paid(session_id, actor: Member, transfer_id, request_id) -> Payment:
     if repeated is not None:
         return repeated
     payment = Payment.objects.create(
-        session=session, payer=transfer.payer, payee=transfer.payee, amount_centavos=transfer.amount_centavos,
+        session=session, payer=transfer.payer, payee=transfer.payee, amount=transfer.amount,
         transfer=transfer, request_id=request_id, recorded_by=actor.user,
     )
     audit.record(
         "transfer.paid", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=transfer,
-        summary=f"Marked paid: {_describe(transfer)}",
+        summary=f"Marked paid: {_describe(transfer, session.unit)}",
     )
     games.touch(session)
     return payment
@@ -120,6 +120,6 @@ def mark_unpaid(session_id, actor: Member, transfer_id, reason: str = "") -> Non
     PaymentReversal.objects.create(payment=payment, reason=(reason or "").strip()[:255], recorded_by=actor.user)
     audit.record(
         "transfer.unpaid", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=transfer,
-        summary=f"Marked unpaid again: {_describe(transfer)}", reason=reason,
+        summary=f"Marked unpaid again: {_describe(transfer, session.unit)}", reason=reason,
     )
     games.touch(session)

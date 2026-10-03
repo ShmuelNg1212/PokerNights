@@ -1,7 +1,7 @@
 """Settle-up: who pays whom. Pure functions on integers; no database, no float.
 
 A *balance* is what a party is still owed (positive) or still owes (negative),
-in centavos. Balances always sum to zero. ``settle`` returns the transfers that
+in the game's unit. Balances always sum to zero. ``settle`` returns the transfers that
 make every balance zero, using the minimum possible number of transfers.
 
 Why the result is minimal. Draw any settlement as a graph: parties are nodes
@@ -105,7 +105,7 @@ def settle(parties: list[tuple]) -> list[tuple]:
     The order decides ties, so the same input always gives the same list.
     """
     if any(not isinstance(amount, int) or isinstance(amount, bool) for _, amount in parties):
-        raise ValueError("Balances must be integer centavos.")
+        raise ValueError("Balances must be integers.")
     if sum(amount for _, amount in parties) != 0:
         raise ValueError("Balances must sum to zero.")
     open_parties = [(key, amount) for key, amount in parties if amount != 0]

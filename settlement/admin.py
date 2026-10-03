@@ -12,12 +12,12 @@ class SettlementPlanAdmin(ReadOnlyAdmin):
 
 @admin.register(Transfer)
 class TransferAdmin(ReadOnlyAdmin):
-    list_display = ("plan", "position", "payer", "payee", "amount_centavos")
+    list_display = ("plan", "position", "payer", "payee", "amount")
 
 
 @admin.register(Payment)
 class PaymentAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "payer", "payee", "amount_centavos", "active")
+    list_display = ("created_at", "session", "payer", "payee", "amount", "active")
 
 
 @admin.register(PaymentReversal)

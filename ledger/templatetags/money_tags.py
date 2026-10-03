@@ -9,23 +9,6 @@ register = template.Library()
 
 
 @register.filter
-def peso(centavos):
-    """Centavos → ``₱1,600``. Empty for None."""
-    return "" if centavos is None else money.format_pesos(centavos)
-
-
-@register.filter
-def signed_peso(centavos):
-    return "" if centavos is None else money.format_signed(centavos)
-
-
-@register.filter
-def chips(count):
-    """A chip count with thousands separators and no currency sign."""
-    return "" if count is None else f"{count:,}".replace("-", money.MINUS)
-
-
-@register.filter
 def amount(value, unit):
     """An amount in the game's unit: ``{{ line.buy_in_total|amount:session.unit }}``."""
     return "" if value is None else money.format_amount(value, unit)

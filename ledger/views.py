@@ -9,10 +9,10 @@ from groups.http import attempt, request_id_from
 from . import money, services
 
 
-def _pesos(request, name="amount"):
-    """The posted peso amount in centavos, or None after showing an error."""
+def _amount(request, session, name="amount"):
+    """The posted amount in the session's unit, or None after showing an error."""
     try:
-        return money.parse_pesos(request.POST.get(name, ""))
+        return money.parse_amount(request.POST.get(name, ""), session.unit)
     except money.MoneyError as error:
         messages.error(request, str(error))
         return None
@@ -22,7 +22,7 @@ def _pesos(request, name="amount"):
 def buy_in_add(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    amount = _pesos(request)
+    amount = _amount(request, session)
     if amount is not None:
         attempt(
             request, services.record_buy_in, session.pk, actor, request.POST.get("participant_id"), amount,
@@ -42,13 +42,10 @@ def buy_in_reverse(request, session_id, buy_in_id):
 def cash_out_add(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    try:
-        chips = int(request.POST.get("chips", "").replace(",", "").strip())
-    except ValueError:
-        messages.error(request, "Enter the number of chips, 0 or more.")
-    else:
+    amount = _amount(request, session)
+    if amount is not None:
         attempt(
-            request, services.record_cash_out, session.pk, actor, request.POST.get("participant_id"), chips,
+            request, services.record_cash_out, session.pk, actor, request.POST.get("participant_id"), amount,
             request_id_from(request), left=request.POST.get("left") == "1",
         )
     return redirect("session", session_id=session.pk)

@@ -3,9 +3,7 @@
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
 <h1>Game settings</h1>
-{% if session.rate %}
-<div class="notice">Buy-ins are recorded. You can change the blinds and the buy-in range. The value of one chip must stay the same.</div>
-{% endif %}
+<p class="muted">Amounts are in {% if session.unit == 'chips' %}chips{% else %}pesos{% endif %}. Buy-ins already recorded keep their amounts.</p>
 <form method="post" class="card stack">
   {% csrf_token %}
   {% include "partials/form_fields.html" %}
