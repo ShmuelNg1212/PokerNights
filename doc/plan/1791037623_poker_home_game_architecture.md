@@ -167,88 +167,88 @@ Check a box only when its completion criterion is met.
 
 ### A. Repository and foundation
 
-- [ ] **1. Initialize the repository and commit the source documents.** `git init` on `main`. Add `.gitignore`. Add `SPEC.md` unchanged. Commit the study, then the plan with the approval recorded.
+- [x] **1. Initialize the repository and commit the source documents.** `git init` on `main`. Add `.gitignore`. Add `SPEC.md` unchanged. Commit the study, then the plan with the approval recorded.
   - Commits: `chore: initialize repository` · `docs: add project spec` · `docs: study poker home game architecture` · `docs: plan poker home game architecture`
   - Done when: `git log --oneline` shows the four commits and `git status` is clean.
-- [ ] **2. Scaffold the Django project.** `config/` package, `requirements.txt` with the four pins, `.python-version`, `.env.example`, env-based settings, `config/deploy.py` database options (SQLite `IMMEDIATE` + WAL; PostgreSQL), `TIME_ZONE = "Asia/Manila"`, `LoginRequiredMiddleware`, `/healthz`, a smoke test.
+- [x] **2. Scaffold the Django project.** `config/` package, `requirements.txt` with the four pins, `.python-version`, `.env.example`, env-based settings, `config/deploy.py` database options (SQLite `IMMEDIATE` + WAL; PostgreSQL), `TIME_ZONE = "Asia/Manila"`, `LoginRequiredMiddleware`, `/healthz`, a smoke test.
   - Commit: `build: scaffold Django project`
   - Done when: `manage.py check` and `manage.py test` pass, and `/healthz` returns `ok`.
-- [ ] **3. Add `TODO.md`, a short `AGENTS.md` and the wiki index.**
+- [x] **3. Add `TODO.md`, a short `AGENTS.md` and the wiki index.**
   - Commit: `docs: add working agreement, todo and wiki index`
   - Done when: the files exist and link to `SPEC.md`, the study and this plan.
-- [ ] **4. Add the custom user model and auth pages.** `accounts.User(AbstractUser)` first. Sign-up, login, logout. `templates/base.html` with the dark, single-column shell and `static/css/app.css`.
+- [x] **4. Add the custom user model and auth pages.** `accounts.User(AbstractUser)` first. Sign-up, login, logout. `templates/base.html` with the dark, single-column shell and `static/css/app.css`.
   - Commit: `feat(accounts): add user model, sign-up, login and logout`
   - Done when: tests cover sign-up, login, logout and the login-required redirect.
-- [ ] **5. Add the audit app.** `AuditEvent` and `audit.record()`. Read-only admin.
+- [x] **5. Add the audit app.** `AuditEvent` and `audit.record()`. Read-only admin.
   - Commit: `feat(audit): add append-only audit events`
   - Done when: a test shows that an event rolls back with its caller's transaction.
 
 ### B. Group and roster
 
-- [ ] **6. Add groups and members.** `GameGroup`, `Member` (roles, optional user, optional contact text), the access helper, group create and group page, last-host protection.
+- [x] **6. Add groups and members.** `GameGroup`, `Member` (roles, optional user, optional contact text), the access helper, group create and group page, last-host protection.
   - Commit: `feat(groups): add groups, members and roles`
   - Done when: tests cover the unique constraints, last-host protection, and 404 for a non-member.
-- [ ] **7. Add invite links.** Hashed token, expiry, use limit, revoke, accept flow.
+- [x] **7. Add invite links.** Hashed token, expiry, use limit, revoke, accept flow.
   - Commit: `feat(groups): add invite links`
   - Done when: tests cover valid, expired, revoked, used-up and repeated acceptance.
-- [ ] **8. Add roster players without logins.** A host adds and renames a player by name.
+- [x] **8. Add roster players without logins.** A host adds and renames a player by name.
   - Commit: `feat(groups): add roster players without logins`
   - Done when: tests show that only a host can add a player and that a duplicate active name is refused.
 
 ### C. `SPEC.md` step 1: session with buy-ins and rebuys
 
-- [ ] **9. Add `money.py`.** Parse peso input to centavos, format centavos, chip-rate reduction, chips for an amount, value of chips, largest-remainder allocation, equal split with remainder. Pure functions.
+- [x] **9. Add `money.py`.** Parse peso input to centavos, format centavos, chip-rate reduction, chips for an amount, value of chips, largest-remainder allocation, equal split with remainder. Pure functions.
   - Commit: `feat(ledger): add integer money and chip-rate functions`
   - Done when: unit tests cover parsing limits, formatting, and allocation sums that equal the total for random inputs and for amounts that do not divide evenly.
-- [ ] **10. Add tables and presets.**
+- [x] **10. Add tables and presets.**
   - Commit: `feat(games): add tables and settings presets`
   - Done when: tests cover the checks (minimum ≤ default ≤ maximum, positive rate), host-only writes and group isolation.
-- [ ] **11. Add sessions, settings versions and the lifecycle.** `GameSession` with date, location, table, game type. `SettingsVersion` with stakes, minimum, maximum, default buy-in and chip rate. The state machine service. Cancel rule.
+- [x] **11. Add sessions, settings versions and the lifecycle.** `GameSession` with date, location, table, game type. `SettingsVersion` with stakes, minimum, maximum, default buy-in and chip rate. The state machine service. Cancel rule.
   - Commit: `feat(games): add sessions with versioned settings and lifecycle`
   - Done when: a table-driven test covers each allowed and each refused transition per role.
-- [ ] **12. Add session players and joining.** `Participant`, host add from the roster, self join, withdraw, capacity under the session lock, late join.
+- [x] **12. Add session players and joining.** `Participant`, host add from the roster, self join, withdraw, capacity under the session lock, late join.
   - Commit: `feat(games): add session players with capacity and duplicate protection`
   - Done when: tests cover duplicate join, rejoin, a full table, late join and state rules.
-- [ ] **13. Add buy-ins, rebuys and reversals.** `BuyIn`, `BuyInReversal`, chip-rate lock at the first buy-in, minimum and maximum check, whole-chip check, `request_id` uniqueness, running totals.
+- [x] **13. Add buy-ins, rebuys and reversals.** `BuyIn`, `BuyInReversal`, chip-rate lock at the first buy-in, minimum and maximum check, whole-chip check, `request_id` uniqueness, running totals.
   - Commit: `feat(ledger): add buy-ins and rebuys with reversals`
   - Done when: tests cover several rebuys by one player, the rate lock, refused amounts, a repeated `request_id`, reversal, and total = Σ recorded amounts.
-- [ ] **14. Add the host console and the live view with polling.** Session page, `state` endpoint with version check (HTTP 204 when unchanged), `static/js/live.js` (4 s poll, visibility pause, backoff, "last updated" notice), `static/js/forms.js` (double-submit guard).
+- [x] **14. Add the host console and the live view with polling.** Session page, `state` endpoint with version check (HTTP 204 when unchanged), `static/js/live.js` (4 s poll, visibility pause, backoff, "last updated" notice), `static/js/forms.js` (double-submit guard).
   - Commit: `feat(games): add live session view with polling`
   - Done when: tests cover the endpoint (unchanged, changed, non-member 404), and a check with two browser windows shows an update within 5 seconds. **`SPEC.md` step 1 is usable.**
 
 ### D. `SPEC.md` step 2: cash-outs with balance check
 
-- [ ] **15. Add cash-outs.** `CashOut`, `CashOutReversal`, several cash-outs per player, explicit zero cash-out, the `left` mark, chips-in-play calculation.
+- [x] **15. Add cash-outs.** `CashOut`, `CashOutReversal`, several cash-outs per player, explicit zero cash-out, the `left` mark, chips-in-play calculation.
   - Commit: `feat(ledger): add cash-outs in one or several steps`
   - Done when: tests cover a player who cashes out in several steps, a zero cash-out, a reversal and chips in play.
-- [ ] **16. Add the balance check and override.** The checks of study §7.8 with addendum A3.3 and A3.4. The difference with its direction. `BalanceAdjustment` with a required note and a named player or an equal share. The reconciliation screen.
+- [x] **16. Add the balance check and override.** The checks of study §7.8 with addendum A3.3 and A3.4. The difference with its direction. `BalanceAdjustment` with a required note and a named player or an equal share. The reconciliation screen.
   - Commit: `feat(ledger): add balance check with explained discrepancies`
   - Done when: tests cover a balanced session, a small surplus, a small shortfall, a missing cash-out, each override option, an equal share that does not divide evenly, and the absence of any automatic adjustment. **`SPEC.md` step 2 is usable.**
 
 ### E. `SPEC.md` step 3: settle-up
 
-- [ ] **17. Add the settle-up algorithm.** Pure functions: balances from nets and payments, the zero-sum partition by dynamic programming over subsets, transfers inside each group, deterministic order, greedy fallback above 16 parties (study addendum A3.5).
+- [x] **17. Add the settle-up algorithm.** Pure functions: balances from nets and payments, the zero-sum partition by dynamic programming over subsets, transfers inside each group, deterministic order, greedy fallback above 16 parties (study addendum A3.5).
   - Commit: `feat(settlement): add minimum-transfer settle-up`
   - Done when: tests cover the worked example, a winner paid by several losers, two independent pairs (2 transfers, not 3), the prior-payment case, the banker case, tie order, a zero sum for each output, and equality with a brute-force minimum on random inputs of up to 7 parties.
-- [ ] **18. Add finalization.** The transaction of study §7.9: `Finalization`, `PlayerResult`, `SettlementPlan`, `Transfer`, conservation asserts, state change. Results screen with each player's net and what they owe or are owed.
+- [x] **18. Add finalization.** The transaction of study §7.9: `Finalization`, `PlayerResult`, `SettlementPlan`, `Transfer`, conservation asserts, state change. Results screen with each player's net and what they owe or are owed.
   - Commit: `feat(ledger): add finalization with result snapshots and transfers`
   - Done when: tests cover refused finalization on an unbalanced session, the worked example end to end, a fractional chip rate with centavo remainders, immutability after finalization, and an aborted transaction that leaves no partial rows.
-- [ ] **19. Add paid marks.** `Payment` linked to a `Transfer`, `PaymentReversal`, the settlement status.
+- [x] **19. Add paid marks.** `Payment` linked to a `Transfer`, `PaymentReversal`, the settlement status.
   - Commit: `feat(settlement): mark transfers paid`
   - Done when: tests cover mark, undo, a repeated request, host-only access and the three status values. **`SPEC.md` step 3 is usable.**
-- [ ] **20. Add the session detail log.** One page with players, settings versions, buy-ins, reversals, cash-outs, adjustments, results, transfers, payments and audit events. Past sessions on the group page.
+- [x] **20. Add the session detail log.** One page with players, settings versions, buy-ins, reversals, cash-outs, adjustments, results, transfers, payments and audit events. Past sessions on the group page.
   - Commit: `feat(games): add session detail log`
   - Done when: tests show the full log for a member and 404 for a non-member.
 
 ### F. Concurrency and verification
 
-- [ ] **21. Add concurrency tests.** Threads with a barrier: simultaneous joins for the last seat, one `request_id` from several threads, simultaneous buy-ins, finalize against a simultaneous buy-in, two simultaneous paid marks on one transfer.
+- [x] **21. Add concurrency tests.** Threads with a barrier: simultaneous joins for the last seat, one `request_id` from several threads, simultaneous buy-ins, finalize against a simultaneous buy-in, two simultaneous paid marks on one transfer.
   - Commit: `test: cover concurrent joins, duplicate writes and finalization races`
   - Done when: the tests pass on SQLite **and** on PostgreSQL 17.
-- [ ] **22. Add an end-to-end acceptance test.** One test drives the worked example through the views, from sign-up to "settled".
+- [x] **22. Add an end-to-end acceptance test.** One test drives the worked example through the views, from sign-up to "settled".
   - Commit: `test: add end-to-end acceptance for the worked example`
   - Done when: the test passes on both engines.
-- [ ] **23. Verify.** Run the full suite on both engines. Run `manage.py check --deploy` with production-like settings. Run the application and walk AC1–AC23 in a browser at phone width. Record results in the progress log.
+- [x] **23. Verify.** Run the full suite on both engines. Run `manage.py check --deploy` with production-like settings. Run the application and walk AC1–AC23 in a browser at phone width. Record results in the progress log.
   - Commit: `docs(plan): record verification results`
   - Done when: each acceptance criterion has a recorded result.
 
@@ -333,3 +333,62 @@ None. Q1 and Q2 have defaults. An answer other than the default to Q1 or Q2 need
 | 2026-10-03 22:27 | Study and plan written. No repository exists, so neither file is committed. Status `awaiting-approval`. |
 | 2026-10-03 22:30 | The human supplied `SPEC.md` as context. Study addendum added. Plan revised: roadmap follows the `SPEC.md` build order; cash-outs in several steps; balance override with a named absorber; proven minimum transfers; paid marks moved into Stage 1; session fields for location, game type, minimum and maximum buy-in. Status stays `awaiting-approval`. |
 | 2026-10-03 22:35 | Human approved the revised plan. Defaults apply to Q1–Q8. Status `in-progress`. `SPEC.md` stored at the repository root from the supplied text. |
+| 2026-10-03 22:40 | `pip index versions`: the four pins are still the latest releases. Tasks 1–20 executed on `feat/game-night`, one Conventional Commit each, tests green before each commit. |
+| 2026-10-03 23:05 | Verification (task 23). See "Verification results" below. |
+
+## Verification results (2026-10-03)
+
+### Checks
+
+| Check | Result |
+|---|---|
+| `manage.py test` on SQLite | 213 tests, pass |
+| Same suite on PostgreSQL 17.11 (`DATABASE_URL=postgres://…/pokernights`) | 213 tests, pass |
+| Concurrency tests have teeth | With `select_for_update()` removed, 8 of 9 failed on PostgreSQL. Lock restored, 9 pass |
+| `manage.py check --deploy` with `DEBUG=False`, a random `SECRET_KEY`, `HTTPS_ONLY=True` | No issues (3 silenced by design: HSTS subdomains, HSTS preload, console mail) |
+| `makemigrations --check` | No changes |
+| `pip check` | No broken requirements |
+| Headless Chrome at 390 × 844 against `runserver` | 13 of 13 checks pass: dark background, no horizontal scroll (login, group, session, log), no host controls for a player, controls at least 40 px high, live update on a second client in 4.0 s, double tap records one buy-in, an update waits while the host types and applies after, no chip count shown with ₱ |
+| Screenshots of the session, balance, results and log screens | Reviewed by the AI. One defect found and fixed: after finalization the page still showed "Chips in play", "seats free" and an empty host card (`fix(web)` commit) |
+
+Not checked: a physical phone, a real network between devices, and a production web server. The browser check used desktop Chrome in phone emulation on this machine.
+
+### Acceptance criteria
+
+| # | Result | Evidence |
+|---|---|---|
+| AC1 | Met | `accounts.tests.test_auth`, `groups.tests.test_groups`, acceptance test |
+| AC2 | Met | `groups.tests.test_invites`, acceptance test |
+| AC3 | Met | 404 tests in each app's view tests |
+| AC4 | Met | `groups.tests.test_roster` |
+| AC5 | Met | `games.tests.test_tables_presets` |
+| AC6 | Met | `games.tests.test_sessions`, `test_participants` (late join, double tap) |
+| AC7 | Met | `test_participants`, concurrency test "last seat" |
+| AC8 | Met | `ledger.tests.test_buy_ins` |
+| AC9 | Met | `test_buy_ins` (range and whole-chip checks) |
+| AC10 | Met | `web.tests.test_live`; browser check: 4.0 s on a second client |
+| AC11 | Met | `test_buy_ins`, concurrency test, browser double-tap check |
+| AC12 | Met | `test_buy_ins.ReversalTests` |
+| AC13 | Met | `test_buy_ins` (settings change, preset edit) |
+| AC14 | Met | `ledger.tests.test_cash_outs` |
+| AC15 | Met | `ledger.tests.test_balance`, `settlement.tests.test_finalize` |
+| AC16 | Met | `test_balance.OverrideTests`, `test_finalize` (results sum to zero) |
+| AC17 | Met | `test_finalize`, `web.tests.test_acceptance` |
+| AC18 | Met | `test_finalize.FinalizeViewTests` |
+| AC19 | Met | `settlement.tests.test_payments` |
+| AC20 | Met | `test_finalize.AfterFinalizationTests` |
+| AC21 | Met | 403 tests for each host action |
+| AC22 | Met | `web.tests.test_log` |
+| AC23 | Met in emulation | Browser check and screenshots. Not tried on a physical phone |
+
+### Differences from the plan
+
+| Topic | Plan | Built | Reason |
+|---|---|---|---|
+| Apps | Seven apps | An eighth app, `web`, with no models | The session page reads from `games`, `ledger` and `settlement`. Placing it in one of them would reverse the dependency direction |
+| `Payment` | In `ledger` | In `settlement` | A payment links to a `Transfer`. In `ledger` it would make `ledger` depend on `settlement` |
+| Balance override | `BalanceAdjustment.amount_centavos` | `BalanceAdjustment.chips_delta` | A chip can be worth a fraction of a centavo. An override in chips keeps the centavo rule exact |
+| "Has money" rule | Count accepted buy-ins | The session's locked chip rate | `games` can apply the cancel rule without importing `ledger`. The rate unlocks when the last accepted buy-in is reversed |
+| Task 21 race | Finalize against a simultaneous buy-in | Finalize against a simultaneous cash-out and against a buy-in reversal; a buy-in against the end of play | A buy-in is already refused in the counting stage, so that race has one outcome. The tested races can go either way |
+| Task 23 | Walk AC1–AC23 in a browser | Automated headless Chrome run plus the end-to-end test | The AI has no hands-on phone. The human test steps are in the rendezvous report |
+| Extra commit | — | `fix(web): hide live-only figures and empty host controls after finalization` | Found in the screenshot review |
