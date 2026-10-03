@@ -30,7 +30,8 @@
     {% else %}The books balance. Total cashed out equals total bought in.{% endif %}
   </div>
   {% else %}
-  <div class="notice notice-bad" role="alert">{{ balance.explanation }}</div>
+  {# Red is for a real discrepancy. Players still to be cashed out are normal progress. #}
+  <div class="notice {% if balance.counted %}notice-bad{% endif %}" {% if balance.counted %}role="alert"{% endif %}>{{ balance.explanation }}</div>
   {% endif %}
 
   {% for line in summary.lines %}{% for a in line.adjustments %}

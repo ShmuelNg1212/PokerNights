@@ -25,7 +25,7 @@
       {% if me.is_host and line.status != 'cashed_out' %}
       <form method="post" action="{% url 'count_confirm' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
         <input type="hidden" name="participant_id" value="{{ p.pk }}">
-        <div class="grow"><input type="text" name="amount" inputmode="decimal" autocomplete="off" placeholder="Final count{% if unit == 'chips' %} in chips{% else %} in pesos{% endif %}" aria-label="Final count of {{ p.member.display_name }}"></div>
+        <div class="grow"><input type="text" name="amount" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"></div>
         <button type="submit" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
       </form>
       {% endif %}

@@ -213,6 +213,7 @@ class BatchPageTests(TestCase):
         self.assertContains(page, self.url)
         self.assertContains(page, "Still to count: E, F.")
         self.assertContains(page, "2 awaiting count")
+        self.assertNotContains(page, "notice-bad")  # players still to count are not an error
 
     def test_button_is_disabled_with_a_reason_when_nobody_is_ready(self):
         night = counting("A", "B")
