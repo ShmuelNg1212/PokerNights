@@ -21,7 +21,7 @@
       </form>
       {% endif %}
       {% if line.buy_ins or line.reversed_buy_ins or can_manage_players or p.member_id == me.pk and can_join %}
-      <details>
+      <details data-key="player-{{ p.pk }}">
         <summary class="small">Details</summary>
         <ul class="list small">
           {% for b in line.buy_ins %}

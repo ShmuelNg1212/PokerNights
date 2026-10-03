@@ -25,7 +25,7 @@
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Change settings</a>
   {% endif %}
   {% if session.is_live or session.state == 'setup' %}
-  <details>
+  <details data-key="cancel">
     <summary class="small">Cancel this game</summary>
     <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}
       <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" maxlength="255"></div>

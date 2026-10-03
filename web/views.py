@@ -1,6 +1,8 @@
 """Pages that compose several apps. They only read; each write is a POST view in its own app."""
 
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from groups.access import member_for
 from django.utils import timezone
@@ -79,3 +81,12 @@ def session_context(session, me) -> dict:
 def session(request, session_id):
     session, me = session_for(request.user, session_id)
     return render(request, "web/session.html", session_context(session, me))
+
+
+def session_state(request, session_id):
+    """Polling endpoint: 204 while nothing changed, else a full snapshot of the live region."""
+    session, me = session_for(request.user, session_id)
+    if request.GET.get("v") == str(session.version):
+        return HttpResponse(status=204)
+    html = render_to_string("web/_session_live.html", session_context(session, me), request=request)
+    return JsonResponse({"version": session.version, "html": html})
