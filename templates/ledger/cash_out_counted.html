@@ -3,7 +3,7 @@
 {% block title %}Cash out counted players · {{ session }}{% endblock %}
 {% block page_class %}table-page{% endblock %}
 {% block content %}
-<p class="table-bar"><a href="{% url 'session' session.pk %}">← Back to set {{ session.set_number }}</a></p>
+<p class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %} Back to set {{ session.set_number }}</a></p>
 <div class="table-layout review-layout">
 <aside class="table-left">
 <section class="felt felt-slate" data-unit="{{ unit }}">

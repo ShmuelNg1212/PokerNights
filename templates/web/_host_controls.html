@@ -25,9 +25,12 @@
   </form>
   {% else %}<button type="button" class="btn btn-block next-action" disabled aria-describedby="batch-why">Cash out counted players (0)</button>{% endif %}
   {% endif %}
+  {% if session.state == 'reconciliation' %}
+    <p id="batch-why" class="dock-hint small muted">{% if balance.ok %}Every player is cashed out. Finalizing freezes each player's result. Check the cash-outs first.{% elif balance.counted %}Check the discrepancy before finalizing.{% elif summary.ready_lines %}Review the confirmed counts before recording cash-outs.{% elif summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}No buy-in is recorded, so there is nothing to finalize.{% endif %}</p>
+  {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
   {% if session.state == 'reconciliation' %}
-    <p id="batch-why" class="small muted">{% if balance.ok %}Every player is cashed out. Finalizing freezes each player's result. Check the cash-outs first.{% elif balance.counted %}Check the discrepancy before finalizing.{% elif summary.ready_lines %}Review the confirmed counts before recording cash-outs.{% elif summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}No buy-in is recorded, so there is nothing to finalize.{% endif %}</p>
+
     <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button></form>
   {% endif %}
   {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}

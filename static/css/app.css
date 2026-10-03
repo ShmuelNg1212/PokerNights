@@ -358,3 +358,12 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .review-player { gap: 6px; }
   .result-amount { font-size: 1.125rem; }
 }
+
+/* Finish-review batch: contain names and expose the next step in the dock. */
+.end-set-layout, .review-layout { min-width: 0; overflow-wrap: anywhere; }
+.dock-hint { margin: 6px 0; font-size: .8125rem; }
+@media (max-width:899px) {
+  .end-set-layout .host-controls > .dock-hint { display: block; margin: 6px 0; font-size: .75rem; line-height: 1.35; }
+  .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 200px; }
+  .count-entry input { scroll-margin-block: 90px 200px; }
+}
