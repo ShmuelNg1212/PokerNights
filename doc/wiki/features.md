@@ -43,7 +43,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 ## End of a set
 
 1. **End play.** The set's timer and every player's time stop at one moment.
-2. **Confirm final counts.** The host types what each player has left. 0 is a valid count. An empty field is refused; a player without a count is never treated as zero.
+2. **Confirm final counts.** The host types what each player has left, for as many players as are counted, then confirms. Each "Confirm count" button and "Confirm all counts" confirm every typed count at once. 0 is a valid count. An empty field is skipped and stays "Awaiting count"; it is never treated as zero. If one value is refused, nothing is saved and the typed values stay in their fields.
 3. **Statuses.** Each player is "Awaiting count", "Ready to cash out" or "Cashed out".
 4. **Cash out counted players (N).** The host reviews the counted players, each amount and the total, then confirms once. All of them are cashed out, or none. Players still to count stay pending; the host runs the action again later.
 5. **Stale review.** If a count changed or a player was cashed out elsewhere after the review opened, nothing is recorded and a fresh review is shown.
