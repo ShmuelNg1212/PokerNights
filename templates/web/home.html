@@ -1,5 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>PokerNights</h1>
-<p class="muted">Signed in as {{ user.username }}.</p>
+<h1>Your groups</h1>
+{% if memberships %}
+<ul class="list card">
+  {% for m in memberships %}
+  <li class="row">
+    <a class="grow" href="{% url 'group' m.group_id %}">{{ m.group.name }}</a>
+    <span class="badge">{{ m.get_role_display }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">You are not in a group yet. Create one, or open an invite link from a host.</p>
+{% endif %}
+
+<h2>Create a group</h2>
+<form method="post" action="{% url 'group_create' %}" class="card stack">
+  {% csrf_token %}
+  <div class="field">
+    <label for="group-name">Group name</label>
+    <input id="group-name" type="text" name="name" maxlength="60" required>
+  </div>
+  <button type="submit" class="btn btn-primary btn-block">Create group</button>
+</form>
 {% endblock %}

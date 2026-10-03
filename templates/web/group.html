@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} · PokerNights{% endblock %}
+{% block content %}
+<h1>{{ group.name }}</h1>
+
+<h2>Players</h2>
+<ul class="list card">
+  {% for m in members %}
+  <li>
+    <div class="row">
+      <span class="grow">{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>
+      {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
+      {% if not m.has_login %}<span class="badge">No login</span>{% endif %}
+    </div>
+    {% if me.is_host and m.pk != me.pk %}
+    <details>
+      <summary class="small">Manage</summary>
+      <div class="stack">
+        {% if m.has_login %}
+        <form method="post" action="{% url 'member_role' group.pk m.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="role" value="{% if m.is_host %}player{% else %}host{% endif %}">
+          <button type="submit" class="btn btn-small">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
+        </form>
+        {% endif %}
+        <form method="post" action="{% url 'member_remove' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-small btn-danger">Remove from group</button>
+        </form>
+      </div>
+    </details>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
