@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Visual redesign slice 2 (count-up, cash-out review and finalized sets) is awaiting plan approval ([plan](doc/plan/1791050738_redesign_slice_2.md)). The Rack visual redesign slice 1 is done ([plan](doc/plan/1791046015_visual_redesign.md)). Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)). Cash amounts and the unit option are done ([plan](doc/plan/1791040305_cash_amounts_and_unit_option.md)). Adding several players at once is done ([plan](doc/plan/1791041765_add_several_players_at_once.md)). Sessions with sets, end-of-set cash-outs and timers are done ([plan](doc/plan/1791042668_end_of_set_cash_outs_and_timers.md)).
+Visual redesign slice 2 (count-up, cash-out review and finalized sets) is verified; rendezvous and doc sync are in progress ([plan](doc/plan/1791050738_redesign_slice_2.md)). The Rack visual redesign slice 1 is done ([plan](doc/plan/1791046015_visual_redesign.md)). Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)). Cash amounts and the unit option are done ([plan](doc/plan/1791040305_cash_amounts_and_unit_option.md)). Adding several players at once is done ([plan](doc/plan/1791041765_add_several_players_at_once.md)). Sessions with sets, end-of-set cash-outs and timers are done ([plan](doc/plan/1791042668_end_of_set_cash_outs_and_timers.md)).
 
 ## Next (each needs its own study and plan)
 
@@ -18,6 +18,8 @@ Visual redesign slice 2 (count-up, cash-out review and finalized sets) is awaiti
 ## Waiting for the human
 
 - [ ] Try the new active set: tap `+`, confirm a rebuy, tap a player name for cash-out/details, and use the bottom host action.
+
+- [ ] Try the redesigned count-up and final results: type several counts (including 0), confirm once, review and cash out, then finalize.
 
 - [ ] Test a session with two sets as a user: end a set, confirm counts, cash out counted players, start the next set, close the session.
 - [ ] Test a pesos game and a chips game as a user.

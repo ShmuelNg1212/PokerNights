@@ -8,7 +8,7 @@ Living documentation. It describes the project **as it exists now**. For decisio
 
 Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs from `SPEC.md` step 2 in one point, by a later decision of the owner: cash-outs are typed as amounts, and the app has no chip-to-cash conversion. The app runs locally. It is not deployed.
 
-The Rack visual redesign slice 1 is complete: shared foundation, compact active table and action sheets. [DESIGN.md](../../DESIGN.md) records the built system. Later screens keep their earlier composition.
+The Rack covers the shared foundation, compact active table, action sheets, count-up, cash-out review and finalized sets. [DESIGN.md](../../DESIGN.md) records the built system. Later screens keep their earlier composition.
 
 ## Pages
 
@@ -30,6 +30,7 @@ The Rack visual redesign slice 1 is complete: shared foundation, compact active 
 | [sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal.md) | A plain copy of `db.sqlite3` can miss recent data |
 | [session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md) | `GameSession` is a set; the session is `GameNight` |
 | [template_cache_during_browser_checks.md](footguns/template_cache_during_browser_checks.md) | A verification server without autoreload can keep old compiled templates |
+| [mobile_browser_overflow_checks.md](footguns/mobile_browser_overflow_checks.md) | Mobile layout viewport width can grow with overflowing content; compare with the requested width |
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 
 ## Journal
@@ -42,3 +43,4 @@ The Rack visual redesign slice 1 is complete: shared foundation, compact active 
 | Sessions with sets, end-of-set cash-outs, timers | [study](../study/1791042572_end_of_set_cash_outs_and_timers.md) | [plan](../plan/1791042668_end_of_set_cash_outs_and_timers.md) | Done, 2026-10-04 |
 | Visual redesign, The Rack slice 1 | [study](../study/1791045491_visual_redesign.md) | [plan](../plan/1791046015_visual_redesign.md) | Slice 1 done, 2026-10-04; later slices need approval |
 | Fix: typed counts lost when confirming | [study](../study/1791044894_count_fields_cleared.md) | [plan](../plan/1791044911_count_fields_cleared.md) | Done, 2026-10-04 |
+| Visual redesign slice 2 | [study](../study/1791050655_redesign_slice_2.md) | [plan](../plan/1791050738_redesign_slice_2.md) | Verified; rendezvous pending |

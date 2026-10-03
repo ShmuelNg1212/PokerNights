@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-03T17:29:41.080525+00:00",
+  "generatedAt": "2026-10-03T18:34:19.338776+00:00",
   "title": "Design System: PokerNights",
   "extensions": {
     "colorMeta": {
@@ -367,6 +367,34 @@
           "oklch(0.840 0.03000 85.000)",
           "oklch(0.950 0.03000 85.000)"
         ]
+      },
+      "slate": {
+        "role": "primary",
+        "displayName": "Slate",
+        "tonalRamp": [
+          "oklch(0.150 0.025 265)",
+          "oklch(0.260 0.025 265)",
+          "oklch(0.380 0.025 265)",
+          "oklch(0.490 0.025 265)",
+          "oklch(0.610 0.025 265)",
+          "oklch(0.720 0.025 265)",
+          "oklch(0.840 0.025 265)",
+          "oklch(0.950 0.025 265)"
+        ]
+      },
+      "slate-ink": {
+        "role": "primary",
+        "displayName": "Slate Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.025 265)",
+          "oklch(0.260 0.025 265)",
+          "oklch(0.380 0.025 265)",
+          "oklch(0.490 0.025 265)",
+          "oklch(0.610 0.025 265)",
+          "oklch(0.720 0.025 265)",
+          "oklch(0.840 0.025 265)",
+          "oklch(0.950 0.025 265)"
+        ]
       }
     },
     "typographyMeta": {
@@ -436,7 +464,7 @@
       {
         "name": "t-focal",
         "value": "600ms",
-        "purpose": "Accepted-change emphasis."
+        "purpose": "Accepted-change emphasis and once-per-set balanced-books double-rule reveal; reduced motion keeps both static."
       },
       {
         "name": "sheet-exit",
@@ -529,16 +557,16 @@
       "name": "Shared card",
       "kind": "card",
       "refersTo": "card",
-      "description": "Flat container for supporting content.",
-      "html": "<section class=\"ds-card\">Set details</section>",
-      "css": ".ds-card{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0;font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}"
+      "description": "Flat shared rail container, followed by the slate end-set progress overview variant.",
+      "html": "<section class=\"ds-card\">Set details</section><section class=\"ds-slate\"><h2>Counting up</h2><p class=\"ds-count\"><strong>3 <span>of 6</span></strong> players ready or cashed out</p><p class=\"ds-stages\">3 awaiting count · 2 ready to cash out · 1 cashed out</p></section>",
+      "css": ".ds-card{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0;font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-slate{padding:20px;border-radius:26px;color:var(--bone);background:var(--slate);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;overflow-wrap:anywhere}.ds-slate h2{margin:0;font-size:1.375rem;font-weight:700;font-stretch:88%;line-height:1.2}.ds-count{margin:18px 0 12px;font-size:.875rem;color:var(--slate-ink)}.ds-count strong{display:block;color:var(--bone);font-size:3rem;line-height:1.1;font-stretch:70%;font-variant-numeric:tabular-nums}.ds-count strong span{font-size:1.75rem}.ds-stages{color:var(--slate-ink);font-size:.8125rem}"
     },
     {
       "name": "Player identity",
       "kind": "custom",
-      "description": "Circular initials and a written player name.",
-      "html": "<div class=\"ds-player\"><span class=\"ds-chip\" aria-hidden=\"true\">AM</span><button class=\"ds-name\">Ana M.<span class=\"ds-meta\">1 buy-in + 2 rebuys</span></button><strong class=\"ds-figure\">₱4,800</strong></div>",
-      "css": ".ds-player{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule);color:var(--bone);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-chip{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9375rem;font-weight:800;background:radial-gradient(circle,var(--c1) 0 56%,oklch(0 0 0 / .28) 57% 60%,transparent 61%),repeating-conic-gradient(from -12deg,var(--bone) 0 24deg,var(--c1) 24deg 60deg)}.ds-name{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:48px;width:100%;max-width:100%;padding:0;border:0;background:transparent;color:inherit;font-family:inherit;font-size:1.0625rem;font-weight:650;line-height:1.3;text-align:left;cursor:pointer;overflow-wrap:anywhere}.ds-meta{font-size:.75rem;font-weight:500;color:var(--muted);margin-top:3px}.ds-name:hover{text-decoration:underline;text-underline-offset:.2em}.ds-name:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}.ds-figure{text-align:right;font-size:1.0625rem;font-variant-numeric:tabular-nums}"
+      "description": "Active player detail target, followed by the frozen signed result-row variant used at the end of a set.",
+      "html": "<div class=\"ds-player\"><span class=\"ds-chip\" aria-hidden=\"true\">AM</span><button class=\"ds-name\">Ana M.<span class=\"ds-meta\">1 buy-in + 2 rebuys</span></button><strong class=\"ds-figure\">₱4,800</strong></div><section class=\"ds-result\"><div class=\"ds-result-head\"><span class=\"ds-chip\">AM</span><span class=\"ds-result-name\">Ana M.</span><span class=\"ds-result-amount\"><svg class=\"ds-result-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg> +₱450</span></div><dl class=\"ds-result-facts\"><div><dt>Bought in (1)</dt><dd>₱1,000</dd></div><div><dt>Cashed out</dt><dd>₱1,450</dd></div><div><dt>Time played</dt><dd>4 h 00 min</dd></div></dl></section>",
+      "css": ".ds-player{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule);color:var(--bone);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-chip{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9375rem;font-weight:800;background:radial-gradient(circle,var(--c1) 0 56%,oklch(0 0 0 / .28) 57% 60%,transparent 61%),repeating-conic-gradient(from -12deg,var(--bone) 0 24deg,var(--c1) 24deg 60deg)}.ds-name{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:48px;width:100%;max-width:100%;padding:0;border:0;background:transparent;color:inherit;font-family:inherit;font-size:1.0625rem;font-weight:650;line-height:1.3;text-align:left;cursor:pointer;overflow-wrap:anywhere}.ds-meta{font-size:.75rem;font-weight:500;color:var(--muted);margin-top:3px}.ds-name:hover{text-decoration:underline;text-underline-offset:.2em}.ds-name:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}.ds-figure{text-align:right;font-size:1.0625rem;font-variant-numeric:tabular-nums}.ds-result{color:var(--bone);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;border-bottom:1px solid var(--rule);padding:16px 0;min-width:0}.ds-result-head{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,auto);align-items:center;gap:10px}.ds-result-name{overflow-wrap:anywhere;font-weight:650}.ds-result-amount{color:var(--up);font-size:1.375rem;font-weight:750;font-stretch:85%;font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}.ds-result-icon{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ds-result-facts{margin:12px 0 0;font-size:.8125rem}.ds-result-facts>div{display:flex;justify-content:space-between;gap:12px;margin-top:6px}.ds-result-facts dt{color:var(--muted)}.ds-result-facts dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}@media(max-width:359px){.ds-result-head{grid-template-columns:36px minmax(0,1fr) minmax(0,auto);gap:6px}.ds-result-amount{font-size:1.125rem}}"
     },
     {
       "name": "Sheet",
@@ -551,13 +579,13 @@
   ],
   "narrative": {
     "northStar": "The Rack",
-    "overview": "The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.\n\nThe system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation and slice 1: the active set, player rows, buy-in sheets and player detail sheets. Later screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study is the visual authority. The build ships no raster imagery.",
+    "overview": "The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.\n\nThe system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, the active set and its sheets, and the end-of-set flow: count-up, batch cash-out review and frozen final results. Deferred screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study and the approved slice 2 plan supply the visual authority. The build ships no raster imagery.",
     "keyCharacteristics": [
       "Warm dark rails and indigo felt.",
       "Compressed, tabular figures with right-aligned player amounts.",
       "Bone pressable controls and visible brass focus.",
       "Circular initials paired with written player names.",
-      "Compact phone rows and focused sheets."
+      "Compact phone rows, focused sheets and persistent inline count fields."
     ],
     "rules": [
       {
