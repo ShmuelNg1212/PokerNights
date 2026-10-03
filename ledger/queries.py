@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from games.models import GameSession, Participant
 
 from . import money
-from .models import BuyIn, CashOut
+from .models import BalanceAdjustment, BuyIn, CashOut
 
 
 @dataclass
@@ -17,6 +17,7 @@ class PlayerLine:
     reversed_buy_ins: list = field(default_factory=list)
     cash_outs: list = field(default_factory=list)  # accepted, oldest first
     reversed_cash_outs: list = field(default_factory=list)
+    adjustments: list = field(default_factory=list)  # active (not voided)
 
     @property
     def buy_in_count(self) -> int:
@@ -51,6 +52,15 @@ class PlayerLine:
     @property
     def chips_cashed(self) -> int:
         return sum(c.chips for c in self.cash_outs)
+
+    @property
+    def adjustment_chips(self) -> int:
+        return sum(a.chips_delta for a in self.adjustments)
+
+    @property
+    def chips_final(self) -> int:
+        """Chips this player is paid for: cashed-out chips plus any host adjustment."""
+        return self.chips_cashed + self.adjustment_chips
 
     @property
     def cash_value(self):
@@ -93,6 +103,15 @@ class Summary:
         """Chips issued that have not been cashed out. Not a peso amount."""
         return self.chips_issued - self.chips_cashed
 
+    @property
+    def adjustment_chips(self) -> int:
+        return sum(line.adjustment_chips for line in self.lines)
+
+    @property
+    def money_lines(self) -> list:
+        """Players with an accepted buy-in, in join order. These are the players who get a result."""
+        return [line for line in self.lines if line.has_money]
+
     def line_for(self, participant_id):
         return next((line for line in self.lines if line.participant.pk == participant_id), None)
 
@@ -115,8 +134,91 @@ def summary(session: GameSession) -> Summary:
             line.reversed_cash_outs.append(cash_out)
         else:
             line.cash_outs.append(cash_out)
+    for adjustment in BalanceAdjustment.objects.filter(session=session, voided_at__isnull=True):
+        lines[adjustment.participant_id].adjustments.append(adjustment)
     shown = [
         line for line in lines.values()
-        if line.participant.status != Participant.Status.WITHDRAWN or line.has_money
+        if line.participant.status != Participant.Status.WITHDRAWN or line.has_money or line.has_cash_out
     ]
     return Summary(session, shown)
+
+
+@dataclass
+class Balance:
+    """The balance check: do the chips handed in match the chips issued?"""
+
+    summary: Summary
+    missing_cash_outs: list  # players with buy-ins and no cash-out record
+    stray_cash_outs: list  # players with a cash-out and no accepted buy-in
+    raw_difference: int  # chips cashed − chips issued, before adjustments
+    difference: int  # the same, after active adjustments
+
+    @property
+    def counted(self) -> bool:
+        """Every player's chips are recorded, so the difference is meaningful."""
+        return bool(self.summary.money_lines) and not self.missing_cash_outs and not self.stray_cash_outs
+
+    @property
+    def ok(self) -> bool:
+        return self.counted and self.difference == 0
+
+    @property
+    def overridden(self) -> bool:
+        return self.ok and self.raw_difference != 0
+
+    @property
+    def direction(self) -> str:
+        """``extra`` chips (more handed in than issued), ``missing`` chips, or empty."""
+        if self.difference > 0:
+            return "extra"
+        return "missing" if self.difference < 0 else ""
+
+    def _value(self, chips) -> str:
+        rate = self.summary.session.rate
+        if rate is None:
+            return ""
+        value, exact = money.value_floor(abs(chips), rate)
+        return f"{'' if exact else 'about '}{money.format_pesos(value)}"
+
+    @property
+    def difference_value(self) -> str:
+        return self._value(self.difference)
+
+    @property
+    def raw_difference_value(self) -> str:
+        return self._value(self.raw_difference)
+
+    @property
+    def explanation(self) -> str:
+        """What is wrong and where to look. Empty when the books balance."""
+        if not self.summary.money_lines:
+            return "No buy-in is recorded, so there is nothing to finalize."
+        if self.stray_cash_outs:
+            names = ", ".join(line.participant.member.display_name for line in self.stray_cash_outs)
+            return f"{names} cashed out chips but has no buy-in. Record the buy-in, or reverse the cash-out."
+        if self.missing_cash_outs:
+            names = ", ".join(line.participant.member.display_name for line in self.missing_cash_outs)
+            return f"No cash-out is recorded for: {names}. Record each player's chips. Enter 0 for a player who lost everything."
+        chips = f"{abs(self.difference):,} chips ({self.difference_value})"
+        if self.difference > 0:
+            return (
+                f"There are {chips} extra: more chips were cashed out than were issued. "
+                "Look for a buy-in that was not recorded, or a chip count that is too high."
+            )
+        if self.difference < 0:
+            return (
+                f"There are {chips} missing: fewer chips were cashed out than were issued. "
+                "Look for chips that were not counted, a buy-in recorded twice, or a chip count that is too low."
+            )
+        return ""
+
+
+def balance(session_or_summary) -> Balance:
+    found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
+    return Balance(
+        summary=found,
+        missing_cash_outs=[line for line in found.lines if line.has_money and not line.has_cash_out],
+        stray_cash_outs=[line for line in found.lines if line.has_cash_out and not line.has_money],
+        raw_difference=found.chips_cashed - found.chips_issued,
+        difference=found.chips_cashed + found.adjustment_chips - found.chips_issued,
+    )

@@ -1,0 +1,46 @@
+{% load money_tags %}
+<h2>Balance check</h2>
+<div class="card stack">
+  <div class="row"><span class="grow">Chips issued</span><span class="amount">{{ summary.chips_issued|chips }}</span></div>
+  <div class="row"><span class="grow">Chips cashed out</span><span class="amount">{{ summary.chips_cashed|chips }}</span></div>
+  {% if summary.adjustment_chips %}
+  <div class="row"><span class="grow">Host override</span><span class="amount">{{ summary.adjustment_chips|chips }}</span></div>
+  {% endif %}
+  {% if balance.ok %}
+  <div class="notice notice-good">
+    {% if balance.overridden %}The books were off by {{ balance.raw_difference|chips }} chips ({{ balance.raw_difference_value }}). A host override covers the difference.
+    {% else %}The books balance. Every chip issued is accounted for.{% endif %}
+  </div>
+  {% else %}
+  <div class="notice notice-bad" role="alert">{{ balance.explanation }}</div>
+  {% endif %}
+
+  {% for line in summary.lines %}{% for a in line.adjustments %}
+  <p class="small">Override: {{ line.participant.member.display_name }} {{ a.chips_delta|chips }} chips. Note: {{ a.note }}</p>
+  {% endfor %}{% endfor %}
+
+  {% if me.is_host %}
+    {% if summary.adjustment_chips %}
+    <form method="post" action="{% url 'override_void' session.pk %}">{% csrf_token %}
+      <button type="submit" class="btn btn-small btn-quiet">Remove the override</button>
+    </form>
+    {% endif %}
+    {% if balance.counted and not balance.ok %}
+    <details data-key="override">
+      <summary class="small">Cannot find the error? Finalize with an override</summary>
+      <form method="post" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
+        <p class="small muted">Results must sum to zero, so someone absorbs the {{ balance.difference_value }}. This is recorded in the game log.</p>
+        <div class="field">
+          <label for="absorber">Who absorbs the difference?</label>
+          <select id="absorber" name="absorber">
+            {% for line in summary.money_lines %}<option value="{{ line.participant.pk }}" {% if line.participant.member_id == me.pk %}selected{% endif %}>{{ line.participant.member.display_name }}</option>{% endfor %}
+            <option value="equal">All players, in equal shares</option>
+          </select>
+        </div>
+        <div class="field"><label for="override-note">Note</label><input id="override-note" type="text" name="note" maxlength="255" required></div>
+        <button type="submit" class="btn btn-danger btn-block">Record override</button>
+      </form>
+    </details>
+    {% endif %}
+  {% endif %}
+</div>

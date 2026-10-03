@@ -5,6 +5,7 @@ at a time. Records are append-only: a correction is a reversal with a reason.
 """
 
 from django.db import transaction
+from django.utils import timezone
 
 from audit import services as audit
 from games import services as games
@@ -13,8 +14,8 @@ from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
 
-from . import money
-from .models import BuyIn, BuyInReversal, CashOut, CashOutReversal
+from . import money, queries
+from .models import BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal
 
 State = GameSession.State
 BUY_IN_STATES = (State.OPEN, State.RUNNING)
@@ -158,9 +159,80 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     return reversal
 
 
+@transaction.atomic
+def record_override(session_id, actor: Member, note: str, mode: str, participant_id, request_id) -> list:
+    """Let unbalanced books be finalized: the host states, with a note, who absorbs the difference.
+
+    ``mode`` is ``player`` (one named player takes all of it) or ``equal``
+    (every player with a buy-in takes an equal share; chips that do not divide
+    go one each to players in join order). Nothing is adjusted without this call.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = list(BalanceAdjustment.objects.filter(session=session, request_id=request_id))
+    if repeated:
+        return repeated
+    if session.state != State.RECONCILIATION:
+        raise RuleError("An override can be recorded only while counting chips.")
+    found = queries.balance(session)
+    if not found.counted:
+        raise RuleError(found.explanation)
+    if found.difference == 0:
+        raise RuleError("The books balance. No override is needed.")
+    note = " ".join((note or "").split())[:255]
+    if not note:
+        raise RuleError("Write a note that explains the override. It stays in the game log.")
+    players = found.summary.money_lines
+    if mode == BalanceAdjustment.Mode.PLAYER:
+        line = next((line for line in players if str(line.participant.pk) == str(participant_id)), None)
+        if line is None:
+            raise RuleError("Select a player of this game who has a buy-in.")
+        shares = [(line.participant, -found.difference)]
+    elif mode == BalanceAdjustment.Mode.EQUAL:
+        parts = money.split_equal(-found.difference, len(players))
+        shares = [(line.participant, part) for line, part in zip(players, parts) if part]
+    else:
+        raise RuleError("Select who absorbs the difference.")
+    rows = [
+        BalanceAdjustment.objects.create(
+            session=session, participant=participant, chips_delta=delta, mode=mode, note=note,
+            request_id=request_id, recorded_by=actor.user,
+        )
+        for participant, delta in shares
+    ]
+    audit.record(
+        "balance.overridden", actor=actor.user, group_id=session.group_id, session_id=session.pk,
+        summary=f"Override: {abs(found.difference):,} {found.direction} chips ({found.difference_value}) absorbed "
+        + ("equally by all players" if mode == BalanceAdjustment.Mode.EQUAL else f"by {shares[0][0].member.display_name}"),
+        reason=note, data={"difference": found.difference, "shares": {str(p.pk): d for p, d in shares}},
+    )
+    games.touch(session)
+    return rows
+
+
+@transaction.atomic
+def void_override(session_id, actor: Member) -> int:
+    """Remove the active override, for example after a count was corrected. The rows stay, marked void."""
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if session.state != State.RECONCILIATION:
+        raise RuleError("An override can be removed only while counting chips.")
+    count = BalanceAdjustment.objects.filter(session=session, voided_at__isnull=True).update(
+        voided_at=timezone.now(), voided_by=actor.user
+    )
+    if count:
+        audit.record(
+            "balance.override_removed", actor=actor.user, group_id=session.group_id, session_id=session.pk,
+            summary="Removed the balance override",
+        )
+        games.touch(session)
+    return count
+
+
 def guard_participant_exit(participant: Participant) -> None:
     """A player with money in the session cannot be withdrawn."""
-    if BuyIn.objects.filter(participant=participant, reversal__isnull=True).exists():
+    has_cash_out = CashOut.objects.filter(participant=participant, reversal__isnull=True).exists()
+    if has_cash_out or BuyIn.objects.filter(participant=participant, reversal__isnull=True).exists():
         raise RuleError(
             f"{participant.member.display_name} has buy-ins in this game. Record a cash-out, or reverse the buy-ins first."
         )

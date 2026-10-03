@@ -66,6 +66,7 @@ def session_context(session, me) -> dict:
         "can_buy_in": me.is_host and session.state in ledger.BUY_IN_STATES,
         "can_reverse": me.is_host and session.state in ledger.REVERSAL_STATES,
         "can_cash_out": me.is_host and session.state in ledger.CASH_OUT_STATES,
+        "balance": ledger_queries.balance(summary) if session.state == GameSession.State.RECONCILIATION else None,
         "seats_free": session.seat_count - seated,
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,

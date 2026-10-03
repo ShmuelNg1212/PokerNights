@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from audit.admin import ReadOnlyAdmin
 
-from .models import BuyIn, BuyInReversal, CashOut, CashOutReversal
+from .models import BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal
 
 
 @admin.register(BuyIn)
@@ -23,3 +23,8 @@ class CashOutAdmin(ReadOnlyAdmin):
 @admin.register(CashOutReversal)
 class CashOutReversalAdmin(ReadOnlyAdmin):
     list_display = ("created_at", "cash_out", "reason")
+
+
+@admin.register(BalanceAdjustment)
+class BalanceAdjustmentAdmin(ReadOnlyAdmin):
+    list_display = ("created_at", "session", "participant", "chips_delta", "mode", "note", "voided_at")

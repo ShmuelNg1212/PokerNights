@@ -59,3 +59,22 @@ def cash_out_reverse(request, session_id, cash_out_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.reverse_cash_out, session.pk, actor, cash_out_id, request.POST.get("reason", ""), success="Cash-out reversed.")
     return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def override_add(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    absorber = request.POST.get("absorber", "")
+    mode = "equal" if absorber == "equal" else "player"
+    attempt(
+        request, services.record_override, session.pk, actor, request.POST.get("note", ""), mode, absorber,
+        request_id_from(request), success="Override recorded.",
+    )
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def override_void(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.void_override, session.pk, actor, success="Override removed.")
+    return redirect("session", session_id=session.pk)
