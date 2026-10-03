@@ -16,7 +16,10 @@ from groups.errors import RuleError
 from groups.tests.helpers import add_player
 from ledger import queries as ledger_queries
 from ledger import services as ledger
-from ledger.models import BuyIn, CashOut, Finalization, PlayerResult
+from games.models import PlayInterval, PlayPeriod
+from ledger.models import BuyIn, CashOut, CashOutBatch, Finalization, PlayerResult
+from ledger.tests.test_batch import ready_ids, six_players
+from ledger.tests.test_counts import count
 from ledger.tests.helpers import Night
 from ledger.tests.test_balance import worked_example
 from settlement import services as settlement
@@ -232,3 +235,60 @@ class ConcurrentBatchAddTests(TransactionTestCase):
         self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
         self.assertEqual((ParticipantBatch.objects.count(), Participant.objects.count()), (1, 4))
         self.assertEqual(len({tuple(p.pk for p in added) for _, added in outcomes}), 1)
+
+
+class ConcurrentEndOfSetTests(TransactionTestCase):
+    def test_two_hosts_confirm_the_same_review_at_once(self):
+        night = six_players()
+        reviewed = ready_ids(night)
+        outcomes = race(*[
+            (lambda: ledger.cash_out_counted(night.session.pk, night.host, reviewed, uuid.uuid4())) for _ in range(4)
+        ])
+        self.assertEqual(kinds(outcomes), ["ok"] + ["refused"] * 3, outcomes)
+        self.assertEqual((CashOutBatch.objects.count(), CashOut.objects.count()), (1, 4))
+        self.assertEqual(CashOut.objects.values("participant").distinct().count(), 4)
+
+    def test_one_confirmation_sent_six_times_records_once(self):
+        night = six_players()
+        reviewed, request_id = ready_ids(night), uuid.uuid4()
+        outcomes = race(*[lambda: ledger.cash_out_counted(night.session.pk, night.host, reviewed, request_id)] * 6)
+        self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
+        self.assertEqual((CashOutBatch.objects.count(), CashOut.objects.count()), (1, 4))
+
+    def test_batch_races_with_an_individual_cash_out(self):
+        for _ in range(4):
+            night = six_players()
+            reviewed = ready_ids(night)
+            outcomes = race(
+                lambda: ledger.cash_out_counted(night.session.pk, night.host, reviewed, uuid.uuid4()),
+                lambda: night.cash("A", 2500),
+            )
+            self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+            # A has exactly one final cash-out, whichever request won. The batch is whole or absent.
+            self.assertEqual(CashOut.objects.filter(participant=night.players["A"]).count(), 1)
+            self.assertIn(CashOut.objects.filter(session=night.session).count(), (1, 4))
+
+    def test_batch_races_with_a_count_change(self):
+        for _ in range(4):
+            night = six_players()
+            reviewed = ready_ids(night)
+            outcomes = race(
+                lambda: ledger.cash_out_counted(night.session.pk, night.host, reviewed, uuid.uuid4()),
+                lambda: count(night, "B", 1400),
+            )
+            self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+            cash_outs = CashOut.objects.filter(session=night.session)
+            if outcomes[0][0] == "ok":
+                # The batch used the reviewed count; the later change was refused.
+                self.assertEqual(cash_outs.get(participant=night.players["B"]).amount, 150000)
+            else:
+                self.assertEqual(cash_outs.count(), 0)  # the stale batch recorded nothing
+                self.assertEqual(night.line("B").count.amount, 140000)
+
+    def test_end_of_play_sent_twice_stops_the_timers_once(self):
+        night = Night("A", "B", "C")
+        outcomes = race(*[lambda: games.transition(night.session.pk, night.host, "end")] * 3)
+        self.assertEqual(kinds(outcomes), ["ok"] + ["refused"] * 2, outcomes)
+        session = night.refresh()
+        self.assertEqual(set(PlayInterval.objects.values_list("ended_at", flat=True)), {session.ended_at})
+        self.assertEqual((PlayPeriod.objects.count(), PlayInterval.objects.count()), (1, 3))
