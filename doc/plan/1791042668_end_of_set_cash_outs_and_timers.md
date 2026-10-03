@@ -2,10 +2,10 @@
 
 - **Date:** 2026-10-03 23:51 (Asia/Manila), Unix timestamp `1791042668`
 - **Revised:** 2026-10-03 23:56 (Unix `1791042979`), after the human stated that a session can have several sets
-- **Status:** `awaiting-approval`
+- **Status:** `in-progress`
 - **Study:** [../study/1791042572_end_of_set_cash_outs_and_timers.md](../study/1791042572_end_of_set_cash_outs_and_timers.md). Its **review addendum** controls where it differs from the earlier sections.
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this revised plan.
-- **Approval record:** _none yet_
+- **Approval record:** Approved by the human on 2026-10-04: "approved." Q1–Q6 were not answered, so each default applies. The AI's reading of S5 (a clock per set, player time inside it, no session timer) was presented before the approval and not corrected.
 
 Edit this file directly, or add a line that starts with `NOTE:`.
 
@@ -207,3 +207,4 @@ None. An answer other than the default to Q1, Q2 or Q3 means a plan revision bef
 | 2026-10-03 23:51 | Study and plan written and committed. Status `awaiting-approval`. |
 | 2026-10-03 23:56 | The human stated that a session can have several sets, and answered four questions (S1–S4). Study addendum added. Plan revised: Part I (sessions with sets, session settle-up) added before Part II. Q1–Q6 still open. Status stays `awaiting-approval`. |
 | 2026-10-03 23:59 | The human stated: "each set has its own timer." Recorded as S5. Task 4 now includes a clock per set (`PlayPeriod`), with player time inside it. AC9a and AC9b added. Status stays `awaiting-approval`. |
+| 2026-10-04 | Human approved the revised plan. Defaults apply to Q1–Q6. Dev server stopped. Database backed up to `db.before_sets.sqlite3` with the SQLite backup API. |
