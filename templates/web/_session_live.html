@@ -31,6 +31,8 @@
 </div>
 {% endif %}
 
+{% if outcome %}{% include "web/_results.html" %}{% endif %}
+
 {% if balance %}{% include "web/_balance.html" %}{% endif %}
 
 <h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>

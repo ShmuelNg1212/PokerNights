@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Q
 
 from games.models import GameSession, Participant, SettingsVersion
+from groups.models import GameGroup, Member
 
 
 class BuyIn(models.Model):
@@ -119,3 +120,75 @@ class BalanceAdjustment(models.Model):
 
     def __str__(self):
         return f"Adjustment of {self.chips_delta} chips for participant {self.participant_id}"
+
+
+class Finalization(models.Model):
+    """The frozen outcome of a session. Written once, inside the finalization transaction.
+
+    A later correction adds a new revision and marks this one not current; it is never edited.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="finalizations")
+    revision = models.PositiveIntegerField()
+    is_current = models.BooleanField(default=True)
+    total_buy_in_centavos = models.BigIntegerField()
+    total_cash_out_centavos = models.BigIntegerField()
+    chips_issued = models.BigIntegerField()
+    # Chips cashed out minus chips issued before any host override. Zero when the books balanced.
+    raw_difference_chips = models.BigIntegerField(default=0)
+    rate_centavos = models.BigIntegerField()
+    rate_chips = models.BigIntegerField()
+    settings_snapshot = models.JSONField()
+    finalized_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["session", "revision"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "revision"], name="finalization_revision_unique"),
+            models.UniqueConstraint(fields=["session"], condition=Q(is_current=True), name="finalization_one_current"),
+            models.CheckConstraint(
+                condition=Q(total_buy_in_centavos=models.F("total_cash_out_centavos")),
+                name="finalization_money_conserved",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Finalization r{self.revision} of session {self.session_id}"
+
+
+class PlayerResult(models.Model):
+    """One player's frozen result in a finalized session. Statistics read only current rows."""
+
+    finalization = models.ForeignKey(Finalization, on_delete=models.PROTECT, related_name="results")
+    participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="results")
+    # Repeated from the session so that statistics read one table.
+    member = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="results")
+    group = models.ForeignKey(GameGroup, on_delete=models.PROTECT, related_name="+")
+    game_date = models.DateField()
+    buy_in_total_centavos = models.BigIntegerField()
+    buy_in_count = models.PositiveIntegerField()
+    chips_cashed = models.BigIntegerField()
+    adjustment_chips = models.BigIntegerField(default=0)
+    # Value of chips_cashed + adjustment_chips at the session's chip rate.
+    cash_out_centavos = models.BigIntegerField()
+    net_centavos = models.BigIntegerField()
+    is_current = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["finalization", "participant__join_order"]
+        constraints = [
+            models.UniqueConstraint(fields=["finalization", "participant"], name="result_once_per_finalization"),
+            models.UniqueConstraint(fields=["participant"], condition=Q(is_current=True), name="result_one_current"),
+            models.CheckConstraint(
+                condition=Q(net_centavos=models.F("cash_out_centavos") - models.F("buy_in_total_centavos")),
+                name="result_net_is_cash_out_minus_buy_ins",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["member", "game_date"], condition=Q(is_current=True), name="result_member_date"),
+            models.Index(fields=["group", "game_date"], condition=Q(is_current=True), name="result_group_date"),
+        ]
+
+    def __str__(self):
+        return f"Result {self.net_centavos} centavos for participant {self.participant_id}"

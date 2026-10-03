@@ -19,6 +19,13 @@
   <p class="small">Override: {{ line.participant.member.display_name }} {{ a.chips_delta|chips }} chips. Note: {{ a.note }}</p>
   {% endfor %}{% endfor %}
 
+  {% if me.is_host and balance.ok %}
+  <form method="post" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
+    <p class="small muted">Finalizing freezes each player's result and lists who pays whom. Check the chip counts first.</p>
+    <button type="submit" class="btn btn-primary btn-block">Finalize results</button>
+  </form>
+  {% endif %}
+
   {% if me.is_host %}
     {% if summary.adjustment_chips %}
     <form method="post" action="{% url 'override_void' session.pk %}">{% csrf_token %}

@@ -14,6 +14,7 @@ from groups.models import Invite, Member
 from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
+from settlement import queries as settlement_queries
 
 
 def home(request):
@@ -71,6 +72,12 @@ def session_context(session, me) -> dict:
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
     }
+    if session.state == GameSession.State.FINALIZED:
+        outcome = settlement_queries.outcome(session)
+        context["outcome"] = outcome
+        context["my_result"] = outcome.result_for(me.pk)
+        if context["my_result"]:
+            context["my_transfers"] = outcome.transfers_for(context["my_result"].participant_id)
     if context["can_manage_players"]:
         present = {p.member_id for p in participants if p.status == Participant.Status.JOINED}
         context["addable_members"] = [

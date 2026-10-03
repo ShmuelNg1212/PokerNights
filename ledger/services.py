@@ -15,7 +15,9 @@ from groups.errors import RuleError
 from groups.models import Member
 
 from . import money, queries
-from .models import BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal
+from .models import (
+    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal, Finalization, PlayerResult,
+)
 
 State = GameSession.State
 BUY_IN_STATES = (State.OPEN, State.RUNNING)
@@ -227,6 +229,67 @@ def void_override(session_id, actor: Member) -> int:
         )
         games.touch(session)
     return count
+
+
+class LedgerInvariantError(Exception):
+    """The books failed a conservation check. The transaction must roll back; this is a defect, not user error."""
+
+
+def write_results(session: GameSession, actor: Member) -> Finalization:
+    """Freeze each player's result. Call inside a transaction, with the session locked.
+
+    Refuses unless the balance check passes. Cash-out values come from the
+    largest-remainder rule, so they sum to the total bought in to the centavo.
+    """
+    found = queries.balance(session)
+    if not found.ok:
+        raise RuleError(found.explanation)
+    lines = found.summary.money_lines
+    try:
+        payouts = money.allocate([line.chips_final for line in lines], session.rate)
+    except money.MoneyError as error:
+        raise LedgerInvariantError(str(error)) from None
+    total_buy_in = found.summary.total_centavos
+    nets = [payout - line.buy_in_total for line, payout in zip(lines, payouts)]
+    if sum(payouts) != total_buy_in or sum(nets) != 0:
+        raise LedgerInvariantError(
+            f"Session {session.pk}: cash-outs {sum(payouts)} do not equal buy-ins {total_buy_in}."
+        )
+    previous = session.finalizations.order_by("-revision").first()
+    if previous is not None:
+        Finalization.objects.filter(session=session, is_current=True).update(is_current=False)
+        PlayerResult.objects.filter(finalization__session=session, is_current=True).update(is_current=False)
+    finalization = Finalization.objects.create(
+        session=session,
+        revision=previous.revision + 1 if previous else 1,
+        total_buy_in_centavos=total_buy_in,
+        total_cash_out_centavos=sum(payouts),
+        chips_issued=found.summary.chips_issued,
+        raw_difference_chips=found.raw_difference,
+        rate_centavos=session.rate_centavos,
+        rate_chips=session.rate_chips,
+        settings_snapshot=[
+            {"number": version.number, **version.stakes()} for version in session.settings_versions.order_by("number")
+        ],
+        finalized_by=actor.user,
+    )
+    PlayerResult.objects.bulk_create(
+        PlayerResult(
+            finalization=finalization,
+            participant=line.participant,
+            member_id=line.participant.member_id,
+            group_id=session.group_id,
+            game_date=session.game_date,
+            buy_in_total_centavos=line.buy_in_total,
+            buy_in_count=line.buy_in_count,
+            chips_cashed=line.chips_cashed,
+            adjustment_chips=line.adjustment_chips,
+            cash_out_centavos=payout,
+            net_centavos=net,
+        )
+        for line, payout, net in zip(lines, payouts, nets)
+    )
+    return finalization
 
 
 def guard_participant_exit(participant: Participant) -> None:
