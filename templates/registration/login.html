@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Log in · PokerNights{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<form method="post" class="card stack">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% include "partials/form_fields.html" %}
+  <button type="submit" class="btn btn-primary">Log in</button>
+</form>
+<p class="center">No account? <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign up</a></p>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0f1512">
+  <title>{% block title %}PokerNights{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="{% url 'home' %}">PokerNights</a>
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}" class="inline">
+      {% csrf_token %}
+      <span class="who">{{ user.username }}</span>
+      <button type="submit" class="btn btn-quiet btn-small">Log out</button>
+    </form>
+    {% endif %}
+  </header>
+  <main id="main" class="page">
+    {% if messages %}
+    <ul class="messages" role="status">
+      {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
