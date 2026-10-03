@@ -1,0 +1,10 @@
+{% load money_tags %}
+<div class="row">
+  <h1 class="grow">{{ session.table.name }}</h1>
+  <span class="badge {% if session.state == 'running' %}badge-live{% endif %}">{{ session.get_state_display }}</span>
+</div>
+<p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
+<p class="muted small">Blinds {{ settings.small_blind_centavos|peso }}/{{ settings.big_blind_centavos|peso }} · buy-in {{ settings.min_buy_in_centavos|peso }}–{{ settings.max_buy_in_centavos|peso }} · {{ settings.default_buy_in_centavos|peso }} = {{ settings.chips_per_buy_in|chips }} chips</p>
+{% if session.state == 'canceled' %}<div class="notice">This game was canceled{% if session.cancel_reason %}: {{ session.cancel_reason }}{% endif %}. It does not count.</div>{% endif %}
+
+{% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}

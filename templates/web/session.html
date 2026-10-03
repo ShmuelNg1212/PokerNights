@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block title %}{{ session }} · PokerNights{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' session.group_id %}">← {{ session.group.name }}</a></p>
+<div id="live" data-version="{{ session.version }}">
+  {% include "web/_session_live.html" %}
+</div>
+<p id="live-status" class="live-status" aria-live="polite"></p>
+{% endblock %}

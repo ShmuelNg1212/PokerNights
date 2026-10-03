@@ -1,0 +1,36 @@
+<div class="card stack">
+  <h2 style="margin-top:0">Host controls</h2>
+  {% if session.state == 'setup' %}
+  <p class="muted small">This game is a draft. Players cannot see it yet.</p>
+  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-primary btn-block" name="action" value="open">Open for players</button>
+  </form>
+  {% elif session.state == 'open' %}
+  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-primary btn-block" name="action" value="start">Start the game</button>
+  </form>
+  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
+  </form>
+  {% elif session.state == 'running' %}
+  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-primary btn-block" name="action" value="end">End play and count chips</button>
+  </form>
+  {% elif session.state == 'reconciliation' %}
+  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button>
+  </form>
+  {% endif %}
+  {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
+  <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Change settings</a>
+  {% endif %}
+  {% if session.is_live or session.state == 'setup' %}
+  <details>
+    <summary class="small">Cancel this game</summary>
+    <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}
+      <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" maxlength="255"></div>
+      <button class="btn btn-danger btn-block" name="action" value="cancel">Cancel the game</button>
+    </form>
+  </details>
+  {% endif %}
+</div>

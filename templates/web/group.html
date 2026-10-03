@@ -42,6 +42,35 @@
 {% block content %}
 <h1>{{ group.name }}</h1>
 
+<h2>Games</h2>
+<div class="card">
+  {% if upcoming_sessions %}
+  <ul class="list">
+    {% for s in upcoming_sessions %}
+    <li class="row">
+      <a class="grow" href="{% url 'session' s.pk %}">{{ s.table.name }} · {{ s.game_date|date:"D, M j" }}</a>
+      <span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No game is planned or in progress.</p>{% endif %}
+  {% if me.is_host %}
+    {% if tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New game</a></p>
+    {% else %}<p class="muted small">Add a table below to create a game.</p>{% endif %}
+  {% endif %}
+</div>
+{% if past_sessions %}
+<h2>Past games</h2>
+<ul class="list card">
+  {% for s in past_sessions %}
+  <li class="row">
+    <a class="grow" href="{% url 'session' s.pk %}">{{ s.table.name }} · {{ s.game_date|date:"M j, Y" }}</a>
+    <span class="badge">{{ s.get_state_display }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Tables</h2>
 <div class="card">
   {% if tables %}

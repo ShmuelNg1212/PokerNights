@@ -5,8 +5,9 @@ from groups.access import member_for, require_host
 from groups.http import attempt
 
 from . import services
-from .forms import PresetForm
-from .models import SettingsPreset
+from .access import session_for
+from .forms import PresetForm, SessionForm, StakesForm
+from .models import SettingsPreset, Table
 
 
 @require_POST
@@ -33,3 +34,40 @@ def preset_form(request, group_id, preset_id=None):
         if saved is not None:
             return redirect("group", group_id=group_id)
     return render(request, "games/preset_form.html", {"form": form, "group": actor.group, "preset": preset})
+
+
+def session_new(request, group_id):
+    actor = member_for(request.user, group_id)
+    require_host(actor)
+    tables = Table.objects.filter(group=actor.group, archived_at__isnull=True).select_related("default_preset")
+    presets = SettingsPreset.objects.filter(group=actor.group, archived_at__isnull=True)
+    preset = presets.filter(pk=request.GET.get("preset") or 0).first()
+    if preset is None and not request.GET.get("preset"):
+        preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
+    initial = {"game_type": preset.game_type, **preset.stakes()} if preset else {}
+    form = SessionForm(request.POST or None, initial=initial, tables=tables)
+    if request.method == "POST" and form.is_valid():
+        data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
+        session = attempt(request, services.create_session, actor, data)
+        if session is not None:
+            return redirect("session", session_id=session.pk)
+    context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset}
+    return render(request, "games/session_form.html", context)
+
+
+def session_settings(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    require_host(actor)
+    form = StakesForm(request.POST or None, initial=services.current_settings(session).stakes())
+    if request.method == "POST" and form.is_valid():
+        saved = attempt(request, services.update_settings, session.pk, actor, form.cleaned_data, success="Settings saved.")
+        if saved is not None:
+            return redirect("session", session_id=session.pk)
+    return render(request, "games/settings_form.html", {"form": form, "session": session})
+
+
+@require_POST
+def session_transition(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.transition, session.pk, actor, request.POST.get("action", ""), request.POST.get("reason", ""))
+    return redirect("session", session_id=session.pk)

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from ledger import money
@@ -46,3 +47,20 @@ class PresetForm(StakesForm):
     game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
 
     field_order = ["name", "game_type"]
+
+
+class SessionForm(StakesForm):
+    table_id = forms.ChoiceField(label="Table")
+    game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
+    location = forms.CharField(label="Location", max_length=120, required=False)
+    game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
+
+    field_order = ["table_id", "game_date", "location", "game_type"]
+
+    def __init__(self, *args, tables=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["table_id"].choices = [(table.pk, f"{table.name} ({table.seat_count} seats)") for table in tables]
+        self.fields["game_date"].initial = timezone.localdate
+
+    def clean_table_id(self):
+        return int(self.cleaned_data["table_id"])
