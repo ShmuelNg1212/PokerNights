@@ -1,16 +1,16 @@
 # Plan: visual redesign slice 2
 
 - Date: 2026-10-04, Asia/Manila. Shell timestamp: `1791050738`.
-- Status: `awaiting-approval`.
+- Status: `in-progress`.
 - Study: [slice 2 revalidation](../study/1791050655_redesign_slice_2.md).
 - Parent: [visual redesign, task 8](1791046015_visual_redesign.md).
 - Sources: `SPEC.md`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, current wiki and the original visual study.
 - Baseline: clean `main` after slice 1; 375 SQLite tests pass. No slice 2 implementation yet.
-- Approval record: pending. Record the human answer before implementation.
+- Approval record: human approved on 2026-10-04 with “continue.” The proposed player-progress wording is accepted.
 
 ## OPEN QUESTIONS
 
-Approve the proposed progress wording: **“N of M players ready or cashed out”**, with separate status counts and cash-out totals. This replaces the original “Counted amount of bought-in amount” because earlier partial cash-outs make that ratio ambiguous. Approval of this plan accepts this recommendation unless the human specifies a change.
+Accepted decision: **“N of M players ready or cashed out”**, with separate status counts and cash-out totals. This replaces the original “Counted amount of bought-in amount” because earlier partial cash-outs make that ratio ambiguous. The human accepted this recommendation by approving the plan.
 
 ## Goal and scope
 
@@ -53,4 +53,6 @@ Create `feat/visual-redesign-slice-2` from current `main` in a separate worktree
 ## Progress and blockers
 
 - Phase 1: source review complete. Study committed as `a6ce949`; baseline SQLite suite passes (375 tests).
-- No implementation blocker. Human approval of this completed plan is the next workflow step.
+- No implementation blocker. Phase 2 authorized; implementation in progress.
+- Initial implementation: 384 tests pass on SQLite (14.379 s) and PostgreSQL (20.723 s); no migrations. Active-table regressions: 20 action checks and 13 accessibility checks pass. Added JavaScript: 7,912 bytes; stylesheet: 24,518 bytes.
+- First capture batch: long-name explanation overflow needs a fix. Native reversal succeeded, but the browser check selected an earlier partial cash-out; update it to select the final cash-out. Full-page captures and JSON are in `/private/tmp/pn-slice2-review/`. Fresh finish review in progress.

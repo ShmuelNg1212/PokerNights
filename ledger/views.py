@@ -174,6 +174,7 @@ def cash_out_counted(request, session_id):
         "unit": session.unit,
         "error": error,
         "ready": ready,
+        "participants": [line.participant for line in summary.lines],
         "awaiting": summary.awaiting_lines,
         "cashed_out": summary.cashed_out_lines,
         "batch_total": sum(line.count.amount for line in ready),

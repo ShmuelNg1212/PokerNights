@@ -1,18 +1,19 @@
-{% load money_tags clock_tags %}
-<div class="card">
+{% load money_tags clock_tags table_tags %}
+<section class="count-list" aria-label="Player counts">
   {% if me.is_host and session.state == 'reconciliation' %}
   <form id="counts-form" method="post" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
   {% endif %}
   {% if summary.lines %}
-  <ul class="list">
+  <ul class="player-list">
     {% for line in summary.lines %}{% with p=line.participant %}
-    <li>
-      <div class="row">
+    <li class="count-row" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}">
+      <div class="count-identity">
+        {% player_token p participants %}
         <span class="grow">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}
           {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}</span>
-        <span class="amount">{{ line.buy_in_total|amount:unit }}</span>
+        <span class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>Bought in</small></span>
       </div>
-      <div class="muted small">
+      <div class="muted small count-meta">
         {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}
         {% else %}No buy-in yet{% endif %}
         {% if line.has_cash_out %}<br>Cashed out {{ line.cashed_out|amount:unit }}{% endif %}
@@ -27,8 +28,8 @@
       </p>
       {% if me.is_host and line.status != 'cashed_out' %}
       {# These fields belong to the one counts form below, so one tap sends every typed count. #}
-      <div class="form-row">
-        <div class="grow"><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"></div>
+      <div class="form-row count-entry">
+        <div class="grow"><label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"></div>
         <button type="submit" form="counts-form" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
       </div>
       {% endif %}
@@ -44,55 +45,7 @@
       {% if can_cash_out and line.has_money and session.state == 'running' and not line.is_cashed_out %}
       {% include "web/_cash_out_form.html" %}
       {% endif %}
-      {% if line.buy_ins or line.reversed_buy_ins or line.cash_outs or line.reversed_cash_outs or can_manage_players or p.member_id == me.pk and can_join %}
-      <details data-key="player-{{ p.pk }}">
-        <summary class="small">Details</summary>
-        <ul class="list small">
-          {% for b in line.buy_ins %}
-          <li>
-            <div class="row"><span class="grow">{% if forloop.first %}Buy-in{% else %}Rebuy{% endif %} · {{ b.created_at|date:"H:i" }}</span><span class="num">{{ b.amount|amount:unit }}</span></div>
-            {% if can_reverse %}
-            <form method="post" action="{% url 'buy_in_reverse' session.pk b.pk %}" class="form-row" data-once>{% csrf_token %}
-              <div class="grow"><input type="text" name="reason" data-keep="reverse-buy-in-{{ b.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
-              <button type="submit" class="btn btn-small btn-danger">Reverse</button>
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-          {% for b in line.reversed_buy_ins %}
-          <li><span class="struck">{{ b.created_at|date:"H:i" }} · {{ b.amount|amount:unit }}</span> <span class="muted">Reversed: {{ b.reversal.reason }}</span></li>
-          {% endfor %}
-          {% for c in line.cash_outs %}
-          <li>
-            <div class="row"><span class="grow">{% if c.kind == 'final' %}Final cash-out{% else %}Cash-out{% endif %} · {{ c.created_at|date:"H:i" }}</span><span class="num">{{ c.amount|amount:unit }}</span></div>
-            {% if can_cash_out %}
-            <form method="post" action="{% url 'cash_out_reverse' session.pk c.pk %}" class="form-row" data-once>{% csrf_token %}
-              <div class="grow"><input type="text" name="reason" data-keep="reverse-cash-out-{{ c.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
-              <button type="submit" class="btn btn-small btn-danger">Reverse</button>
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-          {% for c in line.reversed_cash_outs %}
-          <li><span class="struck">{{ c.created_at|date:"H:i" }} · {{ c.amount|amount:unit }}</span> <span class="muted">Reversed: {{ c.reversal.reason }}</span></li>
-          {% endfor %}
-        </ul>
-        {% if me.is_host and session.state == 'reconciliation' and line.has_money and not line.is_cashed_out %}
-        <p class="small muted">Exception: cash this player out now, without a confirmed count.</p>
-        {% include "web/_cash_out_form.html" %}
-        {% if line.status == 'ready' %}
-        <form method="post" action="{% url 'count_clear' session.pk p.pk %}">{% csrf_token %}
-          <button type="submit" class="btn btn-small btn-quiet">Clear the count</button>
-        </form>
-        {% endif %}
-        {% endif %}
-        {% if not line.has_money %}{% if can_manage_players or p.member_id == me.pk and can_join %}
-        <form method="post" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
-          <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this game{% else %}Remove from game{% endif %}</button>
-        </form>
-        {% endif %}{% endif %}
-      </details>
-      {% endif %}
+      {% include "web/_player_records.html" %}
     </li>
     {% endwith %}{% endfor %}
   </ul>
@@ -111,4 +64,4 @@
     <button type="submit" class="btn">Add</button>
   </form>
   {% endif %}
-</div>
+</section>

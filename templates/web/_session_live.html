@@ -19,4 +19,6 @@
   </aside>
   {% include "web/_players.html" %}
 </div>
+{% elif session.state == 'reconciliation' %}{% include "web/_count_up.html" %}
+{% elif session.state == 'finalized' %}{% include "web/_final_set.html" %}
 {% else %}{% include "web/_session_legacy.html" %}{% endif %}

@@ -1,31 +1,13 @@
 {% load money_tags %}
-<h2>End of set</h2>
-<div class="card stack">
-  <p class="small">
-    <span class="badge badge-warn">{{ summary.awaiting_lines|length }} awaiting count</span>
-    <span class="badge badge-live">{{ summary.ready_lines|length }} ready to cash out</span>
-    <span class="badge badge-good">{{ summary.cashed_out_lines|length }} cashed out</span>
-  </p>
-  {% if summary.awaiting_lines %}<p class="small muted">Still to count: {% for line in summary.awaiting_lines %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
-  {% if me.is_host %}
-    {% if summary.ready_lines %}
-    <a class="btn btn-primary btn-block" href="{% url 'cash_out_counted' session.pk %}">Cash out counted players ({{ summary.ready_lines|length }})</a>
-    {% else %}
-    <button type="button" class="btn btn-block" disabled aria-describedby="batch-why">Cash out counted players (0)</button>
-    <p id="batch-why" class="small muted">{% if summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}Every player is cashed out.{% endif %}</p>
-    {% endif %}
-  {% endif %}
-</div>
-
 <h2>Balance check</h2>
-<div class="card stack">
+<section class="balance-panel stack">
   <div class="row"><span class="grow">Total bought in</span><span class="amount">{{ summary.total|amount:unit }}</span></div>
   <div class="row"><span class="grow">Total cashed out</span><span class="amount">{{ summary.cashed_out|amount:unit }}</span></div>
   {% if summary.adjustment %}
   <div class="row"><span class="grow">Host override</span><span class="amount">{{ summary.adjustment|signed_amount:unit }}</span></div>
   {% endif %}
   {% if balance.ok %}
-  <div class="notice notice-good">
+  <div class="books-balanced" data-balance="{{ session.pk }}">
     {% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
     {% else %}The books balance. Total cashed out equals total bought in.{% endif %}
   </div>
@@ -37,13 +19,6 @@
   {% for line in summary.lines %}{% for a in line.adjustments %}
   <p class="small">Override: {{ line.participant.member.display_name }} {{ a.amount|signed_amount:unit }}. Note: {{ a.note }}</p>
   {% endfor %}{% endfor %}
-
-  {% if me.is_host and balance.ok %}
-  <form method="post" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
-    <p class="small muted">Finalizing freezes each player's result and lists who pays whom. Check the cash-outs first.</p>
-    <button type="submit" class="btn btn-primary btn-block">Finalize results</button>
-  </form>
-  {% endif %}
 
   {% if me.is_host %}
     {% if summary.adjustment %}
@@ -69,4 +44,4 @@
     </details>
     {% endif %}
   {% endif %}
-</div>
+</section>

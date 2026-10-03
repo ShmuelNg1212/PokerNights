@@ -24,7 +24,7 @@ def player_token(participant, participants):
             if label in used:
                 label = next((text[:1] + char for char in text[2:] if text[:1] + char not in used), f"{text[:1]}{peer.join_order}")
             used.add(label)
-            if peer is participant:
+            if peer is participant or (getattr(participant, "pk", None) is not None and peer.pk == participant.pk):
                 initial = label
                 break
     colour = (participant.join_order - 1) % 10 + 1

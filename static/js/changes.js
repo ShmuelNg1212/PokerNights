@@ -6,6 +6,10 @@
   var prefix = "rack:" + region.dataset.url + ":";
   var seen = {};
   function update() {
+    region.querySelectorAll("[data-balance]").forEach(function (el) {
+      var key = "balanced:" + el.dataset.balance;
+      try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); } } catch (_) {}
+    });
     region.querySelectorAll("[data-watch]").forEach(function (el) {
       var key = prefix + el.dataset.watch, value = el.dataset.value;
       var previous = seen[key];
