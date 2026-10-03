@@ -447,6 +447,8 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
         ],
         finalized_by=actor.user,
     )
+    # Play ended before counting began, so every interval is closed: this is not "time until now".
+    played = games.clock.player_seconds(session) if session.play_periods.exists() else {}
     PlayerResult.objects.bulk_create(
         PlayerResult(
             finalization=finalization,
@@ -461,6 +463,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
             adjustment=line.adjustment,
             cash_out=line.cash_out_final,
             net=net,
+            play_seconds=played.get(line.participant.pk, 0) if played or session.play_periods.exists() else None,
         )
         for line, net in zip(lines, nets)
     )

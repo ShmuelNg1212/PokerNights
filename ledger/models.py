@@ -242,6 +242,9 @@ class PlayerResult(models.Model):
     adjustment = models.BigIntegerField(default=0)  # the player's share of a host override
     cash_out = models.BigIntegerField()  # cashed_out + adjustment
     net = models.BigIntegerField()  # cash_out − buy_in_total
+    # Seconds the player was at the table while the set was in play, as it stood
+    # when play ended. Empty for sets played before playing time was recorded.
+    play_seconds = models.PositiveIntegerField(null=True, blank=True)
     is_current = models.BooleanField(default=True)
 
     class Meta:

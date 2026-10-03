@@ -34,6 +34,7 @@ class Standing:
     member: Member
     net: int
     sets_played: int
+    play_seconds: object = None
 
 
 @dataclass
@@ -68,9 +69,9 @@ class NightOutcome:
 
 
 def night_outcome(night) -> NightOutcome:
-    rows = services.session_results(night)
-    members = Member.objects.in_bulk([member_id for member_id, _, _ in rows])
-    found = NightOutcome(standings=[Standing(members[m], net, played) for m, net, played in rows])
+    rows = services.session_standings(night)
+    members = Member.objects.in_bulk([row[0] for row in rows])
+    found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
     found.plan = SettlementPlan.objects.filter(night=night).first()
     if found.plan is not None:
         found.transfers = list(

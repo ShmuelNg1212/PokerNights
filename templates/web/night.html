@@ -84,7 +84,7 @@
   <ul class="list">
     {% for row in outcome.standings %}
     <li class="row">
-      <span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}</span></span>
+      <span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span>
       <span class="amount {{ row.net|sign_class }}">{{ row.net|signed_amount:unit }}</span>
     </li>
     {% endfor %}

@@ -50,16 +50,26 @@ def session_results(night: GameNight) -> list:
 
     Returns ``[(member_id, net, sets_played)]``. The nets sum to zero, because each set does.
     """
+    return [(member_id, net, played) for member_id, net, played, _ in session_standings(night)]
+
+
+def session_standings(night: GameNight) -> list:
+    """``[(member_id, net, sets_played, play_seconds)]`` over the finalized sets, in first-join order.
+
+    ``play_seconds`` is None when none of the member's sets recorded playing time.
+    """
     rows = (
         PlayerResult.objects.filter(is_current=True, finalization__session__night=night)
         .order_by("finalization__session__set_number", "participant__join_order")
-        .values_list("member_id", "net")
+        .values_list("member_id", "net", "play_seconds")
     )
-    totals, played = {}, {}
-    for member_id, net in rows:
+    totals, played, seconds = {}, {}, {}
+    for member_id, net, play_seconds in rows:
         totals[member_id] = totals.get(member_id, 0) + net
         played[member_id] = played.get(member_id, 0) + 1
-    return [(member_id, net, played[member_id]) for member_id, net in totals.items()]
+        if play_seconds is not None:
+            seconds[member_id] = seconds.get(member_id, 0) + play_seconds
+    return [(member_id, net, played[member_id], seconds.get(member_id)) for member_id, net in totals.items()]
 
 
 @transaction.atomic

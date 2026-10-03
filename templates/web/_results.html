@@ -1,4 +1,4 @@
-{% load money_tags %}
+{% load money_tags clock_tags %}
 {% if my_result %}
 <div class="card">
   <div class="stat-label">Your result in set {{ session.set_number }}</div>
@@ -16,7 +16,7 @@
         <span class="grow">{{ r.participant.member.display_name }}</span>
         <span class="amount {{ r.net|sign_class }}">{{ r.net|signed_amount:unit }}</span>
       </div>
-      <div class="muted small">Bought in {{ r.buy_in_total|amount:unit }} ({{ r.buy_in_count }}) · cashed out {{ r.cashed_out|amount:unit }}{% if r.adjustment %} · override {{ r.adjustment|signed_amount:unit }}{% endif %}</div>
+      <div class="muted small">Bought in {{ r.buy_in_total|amount:unit }} ({{ r.buy_in_count }}) · cashed out {{ r.cashed_out|amount:unit }}{% if r.adjustment %} · override {{ r.adjustment|signed_amount:unit }}{% endif %}{% if r.play_seconds is not None %} · played {{ r.play_seconds|duration }}{% endif %}</div>
     </li>
     {% endfor %}
   </ul>
