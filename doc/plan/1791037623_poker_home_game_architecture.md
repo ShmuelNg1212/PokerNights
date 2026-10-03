@@ -333,9 +333,9 @@ None. Q1 and Q2 have defaults. An answer other than the default to Q1 or Q2 need
 | 2026-10-03 22:27 | Study and plan written. No repository exists, so neither file is committed. Status `awaiting-approval`. |
 | 2026-10-03 22:30 | The human supplied `SPEC.md` as context. Study addendum added. Plan revised: roadmap follows the `SPEC.md` build order; cash-outs in several steps; balance override with a named absorber; proven minimum transfers; paid marks moved into Stage 1; session fields for location, game type, minimum and maximum buy-in. Status stays `awaiting-approval`. |
 | 2026-10-03 22:35 | Human approved the revised plan. Defaults apply to Q1–Q8. Status `in-progress`. `SPEC.md` stored at the repository root from the supplied text. |
-| 2026-10-03 22:40 | `pip index versions`: the four pins are still the latest releases. Tasks 1–20 executed on `feat/game-night`, one Conventional Commit each, tests green before each commit. |
-| 2026-10-03 23:05 | Verification (task 23). See "Verification results" below. |
-| 2026-10-03 23:15 | Rendezvous: `feat/game-night` merged to `main` locally with a merge commit. 213 tests pass on `main` on SQLite and PostgreSQL 17. Living docs synced. Nothing was pushed or deployed; no remote exists. Status `done`. |
+| 2026-10-03, after approval | `pip index versions`: the four pins are still the latest releases. Tasks 1–20 executed on `feat/game-night`, one Conventional Commit each, tests green before each commit. |
+| 2026-10-03, after approval | Verification (task 23). See "Verification results" below. |
+| 2026-10-03, after approval | Rendezvous: `feat/game-night` merged to `main` locally with a merge commit. 213 tests pass on `main` on SQLite and PostgreSQL 17. Living docs synced. Nothing was pushed or deployed; no remote exists. Status `done`. |
 
 ## Verification results (2026-10-03)
 
