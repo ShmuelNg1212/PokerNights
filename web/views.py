@@ -5,6 +5,7 @@ from django.shortcuts import render
 from groups.access import member_for
 from django.utils import timezone
 
+from games.models import SettingsPreset, Table
 from groups.models import Invite, Member
 
 
@@ -20,7 +21,13 @@ def home(request):
 def group(request, group_id):
     me = member_for(request.user, group_id)
     members = Member.objects.filter(group=me.group, status=Member.Status.ACTIVE)
-    context = {"me": me, "group": me.group, "members": members}
+    context = {
+        "me": me,
+        "group": me.group,
+        "members": members,
+        "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
+        "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
+    }
     if me.is_host:
         context["invites"] = Invite.objects.filter(
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()

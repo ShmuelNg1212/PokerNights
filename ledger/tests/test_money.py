@@ -63,7 +63,7 @@ class AllocateTests(SimpleTestCase):
         # 3 chips are worth 1 centavo. Exact values: 0.33, 0.33, 1.33 → 2 centavos in all.
         # Floors are 0, 0, 1. The remainders tie, so the one centavo left goes to the first position.
         self.assertEqual(money.allocate([1, 1, 4], (1, 3)), [1, 0, 1])
-        # Exact values 0.67, 0.33, 1.00: the largest remainder gets the centavo.
+        # Exact values 0.33, 0.67, 1.00: the largest remainder gets the centavo.
         self.assertEqual(money.allocate([1, 2, 3], (1, 3)), [0, 1, 1])
         # Remainders 2/3, 2/3, 2/3 with total 2: the first two positions get the extra centavo.
         self.assertEqual(money.allocate([2, 2, 2], (1, 3)), [1, 1, 0])

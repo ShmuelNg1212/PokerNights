@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load money_tags %}
 {% block title %}{{ group.name }} · PokerNights
 {% if me.is_host %}
 <form method="post" action="{% url 'member_add' group.pk %}" class="card stack">
@@ -40,6 +41,49 @@
 {% endblock %}
 {% block content %}
 <h1>{{ group.name }}</h1>
+
+<h2>Tables</h2>
+<div class="card">
+  {% if tables %}
+  <ul class="list">
+    {% for table in tables %}
+    <li class="row"><span class="grow">{{ table.name }}</span><span class="muted small">{{ table.seat_count }} seats{% if table.default_preset %} · {{ table.default_preset.name }}{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No tables yet.</p>{% endif %}
+  {% if me.is_host %}
+  <details>
+    <summary>Add a table</summary>
+    <form method="post" action="{% url 'table_create' group.pk %}" class="stack">
+      {% csrf_token %}
+      <div class="field"><label for="table-name">Table name</label><input id="table-name" type="text" name="name" maxlength="60" required></div>
+      <div class="field"><label for="table-seats">Seats</label><input id="table-seats" type="number" name="seat_count" min="2" max="12" value="9" inputmode="numeric" required></div>
+      <div class="field"><label for="table-preset">Usual preset</label>
+        <select id="table-preset" name="default_preset"><option value="">None</option>{% for preset in presets %}<option value="{{ preset.pk }}">{{ preset.name }}</option>{% endfor %}</select>
+      </div>
+      <button type="submit" class="btn btn-block">Add table</button>
+    </form>
+  </details>
+  {% endif %}
+</div>
+
+<h2>Presets</h2>
+<div class="card">
+  {% if presets %}
+  <ul class="list">
+    {% for preset in presets %}
+    <li>
+      <div class="row">
+        <span class="grow">{% if me.is_host %}<a href="{% url 'preset_edit' group.pk preset.pk %}">{{ preset.name }}</a>{% else %}{{ preset.name }}{% endif %}</span>
+        <span class="badge">{{ preset.get_game_type_display }}</span>
+      </div>
+      <div class="muted small">Blinds {{ preset.small_blind_centavos|peso }}/{{ preset.big_blind_centavos|peso }} · buy-in {{ preset.min_buy_in_centavos|peso }}–{{ preset.max_buy_in_centavos|peso }} · {{ preset.default_buy_in_centavos|peso }} = {{ preset.chips_per_buy_in|chips }} chips</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No presets yet.</p>{% endif %}
+  {% if me.is_host %}<p><a class="btn btn-block" href="{% url 'preset_create' group.pk %}">New preset</a></p>{% endif %}
+</div>
 
 <h2>Players</h2>
 <ul class="list card">

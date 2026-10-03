@@ -14,5 +14,6 @@ urlpatterns = [
     path("healthz", healthz, name="healthz"),
     path("accounts/", include("accounts.urls")),
     path("", include("groups.urls")),
+    path("", include("games.urls")),
     path("", include("web.urls")),
 ]
