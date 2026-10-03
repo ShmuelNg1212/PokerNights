@@ -9,4 +9,4 @@
 <p class="center"><a href="{% url 'session_log' session.pk %}">Full game log</a></p>
 <p id="live-status" class="live-status" aria-live="polite"></p>
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/live.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% static 'js/live.js' %}" defer></script><script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}

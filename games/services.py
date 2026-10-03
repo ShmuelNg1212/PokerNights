@@ -11,6 +11,7 @@ from groups.errors import RuleError
 from groups.models import Member
 from groups.services import clean_name
 
+from . import clock
 from .models import (
     GameNight, GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
 )
@@ -216,6 +217,9 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
     return version
 
 
+# Called when a set resumes play, inside the transaction: ``hook(session, actor)``.
+RESUME_HOOKS = []
+
 # action → (states it is allowed from, resulting state)
 TRANSITIONS = {
     "open": ((State.SETUP,), State.OPEN),
@@ -257,10 +261,21 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")
         session.cancel_reason = reason[:255]
-    if action == "start" and session.started_at is None:
-        session.started_at = timezone.now()
+    now = timezone.now()
+    if action == "start":
+        session.started_at = session.started_at or now
+        clock.start(session, now)
+    elif action == "resume":
+        session.ended_at = None
+        for hook in RESUME_HOOKS:
+            hook(session, actor)
+        clock.start(session, now, resuming=True)
+    elif action == "end" or (action == "cancel" and session.state == State.RUNNING):
+        # One timestamp for the set and for every player still at the table.
+        clock.stop(session, now)
+        session.ended_at = now
     session.state = target
-    session.save(update_fields=["state", "started_at", "cancel_reason"])
+    session.save(update_fields=["state", "started_at", "ended_at", "cancel_reason"])
     audit.record(
         f"session.{action}", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=ACTION_LABELS[action], reason=reason,
@@ -367,6 +382,8 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         participant.status = Participant.Status.JOINED
         participant.left_at = None
         participant.save(update_fields=["status", "left_at"])
+    if session.state == State.RUNNING:
+        clock.open_interval(participant, timezone.now())
     audit.record(
         "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
         summary=f"{member.display_name} joined" if is_self else f"Added {member.display_name}",
@@ -430,6 +447,7 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
 
     next_order = session.participants.count() + 1
     added = []
+    now = timezone.now()
     for member in members:
         participant = existing.get(member.pk)
         if participant is None:
@@ -441,6 +459,8 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
             participant.status = Participant.Status.JOINED
             participant.left_at = None
             participant.save(update_fields=["status", "left_at"])
+        if session.state == State.RUNNING:
+            clock.open_interval(participant, now)
         audit.record(
             "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk,
             target=participant, summary=f"Added {member.display_name}",
@@ -475,6 +495,7 @@ def withdraw_participant(session_id, actor: Member, participant_id) -> Participa
         guard(participant)
     participant.status = Participant.Status.WITHDRAWN
     participant.save(update_fields=["status"])
+    clock.close_interval(participant, timezone.now())
     audit.record(
         "participant.withdrawn", actor=actor.user, group_id=session.group_id, session_id=session.pk,
         target=participant, summary=f"{participant.member.display_name} was taken out of the game",
@@ -498,9 +519,14 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
         raise RuleError("That player is not in this game.")
     if not left and _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")
+    now = timezone.now()
     participant.status = wanted
-    participant.left_at = timezone.now() if left else None
+    participant.left_at = now if left else None
     participant.save(update_fields=["status", "left_at"])
+    if left:
+        clock.close_interval(participant, now)
+    elif session.state == State.RUNNING:
+        clock.open_interval(participant, now)
     audit.record(
         "participant.left" if left else "participant.returned", actor=actor.user, group_id=session.group_id,
         session_id=session.pk, target=participant,

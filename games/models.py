@@ -175,6 +175,9 @@ class GameSession(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
+    # When play of this set last ended. Empty while it runs. Counting and
+    # cash-outs happen after this moment and add no playing time.
+    ended_at = models.DateTimeField(null=True, blank=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
     cancel_reason = models.CharField(max_length=255, blank=True)
 
@@ -254,6 +257,55 @@ class Participant(models.Model):
 
     def __str__(self):
         return f"{self.member.display_name} in session {self.session_id}"
+
+
+class PlayPeriod(models.Model):
+    """A stretch of play of one set: from start (or resume) to the end of play.
+
+    The periods of a set are that set's timer. Their sum excludes the time
+    spent counting between an end and a resume. Times come from the server.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="play_periods")
+    started_at = models.DateTimeField()
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["started_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["session"], condition=Q(ended_at__isnull=True), name="play_period_one_open"),
+            models.CheckConstraint(
+                condition=Q(ended_at__isnull=True) | Q(ended_at__gte=F("started_at")), name="play_period_ends_after_start"
+            ),
+        ]
+
+    def __str__(self):
+        return f"Play period of set {self.session_id}"
+
+
+class PlayInterval(models.Model):
+    """A stretch during which one player was at the table while their set was in play."""
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="play_intervals")
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="play_intervals")
+    started_at = models.DateTimeField()
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["started_at", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["participant"], condition=Q(ended_at__isnull=True), name="play_interval_one_open"
+            ),
+            models.CheckConstraint(
+                condition=Q(ended_at__isnull=True) | Q(ended_at__gte=F("started_at")),
+                name="play_interval_ends_after_start",
+            ),
+        ]
+        indexes = [models.Index(fields=["session"], name="play_interval_session")]
+
+    def __str__(self):
+        return f"Play interval of participant {self.participant_id}"
 
 
 class ParticipantBatch(models.Model):

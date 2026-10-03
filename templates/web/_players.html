@@ -1,4 +1,4 @@
-{% load money_tags %}
+{% load money_tags clock_tags %}
 <div class="card">
   {% if summary.lines %}
   <ul class="list">
@@ -13,6 +13,7 @@
         {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}
         {% else %}No buy-in yet{% endif %}
         {% if line.has_cash_out %}<br>Cashed out {{ line.cashed_out|amount:unit }}{% endif %}
+        {% if line.play_seconds is not None %}<br>Played {% clock_value line.play_seconds line.clock_running %}{% endif %}
       </div>
       {% if can_buy_in and p.status == 'joined' %}
       <form method="post" action="{% url 'buy_in_add' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}

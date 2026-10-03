@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load money_tags %}
+{% load money_tags clock_tags %}
 {% block title %}Session · {{ night }}{% endblock %}
 {% block content %}
 <p class="small"><a href="{% url 'group' night.group_id %}">← {{ night.group.name }}</a></p>
@@ -13,11 +13,12 @@
 <ul class="list card">
   {% for s in sets %}
   <li class="row">
-    <a class="grow" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>
+    <span class="grow"><a href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span>
     <span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span>
   </li>
   {% endfor %}
 </ul>
+{% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}. Each set has its own timer.</p>{% endif %}
 {% if latest_set and not night.is_closed %}
 <p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>
 {% endif %}
@@ -119,3 +120,4 @@
 </ul>
 {% endif %}
 {% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}

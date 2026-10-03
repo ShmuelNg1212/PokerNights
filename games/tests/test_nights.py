@@ -122,11 +122,15 @@ class NightMigrationTests(TransactionTestCase):
             ).pk
             for state in ("running", "reconciliation", "finalized", "canceled")
         }
+        target = [("games", "0007_gamenight_night_group_status_date_and_more")]
         executor = MigrationExecutor(connection)
-        executor.migrate([("games", "0007_gamenight_night_group_status_date_and_more")])
-        self.assertEqual(GameNight.objects.count(), 4)
+        executor.migrate(target)
+        new = executor.loader.project_state(target).apps
+        Night, Set = new.get_model("games", "GameNight"), new.get_model("games", "GameSession")
+        self.assertEqual(Night.objects.count(), 4)
         for state, pk in ids.items():
-            game = GameSession.objects.select_related("night").get(pk=pk)
-            self.assertEqual((game.set_number, game.night.sets.count()), (1, 1))
-            self.assertEqual((game.night.unit, game.night.location, game.night.table_id), ("chips", "Here", table.pk))
-            self.assertEqual(game.night.status, "closed" if state in ("finalized", "canceled") else "open", state)
+            game = Set.objects.get(pk=pk)
+            night = Night.objects.get(pk=game.night_id)
+            self.assertEqual((game.set_number, Set.objects.filter(night_id=night.pk).count()), (1, 1))
+            self.assertEqual((night.unit, night.location, night.table_id), ("chips", "Here", table.pk))
+            self.assertEqual(night.status, "closed" if state in ("finalized", "canceled") else "open", state)

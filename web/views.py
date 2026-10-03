@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from audit.models import AuditEvent
 
+from games import clock
 from games import services as games
 from games.access import night_for, session_for
 from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
@@ -84,6 +85,13 @@ def session_context(session, me) -> dict:
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
     }
+    played = clock.player_seconds(session)
+    running_ids = clock.running_participant_ids(session)
+    for line in summary.lines:
+        line.play_seconds = played.get(line.participant.pk)
+        line.clock_running = line.participant.pk in running_ids
+    context["set_seconds"] = clock.set_seconds(session)
+    context["set_running"] = clock.is_running(session)
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
         context["outcome"] = outcome
@@ -131,6 +139,9 @@ def session_log(request, session_id):
         ),
         "outcome": settlement_queries.outcome(session),
         "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
+        "play_periods": session.play_periods.all(),
+        "set_seconds": clock.set_seconds(session),
+        "played": clock.player_seconds(session),
     }
     return render(request, "web/session_log.html", context)
 
@@ -139,7 +150,12 @@ def night(request, night_id):
     """The session page: its sets, in order."""
     night, me = night_for(request.user, night_id)
     sets = [s for s in night.sets.order_by("set_number") if me.is_host or s.state != GameSession.State.SETUP]
+    for one in sets:
+        one.play_seconds = clock.set_seconds(one)
+        one.clock_running = clock.is_running(one)
+    timed = [one.play_seconds for one in sets if one.play_seconds is not None]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context["total_play_seconds"] = sum(timed) if timed else None
     context["can_start_next_set"] = (
         me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
     )
