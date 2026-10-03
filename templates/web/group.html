@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block title %}{{ group.name }} · PokerNights
 {% if me.is_host %}
+<form method="post" action="{% url 'member_add' group.pk %}" class="card stack">
+  {% csrf_token %}
+  <div class="field">
+    <label for="roster-name">Add a player without a login</label>
+    <input id="roster-name" type="text" name="name" maxlength="60" required placeholder="Name">
+  </div>
+  <button type="submit" class="btn btn-block">Add to roster</button>
+</form>
+
 <h2>Invite players</h2>
 <div class="card stack">
   {% if new_invite_url %}
@@ -45,6 +54,11 @@
     <details>
       <summary class="small">Manage</summary>
       <div class="stack">
+        <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="form-row">
+          {% csrf_token %}
+          <div class="grow"><input type="text" name="name" value="{{ m.display_name }}" maxlength="60" required aria-label="Name"></div>
+          <button type="submit" class="btn btn-small">Rename</button>
+        </form>
         {% if m.has_login %}
         <form method="post" action="{% url 'member_role' group.pk m.pk %}">
           {% csrf_token %}
@@ -64,6 +78,15 @@
 </ul>
 
 {% if me.is_host %}
+<form method="post" action="{% url 'member_add' group.pk %}" class="card stack">
+  {% csrf_token %}
+  <div class="field">
+    <label for="roster-name">Add a player without a login</label>
+    <input id="roster-name" type="text" name="name" maxlength="60" required placeholder="Name">
+  </div>
+  <button type="submit" class="btn btn-block">Add to roster</button>
+</form>
+
 <h2>Invite players</h2>
 <div class="card stack">
   {% if new_invite_url %}

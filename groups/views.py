@@ -60,3 +60,20 @@ def accept_invite(request, token):
             return redirect("group", group_id=invite.group_id)
         return redirect("home")
     return render(request, "groups/invite_accept.html", {"invite": invite})
+
+
+@require_POST
+def add_roster_player(request, group_id):
+    actor = member_for(request.user, group_id)
+    attempt(
+        request, services.add_roster_player, actor, request.POST.get("name", ""), request.POST.get("contact", ""),
+        success="Player added.",
+    )
+    return redirect("group", group_id=group_id)
+
+
+@require_POST
+def rename_member(request, group_id, member_id):
+    actor = member_for(request.user, group_id)
+    attempt(request, services.rename_member, actor, member_id, request.POST.get("name", ""), success="Player renamed.")
+    return redirect("group", group_id=group_id)

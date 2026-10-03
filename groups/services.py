@@ -178,3 +178,33 @@ def accept_invite(user, token: str) -> Member:
     Invite.objects.filter(pk=invite.pk).update(use_count=F("use_count") + 1)
     audit.record("invite.accepted", actor=user, group_id=group.pk, target=member, summary=f"{member.display_name} joined the group")
     return member
+
+
+@transaction.atomic
+def add_roster_player(actor: Member, name: str, contact: str = "") -> Member:
+    """Add a player who has no login. A host acts for this player."""
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    name = clean_name(name, "Player name")
+    if _name_taken(group, name):
+        raise RuleError(f"A player named {name} is already in this group.")
+    member = Member.objects.create(group=group, display_name=name, contact=(contact or "").strip()[:120])
+    audit.record("member.added", actor=actor.user, group_id=group.pk, target=member, summary=f"Added {name} to the roster")
+    return member
+
+
+@transaction.atomic
+def rename_member(actor: Member, member_id, name: str) -> Member:
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError("That member is not in this group.")
+    name = clean_name(name, "Player name")
+    if _name_taken(group, name, exclude_pk=member.pk):
+        raise RuleError(f"A player named {name} is already in this group.")
+    old = member.display_name
+    member.display_name = name
+    member.save(update_fields=["display_name"])
+    audit.record("member.renamed", actor=actor.user, group_id=group.pk, target=member, summary=f"Renamed {old} to {name}")
+    return member
