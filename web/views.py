@@ -3,7 +3,9 @@
 from django.shortcuts import render
 
 from groups.access import member_for
-from groups.models import Member
+from django.utils import timezone
+
+from groups.models import Invite, Member
 
 
 def home(request):
@@ -18,4 +20,10 @@ def home(request):
 def group(request, group_id):
     me = member_for(request.user, group_id)
     members = Member.objects.filter(group=me.group, status=Member.Status.ACTIVE)
-    return render(request, "web/group.html", {"me": me, "group": me.group, "members": members})
+    context = {"me": me, "group": me.group, "members": members}
+    if me.is_host:
+        context["invites"] = Invite.objects.filter(
+            group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
+        )
+        context["new_invite_url"] = request.session.pop("new_invite_url", None)
+    return render(request, "web/group.html", context)

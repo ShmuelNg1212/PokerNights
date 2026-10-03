@@ -60,3 +60,25 @@ class Member(models.Model):
     @property
     def has_login(self):
         return self.user_id is not None
+
+
+class Invite(models.Model):
+    """A link that lets a signed-in user enter the group. Only the token's hash is stored."""
+
+    group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="invites")
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    max_uses = models.PositiveIntegerField(default=20)
+    use_count = models.PositiveIntegerField(default=0)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.CheckConstraint(condition=Q(use_count__lte=models.F("max_uses")), name="invite_uses_within_limit"),
+        ]
+
+    def __str__(self):
+        return f"Invite to {self.group} (expires {self.expires_at:%Y-%m-%d})"

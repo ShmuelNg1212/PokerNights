@@ -1,15 +1,23 @@
 """The only code allowed to change groups, members and invites."""
 
+import hashlib
+import secrets
+from datetime import timedelta
+
 from django.db import transaction
+from django.db.models import F
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 from audit import services as audit
 
 from .access import require_host
 from .errors import RuleError
-from .models import GameGroup, Member
+from .models import GameGroup, Invite, Member
 
 NAME_MAX = 60
+INVITE_DAYS = 7
+INVITE_MAX_USES = 20
 
 
 def clean_name(name: str, what="Name") -> str:
@@ -99,4 +107,74 @@ def remove_member(actor: Member, member_id) -> Member:
         "member.removed", actor=actor.user, group_id=group.pk, target=member,
         summary=f"Removed {member.display_name} from the group",
     )
+    return member
+
+
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@transaction.atomic
+def create_invite(actor: Member) -> tuple[Invite, str]:
+    """Create an invite. The token is returned once and is not stored."""
+    require_host(actor)
+    token = secrets.token_urlsafe(32)
+    invite = Invite.objects.create(
+        group=actor.group,
+        token_hash=hash_token(token),
+        expires_at=timezone.now() + timedelta(days=INVITE_DAYS),
+        max_uses=INVITE_MAX_USES,
+        created_by=actor.user,
+    )
+    audit.record("invite.created", actor=actor.user, group_id=actor.group_id, target=invite, summary="Created an invite link")
+    return invite, token
+
+
+@transaction.atomic
+def revoke_invite(actor: Member, invite_id) -> Invite:
+    require_host(actor)
+    invite = Invite.objects.select_for_update().filter(group=actor.group, pk=invite_id).first()
+    if invite is None:
+        raise RuleError("That invite is not in this group.")
+    if invite.revoked_at is None:
+        invite.revoked_at = timezone.now()
+        invite.save(update_fields=["revoked_at"])
+        audit.record("invite.revoked", actor=actor.user, group_id=actor.group_id, target=invite, summary="Revoked an invite link")
+    return invite
+
+
+def usable_invite(token: str, *, lock=False) -> Invite:
+    """The invite for ``token`` if it can still be used, else RuleError."""
+    invites = Invite.objects.select_related("group")
+    if lock:
+        invites = Invite.objects.select_for_update()
+    invite = invites.filter(token_hash=hash_token(token or "")).first()
+    if invite is None or invite.revoked_at is not None:
+        raise RuleError("This invite link is not valid.")
+    if invite.expires_at <= timezone.now():
+        raise RuleError("This invite link has expired. Ask a host for a new one.")
+    if invite.use_count >= invite.max_uses:
+        raise RuleError("This invite link has been used up. Ask a host for a new one.")
+    return invite
+
+
+@transaction.atomic
+def accept_invite(user, token: str) -> Member:
+    """Make ``user`` a player in the invite's group. Accepting again changes nothing."""
+    invite = usable_invite(token, lock=True)
+    group = _lock_group(invite.group_id)
+    member = Member.objects.filter(group=group, user=user).first()
+    if member is not None and member.status == Member.Status.ACTIVE:
+        return member
+    if member is not None:
+        member.display_name = _free_name(group, member.display_name)
+        member.status = Member.Status.ACTIVE
+        member.role = Member.Role.PLAYER
+        member.save(update_fields=["display_name", "status", "role"])
+    else:
+        member = Member.objects.create(
+            group=group, user=user, display_name=_free_name(group, user.get_username()[:NAME_MAX])
+        )
+    Invite.objects.filter(pk=invite.pk).update(use_count=F("use_count") + 1)
+    audit.record("invite.accepted", actor=user, group_id=group.pk, target=member, summary=f"{member.display_name} joined the group")
     return member

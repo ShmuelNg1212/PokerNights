@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Invite · PokerNights{% endblock %}
+{% block content %}
+{% if error %}
+<h1>Invite</h1>
+<div class="notice notice-bad">{{ error }}</div>
+<p><a href="{% url 'home' %}">Go to your groups</a></p>
+{% else %}
+<h1>Join {{ invite.group.name }}</h1>
+<p class="muted">You will see this group's games and can join them.</p>
+<form method="post" class="card">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-block">Join group</button>
+</form>
+{% endif %}
+{% endblock %}
