@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from ledger import money
 
-from .models import GameType, StakesFields
+from .models import GameType, StakesFields, Unit
 
 
 def amount_field(label, help_text=""):
@@ -31,7 +31,7 @@ class StakesForm(forms.Form):
         self.unit = unit
 
     def chosen_unit(self, cleaned) -> str:
-        return self.unit
+        return cleaned.get("unit") or self.unit
 
     def clean(self):
         cleaned = super().clean()
@@ -46,11 +46,34 @@ class StakesForm(forms.Form):
         return cleaned
 
 
+UNIT_HELP = "Pesos: amounts are money. Chips: amounts are chip counts with no peso value."
+
+
+def unit_field():
+    return forms.ChoiceField(label="Unit", choices=Unit.choices, initial=Unit.PHP, required=False, help_text=UNIT_HELP)
+
+
 class PresetForm(StakesForm):
     name = forms.CharField(label="Preset name", max_length=60)
     game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
+    unit = unit_field()
 
-    field_order = ["name", "game_type"]
+    field_order = ["name", "game_type", "unit"]
+
+
+class SettingsForm(StakesForm):
+    """Settings of an existing game. The unit is locked once the game has money in it."""
+
+    unit = unit_field()
+
+    field_order = ["unit"]
+
+    def __init__(self, *args, unit_locked=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["unit"].initial = self.unit
+        if unit_locked:
+            self.fields["unit"].disabled = True
+            self.fields["unit"].help_text = "Buy-ins are recorded, so the unit cannot change."
 
 
 class SessionForm(StakesForm):
@@ -58,8 +81,9 @@ class SessionForm(StakesForm):
     game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
     location = forms.CharField(label="Location", max_length=120, required=False)
     game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
+    unit = unit_field()
 
-    field_order = ["table_id", "game_date", "location", "game_type"]
+    field_order = ["table_id", "game_date", "location", "game_type", "unit"]
 
     def __init__(self, *args, tables=(), **kwargs):
         super().__init__(*args, **kwargs)

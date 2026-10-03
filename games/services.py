@@ -29,6 +29,13 @@ def validated_stakes(data: dict) -> dict:
     return stakes
 
 
+def _unit(value) -> str:
+    value = value or Unit.PHP
+    if value not in Unit.values:
+        raise RuleError("Select pesos or chips.")
+    return value
+
+
 def _game_type(value) -> str:
     if value not in GameType.values:
         raise RuleError("Unknown game type.")
@@ -42,6 +49,7 @@ def save_preset(actor: Member, data: dict, *, preset_id=None) -> SettingsPreset:
     fields = {
         "name": clean_name(data.get("name"), "Preset name"),
         "game_type": _game_type(data.get("game_type")),
+        "unit": _unit(data.get("unit")),
         **validated_stakes(data),
     }
     try:
@@ -144,6 +152,7 @@ def create_session(actor: Member, data: dict) -> GameSession:
         game_date=_clean_date(data.get("game_date")),
         location=(data.get("location") or "").strip()[:120],
         game_type=_game_type(data.get("game_type")),
+        unit=_unit(data.get("unit")),
         seat_count=table.seat_count,
         created_by=actor.user,
     )
@@ -159,14 +168,28 @@ def create_session(actor: Member, data: dict) -> GameSession:
 
 @transaction.atomic
 def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
-    """Add a settings version. Buy-ins already recorded keep their amounts."""
+    """Add a settings version, and change the unit if the game has no money in it yet.
+
+    Buy-ins already recorded keep their amounts.
+    """
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
     if session.state not in (State.SETUP, State.OPEN, State.RUNNING):
         raise RuleError("Settings cannot change after play has ended.")
     stakes = validated_stakes(data)
+    unit = _unit(data.get("unit") or session.unit)
     previous = current_settings(session)
-    if previous.stakes() == stakes:
+    if unit != session.unit:
+        # Amounts already recorded would change meaning, so the unit is fixed once money is in.
+        if has_money(session):
+            raise RuleError("Buy-ins are recorded, so the unit cannot change. Reverse them first.")
+        session.unit = unit
+        session.save(update_fields=["unit"])
+        audit.record(
+            "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
+            summary=f"Changed the unit to {Unit(unit).label}",
+        )
+    elif previous.stakes() == stakes:
         return previous
     version = SettingsVersion.objects.create(
         session=session, number=previous.number + 1, created_by=actor.user, **stakes

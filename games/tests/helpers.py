@@ -9,6 +9,10 @@ STAKES = {
 }
 
 
+# The same figures as STAKES, as chip counts: blinds 10/20, buy-in 500 to 2,000, usual buy-in 1,000.
+CHIP_STAKES = {name: value // 100 for name, value in STAKES.items()}
+
+
 def make_preset(host, name="10/20", **overrides):
     """₱10/₱20, buy-in ₱500 to ₱2,000, usual buy-in ₱1,000."""
     return services.save_preset(host, {"name": name, "game_type": "nlh", **STAKES, **overrides})

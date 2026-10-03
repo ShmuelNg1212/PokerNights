@@ -5,6 +5,7 @@
 </div>
 <p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
 <p class="muted small">Blinds {{ settings.small_blind|amount:unit }}/{{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}</p>
+{% if unit == 'chips' %}<p class="small"><span class="badge">Chips game</span> <span class="muted">Amounts are chip counts. They have no peso value.</span></p>{% endif %}
 {% if session.state == 'canceled' %}<div class="notice">This game was canceled{% if session.cancel_reason %}: {{ session.cancel_reason }}{% endif %}. It does not count.</div>{% endif %}
 
 {% if can_join and not my_participant %}

@@ -6,6 +6,8 @@
 <h1>Game log</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.get_state_display }}</span></p>
 
+{% if session.unit == 'chips' %}<p class="small muted">This is a chips game. Amounts are chip counts with no peso value.</p>{% endif %}
+
 <h2>Players</h2>
 <ul class="list card small">
   {% for p in participants %}

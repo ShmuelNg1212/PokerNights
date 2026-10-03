@@ -1,17 +1,21 @@
 import uuid
 
 from games import services as games
-from games.tests.helpers import make_session
+from games.tests.helpers import CHIP_STAKES, make_session
 from groups import services as groups
 from groups.tests.helpers import add_player, make_group
 from ledger import services
 
 
 class Night:
-    """A session with a host and named players, for tests. Amounts are given in whole pesos."""
+    """A session with a host and named players, for tests. Amounts are whole pesos, or chips in a chips game."""
 
-    def __init__(self, *names, state="running", seat_count=9, **stakes):
+    def __init__(self, *names, state="running", seat_count=9, unit="php", **stakes):
         self.group, self.host = make_group()
+        # In a chips game the same test numbers are whole chips: buy(1000) is 1,000 chips.
+        self.scale = 100 if unit == "php" else 1
+        if unit == "chips":
+            stakes = {**CHIP_STAKES, "unit": "chips", **stakes}
         self.session = make_session(self.host, state="open", seat_count=seat_count, **stakes)
         self.players = {}
         for name in names:
@@ -33,7 +37,7 @@ class Night:
 
     def buy(self, name, pesos, request_id=None):
         return services.record_buy_in(
-            self.session.pk, self.host, self.players[name].pk, pesos * 100, request_id or uuid.uuid4()
+            self.session.pk, self.host, self.players[name].pk, pesos * self.scale, request_id or uuid.uuid4()
         )
 
     def refresh(self):
@@ -42,7 +46,7 @@ class Night:
 
     def cash(self, name, pesos, request_id=None, left=False):
         return services.record_cash_out(
-            self.session.pk, self.host, self.players[name].pk, pesos * 100, request_id or uuid.uuid4(), left=left
+            self.session.pk, self.host, self.players[name].pk, pesos * self.scale, request_id or uuid.uuid4(), left=left
         )
 
     def line(self, name):
