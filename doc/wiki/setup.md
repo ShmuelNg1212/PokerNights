@@ -47,7 +47,7 @@ To let phones on the same Wi-Fi reach it: add the machine's address to `ALLOWED_
 .venv/bin/python manage.py test
 ```
 
-368 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
+375 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
 
 To run the same suite on PostgreSQL:
 
@@ -60,7 +60,7 @@ DATABASE_URL=postgres://$USER@127.0.0.1:5432/pokernights .venv/bin/python manage
 
 The concurrency tests are in `web/tests/test_concurrency.py`. They must pass on PostgreSQL before a release. See [footguns/sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md).
 
-Both engines passed on 2026-10-03.
+Both engines passed on 2026-10-04.
 
 ## Back up the dev database
 

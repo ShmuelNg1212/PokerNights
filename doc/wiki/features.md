@@ -49,14 +49,14 @@ What the app does today (Stage 1). Items that are planned but not built are list
 5. **Stale review.** If a count changed or a player was cashed out elsewhere after the review opened, nothing is recorded and a fresh review is shown.
 6. **Finalize the set.** Needs a final cash-out for every player and balanced books (or an override). This freezes the set's results. It lists no transfers.
 
-The individual cash-out still exists: on the player row during play (for early departures), and under "Details" while counting.
+The individual cash-out still exists: tap the player name to open Details during play (for early departures), or expand "Details" while counting. Without JavaScript, expand the player row’s Details.
 
 ## A game night (one set)
 
 1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment.
-3. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each row keeps its amount, chips and time. Each player has a running total.
+3. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s `+` and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
 4. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
 5. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
 6. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
@@ -80,3 +80,16 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 - The app runs on one machine. It is not deployed.
 
 See the [roadmap](../roadmap/README.md).
+
+## Active set design (slice 1)
+
+- The Rack uses an indigo table field, warm dark ground, Archivo figures and player tokens with initials. Shared forms and other screens use the same base styles; their composition is not yet redesigned.
+- The first phone viewport shows still in play, clock and blinds. Total bought in and cashed out remain separate labels. From 900 px, the field and host controls sit beside the player list.
+- Tap a player's name for cash-out, playing time, money records and corrections. Tap `+` for buy-in or rebuy. The next host action sits in an opaque phone dock. More host controls includes settings, cancellation and adding one player.
+- Without JavaScript, each row has expandable forms for the same actions.
+- A refused sheet submission reopens with typed amounts or reasons and the server's error. Pending buttons say “Sending…”. A changed server figure gets a temporary brass highlight; an unchanged refresh has none. Figures never count up.
+- Live updates keep open sheets and their focused field intact. Count-up still uses one form; it has not been recomposed.
+- Native dialogs support keyboard focus, Escape and focus return. Reduced motion disables movement. Chip colour comes from join order and repeats after ten; initials remain visible.
+- Final set results carry a Final tag, signs and directional icons. The complete finalized-set redesign is a later slice.
+
+The [approved plan](../plan/1791046015_visual_redesign.md) records verification and remaining slices.

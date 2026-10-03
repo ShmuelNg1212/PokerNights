@@ -1,6 +1,6 @@
 # Architecture
 
-One Django 6.1 project with server-rendered templates, one stylesheet and two small vanilla JavaScript files. SQLite runs locally. PostgreSQL is the target for shared use. This page describes what is built. The full design and its reasons are in the [study](../study/1791037419_poker_home_game_architecture.md).
+One Django 6.1 project with server-rendered templates, one stylesheet and small vanilla JavaScript modules. SQLite runs locally. PostgreSQL is the target for shared use. This page describes what is built. The full design and its reasons are in the [study](../study/1791037419_poker_home_game_architecture.md).
 
 ## Apps
 
@@ -161,16 +161,23 @@ Database check constraints repeat the main invariants: `total_buy_in = total_cas
 - The endpoint returns HTTP 204 when the version is unchanged. Otherwise it returns the new version and the rendered live region, which the script swaps in.
 - Each response is a full snapshot. A missed poll needs no replay.
 - A hidden tab stops polling. It polls at once when it becomes visible or the browser comes back online.
-- After two failures the page shows "Reconnecting… last updated …" and backs off to 8, 16, then 30 seconds.
+- After two failures the page shows "Reconnecting… last updated …", marks the figures as stale, and backs off to 8, 16, then 30 seconds.
 - An update waits while the user types in a field of the live region, and applies when the field loses focus.
 - A refresh replaces the whole region. Fields with a `data-keep` key keep their typed, unsaved value across it: the script reads them before the swap and puts them back after it.
 - `static/js/forms.js` disables a form's buttons after the first submit. The server-side `request_id` check is the real protection.
 
 ## Front end
 
-- `templates/base.html` is the shell. `templates/web/` holds the pages and the partials of the session screen (`_session_live.html`, `_players.html`, `_balance.html`, `_results.html`, `_host_controls.html`).
-- `static/css/app.css` is the one stylesheet: tokens first, dark by default, one column, 48 px controls.
-- No build step and no front-end framework.
+- `templates/base.html` is the shared shell. One locally hosted Archivo variable font is preloaded with `font-display: swap`. Font and icon licenses live in `static/fonts/` and `static/icons/`.
+- `static/css/app.css` holds tokens, base elements and components. The Rack is dark, single-column on phones, with 48 px action controls. Active sets use a 400 px overview column and player list from 900 px. Other screens retain their earlier composition with the shared foundation.
+- `_session_live.html` selects the compact active composition for setup, open and running; `_session_legacy.html` keeps reconciliation, finalized and canceled layouts. `_players_count.html` retains the single count form.
+- `web/templatetags/table_tags.py` is presentation only: initial tokens, join-order colours, decorative buy-in edges, input amounts, split-bar percentage and licensed Lucide SVG paths. Formatting calls the existing integer-money module.
+- `static/js/sheets.js` moves the row's native form content into one `<dialog>` outside `#live`. Polling can replace rows without replacing that form or its focused field. Closing restores the content to the current row, and returns focus. Native expandable forms remain usable without JavaScript.
+- A sheet POST stores typed `data-keep` values in `sessionStorage`. An error banner after redirect reopens the matching form and restores the values. Success clears that temporary draft. These drafts are local to the browser tab; they do not write money.
+- `static/js/changes.js` watches explicit server-value keys and compares them with this tab's earlier values. Only a changed value highlights a row or total. Amounts themselves never interpolate. `toasts.js` shows dismissible success notices; errors stay visible. `forms.js` marks pending submissions as Sending… and disables repeat buttons.
+- Reduced motion disables CSS animations, transitions, view transitions and press movement. Dialog focus handling uses the native modal and explicit Tab wrapping.
+- [DESIGN.md](../../DESIGN.md) and `.impeccable/design.json` describe the built visual system. The [slice 1 plan](../plan/1791046015_visual_redesign.md) records measured checks.
+- No build step, front-end framework, added package or external runtime request.
 
 ## Security
 

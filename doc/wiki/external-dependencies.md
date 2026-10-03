@@ -24,3 +24,9 @@ The app calls no external API. It needs no key or secret for local use.
 ## Not decided
 
 A deployment target is a Stage 5 decision. LightChat's Vercel with Neon PostgreSQL is a known working pattern for this stack. `config/deploy.py` already disables server-side cursors on PostgreSQL, which a pooled Neon URL needs.
+
+## Local visual assets
+
+- Archivo variable font, from the Google Fonts Archivo source. SIL Open Font License 1.1. A WOFF2 subset includes Latin text, peso and minus symbols. It is hosted locally; no Google Fonts request runs in the app.
+- Nine Lucide inline SVG icons. ISC license. Paths are embedded in the presentation template tag; no icon package is installed.
+- Licenses: `static/fonts/OFL.txt`, `static/icons/LICENSE`.

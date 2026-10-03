@@ -6,9 +6,10 @@ PokerNights is a web app for home poker cash games. It records buy-ins and cash-
 
 1. [SPEC.md](SPEC.md): the product spec. Human-written. Agents do not edit it.
 2. `doc/canonical/` (if present): human-vetted rules.
-3. [doc/wiki/](doc/wiki/README.md): the current state of the code.
-4. `doc/study/` and `doc/plan/`: the journal of decisions. A study is not rewritten. It gets a dated addendum.
-5. [TODO.md](TODO.md): short active items.
+3. [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md): approved product context and the built visual system.
+4. [doc/wiki/](doc/wiki/README.md): the current state of the code.
+5. `doc/study/` and `doc/plan/`: the journal of decisions. A study is not rewritten. It gets a dated addendum.
+6. [TODO.md](TODO.md): short active items.
 
 ## Workflow
 
@@ -45,6 +46,6 @@ Run the tests before each commit. Use Conventional Commits. Do not push or deplo
 6. Each write service calls `audit.record()` and increments `GameSession.version`.
 7. Totals are queries. Only finalization writes snapshots.
 8. Dates use Asia/Manila. Amounts display as `₱1,600` or `₱1,600.50` in a pesos game and as `1,600 chips` in a chips game.
-9. Screens are single-column, dark by default, with large touch targets.
+9. Screens are dark by default, single-column on phones, with 48 px action targets. The active set uses two columns from 900 px. Follow DESIGN.md. Money figures appear at their accepted value; reduced motion disables movement.
 10. A session is `GameNight`; a set is `GameSession`. Money, counts, timers and results belong to a set. Settle-up, transfers, payments and the unit belong to a session.
 11. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` is a leaf.

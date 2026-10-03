@@ -1,0 +1,593 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T17:29:41.080525+00:00",
+  "title": "Design System: PokerNights",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground",
+        "tonalRamp": [
+          "oklch(0.150 0.01200 60.000)",
+          "oklch(0.260 0.01200 60.000)",
+          "oklch(0.380 0.01200 60.000)",
+          "oklch(0.490 0.01200 60.000)",
+          "oklch(0.610 0.01200 60.000)",
+          "oklch(0.720 0.01200 60.000)",
+          "oklch(0.840 0.01200 60.000)",
+          "oklch(0.950 0.01200 60.000)"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail",
+        "tonalRamp": [
+          "oklch(0.150 0.01400 60.000)",
+          "oklch(0.260 0.01400 60.000)",
+          "oklch(0.380 0.01400 60.000)",
+          "oklch(0.490 0.01400 60.000)",
+          "oklch(0.610 0.01400 60.000)",
+          "oklch(0.720 0.01400 60.000)",
+          "oklch(0.840 0.01400 60.000)",
+          "oklch(0.950 0.01400 60.000)"
+        ]
+      },
+      "rail-2": {
+        "role": "neutral",
+        "displayName": "Rail 2",
+        "tonalRamp": [
+          "oklch(0.150 0.01600 60.000)",
+          "oklch(0.260 0.01600 60.000)",
+          "oklch(0.380 0.01600 60.000)",
+          "oklch(0.490 0.01600 60.000)",
+          "oklch(0.610 0.01600 60.000)",
+          "oklch(0.720 0.01600 60.000)",
+          "oklch(0.840 0.01600 60.000)",
+          "oklch(0.950 0.01600 60.000)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(0.150 0.01800 60.000)",
+          "oklch(0.260 0.01800 60.000)",
+          "oklch(0.380 0.01800 60.000)",
+          "oklch(0.490 0.01800 60.000)",
+          "oklch(0.610 0.01800 60.000)",
+          "oklch(0.720 0.01800 60.000)",
+          "oklch(0.840 0.01800 60.000)",
+          "oklch(0.950 0.01800 60.000)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "tonalRamp": [
+          "oklch(0.150 0.01800 60.000)",
+          "oklch(0.260 0.01800 60.000)",
+          "oklch(0.380 0.01800 60.000)",
+          "oklch(0.490 0.01800 60.000)",
+          "oklch(0.610 0.01800 60.000)",
+          "oklch(0.720 0.01800 60.000)",
+          "oklch(0.840 0.01800 60.000)",
+          "oklch(0.950 0.01800 60.000)"
+        ]
+      },
+      "bone": {
+        "role": "primary",
+        "displayName": "Bone",
+        "tonalRamp": [
+          "oklch(0.150 0.02500 85.000)",
+          "oklch(0.260 0.02500 85.000)",
+          "oklch(0.380 0.02500 85.000)",
+          "oklch(0.490 0.02500 85.000)",
+          "oklch(0.610 0.02500 85.000)",
+          "oklch(0.720 0.02500 85.000)",
+          "oklch(0.840 0.02500 85.000)",
+          "oklch(0.950 0.02500 85.000)"
+        ]
+      },
+      "bone-dim": {
+        "role": "neutral",
+        "displayName": "Bone Dim",
+        "tonalRamp": [
+          "oklch(0.150 0.02800 80.000)",
+          "oklch(0.260 0.02800 80.000)",
+          "oklch(0.380 0.02800 80.000)",
+          "oklch(0.490 0.02800 80.000)",
+          "oklch(0.610 0.02800 80.000)",
+          "oklch(0.720 0.02800 80.000)",
+          "oklch(0.840 0.02800 80.000)",
+          "oklch(0.950 0.02800 80.000)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.02000 60.000)",
+          "oklch(0.260 0.02000 60.000)",
+          "oklch(0.380 0.02000 60.000)",
+          "oklch(0.490 0.02000 60.000)",
+          "oklch(0.610 0.02000 60.000)",
+          "oklch(0.720 0.02000 60.000)",
+          "oklch(0.840 0.02000 60.000)",
+          "oklch(0.950 0.02000 60.000)"
+        ]
+      },
+      "felt": {
+        "role": "primary",
+        "displayName": "Felt",
+        "tonalRamp": [
+          "oklch(0.150 0.09500 265.000)",
+          "oklch(0.260 0.09500 265.000)",
+          "oklch(0.380 0.09500 265.000)",
+          "oklch(0.490 0.09500 265.000)",
+          "oklch(0.610 0.09500 265.000)",
+          "oklch(0.720 0.09500 265.000)",
+          "oklch(0.840 0.09500 265.000)",
+          "oklch(0.950 0.09500 265.000)"
+        ]
+      },
+      "felt-deep": {
+        "role": "primary",
+        "displayName": "Felt Deep",
+        "tonalRamp": [
+          "oklch(0.150 0.08000 265.000)",
+          "oklch(0.260 0.08000 265.000)",
+          "oklch(0.380 0.08000 265.000)",
+          "oklch(0.490 0.08000 265.000)",
+          "oklch(0.610 0.08000 265.000)",
+          "oklch(0.720 0.08000 265.000)",
+          "oklch(0.840 0.08000 265.000)",
+          "oklch(0.950 0.08000 265.000)"
+        ]
+      },
+      "felt-ink": {
+        "role": "primary",
+        "displayName": "Felt Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.04000 265.000)",
+          "oklch(0.260 0.04000 265.000)",
+          "oklch(0.380 0.04000 265.000)",
+          "oklch(0.490 0.04000 265.000)",
+          "oklch(0.610 0.04000 265.000)",
+          "oklch(0.720 0.04000 265.000)",
+          "oklch(0.840 0.04000 265.000)",
+          "oklch(0.950 0.04000 265.000)"
+        ]
+      },
+      "brass": {
+        "role": "secondary",
+        "displayName": "Brass",
+        "tonalRamp": [
+          "oklch(0.150 0.13000 85.000)",
+          "oklch(0.260 0.13000 85.000)",
+          "oklch(0.380 0.13000 85.000)",
+          "oklch(0.490 0.13000 85.000)",
+          "oklch(0.610 0.13000 85.000)",
+          "oklch(0.720 0.13000 85.000)",
+          "oklch(0.840 0.13000 85.000)",
+          "oklch(0.950 0.13000 85.000)"
+        ]
+      },
+      "up": {
+        "role": "secondary",
+        "displayName": "Up",
+        "tonalRamp": [
+          "oklch(0.150 0.13000 160.000)",
+          "oklch(0.260 0.13000 160.000)",
+          "oklch(0.380 0.13000 160.000)",
+          "oklch(0.490 0.13000 160.000)",
+          "oklch(0.610 0.13000 160.000)",
+          "oklch(0.720 0.13000 160.000)",
+          "oklch(0.840 0.13000 160.000)",
+          "oklch(0.950 0.13000 160.000)"
+        ]
+      },
+      "down": {
+        "role": "secondary",
+        "displayName": "Down",
+        "tonalRamp": [
+          "oklch(0.150 0.14000 25.000)",
+          "oklch(0.260 0.14000 25.000)",
+          "oklch(0.380 0.14000 25.000)",
+          "oklch(0.490 0.14000 25.000)",
+          "oklch(0.610 0.14000 25.000)",
+          "oklch(0.720 0.14000 25.000)",
+          "oklch(0.840 0.14000 25.000)",
+          "oklch(0.950 0.14000 25.000)"
+        ]
+      },
+      "c1": {
+        "role": "tertiary",
+        "displayName": "Player 1",
+        "tonalRamp": [
+          "oklch(0.150 0.14498 20.577)",
+          "oklch(0.260 0.14498 20.577)",
+          "oklch(0.380 0.14498 20.577)",
+          "oklch(0.490 0.14498 20.577)",
+          "oklch(0.610 0.14498 20.577)",
+          "oklch(0.720 0.14498 20.577)",
+          "oklch(0.840 0.14498 20.577)",
+          "oklch(0.950 0.14498 20.577)"
+        ]
+      },
+      "c2": {
+        "role": "tertiary",
+        "displayName": "Player 2",
+        "tonalRamp": [
+          "oklch(0.150 0.13657 259.138)",
+          "oklch(0.260 0.13657 259.138)",
+          "oklch(0.380 0.13657 259.138)",
+          "oklch(0.490 0.13657 259.138)",
+          "oklch(0.610 0.13657 259.138)",
+          "oklch(0.720 0.13657 259.138)",
+          "oklch(0.840 0.13657 259.138)",
+          "oklch(0.950 0.13657 259.138)"
+        ]
+      },
+      "c3": {
+        "role": "tertiary",
+        "displayName": "Player 3",
+        "tonalRamp": [
+          "oklch(0.150 0.10255 155.410)",
+          "oklch(0.260 0.10255 155.410)",
+          "oklch(0.380 0.10255 155.410)",
+          "oklch(0.490 0.10255 155.410)",
+          "oklch(0.610 0.10255 155.410)",
+          "oklch(0.720 0.10255 155.410)",
+          "oklch(0.840 0.10255 155.410)",
+          "oklch(0.950 0.10255 155.410)"
+        ]
+      },
+      "c4": {
+        "role": "tertiary",
+        "displayName": "Player 4",
+        "tonalRamp": [
+          "oklch(0.150 0.13910 90.244)",
+          "oklch(0.260 0.13910 90.244)",
+          "oklch(0.380 0.13910 90.244)",
+          "oklch(0.490 0.13910 90.244)",
+          "oklch(0.610 0.13910 90.244)",
+          "oklch(0.720 0.13910 90.244)",
+          "oklch(0.840 0.13910 90.244)",
+          "oklch(0.950 0.13910 90.244)"
+        ]
+      },
+      "c5": {
+        "role": "tertiary",
+        "displayName": "Player 5",
+        "tonalRamp": [
+          "oklch(0.150 0.15247 315.759)",
+          "oklch(0.260 0.15247 315.759)",
+          "oklch(0.380 0.15247 315.759)",
+          "oklch(0.490 0.15247 315.759)",
+          "oklch(0.610 0.15247 315.759)",
+          "oklch(0.720 0.15247 315.759)",
+          "oklch(0.840 0.15247 315.759)",
+          "oklch(0.950 0.15247 315.759)"
+        ]
+      },
+      "c6": {
+        "role": "tertiary",
+        "displayName": "Player 6",
+        "tonalRamp": [
+          "oklch(0.150 0.12109 62.709)",
+          "oklch(0.260 0.12109 62.709)",
+          "oklch(0.380 0.12109 62.709)",
+          "oklch(0.490 0.12109 62.709)",
+          "oklch(0.610 0.12109 62.709)",
+          "oklch(0.720 0.12109 62.709)",
+          "oklch(0.840 0.12109 62.709)",
+          "oklch(0.950 0.12109 62.709)"
+        ]
+      },
+      "c7": {
+        "role": "tertiary",
+        "displayName": "Player 7",
+        "tonalRamp": [
+          "oklch(0.150 0.07325 200.192)",
+          "oklch(0.260 0.07325 200.192)",
+          "oklch(0.380 0.07325 200.192)",
+          "oklch(0.490 0.07325 200.192)",
+          "oklch(0.610 0.07325 200.192)",
+          "oklch(0.720 0.07325 200.192)",
+          "oklch(0.840 0.07325 200.192)",
+          "oklch(0.950 0.07325 200.192)"
+        ]
+      },
+      "c8": {
+        "role": "tertiary",
+        "displayName": "Player 8",
+        "tonalRamp": [
+          "oklch(0.150 0.11087 0.257)",
+          "oklch(0.260 0.11087 0.257)",
+          "oklch(0.380 0.11087 0.257)",
+          "oklch(0.490 0.11087 0.257)",
+          "oklch(0.610 0.11087 0.257)",
+          "oklch(0.720 0.11087 0.257)",
+          "oklch(0.840 0.11087 0.257)",
+          "oklch(0.950 0.11087 0.257)"
+        ]
+      },
+      "c9": {
+        "role": "tertiary",
+        "displayName": "Player 9",
+        "tonalRamp": [
+          "oklch(0.150 0.01578 94.251)",
+          "oklch(0.260 0.01578 94.251)",
+          "oklch(0.380 0.01578 94.251)",
+          "oklch(0.490 0.01578 94.251)",
+          "oklch(0.610 0.01578 94.251)",
+          "oklch(0.720 0.01578 94.251)",
+          "oklch(0.840 0.01578 94.251)",
+          "oklch(0.950 0.01578 94.251)"
+        ]
+      },
+      "c10": {
+        "role": "tertiary",
+        "displayName": "Player 10",
+        "tonalRamp": [
+          "oklch(0.150 0.12451 284.400)",
+          "oklch(0.260 0.12451 284.400)",
+          "oklch(0.380 0.12451 284.400)",
+          "oklch(0.490 0.12451 284.400)",
+          "oklch(0.610 0.12451 284.400)",
+          "oklch(0.720 0.12451 284.400)",
+          "oklch(0.840 0.12451 284.400)",
+          "oklch(0.950 0.12451 284.400)"
+        ]
+      },
+      "danger-bg": {
+        "role": "secondary",
+        "displayName": "Danger Bg",
+        "tonalRamp": [
+          "oklch(0.150 0.03500 25.000)",
+          "oklch(0.260 0.03500 25.000)",
+          "oklch(0.380 0.03500 25.000)",
+          "oklch(0.490 0.03500 25.000)",
+          "oklch(0.610 0.03500 25.000)",
+          "oklch(0.720 0.03500 25.000)",
+          "oklch(0.840 0.03500 25.000)",
+          "oklch(0.950 0.03500 25.000)"
+        ]
+      },
+      "warn-bg": {
+        "role": "secondary",
+        "displayName": "Warn Bg",
+        "tonalRamp": [
+          "oklch(0.150 0.03000 85.000)",
+          "oklch(0.260 0.03000 85.000)",
+          "oklch(0.380 0.03000 85.000)",
+          "oklch(0.490 0.03000 85.000)",
+          "oklch(0.610 0.03000 85.000)",
+          "oklch(0.720 0.03000 85.000)",
+          "oklch(0.840 0.03000 85.000)",
+          "oklch(0.950 0.03000 85.000)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Still in play; font-stretch 70%."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Felt title; font-stretch 88%."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Player names."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Ordinary text and controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Player metadata."
+      },
+      "amount-input": {
+        "displayName": "Amount Input",
+        "purpose": "Sheet entry; font-stretch 80%."
+      }
+    },
+    "shadows": [
+      {
+        "name": "button-underside",
+        "value": "0 3px 0 oklch(0.12 0.01 60)",
+        "purpose": "Secondary control press depth."
+      },
+      {
+        "name": "primary-underside",
+        "value": "0 3px 0 oklch(0.65 0.035 80)",
+        "purpose": "Bone control press depth."
+      },
+      {
+        "name": "host-action",
+        "value": "0 3px 0 oklch(0.65 0.035 80), 0 8px 24px oklch(0 0 0 / .6)",
+        "purpose": "Host end-play action."
+      },
+      {
+        "name": "sheet",
+        "value": "0 -12px 48px oklch(0 0 0 / .5)",
+        "purpose": "Modal sheet separation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "t-press",
+        "value": "110ms",
+        "purpose": "Button press."
+      },
+      {
+        "name": "t-fast",
+        "value": "180ms",
+        "purpose": "Hover, toast and view transitions."
+      },
+      {
+        "name": "t-sheet",
+        "value": "320ms",
+        "purpose": "Sheet entry and chip-edge entry."
+      },
+      {
+        "name": "t-focal",
+        "value": "600ms",
+        "purpose": "Accepted-change emphasis."
+      },
+      {
+        "name": "sheet-exit",
+        "value": "200ms",
+        "purpose": "Sheet exit."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16,1,0.3,1)",
+        "purpose": "Entry and press easing."
+      },
+      {
+        "name": "ease-in",
+        "value": "cubic-bezier(0.4,0,1,1)",
+        "purpose": "Exit easing."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-phone-max",
+        "value": "359px"
+      },
+      {
+        "name": "phone-max",
+        "value": "899px"
+      },
+      {
+        "name": "desktop-min",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Confirm a money entry.",
+      "html": "<button class=\"ds-btn ds-primary\">Confirm rebuy</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);padding:0 18px;border-radius:15px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600;cursor:pointer;box-shadow:0 3px 0 oklch(0.12 0.01 60);transition:transform var(--t-press) var(--ease-out),background var(--t-fast);}.ds-btn:hover{background:color-mix(in oklch,var(--surface-2) 75%,var(--bone));}.ds-btn:active{transform:translateY(3px);box-shadow:none;}.ds-btn:disabled{opacity:.55;cursor:default;transform:none;}.ds-btn[aria-busy=true]{color:var(--brass);background:var(--rail-2);}.ds-btn:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active{transform:none}}.ds-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 3px 0 oklch(0.65 0.035 80)}.ds-primary:hover{background:oklch(0.99 0.01 85)}.ds-primary:active{box-shadow:none}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Quick amounts and secondary actions.",
+      "html": "<button class=\"ds-btn\">Default</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);padding:0 18px;border-radius:15px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600;cursor:pointer;box-shadow:0 3px 0 oklch(0.12 0.01 60);transition:transform var(--t-press) var(--ease-out),background var(--t-fast);}.ds-btn:hover{background:color-mix(in oklch,var(--surface-2) 75%,var(--bone));}.ds-btn:active{transform:translateY(3px);box-shadow:none;}.ds-btn:disabled{opacity:.55;cursor:default;transform:none;}.ds-btn[aria-busy=true]{color:var(--brass);background:var(--rail-2);}.ds-btn:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active{transform:none}}"
+    },
+    {
+      "name": "Quiet button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Low-emphasis actions.",
+      "html": "<button class=\"ds-btn ds-quiet\">Add players</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);padding:0 18px;border-radius:15px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600;cursor:pointer;box-shadow:0 3px 0 oklch(0.12 0.01 60);transition:transform var(--t-press) var(--ease-out),background var(--t-fast);}.ds-btn:hover{background:color-mix(in oklch,var(--surface-2) 75%,var(--bone));}.ds-btn:active{transform:translateY(3px);box-shadow:none;}.ds-btn:disabled{opacity:.55;cursor:default;transform:none;}.ds-btn[aria-busy=true]{color:var(--brass);background:var(--rail-2);}.ds-btn:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active{transform:none}}.ds-quiet{background:transparent}"
+    },
+    {
+      "name": "Danger button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Explicit destructive or corrective action.",
+      "html": "<button class=\"ds-btn ds-danger\">Remove</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);padding:0 18px;border-radius:15px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600;cursor:pointer;box-shadow:0 3px 0 oklch(0.12 0.01 60);transition:transform var(--t-press) var(--ease-out),background var(--t-fast);}.ds-btn:hover{background:color-mix(in oklch,var(--surface-2) 75%,var(--bone));}.ds-btn:active{transform:translateY(3px);box-shadow:none;}.ds-btn:disabled{opacity:.55;cursor:default;transform:none;}.ds-btn[aria-busy=true]{color:var(--brass);background:var(--rail-2);}.ds-btn:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active{transform:none}}.ds-danger{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}"
+    },
+    {
+      "name": "Amount field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A large, labelled entry in the buy-in sheet.",
+      "html": "<label class=\"ds-field\">Amount (pesos)<input class=\"ds-amount\" type=\"text\" inputmode=\"decimal\" value=\"1600\" aria-label=\"Buy-in amount\"></label>",
+      "css": ".ds-field{display:block;color:var(--bone);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600}.ds-amount{display:block;width:100%;padding:8px 12px;margin-top:4px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-size:2.5rem;font-weight:750;font-stretch:80%;min-height:72px;font-variant-numeric:tabular-nums;caret-color:var(--brass)}.ds-amount::placeholder{color:var(--muted);opacity:1}.ds-amount[aria-invalid=true]{border:2px solid var(--down)}.ds-amount:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}"
+    },
+    {
+      "name": "Shared header",
+      "kind": "nav",
+      "description": "Sticky written identity and account navigation.",
+      "html": "<nav class=\"ds-header\"><a class=\"ds-brand\" href=\"#\">PokerNights</a><span class=\"ds-who\">Host</span></nav>",
+      "css": ".ds-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-brand{font-weight:700;color:var(--text);text-decoration:none}.ds-who{color:var(--muted);margin-right:8px;font-size:.9rem}.ds-brand:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}"
+    },
+    {
+      "name": "Live badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "A short written state.",
+      "html": "<span class=\"ds-badge\">Running</span>",
+      "css": ".ds-badge{display:inline-block;padding:2px 10px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-size:.8rem;font-weight:600;white-space:nowrap}"
+    },
+    {
+      "name": "Shared card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat container for supporting content.",
+      "html": "<section class=\"ds-card\">Set details</section>",
+      "css": ".ds-card{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0;font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}"
+    },
+    {
+      "name": "Player identity",
+      "kind": "custom",
+      "description": "Circular initials and a written player name.",
+      "html": "<div class=\"ds-player\"><span class=\"ds-chip\" aria-hidden=\"true\">AM</span><button class=\"ds-name\">Ana M.<span class=\"ds-meta\">1 buy-in + 2 rebuys</span></button><strong class=\"ds-figure\">₱4,800</strong></div>",
+      "css": ".ds-player{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule);color:var(--bone);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-chip{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9375rem;font-weight:800;background:radial-gradient(circle,var(--c1) 0 56%,oklch(0 0 0 / .28) 57% 60%,transparent 61%),repeating-conic-gradient(from -12deg,var(--bone) 0 24deg,var(--c1) 24deg 60deg)}.ds-name{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:48px;width:100%;max-width:100%;padding:0;border:0;background:transparent;color:inherit;font-family:inherit;font-size:1.0625rem;font-weight:650;line-height:1.3;text-align:left;cursor:pointer;overflow-wrap:anywhere}.ds-meta{font-size:.75rem;font-weight:500;color:var(--muted);margin-top:3px}.ds-name:hover{text-decoration:underline;text-underline-offset:.2em}.ds-name:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}.ds-figure{text-align:right;font-size:1.0625rem;font-variant-numeric:tabular-nums}"
+    },
+    {
+      "name": "Sheet",
+      "kind": "custom",
+      "refersTo": "sheet",
+      "description": "A focused buy-in or player-detail surface; static specimen of the dialog interior.",
+      "html": "<section class=\"ds-sheet\"><div class=\"ds-head\"><h2>Rebuy · Ana M.</h2><button class=\"ds-btn ds-close\" aria-label=\"Close sheet\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m18 6-12 12M6 6l12 12\"/></svg></button></div><p>Amount (pesos)</p></section>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:var(--tap);padding:0 18px;border-radius:15px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;font-weight:600;cursor:pointer;box-shadow:0 3px 0 oklch(0.12 0.01 60);transition:transform var(--t-press) var(--ease-out),background var(--t-fast);}.ds-btn:hover{background:color-mix(in oklch,var(--surface-2) 75%,var(--bone));}.ds-btn:active{transform:translateY(3px);box-shadow:none;}.ds-btn:disabled{opacity:.55;cursor:default;transform:none;}.ds-btn[aria-busy=true]{color:var(--brass);background:var(--rail-2);}.ds-btn:focus-visible{outline:3px solid var(--warn);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-btn{transition:none}.ds-btn:active{transform:none}}.ds-sheet{width:min(100%,440px);max-height:85dvh;padding:16px 20px 24px;border:0;border-radius:26px 26px 0 0;color:var(--bone);background:var(--rail);box-shadow:0 -12px 48px oklch(0 0 0 / .5);overflow-y:auto;font-family:Archivo,ArchivoFallback,system-ui,sans-serif;font-size:1rem;line-height:1.45;}.ds-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.ds-head h2{margin:0;font-size:1.1875rem}.ds-close{padding:0;width:48px;border-radius:50%}.ds-icon{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}@media(min-width:900px){.ds-sheet{border-radius:26px}.ds-close{width:auto;border-radius:15px;padding:0 12px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Rack",
+    "overview": "The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.\n\nThe system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation and slice 1: the active set, player rows, buy-in sheets and player detail sheets. Later screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study is the visual authority. The build ships no raster imagery.",
+    "keyCharacteristics": [
+      "Warm dark rails and indigo felt.",
+      "Compressed, tabular figures with right-aligned player amounts.",
+      "Bone pressable controls and visible brass focus.",
+      "Circular initials paired with written player names.",
+      "Compact phone rows and focused sheets."
+    ],
+    "rules": [
+      {
+        "name": "The Attention Rule",
+        "body": "Use brass for keyboard focus, stale status and accepted changes; pair status colour with words or another visible cue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Figure Rule",
+        "body": "Keep money and timers tabular. Use compressed display figures for the active total and quieter right-aligned amounts in player rows.",
+        "section": "typography"
+      },
+      {
+        "name": "The Accepted Change Rule",
+        "body": "Figures change only to accepted server values. Highlight the changed row or total without interpolating the amount.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the built Archivo family, tabular figures and the shared token palette.",
+      "Do pair player chip colours with initials and written names.",
+      "Do retain visible focus, labelled actions and reduced-motion behaviour.",
+      "Do keep typed sheet values through live updates and refused submissions.",
+      "Do distinguish still in play, total bought in and cashed out with explicit labels."
+    ],
+    "donts": [
+      "Don't add casino imagery or shipping raster decorations.",
+      "Don't animate money through intermediate values or show success before server acceptance.",
+      "Don't treat deferred screen compositions as approved Rack patterns.",
+      "Don't use colour alone to identify a player or communicate wins, losses or updates."
+    ]
+  }
+}
