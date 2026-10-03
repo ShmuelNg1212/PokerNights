@@ -253,3 +253,13 @@ Sections 5.1 to 5.7 (end time, intervals, final counts, statuses, the batch, the
 | Canceled sets | A canceled set has no results and counts for nothing in the session settle-up |
 | Closed session | It cannot get another set. Reopening is not built |
 | Statistics later | Stage 3 must decide whether a "session played" is a set or a session. Results are stored per set, so both remain possible |
+
+### A9. Addition, 2026-10-03 23:59: each set has its own timer
+
+The human stated: **"each set has its own timer."** This is decision S5.
+
+- Section 5.1 tracked time per player only. A set also needs its own clock.
+- REC: `PlayPeriod(session, started_at, ended_at)`, with at most one open period per set. A period opens when the host starts or resumes the set and closes when the host ends it. The set's clock is the sum of its periods, so counting time between an end and a resume is never included.
+- Player intervals (section 5.1) stay. Each lies inside a play period of its set, so a player's time cannot exceed the set's clock.
+- The session has no timer. It shows sums.
+- ASSUMED: S5 does not remove per-player time. The original request speaks of players who left earlier keeping their stop times, which needs per-player figures.

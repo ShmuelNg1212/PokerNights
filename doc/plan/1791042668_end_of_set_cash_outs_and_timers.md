@@ -19,6 +19,7 @@ Edit this file directly, or add a line that starts with `NOTE:`.
 | S2 | Who-pays-whom is calculated once per session. It nets all sets |
 | S3 | The host starts the next set. Players still at the table carry over |
 | S4 | Sets of one session run one after another, never at the same time |
+| S5 | Each set has its own timer |
 
 ## OPEN QUESTIONS
 
@@ -33,7 +34,13 @@ These were in the first version of this plan and have no answer yet. Each has a 
 | Q5 | **End-time correction.** No rule exists. Leave editing of a set's end time out? | Yes. Listed as a follow-up | Scope |
 | Q6 | **Older games.** Fill their end time from the log, and show their playing time as "not recorded"? | Yes | Task 4 |
 
-Consequences of S1 to S4 that you should know before approving:
+How S5 is read in this plan (correct it if it is wrong):
+
+- **Set timer.** Each set has one clock. It starts at zero when the host starts that set and stops when the host ends it. If the set is resumed, its clock continues from where it stopped. No set's clock is affected by another set.
+- **Player time inside a set.** Each player's playing time in a set is the part of that set's clock during which the player was at the table. A late joiner starts later. A player who left stops earlier. Nobody's time can exceed the set's clock.
+- **Session time.** The session has no timer of its own. It shows the sum of its sets' clocks, and each player's sum, as plain figures.
+
+Consequences of S1 to S5 that you should know before approving:
 
 - **Finalizing a set no longer lists transfers.** It freezes that set's results. Transfers appear when the host closes the session. A session with one set needs one more tap than a game needs today.
 - **The unit is per session.** Each set of a session counts in the session's unit.
@@ -91,7 +98,9 @@ A session holds several sets played one after another. Each set has its own mone
 
 | # | Criterion |
 |---|---|
-| AC9 | When the host ends a set, it shows "Play ended" with one time. Each player's "Played" figure for that set stops and does not grow while counting goes on |
+| AC9 | A running set shows its own timer, for example "Set 2 · 1 h 05 min". When the host ends the set, the timer stops and the set shows "Play ended" with one time. Each player's "Played" figure for that set stops too and does not grow while counting goes on |
+| AC9a | Starting set 2 starts a new timer at zero. The timer of set 1 keeps its final value |
+| AC9b | Resuming a set continues its timer from the stopped value. The time spent counting is not added |
 | AC10 | A player who left earlier keeps the time up to the moment they left. Ending set 2 does not change any time of set 1 |
 | AC11 | Sending "End play" twice, reloading, or opening a second tab shows the same playing time |
 | AC12 | While counting up, each player shows "Awaiting count", "Ready to cash out" or "Cashed out" |
@@ -135,9 +144,9 @@ None new. PostgreSQL 17 for the test run. The dev server stops for the work and 
 
 ### Part II: end of a set
 
-- [ ] **4. Record the end of play and track playing time.** `GameSession.ended_at`; `PlayInterval` per set and player with the one-open constraint; hooks in start, end, resume, join, batch add, left, return, withdraw and next-set carry-over; set and session playing time on the pages and in the log; a small script that advances minutes while a set runs; `ended_at` filled from the log for existing sets.
-  - Commit: `feat(games): record when a set ends and track playing time per player`
-  - Done when: tests cover each event, one shared end timestamp, early leavers, returns, resume, repeats, and that ending set 2 leaves set 1 untouched.
+- [ ] **4. Give each set its own timer and track playing time.** `GameSession.ended_at`; `PlayPeriod` per set (one open at most) for the set's clock; `PlayInterval` per set and player with the one-open constraint, always inside a play period; hooks in start, end, resume, join, batch add, left, return, withdraw and next-set carry-over; the set timer on the set page and the session page, each player's time, and the session sums; a small script that advances the shown minutes from the server's figure while a set runs; `ended_at` filled from the log for existing sets.
+  - Commit: `feat(games): give each set its own timer and track playing time per player`
+  - Done when: tests cover each event, one shared end timestamp, the set clock across a resume, a new clock at zero for the next set, early leavers, returns, repeats, that no player's time exceeds the set clock, and that ending set 2 leaves set 1 untouched.
 - [ ] **5. Confirm final counts apart from cash-outs.** `FinalCount` with versions and voiding; `CashOut.kind` with a data migration; the three statuses; count entry while counting up; individual cash-out under "Details"; the gate on final cash-outs (Q2); the resume rule (Q3).
   - Commit: `feat(ledger): confirm final counts separately from cash-outs`
   - Done when: tests cover zero against empty, replace and clear, statuses, the gate message, resume, access and unchanged totals.
@@ -171,7 +180,8 @@ None new. PostgreSQL 17 for the test run. The dev server stops for the work and 
 | Migration | Each old game has one session and set number 1. Old transfers and payments point to the right members and session. Amounts, results and paid marks are identical before and after |
 | One end timestamp | Six players: six intervals share one `ended_at`, equal to the set's |
 | No inflation | With the clock moved 10 minutes after the end, each `play_seconds` is unchanged |
-| Set isolation | Ending or resuming set 2 changes no interval of set 1 |
+| Set timer | The clock of a set equals the sum of its play periods. Counting time between an end and a resume is not included. Set 2 starts at zero |
+| Set isolation | Ending or resuming set 2 changes no period or interval of set 1 |
 | Zero against missing | Count 0 is ready. Empty is refused. No count is never in a batch |
 | Batch | Atomic on a forced failure. A second run handles the rest. A stale review is refused. One cash-out per player under retries and simultaneous hosts |
 | Gates | The batch works with a discrepancy present, as individual cash-outs do today. Finalizing a set still needs balance or an override, and a final cash-out for each player |
@@ -196,3 +206,4 @@ None. An answer other than the default to Q1, Q2 or Q3 means a plan revision bef
 |---|---|
 | 2026-10-03 23:51 | Study and plan written and committed. Status `awaiting-approval`. |
 | 2026-10-03 23:56 | The human stated that a session can have several sets, and answered four questions (S1–S4). Study addendum added. Plan revised: Part I (sessions with sets, session settle-up) added before Part II. Q1–Q6 still open. Status stays `awaiting-approval`. |
+| 2026-10-03 23:59 | The human stated: "each set has its own timer." Recorded as S5. Task 4 now includes a clock per set (`PlayPeriod`), with player time inside it. AC9a and AC9b added. Status stays `awaiting-approval`. |
