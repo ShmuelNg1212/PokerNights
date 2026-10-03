@@ -292,6 +292,13 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     return finalization
 
 
+def session_has_money(session: GameSession) -> bool:
+    return (
+        BuyIn.objects.filter(session=session, reversal__isnull=True).exists()
+        or CashOut.objects.filter(session=session, reversal__isnull=True).exists()
+    )
+
+
 def guard_participant_exit(participant: Participant) -> None:
     """A player with money in the session cannot be withdrawn."""
     has_cash_out = CashOut.objects.filter(participant=participant, reversal__isnull=True).exists()

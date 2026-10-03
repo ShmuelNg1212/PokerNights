@@ -110,6 +110,16 @@ def lock_session(session_id, group_id) -> GameSession:
     return session
 
 
+# Checks that tell whether a session has money in it. The app that holds the
+# money registers one, so this app can apply its rules without importing it.
+SESSION_MONEY_CHECKS = []
+
+
+def has_money(session: GameSession) -> bool:
+    """True while the session has an accepted buy-in or cash-out. Such a game cannot be canceled."""
+    return any(check(session) for check in SESSION_MONEY_CHECKS)
+
+
 def touch(session: GameSession) -> None:
     """Record that the session changed. Call once per write, with the session locked."""
     session.version += 1
@@ -216,7 +226,7 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
     if action == "close" and session.participants.filter(status=Participant.Status.JOINED).exists():
         raise RuleError("Players have joined. Remove them first, or cancel the game.")
     if action == "cancel":
-        if session.rate is not None:
+        if has_money(session):
             raise RuleError("Buy-ins are recorded. Reverse them first, or finish and finalize the game.")
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")

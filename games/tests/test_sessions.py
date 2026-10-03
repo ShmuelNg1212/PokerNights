@@ -123,7 +123,12 @@ class LifecycleTests(TestCase):
 
     def test_cancel_is_refused_while_money_is_in_the_session(self):
         session = make_session(self.host, table=self.table, state="running")
-        GameSession.objects.filter(pk=session.pk).update(rate_centavos=10, rate_chips=1)
+
+        def check(found):
+            return found.pk == session.pk
+
+        services.SESSION_MONEY_CHECKS.append(check)
+        self.addCleanup(services.SESSION_MONEY_CHECKS.remove, check)
         with self.assertRaises(RuleError):
             services.transition(session.pk, self.host, "cancel", "reason")
 
