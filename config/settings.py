@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "accounts",
     "audit",
     "groups",
+    "ledger",
     "web",
 ]
 
