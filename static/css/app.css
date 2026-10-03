@@ -415,3 +415,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .night-detail section:first-child { margin-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .sheet[open] .recap-lines > div { animation: none; } }
+
+.night-page .display-amount { white-space: nowrap; overflow-wrap: normal; }
+.night-page .display-amount.amount-compact { font-size: 2rem; }
+.night-page .display-amount.amount-long { font-size: 1.5rem; }

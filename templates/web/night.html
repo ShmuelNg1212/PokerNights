@@ -11,7 +11,7 @@
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
       <h2 class="pot-label">Still to pay</h2>
-      <div class="display-amount" data-still-to-pay="{{ outcome.still_to_pay }}">{{ outcome.still_to_pay|display_amount:unit }}</div>
+      {% with figure=outcome.still_to_pay|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}" data-still-to-pay="{{ outcome.still_to_pay }}">{{ outcome.still_to_pay|display_amount:unit }}</div>{% endwith %}
       <p class="settle-status"><span class="badge {% if outcome.status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{{ outcome.status_label }}</span></p>
       {% if outcome.transfers %}
       <progress class="payment-progress" value="{{ outcome.paid_amount }}" max="{{ outcome.total_to_pay }}" aria-label="Amount marked paid"></progress>
