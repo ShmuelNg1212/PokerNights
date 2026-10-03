@@ -1,8 +1,8 @@
-{% load money_tags clock_tags %}
+{% load money_tags clock_tags table_tags %}
 {% if my_result %}
 <div class="card">
-  <div class="stat-label">Your result in set {{ session.set_number }}</div>
-  <div class="stat-value {{ my_result.net|sign_class }}">{{ my_result.net|signed_amount:unit }}</div>
+  <div class="stat-label">Your result in set {{ session.set_number }} <span class="badge">Final</span></div>
+  <div class="stat-value {{ my_result.net|sign_class }}">{% if my_result.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_result.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_result.net|signed_amount:unit }}</div>
   <p class="muted small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cash_out|amount:unit }}</p>
 </div>
 {% endif %}
@@ -14,7 +14,7 @@
     <li>
       <div class="row">
         <span class="grow">{{ r.participant.member.display_name }}</span>
-        <span class="amount {{ r.net|sign_class }}">{{ r.net|signed_amount:unit }}</span>
+        <span class="amount {{ r.net|sign_class }}">{% if r.net > 0 %}{% icon 'arrow-up-right' %}{% elif r.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ r.net|signed_amount:unit }}</span>
       </div>
       <div class="muted small">Bought in {{ r.buy_in_total|amount:unit }} ({{ r.buy_in_count }}) · cashed out {{ r.cashed_out|amount:unit }}{% if r.adjustment %} · override {{ r.adjustment|signed_amount:unit }}{% endif %}{% if r.play_seconds is not None %} · played {{ r.play_seconds|duration }}{% endif %}</div>
     </li>

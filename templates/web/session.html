@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% load static money_tags %}
+{% load static money_tags table_tags %}
 {% block title %}{{ session }} · PokerNights{% endblock %}
+{% block page_class %}table-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'night' session.night_id %}">← Session: {{ session.table.name }}, {{ session.game_date|date:"M j" }}</a></p>
+<nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %} Session: {{ session.table.name }}, {{ session.game_date|date:"M j" }}</a><span id="live-status" class="live-status" aria-live="polite"></span></nav>
 <div id="live" data-version="{{ session.version }}" data-url="{% url 'session_state' session.pk %}">
   {% include "web/_session_live.html" %}
 </div>
 <p class="center"><a href="{% url 'session_log' session.pk %}">Full game log</a></p>
-<p id="live-status" class="live-status" aria-live="polite"></p>
+<div id="table-sheets"></div>
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/live.js' %}" defer></script><script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% static 'js/changes.js' %}" defer></script><script src="{% static 'js/sheets.js' %}" defer></script><script src="{% static 'js/live.js' %}" defer></script><script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}

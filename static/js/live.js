@@ -25,6 +25,7 @@
     if (!statusLine) return;
     var stale = failures >= 2;
     statusLine.classList.toggle("stale", stale);
+    region.classList.toggle("is-stale", stale);
     statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · updated ") + clock(lastOk);
   }
 
@@ -56,6 +57,7 @@
     var typed = typedValues();
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     region.innerHTML = snapshot.html;
+    region.dispatchEvent(new Event("live:updated", {bubbles: true}));
     restore(typed);
     version = String(snapshot.version);
     region.dataset.version = version;

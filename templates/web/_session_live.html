@@ -1,46 +1,22 @@
-{% load money_tags clock_tags %}
-<div class="row">
-  <h1 class="grow">{{ session.table.name }} <span class="muted">· Set {{ session.set_number }}</span></h1>
-  <span class="badge {% if session.state == 'running' %}badge-live{% endif %}">{{ session.get_state_display }}</span>
+{% load money_tags clock_tags table_tags %}
+{% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
+<div class="table-layout">
+  <aside class="table-left">
+    <section class="felt" aria-label="Set overview">
+      <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge badge-live">{{ session.get_state_display }}</span></div>
+      <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
+      <div class="pot">
+        <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div><div class="display-amount">{{ summary.in_play|amount:unit }}</div></div>
+        <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
+      </div>
+      <div class="money-split"><div class="split-track" aria-hidden="true"><span style="width:{% play_percent summary %}%"></span></div>
+        <div class="split-labels"><span>Total bought in <b>{{ summary.total|amount:unit }}</b></span><span>Cashed out <b>{{ summary.cashed_out|amount:unit }}</b></span></div>
+      </div>
+      <p class="felt-hint"><b>{{ summary.buy_in_count }}</b> buy-in{{ summary.buy_in_count|pluralize }} · Buy-in {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}{% if unit == 'chips' %} · Chips game. They have no peso value.{% endif %}</p>
+      {% if session.state == 'setup' %}<p class="felt-hint">Draft · players cannot see this set yet.</p>{% endif %}
+    </section>
+    {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
+  </aside>
+  {% include "web/_players.html" %}
 </div>
-<p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
-<p class="muted small">Blinds {{ settings.small_blind|amount:unit }}/{{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}</p>
-{% if session.started_at %}
-<p class="small"><strong>Set timer:</strong> {% clock_value set_seconds set_running %}{% if session.ended_at %} · <span class="muted">Play ended {{ session.ended_at|date:"g:i A" }}</span>{% endif %}</p>
-{% endif %}
-{% if unit == 'chips' %}<p class="small"><span class="badge">Chips game</span> <span class="muted">Amounts are chip counts. They have no peso value.</span></p>{% endif %}
-{% if session.state == 'canceled' %}<div class="notice">This game was canceled{% if session.cancel_reason %}: {{ session.cancel_reason }}{% endif %}. It does not count.</div>{% endif %}
-
-{% if can_join and not my_participant %}
-<form method="post" action="{% url 'participant_add' session.pk %}" class="card">{% csrf_token %}
-  {% if seats_free > 0 %}<button type="submit" class="btn btn-primary btn-block">Join this game</button>
-  {% else %}<p class="muted center">The table is full ({{ session.seat_count }} seats).</p>{% endif %}
-</form>
-{% endif %}
-
-{% if session.state != 'setup' and session.state != 'canceled' %}
-<div class="stats">
-  <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
-  <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
-  <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total|amount:unit }}</div></div>
-  {% if session.state == 'open' or session.state == 'running' %}<div class="stat"><div class="stat-label">Still in play</div><div class="stat-value">{{ summary.in_play|amount:unit }}</div></div>
-  {% else %}<div class="stat"><div class="stat-label">Total cashed out</div><div class="stat-value">{{ summary.cashed_out|amount:unit }}</div></div>{% endif %}
-</div>
-{% endif %}
-
-{% if my_line and my_line.has_money %}
-<div class="card">
-  <div class="row"><span class="grow">Your buy-ins</span><span class="amount">{{ my_line.buy_in_total|amount:unit }}</span></div>
-  <p class="muted small">{{ my_line.buy_in_count }} buy-in{{ my_line.buy_in_count|pluralize }}</p>
-  {% if my_line.has_cash_out %}<p class="small">Cashed out {{ my_line.cashed_out|amount:unit }}</p>{% endif %}
-</div>
-{% endif %}
-
-{% if outcome %}{% include "web/_results.html" %}{% endif %}
-
-{% if balance %}{% include "web/_balance.html" %}{% endif %}
-
-<h2>Players <span class="muted small">{{ summary.player_count }}{% if session.is_live %} · {{ seats_free }} seat{{ seats_free|pluralize }} free{% endif %}</span></h2>
-{% include "web/_players.html" %}
-
-{% if me.is_host and session.state != 'finalized' and session.state != 'canceled' %}{% include "web/_host_controls.html" %}{% endif %}
+{% else %}{% include "web/_session_legacy.html" %}{% endif %}
