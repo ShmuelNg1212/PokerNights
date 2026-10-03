@@ -2,7 +2,7 @@
 
 - **Date:** 2026-10-03 22:27 (Asia/Manila), Unix timestamp `1791037623`
 - **Revised:** 2026-10-03 22:30 (Unix `1791037809`), after the human supplied `SPEC.md`
-- **Status:** `in-progress`
+- **Status:** `done`
 - **Study:** [../study/1791037419_poker_home_game_architecture.md](../study/1791037419_poker_home_game_architecture.md). Its **review addendum** controls where it differs from the earlier sections.
 - **Workflow:** `agentic-workflow`. Phase 1 is complete with this file. Phase 2 (`execute plan => rendezvous => sync docs`) starts only after explicit human approval of this revised plan.
 - **Approval record:** Approved by the human on 2026-10-03 22:35 (Asia/Manila): "ok i approve of the plan. proceed with the next steps." No answers were given to Q1–Q8, so each default applies.
@@ -254,9 +254,9 @@ Check a box only when its completion criterion is met.
 
 ### G. Rendezvous and documentation sync
 
-- [ ] **24. Rendezvous.** Merge `feat/game-night` to `main` locally. Report what is ready, the user test steps, expected results, checks, commits, assumptions and gaps.
+- [x] **24. Rendezvous.** Merge `feat/game-night` to `main` locally. Report what is ready, the user test steps, expected results, checks, commits, assumptions and gaps.
   - Done when: `main` has the work, the tests pass on `main`, and the report is delivered.
-- [ ] **25. Sync living docs.** Write `doc/wiki/setup.md`, `architecture.md` (as built), `features.md`, `external-dependencies.md`, and `doc/wiki/footguns/`. Add `doc/roadmap/` with Stages 2 to 5 and the "Later" list. Update `TODO.md`. Set this plan to `done`.
+- [x] **25. Sync living docs.** Write `doc/wiki/setup.md`, `architecture.md` (as built), `features.md`, `external-dependencies.md`, and `doc/wiki/footguns/`. Add `doc/roadmap/` with Stages 2 to 5 and the "Later" list. Update `TODO.md`. Set this plan to `done`.
   - Commit: `docs: sync living documentation`
   - Done when: each wiki page matches the code and the index links to each page.
 
@@ -335,6 +335,7 @@ None. Q1 and Q2 have defaults. An answer other than the default to Q1 or Q2 need
 | 2026-10-03 22:35 | Human approved the revised plan. Defaults apply to Q1–Q8. Status `in-progress`. `SPEC.md` stored at the repository root from the supplied text. |
 | 2026-10-03 22:40 | `pip index versions`: the four pins are still the latest releases. Tasks 1–20 executed on `feat/game-night`, one Conventional Commit each, tests green before each commit. |
 | 2026-10-03 23:05 | Verification (task 23). See "Verification results" below. |
+| 2026-10-03 23:15 | Rendezvous: `feat/game-night` merged to `main` locally with a merge commit. 213 tests pass on `main` on SQLite and PostgreSQL 17. Living docs synced. Nothing was pushed or deployed; no remote exists. Status `done`. |
 
 ## Verification results (2026-10-03)
 
