@@ -1,4 +1,22 @@
 {% load money_tags %}
+<h2>End of set</h2>
+<div class="card stack">
+  <p class="small">
+    <span class="badge badge-warn">{{ summary.awaiting_lines|length }} awaiting count</span>
+    <span class="badge badge-live">{{ summary.ready_lines|length }} ready to cash out</span>
+    <span class="badge badge-good">{{ summary.cashed_out_lines|length }} cashed out</span>
+  </p>
+  {% if summary.awaiting_lines %}<p class="small muted">Still to count: {% for line in summary.awaiting_lines %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+  {% if me.is_host %}
+    {% if summary.ready_lines %}
+    <a class="btn btn-primary btn-block" href="{% url 'cash_out_counted' session.pk %}">Cash out counted players ({{ summary.ready_lines|length }})</a>
+    {% else %}
+    <button type="button" class="btn btn-block" disabled aria-describedby="batch-why">Cash out counted players (0)</button>
+    <p id="batch-why" class="small muted">{% if summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}Every player is cashed out.{% endif %}</p>
+    {% endif %}
+  {% endif %}
+</div>
+
 <h2>Balance check</h2>
 <div class="card stack">
   <div class="row"><span class="grow">Total bought in</span><span class="amount">{{ summary.total|amount:unit }}</span></div>

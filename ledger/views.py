@@ -1,12 +1,16 @@
 from django.contrib import messages
-from django.shortcuts import redirect
+import uuid
+
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from games.access import session_for
 from groups.access import require_host
 from groups.http import attempt, request_id_from
 
-from . import money, services
+from groups.errors import RuleError
+
+from . import money, queries, services
 
 
 def _amount(request, session, name="amount"):
@@ -99,3 +103,45 @@ def count_clear(request, session_id, participant_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.clear_count, session.pk, actor, participant_id, success="Count cleared.")
     return redirect("session", session_id=session.pk)
+
+
+def cash_out_counted(request, session_id):
+    """Review the players with confirmed counts, then cash them all out with one confirmation."""
+    session, actor = session_for(request.user, session_id)
+    require_host(actor)
+    error = ""
+    if request.method == "POST":
+        try:
+            batch = services.cash_out_counted(
+                session.pk, actor, request.POST.getlist("count_id"), request_id_from(request)
+            )
+        except RuleError as refused:
+            error = str(refused)  # nothing was recorded; show a fresh review below
+        else:
+            done = batch.cash_outs.count()
+            waiting = len(queries.summary(session).awaiting_lines) + len(queries.summary(session).ready_lines)
+            rest = (
+                f"{waiting} awaiting final count{'' if waiting == 1 else 's'}" if waiting
+                else "everyone is cashed out"
+            )
+            messages.success(request, f"{done} player{'' if done == 1 else 's'} cashed out; {rest}.")
+            return redirect("session", session_id=session.pk)
+    session.refresh_from_db()
+    if session.state != services.State.RECONCILIATION:
+        messages.error(request, "Counted players are cashed out after play has ended.")
+        return redirect("session", session_id=session.pk)
+    summary = queries.summary(session)
+    ready = summary.ready_lines
+    context = {
+        "session": session,
+        "unit": session.unit,
+        "error": error,
+        "ready": ready,
+        "awaiting": summary.awaiting_lines,
+        "cashed_out": summary.cashed_out_lines,
+        "batch_total": sum(line.count.amount for line in ready),
+        "summary": summary,
+        "after_batch": summary.cashed_out + sum(line.count.amount for line in ready),
+        "request_id": uuid.uuid4(),
+    }
+    return render(request, "ledger/cash_out_counted.html", context)

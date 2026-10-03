@@ -5,6 +5,8 @@ at a time. Records are append-only: a correction is a reversal with a reason.
 Each amount is an integer in the session's unit (pesos or chips).
 """
 
+import uuid
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -17,7 +19,8 @@ from groups.models import Member
 
 from . import money, queries
 from .models import (
-    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal, FinalCount, Finalization, PlayerResult,
+    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization,
+    PlayerResult,
 )
 
 State = GameSession.State
@@ -247,6 +250,74 @@ def clear_count(session_id, actor: Member, participant_id) -> None:
             summary=f"Cleared {participant.member.display_name}'s final count",
         )
         games.touch(session)
+
+
+@transaction.atomic
+def cash_out_counted(session_id, actor: Member, count_ids, request_id) -> CashOutBatch:
+    """Cash out, in one action, the players whose confirmed counts the host just reviewed.
+
+    ``count_ids`` are the exact counts shown in the review. Each must still be
+    the player's current count, and the player must not be cashed out. If any
+    check fails, nothing is recorded. This does not finalize the set and marks
+    no payment.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = CashOutBatch.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if session.state != State.RECONCILIATION:
+        raise RuleError("Counted players are cashed out after play has ended.")
+    wanted = []
+    for count_id in count_ids:
+        try:
+            count_id = int(count_id)
+        except (TypeError, ValueError):
+            raise RuleError("That review is not valid. Open the review again.") from None
+        if count_id not in wanted:
+            wanted.append(count_id)
+    if not wanted:
+        raise RuleError("No player has a confirmed count yet.")
+
+    counts = FinalCount.objects.select_related("participant__member").filter(session=session, pk__in=wanted).in_bulk()
+    if len(counts) != len(wanted):
+        raise RuleError("That review does not belong to this set. Nothing was recorded. Open the review again.")
+    stale = []
+    for count_id in wanted:
+        count = counts[count_id]
+        name = count.participant.member.display_name
+        if _final_cash_outs(count.participant).exists():
+            stale.append(f"{name} was cashed out in the meantime")
+        elif not count.is_current:
+            stale.append(f"{name}'s count was changed or cleared")
+    if stale:
+        raise RuleError(
+            f"The review is out of date: {'; '.join(stale)}. Nothing was recorded. Check the new review and confirm again."
+        )
+
+    batch = CashOutBatch.objects.create(session=session, request_id=request_id, recorded_by=actor.user)
+    ordered = sorted((counts[count_id] for count_id in wanted), key=lambda count: count.participant.join_order)
+    for count in ordered:
+        cash_out = CashOut.objects.create(
+            session=session, participant=count.participant, amount=count.amount, kind=CashOut.Kind.FINAL,
+            final_count=count, batch=batch, request_id=uuid.uuid4(), recorded_by=actor.user,
+        )
+        audit.record(
+            "cash_out.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
+            summary=f"{count.participant.member.display_name} cashed out "
+            f"{money.format_amount(count.amount, session.unit)} (counted, batch)",
+            data={"amount": count.amount, "unit": session.unit, "count_id": count.pk, "count_version": count.version},
+        )
+    total = sum(count.amount for count in ordered)
+    audit.record(
+        "cash_out.batch", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=batch,
+        summary=f"Cashed out {len(ordered)} counted player{'' if len(ordered) == 1 else 's'}: "
+        f"{', '.join(count.participant.member.display_name for count in ordered)} "
+        f"({money.format_amount(total, session.unit)} in all)",
+        data={"participants": [count.participant_id for count in ordered], "total": total},
+    )
+    games.touch(session)
+    return batch
 
 
 def void_counts_on_resume(session: GameSession, actor: Member) -> None:

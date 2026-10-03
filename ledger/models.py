@@ -82,6 +82,28 @@ class FinalCount(models.Model):
         return f"Final count v{self.version} of {self.amount} for participant {self.participant_id}"
 
 
+class CashOutBatch(models.Model):
+    """One "cash out counted players" action: who did it and when.
+
+    Its ``request_id`` is unique per set, so sending the same confirmation
+    again records nothing twice.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="cash_out_batches")
+    request_id = models.UUIDField()
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "request_id"], name="cash_out_batch_request_once"),
+        ]
+
+    def __str__(self):
+        return f"Cash-out batch of set {self.session_id}"
+
+
 class CashOut(models.Model):
     """What a player takes off the table. A player can cash out in several steps. Append-only.
 
@@ -103,6 +125,7 @@ class CashOut(models.Model):
     final_count = models.OneToOneField(
         FinalCount, null=True, blank=True, on_delete=models.PROTECT, related_name="cash_out"
     )
+    batch = models.ForeignKey(CashOutBatch, null=True, blank=True, on_delete=models.PROTECT, related_name="cash_outs")
     request_id = models.UUIDField()
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)

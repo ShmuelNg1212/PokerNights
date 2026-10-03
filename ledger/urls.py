@@ -11,4 +11,5 @@ urlpatterns = [
     path("s/<int:session_id>/override/remove/", views.override_void, name="override_void"),
     path("s/<int:session_id>/counts/confirm/", views.count_confirm, name="count_confirm"),
     path("s/<int:session_id>/counts/<int:participant_id>/clear/", views.count_clear, name="count_clear"),
+    path("s/<int:session_id>/cash-out-counted/", views.cash_out_counted, name="cash_out_counted"),
 ]
