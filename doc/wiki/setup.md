@@ -47,7 +47,7 @@ To let phones on the same Wi-Fi reach it: add the machine's address to `ALLOWED_
 .venv/bin/python manage.py test
 ```
 
-375 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
+384 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
 
 To run the same suite on PostgreSQL:
 
@@ -75,3 +75,5 @@ See [footguns/sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal
 ## Admin
 
 `/admin/` is for support by a superuser. Money, result, transfer, payment and audit rows are read-only there. All changes to them go through the app.
+
+End-of-set browser fixtures and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.

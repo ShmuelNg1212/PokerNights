@@ -88,8 +88,18 @@ See the [roadmap](../roadmap/README.md).
 - Tap a player's name for cash-out, playing time, money records and corrections. Tap `+` for buy-in or rebuy. The next host action sits in an opaque phone dock. More host controls includes settings, cancellation and adding one player.
 - Without JavaScript, each row has expandable forms for the same actions.
 - A refused sheet submission reopens with typed amounts or reasons and the server's error. Pending buttons say “Sending…”. A changed server figure gets a temporary brass highlight; an unchanged refresh has none. Figures never count up.
-- Live updates keep open sheets and their focused field intact. Count-up still uses one form; it has not been recomposed.
+- Live updates keep open sheets and their focused field intact. Count-up uses one inline form and preserves typed drafts during polling.
 - Native dialogs support keyboard focus, Escape and focus return. Reduced motion disables movement. Chip colour comes from join order and repeats after ten; initials remain visible.
-- Final set results carry a Final tag, signs and directional icons. The complete finalized-set redesign is a later slice.
 
-The [approved plan](../plan/1791046015_visual_redesign.md) records verification and remaining slices.
+## End-of-set design (slice 2)
+
+- Count-up uses slate felt and shows ready plus finally cashed-out players out of all players with buy-ins. Earlier partial cash-outs do not complete a player. Total bought in and recorded cash-outs have separate labels.
+- Every eligible host count field stays inline. A confirmed count is written above the draft field. Count confirmation and recording cash-outs remain separate actions. Players see statuses and confirmed counts without host inputs.
+- The host dock links to the batch review when counts are ready, offers finalization only when the books balance, and exposes the next-step explanation. Resume play and cancellation remain under More host controls.
+- Batch review shows the confirmed amount to record, this batch's total, the amount already cashed out and the prospective total after confirmation. It makes no payment and does not finalize.
+- The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser. Reduced motion leaves it static.
+- Final set results use frozen snapshots, with Final tags, signed amounts, directional icons and time played. The viewer's result is prominent. Who pays whom stays on the session page.
+- Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check follows the count list. Long names wrap. JavaScript-free forms remain usable.
+
+
+The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slices; the [slice 2 plan](../plan/1791050738_redesign_slice_2.md) records end-of-set verification.

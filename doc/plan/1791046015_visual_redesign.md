@@ -120,7 +120,7 @@ Slices 2–4 add their own checks in the task list.
 
 ### Later slices (run only if Q2 says so, or after a later approval)
 
-- [ ] **8. Slice 2: count-up, cash-out review, finalized set.** "Counted x of y" field, status tags, always-visible count fields in one form, "books balance" moment, review table, "Final" state.
+- [ ] **8. Slice 2: count-up, cash-out review, finalized set.** Approved in the [slice 2 plan](1791050738_redesign_slice_2.md); built and verified, rendezvous pending. "Counted x of y" field, status tags, always-visible count fields in one form, "books balance" moment, review table, "Final" state.
   - Commit: `feat(web): recompose count-up and the finalized set`
   - Done when: the count-up browser check of the last cycle passes on the new markup; a set in count-up shows no result figure.
 - [ ] **9. Slice 3: session page and settle-up.** "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.

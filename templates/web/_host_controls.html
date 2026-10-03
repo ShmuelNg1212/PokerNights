@@ -17,11 +17,22 @@
     <button class="btn btn-primary btn-block next-action" name="action" value="end">End play and count up</button>
   </form>
   {% elif session.state == 'reconciliation' %}
-  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
-    <button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button>
+  {% if summary.ready_lines %}
+  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}">Cash out counted players ({{ summary.ready_lines|length }})</a>
+  {% elif balance.ok %}
+  <form method="post" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-block next-action">Finalize results</button>
   </form>
+  {% else %}<button type="button" class="btn btn-block next-action" disabled aria-describedby="batch-why">Cash out counted players (0)</button>{% endif %}
+  {% endif %}
+  {% if session.state == 'reconciliation' %}
+    <p id="batch-why" class="dock-hint small muted">{% if balance.ok %}Every player is cashed out. Finalizing freezes each player's result. Check the cash-outs first.{% elif balance.counted %}Check the discrepancy before finalizing.{% elif summary.ready_lines %}Review the confirmed counts before recording cash-outs.{% elif summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}No buy-in is recorded, so there is nothing to finalize.{% endif %}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
+  {% if session.state == 'reconciliation' %}
+
+    <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button></form>
+  {% endif %}
   {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Change settings</a>
   {% endif %}

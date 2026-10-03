@@ -75,6 +75,7 @@ def session_context(session, me) -> dict:
         "unit": session.unit,
         "summary": summary,
         "participants": participants,
+        "count_complete": len(summary.ready_lines) + len(summary.cashed_out_lines),
         "my_participant": next((p for p in participants if p.member_id == me.pk), None),
         "my_line": next((line for line in summary.lines if line.participant.member_id == me.pk), None),
         "can_buy_in": me.is_host and session.state in ledger.BUY_IN_STATES,
@@ -94,6 +95,8 @@ def session_context(session, me) -> dict:
     context["set_running"] = clock.is_running(session)
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
+        for result in outcome.results:
+            result.line = summary.line_for(result.participant_id)
         context["outcome"] = outcome
         context["my_result"] = outcome.result_for(me.pk)
         context["night"] = session.night

@@ -13,21 +13,12 @@
     form.dataset.sent = "1";
     // Disable after the browser has read the clicked button's name and value.
     setTimeout(function () {
-      form.querySelectorAll("button[type=submit], button:not([type])").forEach(function (button) {
+      Array.from(form.elements).filter(function (el) { return el.tagName === "BUTTON" && el.type === "submit"; }).forEach(function (button) {
         button.disabled = true;
         button.dataset.label = button.textContent;
         button.textContent = "Sending…";
         button.setAttribute("aria-busy", "true");
       });
-      // Buttons outside the form that submit it through the form attribute.
-      if (form.id) {
-        document.querySelectorAll('button[form="' + form.id + '"]').forEach(function (button) {
-          button.disabled = true;
-        button.dataset.label = button.textContent;
-        button.textContent = "Sending…";
-        button.setAttribute("aria-busy", "true");
-        });
-      }
     }, 0);
   });
 
@@ -35,7 +26,7 @@
   window.addEventListener("pageshow", function () {
     document.querySelectorAll("form[data-sent]").forEach(function (form) {
       delete form.dataset.sent;
-      form.querySelectorAll("button:disabled").forEach(function (button) { button.disabled = false; if (button.dataset.label) button.textContent = button.dataset.label; button.removeAttribute("aria-busy"); });
+      Array.from(form.elements).filter(function (el) { return el.dataset.label; }).forEach(function (button) { button.disabled = false; if (button.dataset.label) button.textContent = button.dataset.label; button.removeAttribute("aria-busy"); });
     });
   });
 })();

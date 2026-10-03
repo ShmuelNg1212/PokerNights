@@ -1,36 +1,23 @@
 {% load money_tags clock_tags table_tags %}
-{% if my_result %}
-<div class="card">
-  <div class="stat-label">Your result in set {{ session.set_number }} <span class="badge">Final</span></div>
-  <div class="stat-value {{ my_result.net|sign_class }}">{% if my_result.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_result.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_result.net|signed_amount:unit }}</div>
-  <p class="muted small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cash_out|amount:unit }}</p>
-</div>
-{% endif %}
-
-<h2>Results of set {{ session.set_number }} <span class="badge">Final</span></h2>
-<div class="card">
-  <ul class="list">
+<section class="final-results" aria-label="Final results">
+  <div class="section-heading"><h2>Results of set {{ session.set_number }} <span class="badge">Final</span></h2></div>
+  <ul class="player-list">
     {% for r in outcome.results %}
-    <li>
-      <div class="row">
-        <span class="grow">{{ r.participant.member.display_name }}</span>
-        <span class="amount {{ r.net|sign_class }}">{% if r.net > 0 %}{% icon 'arrow-up-right' %}{% elif r.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ r.net|signed_amount:unit }}</span>
+    <li class="result-row">
+      <div class="count-identity">
+        {% player_token r.participant participants %}
+        <span class="player-name grow">{{ r.participant.member.display_name }}{% if r.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
+        <span class="result-amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:unit }}</span>
       </div>
-      <div class="muted small">Bought in {{ r.buy_in_total|amount:unit }} ({{ r.buy_in_count }}) · cashed out {{ r.cashed_out|amount:unit }}{% if r.adjustment %} · override {{ r.adjustment|signed_amount:unit }}{% endif %}{% if r.play_seconds is not None %} · played {{ r.play_seconds|duration }}{% endif %}</div>
+      <dl class="result-facts">
+        <div><dt>Bought in ({{ r.buy_in_count }})</dt><dd>{{ r.buy_in_total|amount:unit }}</dd></div>
+        <div><dt>Cashed out</dt><dd>{{ r.cashed_out|amount:unit }}</dd></div>
+        {% if r.adjustment %}<div><dt>Host override</dt><dd>{{ r.adjustment|signed_amount:unit }}</dd></div>{% endif %}
+        <div><dt>Time played</dt><dd>{% if r.play_seconds is not None %}{{ r.play_seconds|duration }}{% else %}Not recorded{% endif %}</dd></div>
+      </dl>
+      {% include "web/_player_records.html" with line=r.line p=r.participant %}
     </li>
     {% endfor %}
   </ul>
-  <div class="row"><span class="grow muted small">Total bought in and cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:unit }}</span></div>
-  {% if outcome.finalization.raw_difference %}
-  <p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>
-  {% endif %}
-</div>
-
-<div class="card stack">
-  {% if night.is_closed %}
-  <p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>
-  {% else %}
-  <p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>
-  {% endif %}
-  <a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>
-</div>
+  {% if outcome.finalization.raw_difference %}<p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>{% else %}<p class="books-balanced">The books balance. Total cashed out equals total bought in.</p>{% endif %}
+</section>

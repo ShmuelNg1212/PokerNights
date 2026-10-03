@@ -13,6 +13,8 @@ colors:
   felt: "oklch(0.34 0.095 265)"
   felt-deep: "oklch(0.25 0.08 265)"
   felt-ink: "oklch(0.86 0.04 265)"
+  slate: "oklch(0.285 0.025 265)"
+  slate-ink: "oklch(0.86 0.025 265)"
   brass: "oklch(0.82 0.13 85)"
   up: "oklch(0.82 0.13 160)"
   down: "oklch(0.76 0.14 25)"
@@ -125,14 +127,14 @@ components:
 
 The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.
 
-The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation and slice 1: the active set, player rows, buy-in sheets and player detail sheets. Later screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study is the visual authority. The build ships no raster imagery.
+The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, the active set and its sheets, and the end-of-set flow: count-up, batch cash-out review and frozen final results. Deferred screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study and the approved slice 2 plan supply the visual authority. The build ships no raster imagery.
 
 **Key Characteristics:**
 - Warm dark rails and indigo felt.
 - Compressed, tabular figures with right-aligned player amounts.
 - Bone pressable controls and visible brass focus.
 - Circular initials paired with written player names.
-- Compact phone rows and focused sheets.
+- Compact phone rows, focused sheets and persistent inline count fields.
 
 ## Colors
 
@@ -142,6 +144,7 @@ The palette combines warm dark supports with a cool indigo working field and pal
 
 - **Bone:** primary actions, strong figures and readable foregrounds.
 - **Indigo Felt / Deep Felt / Felt Ink:** the active-set field, its supporting palette and readable secondary labels.
+- **Slate / Slate Ink:** muted end-of-set felt and its readable labels; count-up, cash-out review and final overview share this quieter field.
 
 ### Secondary
 
@@ -176,6 +179,8 @@ The same family shifts from ordinary-width reading text to compressed figures. T
 - **Label:** player metadata. Felt labels, split labels and connection status have contextual smaller sizes.
 - **Amount input:** the sheet entry is compressed to 80%, with a minimum height of 72px.
 
+Count-up progress uses a compressed 48px tabular numerator with a 28px denominator. The viewer’s frozen result uses a responsive 32–52px figure at 70% width; result rows use 22px at 85% width, reduced to 18px below 360px. These contextual figures preserve the shared family without introducing another universal display role.
+
 The timer and blinds use 70% width, weight 800 and line height 1.2. On phones they are 22px; chips-game blinds are 16px. At desktop they are 27px. They are supporting figures, not a second display role.
 
 **The Figure Rule.** Keep money and timers tabular. Use compressed display figures for the active total and quieter right-aligned amounts in player rows.
@@ -188,6 +193,8 @@ The overview has a flexible amount column and a 116px supporting column, separat
 
 At 900px and above, the active-set layout becomes a 400px left column plus flexible player list, with a 28px gap and 28px page insets. The left column sticks below the header at 90px. The host action returns to the document flow and rebuy controls display their written label.
 
+Count-up, review and final pages inherit the 1180px table container and the 400px-plus-flexible two-column layout from 900px. On phones, count-up orders the slate overview, all inline player counts, then the balance check; the host dock remains fixed with visible next-step guidance and a 48px “More host controls” target. Count-up reserves 200px bottom clearance and count fields use 90px top / 200px bottom scroll margins. Review and final pages reserve 48px at the bottom and keep actions in document flow. Below 360px each count button stacks at full width beneath its input. End-set and review containers, names and figures wrap anywhere to contain long unbroken names and large amounts.
+
 Sheets are at most 440px wide and 85dvh tall, scrolling internally. They sit against the phone's bottom edge and become centred at desktop. Quick amounts occupy four equal columns with an 8px gap. Shared form stacks and field gaps use the spacing values in frontmatter; there is no additional invented spacing scale.
 
 ## Elevation & Depth
@@ -195,6 +202,8 @@ Sheets are at most 440px wide and 85dvh tall, scrolling internally. They sit aga
 Depth comes from tonal rails, fine rules and CSS-built felt grain. Buttons have a short solid underside that disappears on press. Sheets and the host action use stronger shadows to separate them from the working surface; ordinary cards remain flat.
 
 The sidecar records the built shadows, timings and easing curves. Sheet entry moves 24px in 320ms; exit takes 200ms. Accepted-change attention uses a 600ms treatment and remains labelled briefly. Chip-edge entry accompanies a confirmed rebuy. Reduced-motion preferences suppress animations, transitions and button displacement.
+
+The balanced-books message uses a green double rule with a 5px band and one-pixel top and bottom strokes. In count-up, only the existing balanced state makes it eligible for a 600ms left-to-right reveal. A localStorage marker records the set per browser, keeping reloads and later polls static; unavailable storage leaves the rule static. Final results use the static rule. Reduced motion suppresses the reveal while keeping its message.
 
 **The Accepted Change Rule.** Figures change only to accepted server values. Highlight the changed row or total without interpolating the amount.
 
@@ -233,6 +242,20 @@ Compact outlined pills mark state. Live state uses bone and ink; warning and pos
 ### Player rows
 
 Names and metadata form a single 48px-minimum detail target. Amounts form a separate right-aligned column. Phone rebuy controls are circular with a plus icon and a labelled accessible action; desktop adds visible words. Cash-out state and departed-player state remain written.
+
+### Count-up
+
+A quiet slate overview shows “N of M players ready or cashed out,” separate awaiting/ready/cashed-out counts, total bought in, recorded cash-outs and the stopped set timer. Only players with buy-ins contribute to N and M; earlier partial cash-outs alone do not complete a player. Inline rows pair player tokens and names with bought-in figures, written state and a labelled final-count input. Every host input and count button belongs to one shared form: a row button confirms every typed count, zero is valid and empty fields are skipped. Confirmed counts remain written above draft fields; no provisional net result appears. Players see read-only state. Corrections and exceptions remain in native details. Polling retains drafts and focus.
+
+The dock opens review when confirmed counts are ready, offers finalization when the books balance, and otherwise explains the next step. Count confirmation stays at the form. Pending cash-outs remain ordinary progress; completed discrepancies carry an error explanation and existing override controls.
+
+### Cash-out review
+
+Slate totals separate “Total of this batch,” “Recorded cash-outs,” prospective “After this batch” and “Total bought in.” A fixed-layout table pairs initial tokens and wrapping names with right-aligned exact confirmed cash-out amounts. The player column occupies 56%; the batch total has a footer row. A drawn back arrow accompanies the written set link. Awaiting and already-cashed-out lists remain separate. Written guidance states that this action records cash-outs without finalizing or marking payment; stale reviews retain an error and fresh values.
+
+### Final results
+
+The slate overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. Facts list buy-in count and total, cumulative cash-outs, any override and recorded time played. Snapshot values supply the results. Override disclosure remains written, and the session link explains where the next set or settle-up belongs. Set-level transfers and payment controls are absent.
 
 ### Sheets
 
