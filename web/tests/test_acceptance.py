@@ -100,7 +100,7 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- C is not counted yet: finalize is refused and says why.
         refused = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
-        self.assertContains(refused, "No cash-out is recorded for: C")
+        self.assertContains(refused, "Not cashed out yet: C")
         host.post(add_cash_out, {"participant_id": seats["C"].pk, "amount": "250"})
         self.assertContains(host.get(page_url), "₱50 too much")
         wrong = session.cash_outs.get(participant=seats["C"])

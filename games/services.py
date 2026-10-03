@@ -220,6 +220,9 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
 # Called when a set resumes play, inside the transaction: ``hook(session, actor)``.
 RESUME_HOOKS = []
 
+# Called when a player who had left returns to the table: ``hook(participant, actor)``.
+RETURN_HOOKS = []
+
 # action → (states it is allowed from, resulting state)
 TRANSITIONS = {
     "open": ((State.SETUP,), State.OPEN),
@@ -525,8 +528,11 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
     participant.save(update_fields=["status", "left_at"])
     if left:
         clock.close_interval(participant, now)
-    elif session.state == State.RUNNING:
-        clock.open_interval(participant, now)
+    else:
+        for hook in RETURN_HOOKS:
+            hook(participant, actor)
+        if session.state == State.RUNNING:
+            clock.open_interval(participant, now)
     audit.record(
         "participant.left" if left else "participant.returned", actor=actor.user, group_id=session.group_id,
         session_id=session.pk, target=participant,

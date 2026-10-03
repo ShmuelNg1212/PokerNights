@@ -12,9 +12,10 @@ from settlement.models import Transfer
 
 class SessionLogTests(TestCase):
     def setUp(self):
-        self.night = night = worked_example((1600, 700, 250))
+        self.night = night = worked_example((1600, 700, None))
         cash_out = night.cash("C", 40)
         ledger.reverse_cash_out(night.session.pk, night.host, cash_out.pk, "counted twice")
+        night.cash("C", 250)
         override(night, name="A", note="A was overpaid")
         settlement.finalize(night.session.pk, night.host)
         settlement.close_night(night.session.night_id, night.host)

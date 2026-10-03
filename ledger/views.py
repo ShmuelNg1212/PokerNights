@@ -75,3 +75,27 @@ def override_void(request, session_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.void_override, session.pk, actor, success="Override removed.")
     return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def count_confirm(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    require_host(actor)
+    if not request.POST.get("amount", "").strip():
+        # An empty field is never read as zero.
+        messages.error(request, "Enter the final count. Type 0 for a player who has nothing left.")
+        return redirect("session", session_id=session.pk)
+    amount = _amount(request, session)
+    if amount is not None:
+        attempt(
+            request, services.confirm_count, session.pk, actor, request.POST.get("participant_id"), amount,
+            request_id_from(request),
+        )
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def count_clear(request, session_id, participant_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.clear_count, session.pk, actor, participant_id, success="Count cleared.")
+    return redirect("session", session_id=session.pk)

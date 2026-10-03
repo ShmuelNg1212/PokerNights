@@ -48,15 +48,61 @@ class BuyInReversal(models.Model):
         return f"Reversal of buy-in {self.buy_in_id}"
 
 
+class FinalCount(models.Model):
+    """A host's confirmation of what a player has at the end of a set. Not yet a cash-out.
+
+    "Not counted" (no current row) and "counted, zero" (a row with amount 0) are
+    different. A correction adds a row with the next version; rows are never
+    edited. ``is_current`` marks the one count in force for a player.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="final_counts")
+    participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="final_counts")
+    amount = models.BigIntegerField()
+    version = models.PositiveIntegerField(default=1)
+    is_current = models.BooleanField(default=True)
+    request_id = models.UUIDField()
+    confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["participant"], condition=Q(is_current=True), name="final_count_one_current"),
+            models.UniqueConstraint(fields=["participant", "version"], name="final_count_version_unique"),
+            models.UniqueConstraint(fields=["session", "request_id"], name="final_count_request_once"),
+            models.CheckConstraint(condition=Q(amount__gte=0), name="final_count_not_negative"),
+        ]
+
+    def __str__(self):
+        return f"Final count v{self.version} of {self.amount} for participant {self.participant_id}"
+
+
 class CashOut(models.Model):
     """What a player takes off the table. A player can cash out in several steps. Append-only.
 
-    A cash-out of zero is a real record: the player lost everything.
+    A cash-out of zero is a real record: the player lost everything. ``kind``
+    says whether the player played on afterwards (``partial``) or was done
+    (``final``). The amount never changes; ``kind`` is a classification and
+    becomes ``partial`` again if the player returns to play.
     """
+
+    class Kind(models.TextChoices):
+        PARTIAL = "partial", "Partial"
+        FINAL = "final", "Final"
 
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="cash_outs")
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="cash_outs")
     amount = models.BigIntegerField()
+    kind = models.CharField(max_length=8, choices=Kind.choices, default=Kind.FINAL)
+    # The confirmed count that this cash-out records, when it came from one.
+    final_count = models.OneToOneField(
+        FinalCount, null=True, blank=True, on_delete=models.PROTECT, related_name="cash_out"
+    )
     request_id = models.UUIDField()
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -66,6 +112,7 @@ class CashOut(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["session", "request_id"], name="cash_out_request_once"),
             models.CheckConstraint(condition=Q(amount__gte=0), name="cash_out_amount_not_negative"),
+            models.CheckConstraint(condition=Q(kind__in=["partial", "final"]), name="cash_out_kind_valid"),
         ]
         indexes = [models.Index(fields=["participant"], name="cash_out_participant")]
 

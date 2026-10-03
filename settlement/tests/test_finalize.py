@@ -60,7 +60,7 @@ class FinalizeTests(TestCase):
         with self.assertRaisesMessage(RuleError, "₱50 too much"):
             services.finalize(night.session.pk, night.host)
         missing = worked_example((1600, 900, None))
-        with self.assertRaisesMessage(RuleError, "No cash-out is recorded for: C"):
+        with self.assertRaisesMessage(RuleError, "Not cashed out yet: C"):
             services.finalize(missing.session.pk, missing.host)
         self.assertEqual(Finalization.objects.count(), 0)
         self.assertEqual(night.refresh().state, "reconciliation")
@@ -78,8 +78,8 @@ class FinalizeTests(TestCase):
         self.assertEqual(names(close(night).transfers), [("B", "A", 30000), ("C", "A", 25000)])
 
     def test_centavo_amounts_stay_exact(self):
-        night = worked_example((1600, 700, None))
-        ledger.record_cash_out(night.session.pk, night.host, night.players["A"].pk, 1, uuid.uuid4())  # ₱0.01
+        night = worked_example((None, 700, None))
+        ledger.record_cash_out(night.session.pk, night.host, night.players["A"].pk, 160001, uuid.uuid4())  # ₱1,600.01
         ledger.record_cash_out(night.session.pk, night.host, night.players["C"].pk, 19999, uuid.uuid4())  # ₱199.99
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)

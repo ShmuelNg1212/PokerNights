@@ -53,7 +53,8 @@ class ChipsGameTests(TestCase):
 
     def test_balance_check_and_override_work_in_chips(self):
         night = chips_night()
-        night.cash("C", 50)
+        ledger.reverse_cash_out(night.session.pk, night.host, night.session.cash_outs.get(participant=night.players["C"]).pk, "recount")
+        night.cash("C", 250)
         balance = ledger_queries.balance(night.session)
         self.assertEqual((balance.difference, balance.difference_text), (50, "50 chips"))
         self.assertIn("50 chips too much", balance.explanation)

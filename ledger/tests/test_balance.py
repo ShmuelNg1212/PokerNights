@@ -53,7 +53,7 @@ class BalanceCheckTests(TestCase):
         balance = queries.balance(worked_example((1600, 900, None)).session)
         self.assertFalse(balance.ok)
         self.assertFalse(balance.counted)
-        self.assertIn("No cash-out is recorded for: C", balance.explanation)
+        self.assertIn("Not cashed out yet: C", balance.explanation)
 
     def test_cash_out_without_a_buy_in_is_flagged(self):
         night = worked_example()
@@ -108,8 +108,8 @@ class OverrideTests(TestCase):
         self.assertTrue(queries.balance(night.session).ok)
 
     def test_equal_share_skips_zero_parts(self):
-        night = worked_example((1600, 700, 200))
-        services.record_cash_out(night.session.pk, night.host, night.players["C"].pk, 1, uuid.uuid4())  # 1 centavo too much
+        night = worked_example((1600, 700, None))
+        services.record_cash_out(night.session.pk, night.host, night.players["C"].pk, 20001, uuid.uuid4())  # 1 centavo too much
         rows = override(night, mode="equal")
         self.assertEqual([(r.participant_id, r.amount) for r in rows], [(night.players["A"].pk, -1)])
 
@@ -126,7 +126,7 @@ class OverrideTests(TestCase):
     def test_refused_when_balanced_or_not_fully_counted(self):
         with self.assertRaisesMessage(RuleError, "No override is needed"):
             override(worked_example())
-        with self.assertRaisesMessage(RuleError, "No cash-out is recorded for: C"):
+        with self.assertRaisesMessage(RuleError, "Not cashed out yet: C"):
             override(worked_example((1600, 700, None)))
 
     def test_only_a_host_and_only_while_counting(self):
@@ -150,7 +150,9 @@ class OverrideTests(TestCase):
     def test_a_later_correction_reopens_the_difference_and_the_override_can_be_removed(self):
         night = worked_example((1600, 700, 250))
         override(night)
-        night.cash("C", 10)  # a late find: the books are off again
+        wrong = CashOut.objects.get(participant=night.players["C"])
+        services.reverse_cash_out(night.session.pk, night.host, wrong.pk, "recount")
+        night.cash("C", 260)  # a late find: the books are off again
         self.assertEqual(queries.balance(night.session).difference, 1000)
         self.assertEqual(services.void_override(night.session.pk, night.host), 1)
         self.assertEqual(queries.balance(night.session).difference, 6000)
