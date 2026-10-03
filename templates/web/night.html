@@ -21,5 +21,11 @@
 {% if latest_set and not night.is_closed %}
 <p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>
 {% endif %}
+{% if can_start_next_set %}
+<form method="post" action="{% url 'next_set' night.pk %}" class="card" data-once>{% csrf_token %}
+  <p class="small muted">The next set starts with the players still at the table and with fresh buy-ins.</p>
+  <button type="submit" class="btn btn-block">Start next set</button>
+</form>
+{% endif %}
 {% block night_extra %}{% endblock %}
 {% endblock %}

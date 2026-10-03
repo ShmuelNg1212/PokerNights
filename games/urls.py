@@ -13,4 +13,5 @@ urlpatterns = [
     path("s/<int:session_id>/players/add-several/", views.participants_add, name="participants_add"),
     path("s/<int:session_id>/players/<int:participant_id>/withdraw/", views.participant_withdraw, name="participant_withdraw"),
     path("s/<int:session_id>/players/<int:participant_id>/left/", views.participant_left, name="participant_left"),
+    path("n/<int:night_id>/next-set/", views.next_set, name="next_set"),
 ]

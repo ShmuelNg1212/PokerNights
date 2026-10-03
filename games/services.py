@@ -247,6 +247,8 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
     if session.state not in allowed_from:
         raise RuleError(f"This game is {session.get_state_display().lower()}, so that action is not available.")
     reason = (reason or "").strip()
+    if action == "resume" and session.night.sets.filter(set_number__gt=session.set_number).exists():
+        raise RuleError("A later set of this session has started, so this set cannot resume play.")
     if action == "close" and session.participants.filter(status=Participant.Status.JOINED).exists():
         raise RuleError("Players have joined. Remove them first, or cancel the game.")
     if action == "cancel":
@@ -265,6 +267,50 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
     )
     touch(session)
     return session
+
+
+IN_PLAY_STATES = (State.SETUP, State.OPEN, State.RUNNING)
+
+
+@transaction.atomic
+def start_next_set(night_id, actor: Member) -> GameSession:
+    """Open the next set of a session, with the players still at the table.
+
+    Allowed once play of the previous set has ended; its counting and cash-outs
+    can still be finished. The new set copies the table, seats and latest
+    settings. It copies no money: each set has its own buy-ins.
+    """
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    if night.is_closed:
+        raise RuleError("This session is closed. Create a new session to play again.")
+    sets = list(night.sets.order_by("set_number"))
+    in_play = next((s for s in sets if s.state in IN_PLAY_STATES), None)
+    if in_play is not None:
+        raise RuleError(
+            f"Set {in_play.set_number} is still {in_play.get_state_display().lower()}. "
+            "End its play before starting the next set."
+        )
+    played = [s for s in sets if s.state != State.CANCELED]
+    previous = played[-1] if played else sets[-1]
+    new = GameSession.objects.create(
+        night=night, set_number=sets[-1].set_number + 1, group_id=night.group_id, table_id=night.table_id,
+        game_date=night.game_date, location=night.location, game_type=night.game_type, unit=night.unit,
+        seat_count=previous.seat_count, state=State.OPEN, created_by=actor.user,
+    )
+    SettingsVersion.objects.create(
+        session=new, number=1, created_by=actor.user, **current_settings(previous).stakes()
+    )
+    carried = previous.participants.filter(status=Participant.Status.JOINED).order_by("join_order")
+    for order, old in enumerate(carried, start=1):
+        Participant.objects.create(session=new, member_id=old.member_id, join_order=order, added_by=actor.user)
+    audit.record(
+        "session.created", actor=actor.user, group_id=night.group_id, session_id=new.pk, target=new,
+        summary=f"Started set {new.set_number} with {len(carried)} player{'' if len(carried) == 1 else 's'} "
+        f"from set {previous.set_number}",
+    )
+    touch(new)
+    return new
 
 
 def mark_finalized(session: GameSession) -> None:

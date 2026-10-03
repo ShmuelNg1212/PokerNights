@@ -145,4 +145,7 @@ def night(request, night_id):
     night, me = night_for(request.user, night_id)
     sets = [s for s in night.sets.order_by("set_number") if me.is_host or s.state != GameSession.State.SETUP]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context["can_start_next_set"] = (
+        me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
+    )
     return render(request, "web/night.html", context)
