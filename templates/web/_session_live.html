@@ -20,7 +20,7 @@
   <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
   <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
   <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total|amount:unit }}</div></div>
-  {% if session.is_live %}<div class="stat"><div class="stat-label">Still in play</div><div class="stat-value">{{ summary.in_play|amount:unit }}</div></div>
+  {% if session.state == 'open' or session.state == 'running' %}<div class="stat"><div class="stat-label">Still in play</div><div class="stat-value">{{ summary.in_play|amount:unit }}</div></div>
   {% else %}<div class="stat"><div class="stat-label">Total cashed out</div><div class="stat-value">{{ summary.cashed_out|amount:unit }}</div></div>{% endif %}
 </div>
 {% endif %}

@@ -164,6 +164,8 @@ class BalanceViewTests(TestCase):
         page = self.client.get(reverse("session", args=[night.session.pk]))
         self.assertContains(page, "₱50 too much")
         self.assertContains(page, "Finalize with an override")
+        self.assertContains(page, "Total cashed out")
+        self.assertNotContains(page, "Still in play")  # a negative "in play" figure would mislead
         page = self.client.post(reverse("override_add", args=[night.session.pk]), {"absorber": "equal", "note": "old chips mixed in"}, follow=True)
         self.assertContains(page, "A host override covers the difference")
         self.assertContains(page, "old chips mixed in")
