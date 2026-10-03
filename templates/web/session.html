@@ -3,7 +3,7 @@
 {% block title %}{{ session }} · PokerNights{% endblock %}
 {% block page_class %}table-page{% endblock %}
 {% block content %}
-<nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %} Session: {{ session.table.name }}, {{ session.game_date|date:"M j" }}</a><span id="live-status" class="live-status" aria-live="polite"></span></nav>
+<nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %} Session: {{ session.table.name }}</a><span id="live-status" class="live-status" aria-live="polite"></span></nav>
 <div id="live" data-version="{{ session.version }}" data-url="{% url 'session_state' session.pk %}">
   {% include "web/_session_live.html" %}
 </div>

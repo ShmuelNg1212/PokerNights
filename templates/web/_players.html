@@ -17,8 +17,11 @@
         {% player_token p participants %}
         <div class="player-identity">
           <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
-          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</button>
-          <div class="player-meta">{% buy_in_stack line.buy_in_count %}
+          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span>{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
+            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+          </span></button>
+
+          <div class="player-meta fallback-meta">{% buy_in_stack line.buy_in_count %}
             {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
           </div>
           {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
@@ -43,12 +46,6 @@
     </li>
     {% endwith %}{% empty %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this game when the host opens it.{% endif %}</p></li>{% endfor %}
   </ul>
-{% if can_manage_players and addable_members %}
-  <details data-key="add-one"><summary class="small">Or add one player</summary>
-    <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
-      <div class="grow"><label for="add-player">Player</label><select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select></div><button class="btn" type="submit">Add</button>
-    </form>
-  </details>
-  {% endif %}
+
 </section>
 {% endif %}

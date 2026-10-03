@@ -1,4 +1,4 @@
-// Native forms are moved into a dialog outside the region that polling replaces.
+// Dialog forms stay outside polling.
 (function () {
   "use strict";
   var region = document.getElementById("live"), mount = document.getElementById("table-sheets");
@@ -20,7 +20,12 @@
     var field = body.querySelector("input:not([type=hidden]), button");
     if (field) { field.focus(); if (field.select) field.select(); }
   }
-  function close() { dialog.close(); }
+  function close() {
+    if (!dialog.open || dialog.classList.contains("closing")) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) dialog.close();
+    else { dialog.classList.add("closing"); setTimeout(function () { dialog.close(); dialog.classList.remove("closing"); }, 200); }
+  }
+  dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
   dialog.querySelector(".sheet-head button").addEventListener("click", close);
   dialog.addEventListener("click", function (event) {
     if (event.target !== dialog) return;

@@ -34,5 +34,12 @@
     </form>
   </details>
   {% endif %}
+{% if can_manage_players and addable_members %}
+  <details data-key="add-one"><summary class="small">Or add one player</summary>
+    <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
+      <div class="grow"><label for="add-player">Player</label><select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select></div><button class="btn" type="submit">Add</button>
+    </form>
+  </details>
+  {% endif %}
   </details>
 </div>

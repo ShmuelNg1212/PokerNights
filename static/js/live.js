@@ -18,7 +18,7 @@
   var pending = null; // a snapshot that waits until the user stops typing
 
   function clock(date) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   }
 
   function showStatus() {
@@ -26,7 +26,7 @@
     var stale = failures >= 2;
     statusLine.classList.toggle("stale", stale);
     region.classList.toggle("is-stale", stale);
-    statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · updated ") + clock(lastOk);
+    statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · ") + clock(lastOk);
   }
 
   function userIsTyping() {

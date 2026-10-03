@@ -13,7 +13,12 @@
       if (previous != null && previous !== value) {
         el.classList.add("just-changed");
         var badge = el.querySelector(".change-label");
-        if (badge) badge.hidden = false;
+        if (badge) {
+          badge.textContent = Number(value.split(":")[1]) > Number(previous.split(":")[1]) ? "Rebuy added" : "Updated";
+          badge.hidden = false;
+          var edge = el.querySelector(".buy-stack i:last-of-type");
+          if (edge && badge.textContent === "Rebuy added") edge.classList.add("new-edge");
+        }
         setTimeout(function () { el.classList.remove("just-changed"); if (badge) badge.hidden = true; }, 3000);
       }
       seen[key] = value;

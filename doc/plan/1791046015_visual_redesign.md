@@ -102,16 +102,16 @@ Slices 2–4 add their own checks in the task list.
 - [x] **2. Foundation: tokens, typeface, base elements.** New `app.css` structure: tokens, base, components. Font file in `static/fonts/`. Buttons, fields, tags, lists, tables, notices with all states. Every screen takes the new look through the shared classes.
   - Commit: `feat(web): add design tokens, typeface and base components`
   - Done when: each existing screen renders with no broken layout at 390 px and 1,280 px, and the suite passes.
-- [ ] **3. Shell and motion foundations.** App bar with back link and live status. Felt field, chip token, dock, sheet (`<dialog>`), toast. Motion tokens, page transitions, reduced-motion rules. `changes.js`: the change check that drives highlights. Template tag for token colour and initials.
+- [x] **3. Shell and motion foundations.** App bar with back link and live status. Felt field, chip token, dock, sheet (`<dialog>`), toast. Motion tokens, page transitions, reduced-motion rules. `changes.js`: the change check that drives highlights. Template tag for token colour and initials.
   - Commit: `feat(web): add app shell, sheet, toast and motion foundations`
   - Done when: unit tests cover the template tag (collision of initials, more than 10 players); the change check has a browser test for "same values, no highlight".
-- [ ] **4. Active table.** Set page for setup, open and running: felt field with pot, clock, blinds and split bar; token rows; "Join this game" as a row-level action; host dock; two columns from 900 px.
+- [x] **4. Active table.** Set page for setup, open and running: felt field with pot, clock, blinds and split bar; token rows; "Join this game" as a row-level action; host dock; two columns from 900 px.
   - Commit: `feat(web): recompose the active table`
   - Done when: AC1, AC10, AC11, AC15 hold in tests or browser checks.
-- [ ] **5. Buy-in and player sheets.** One sheet outside the live region for buy-in or rebuy, with quick amounts. A player sheet for cash-out, details and corrections. The same forms, fields and routes. Inline fallback without JavaScript. Pending state and the confirmed highlight.
+- [x] **5. Buy-in and player sheets.** One sheet outside the live region for buy-in or rebuy, with quick amounts. A player sheet for cash-out, details and corrections. The same forms, fields and routes. Inline fallback without JavaScript. Pending state and the confirmed highlight.
   - Commit: `feat(web): add the buy-in and player sheets`
   - Done when: AC2–AC5, AC7, AC12 hold.
-- [ ] **6. Verify slice 1.** Tests on both database engines. Browser flows: host buy-in, rebuy, cash-out, reversal; player view; a second client changes data while the first types and while a sheet is open. Reduced-motion run. Keyboard run. Contrast measurement. Then the bounded visual review: screenshots at 390 px and 1,280 px together, Impeccable detector once, Impeccable finish review once, one batch of fixes, one confirmation round.
+- [x] **6. Verify slice 1.** Tests on both database engines. Browser flows: host buy-in, rebuy, cash-out, reversal; player view; a second client changes data while the first types and while a sheet is open. Reduced-motion run. Keyboard run. Contrast measurement. Then the bounded visual review: screenshots at 390 px and 1,280 px together, Impeccable detector once, Impeccable finish review once, one batch of fixes, one confirmation round.
   - Commit: `test(web): cover the redesigned set page`
   - Done when: each criterion AC1–AC16 has a recorded result in this plan.
 - [ ] **7. Rendezvous and docs for slice 1.** Merge to `main`. `DESIGN.md` from the built result. Update `AGENTS.md` (design rule 9, sources of truth), `doc/wiki/architecture.md` and `features.md`, a footgun page if one was found, the roadmap and `TODO.md`. Restart the server.
@@ -161,3 +161,49 @@ None. If Q1 is answered B or C, I revise the design system and the studies and p
 | Date | Entry |
 |---|---|
 | 2026-10-04 | Study and plan written. Current app inspected in a browser on a temporary database. Three directions rendered as mockups. Status `awaiting-approval`. |
+
+
+## Execution record — 2026-10-04
+
+Approved scope: defaults Q1–Q5, preparation and slice 1 only. Direction A is pinned. The direction roll returned seed `e041d3d3`; its six challengers were recorded in the surface brief. The completed HTML studies govern this code-led build. No new image-comp round was needed.
+
+Tasks 3–5 were integrated in one commit because the new template composition, dialog sources, presentation helpers and live-update integration must ship together as a working page. The existing accounting services, views, URLs, permissions and form request shapes were not changed. The earlier money/count workflows are covered by the existing page-driven tests and the updated dependency-free CDP scripts in `web/tests/browser/`.
+
+### Acceptance evidence
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| AC1 | Met | Eight-player pesos page: 1,177 px at 390 px. Money, clock and blinds bottom at 283 px in the first viewport. Chips capture: 1,155 px |
+| AC2 | Met | Actual host click on `+`, then Confirm rebuy: default amount accepted in two taps |
+| AC3 | Met | Figures rendered from server response; changed accepted row highlighted. No interpolation of amounts |
+| AC4 | Met | Dispatching an update with unchanged watched values produced no highlight |
+| AC5 | Met | Second host changed the game while the first held an open sheet: same dialog, same focused field, typed 1,250 preserved. Focused count field and drafts also preserved during a real changed snapshot |
+| AC6 | Met | Reduced-motion browser check: no dialog animation or button transition; CSS also disables press movement and view transitions |
+| AC7 | Met | Native modal focus, input selection, Tab/Shift-Tab wrapping, Escape and return to opener checked with actual key events |
+| AC8 | Met | Text token pairs 5.71:1 or higher; control edges at least 3.13:1. Body text 15.62:1, muted text 8.28:1, felt text 7.80:1 |
+| AC9 | Met | Initial tokens, including Bea BE / Ben BN; signed final results with Lucide directional icons |
+| AC10 | Met | Bought-in, in-play and cashed-out figures labelled separately. Count-up has no result figure. Final results tagged Final |
+| AC11 | Met | Chips page has no peso sign; visible amounts retain chip units. Display unit uses a smaller line |
+| AC12 | Met | Host with script execution disabled recorded a buy-in and a cash-out through expandable native forms |
+| AC13 | Met | All 375 tests pass on SQLite and PostgreSQL 17. The original 368 tests remain unchanged; seven presentation/fallback tests added |
+| AC14 | Met | CSS below 21 KB; added JS, including growth of existing files, below 8 KB; one 103,912-byte WOFF2 font. No requirement/package/build-step change and no external runtime fetch |
+| AC15 | Met | 1,280 px capture: 400 px overview column, player list beside it, labelled rebuy buttons |
+| AC16 | Met for slice 1 | Empty/setup, pending Sending…, refused amount with reopened field error, stale connection and recovery, player view and finalized regression checked. Later screen recomposition remains deferred |
+
+### Verification and visual review
+
+- `manage.py test`: 375 tests pass on SQLite and PostgreSQL 17.
+- `makemigrations --check --dry-run`: no changes.
+- Font inspection: variable weight 100–900, width 62–125, peso and minus glyphs present.
+- Browser action-flow script: 20 checks pass. The eight-player phone initially measured 1,584 px; the bounded fix batch reduced it to 1,177 px.
+- Accessibility/stability script: 13 checks pass. It measures contrast, focus wrapping, font-load and dialog layout shift, and sheet motion at 4× CPU slowdown. No observed long task over 50 ms; observed layout shift below 0.05.
+- Mechanical Impeccable detector: one run, no findings (`[]`).
+- Finish reviewer: seven material fixes. Confirmation verdict scored all seven resolved, no material regressions from that batch, `disposition: ship`. This verdict covers the listed fixes; it is not a new whole-surface audit.
+- One confirmation capture set was invalid because the server cached earlier templates. Server restarted, those captures replaced, and current markup verified before the verdict. See the new footgun page.
+- Screenshots and temporary DB stayed outside the dev database. Browser fixtures are synthetic. Captures in `.impeccable/review/` are gitignored.
+
+Not checked: a physical phone, a screen reader, or a production server. Long names and larger money totals can make a page taller than the eight-player fixture. Initial tokens may use a join-order suffix for exact duplicate names. The set's colours are presentation only.
+
+### Remaining authorized close steps
+
+Finish the design-system record, sync living docs, merge locally to `main`, run the suite on `main`, restart the normal dev server, and mark task 7 complete. Do not start slices 2–4 without later approval.

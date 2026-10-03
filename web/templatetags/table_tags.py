@@ -16,8 +16,17 @@ def player_token(participant, participants):
     initial = name[:1].upper() or "?"
     peers = [p for p in participants if p.member.display_name.strip()[:1].upper() == initial]
     if len(peers) > 1:
-        words = name.split()
-        initial = (words[0][:1] + words[-1][:1]).upper() if len(words) > 1 else name[:2].upper()
+        used = set()
+        for peer in sorted(peers, key=lambda p: p.join_order):
+            text = peer.member.display_name.strip().upper()
+            words = text.split()
+            label = words[0][:1] + words[-1][:1] if len(words) > 1 else text[:2]
+            if label in used:
+                label = next((text[:1] + char for char in text[2:] if text[:1] + char not in used), f"{text[:1]}{peer.join_order}")
+            used.add(label)
+            if peer is participant:
+                initial = label
+                break
     colour = (participant.join_order - 1) % 10 + 1
     return format_html('<span class="chip k{}" aria-hidden="true">{}</span>', colour, initial)
 
@@ -41,3 +50,12 @@ ICONS = {'plus': '<path d="M5 12h14" />\n  <path d="M12 5v14" />', 'arrow-left':
 @register.simple_tag
 def icon(name):
     return format_html('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{}</svg>', mark_safe(ICONS.get(name, '')))
+
+@register.filter
+def display_amount(value, unit):
+    from ledger.money import format_amount
+    text = format_amount(value, unit)
+    if unit == "chips":
+        number, word = text.rsplit(" ", 1)
+        return format_html('{} <small>{}</small>', number, word)
+    return text
