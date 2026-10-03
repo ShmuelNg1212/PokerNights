@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}New game · {{ group.name }}{% endblock %}
+{% block title %}New session · {{ group.name }}{% endblock %}
 {% block content %}
 <p class="small"><a href="{% url 'group' group.pk %}">← {{ group.name }}</a></p>
-<h1>New game</h1>
+<h1>New session</h1>
 {% if presets %}
 <form method="get" class="card form-row">
   <div class="grow">
@@ -19,6 +19,6 @@
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
   <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>
   {% include "partials/form_fields.html" %}
-  <button type="submit" class="btn btn-primary btn-block">Create game</button>
+  <button type="submit" class="btn btn-primary btn-block">Create session</button>
 </form>
 {% endblock %}

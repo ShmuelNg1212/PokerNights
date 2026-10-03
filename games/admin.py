@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import GameSession, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, Table
+from .models import GameNight, GameSession, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, Table
 
 
 @admin.register(Table)
@@ -46,3 +46,9 @@ class ParticipantBatchAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+
+@admin.register(GameNight)
+class GameNightAdmin(admin.ModelAdmin):
+    list_display = ("__str__", "group", "status", "game_date")
+    readonly_fields = ("status", "unit", "closed_at")

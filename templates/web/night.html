@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block title %}Session · {{ night }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' night.group_id %}">← {{ night.group.name }}</a></p>
+<div class="row">
+  <h1 class="grow">{{ night.table.name }}</h1>
+  <span class="badge {% if not night.is_closed %}badge-good{% endif %}">Session {{ night.get_status_display|lower }}</span>
+</div>
+<p class="muted">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if night.unit == 'chips' %} · Chips game{% endif %}</p>
+
+<h2>Sets</h2>
+<ul class="list card">
+  {% for s in sets %}
+  <li class="row">
+    <a class="grow" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>
+    <span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% if latest_set and not night.is_closed %}
+<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>
+{% endif %}
+{% block night_extra %}{% endblock %}
+{% endblock %}

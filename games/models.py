@@ -103,8 +103,50 @@ class Table(models.Model):
         return self.name
 
 
+class GameNight(models.Model):
+    """A session: one gathering at one table on one date. It holds one or more sets.
+
+    Naming: screens call this a "session" and its rounds "sets". In the code a
+    set is the ``GameSession`` model, which existed first; see
+    doc/wiki/footguns/session_means_set_in_the_code.md.
+    """
+
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        CLOSED = "closed", "Closed"
+
+    group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="nights")
+    table = models.ForeignKey(Table, on_delete=models.PROTECT, related_name="nights")
+    game_date = models.DateField()
+    location = models.CharField(max_length=120, blank=True)
+    game_type = models.CharField(max_length=8, choices=GameType.choices, default=GameType.HOLDEM)
+    # Every set of the session counts in this unit, so their results can be added.
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.OPEN)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-game_date", "-id"]
+        constraints = [
+            models.CheckConstraint(condition=Q(status__in=["open", "closed"]), name="night_status_valid"),
+        ]
+        indexes = [models.Index(fields=["group", "status", "game_date"], name="night_group_status_date")]
+
+    def __str__(self):
+        return f"{self.table.name}, {self.game_date:%b %-d, %Y}"
+
+    @property
+    def is_closed(self):
+        return self.status == self.Status.CLOSED
+
+
 class GameSession(models.Model):
-    """One dated cash game at one table, with its own settings, players and money."""
+    """One **set** of a session: a round of play with its own settings, players and money.
+
+    The class keeps its first name. Screens call it "Set N" of a session (``GameNight``).
+    """
 
     class State(models.TextChoices):
         SETUP = "setup", "Setup"
@@ -116,6 +158,8 @@ class GameSession(models.Model):
 
     LIVE_STATES = (State.OPEN, State.RUNNING, State.RECONCILIATION)
 
+    night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="sets")
+    set_number = models.PositiveIntegerField(default=1)
     group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="sessions")
     table = models.ForeignKey(Table, on_delete=models.PROTECT, related_name="sessions")
     # The Asia/Manila calendar date of the game. A game that runs past midnight keeps it.
@@ -142,6 +186,11 @@ class GameSession(models.Model):
                 name="session_state_valid",
             ),
             models.CheckConstraint(condition=Q(unit__in=["php", "chips"]), name="session_unit_valid"),
+            models.UniqueConstraint(fields=["night", "set_number"], name="set_number_unique_in_night"),
+            # Sets of one session are played one after another.
+            models.UniqueConstraint(
+                fields=["night"], condition=Q(state__in=["setup", "open", "running"]), name="night_one_set_in_play"
+            ),
             models.CheckConstraint(condition=Q(seat_count__gte=2, seat_count__lte=12), name="session_seat_count_valid"),
         ]
         indexes = [
@@ -150,7 +199,7 @@ class GameSession(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.table.name}, {self.game_date:%b %-d, %Y}"
+        return f"{self.table.name}, {self.game_date:%b %-d, %Y}, set {self.set_number}"
 
     @property
     def is_live(self):

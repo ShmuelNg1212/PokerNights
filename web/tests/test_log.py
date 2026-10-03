@@ -43,8 +43,9 @@ class SessionLogTests(TestCase):
         self.client.force_login(self.member.user)
         self.assertContains(self.client.get(reverse("session", args=[self.night.session.pk])), self.url)
         group_page = self.client.get(reverse("group", args=[self.night.group.pk]))
-        self.assertContains(group_page, "Past games")
-        self.assertContains(group_page, reverse("session", args=[self.night.session.pk]))
+        self.assertContains(group_page, reverse("night", args=[self.night.session.night_id]))
+        night_page = self.client.get(reverse("night", args=[self.night.session.night_id]))
+        self.assertContains(night_page, reverse("session", args=[self.night.session.pk]))
 
     def test_non_member_gets_404(self):
         self.client.force_login(make_user("stranger"))

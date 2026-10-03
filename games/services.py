@@ -12,7 +12,7 @@ from groups.models import Member
 from groups.services import clean_name
 
 from .models import (
-    GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
+    GameNight, GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
 )
 
 
@@ -102,10 +102,18 @@ def create_table(actor: Member, name: str, seat_count, default_preset_id=None) -
 State = GameSession.State
 
 
+def lock_night(night_id, group_id) -> GameNight:
+    """The session row, locked for the rest of the transaction."""
+    night = GameNight.objects.select_for_update().select_related("table").filter(pk=night_id, group_id=group_id).first()
+    if night is None:
+        raise RuleError("That session is not in this group.")
+    return night
+
+
 def lock_session(session_id, group_id) -> GameSession:
     """The session row, locked for the rest of the transaction. Every session write starts here."""
     session = (
-        GameSession.objects.select_for_update().select_related("table").filter(pk=session_id, group_id=group_id).first()
+        GameSession.objects.select_for_update().select_related("table", "night").filter(pk=session_id, group_id=group_id).first()
     )
     if session is None:
         raise RuleError("That game is not in this group.")
@@ -140,7 +148,7 @@ def _clean_date(value) -> datetime.date:
 
 @transaction.atomic
 def create_session(actor: Member, data: dict) -> GameSession:
-    """Create a game in setup, with settings version 1."""
+    """Create a session with its first set. The set is in setup, with settings version 1."""
     require_host(actor)
     table = Table.objects.filter(group=actor.group, pk=data.get("table_id"), archived_at__isnull=True).first()
     if table is None:
@@ -148,22 +156,23 @@ def create_session(actor: Member, data: dict) -> GameSession:
     preset = None
     if data.get("preset_id"):
         preset = SettingsPreset.objects.filter(group=actor.group, pk=data["preset_id"]).first()
-    session = GameSession.objects.create(
-        group=actor.group,
-        table=table,
-        game_date=_clean_date(data.get("game_date")),
-        location=(data.get("location") or "").strip()[:120],
-        game_type=_game_type(data.get("game_type")),
-        unit=_unit(data.get("unit")),
-        seat_count=table.seat_count,
-        created_by=actor.user,
-    )
+    shared = {
+        "group": actor.group,
+        "table": table,
+        "game_date": _clean_date(data.get("game_date")),
+        "location": (data.get("location") or "").strip()[:120],
+        "game_type": _game_type(data.get("game_type")),
+        "unit": _unit(data.get("unit")),
+        "created_by": actor.user,
+    }
+    night = GameNight.objects.create(**shared)
+    session = GameSession.objects.create(night=night, set_number=1, seat_count=table.seat_count, **shared)
     SettingsVersion.objects.create(
         session=session, number=1, preset=preset, created_by=actor.user, **validated_stakes(data)
     )
     audit.record(
         "session.created", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
-        summary=f"Created a game at {table.name} for {session.game_date:%Y-%m-%d}",
+        summary=f"Created a session at {table.name} for {session.game_date:%Y-%m-%d} (set 1)",
     )
     return session
 
@@ -185,8 +194,11 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
         # Amounts already recorded would change meaning, so the unit is fixed once money is in.
         if has_money(session):
             raise RuleError("Buy-ins are recorded, so the unit cannot change. Reverse them first.")
+        if session.night.sets.count() > 1:
+            raise RuleError("This session has several sets. They all count in one unit, so it cannot change.")
         session.unit = unit
         session.save(update_fields=["unit"])
+        GameNight.objects.filter(pk=session.night_id).update(unit=unit)
         audit.record(
             "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
             summary=f"Changed the unit to {Unit(unit).label}",

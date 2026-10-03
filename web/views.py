@@ -10,8 +10,8 @@ from django.utils import timezone
 from audit.models import AuditEvent
 
 from games import services as games
-from games.access import session_for
-from games.models import GameSession, Participant, SettingsPreset, Table
+from games.access import night_for, session_for
+from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
 from groups.models import Invite, Member
 from ledger import money
 from ledger import queries as ledger_queries
@@ -30,6 +30,16 @@ def home(request):
     return render(request, "web/home.html", {"memberships": memberships})
 
 
+def visible_nights(me):
+    """The group's sessions with the sets that this member can see (drafts are for hosts only)."""
+    nights = GameNight.objects.filter(group=me.group).select_related("table").prefetch_related("sets")
+    for night in nights:
+        sets = sorted(night.sets.all(), key=lambda s: s.set_number)
+        night.shown_sets = [s for s in sets if me.is_host or s.state != GameSession.State.SETUP]
+        night.latest_set = night.shown_sets[-1] if night.shown_sets else None
+    return nights
+
+
 def group(request, group_id):
     me = member_for(request.user, group_id)
     members = Member.objects.filter(group=me.group, status=Member.Status.ACTIVE)
@@ -40,11 +50,9 @@ def group(request, group_id):
         "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
-    sessions = GameSession.objects.filter(group=me.group).select_related("table")
-    if not me.is_host:
-        sessions = sessions.exclude(state=GameSession.State.SETUP)
-    context["upcoming_sessions"] = [s for s in sessions if s.state in ("setup", "open", "running", "reconciliation")]
-    context["past_sessions"] = [s for s in sessions if s.state in ("finalized", "canceled")]
+    nights = [n for n in visible_nights(me) if n.shown_sets]
+    context["open_nights"] = [n for n in nights if not n.is_closed]
+    context["closed_nights"] = [n for n in nights if n.is_closed]
     if me.is_host:
         context["invites"] = Invite.objects.filter(
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
@@ -130,3 +138,11 @@ def session_log(request, session_id):
         "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
     }
     return render(request, "web/session_log.html", context)
+
+
+def night(request, night_id):
+    """The session page: its sets, in order."""
+    night, me = night_for(request.user, night_id)
+    sets = [s for s in night.sets.order_by("set_number") if me.is_host or s.state != GameSession.State.SETUP]
+    context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    return render(request, "web/night.html", context)

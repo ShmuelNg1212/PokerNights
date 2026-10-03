@@ -1,6 +1,6 @@
 {% load money_tags %}
 <div class="row">
-  <h1 class="grow">{{ session.table.name }}</h1>
+  <h1 class="grow">{{ session.table.name }} <span class="muted">· Set {{ session.set_number }}</span></h1>
   <span class="badge {% if session.state == 'running' %}badge-live{% endif %}">{{ session.get_state_display }}</span>
 </div>
 <p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>

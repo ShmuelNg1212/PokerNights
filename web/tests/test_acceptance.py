@@ -136,7 +136,7 @@ class GameNightAcceptanceTest(TestCase):
         log = player_b.get(reverse("session_log", args=[session.pk]))
         for text in ("miscounted", "Finalized: ₱2,500 bought in", "Marked paid", "B left the game"):
             self.assertContains(log, text)
-        self.assertContains(player_b.get(reverse("group", args=[group.pk])), "Past games")
+        self.assertContains(player_b.get(reverse("group", args=[group.pk])), reverse("night", args=[session.night_id]))
 
 
 class ChipsGameAcceptanceTest(TestCase):

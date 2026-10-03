@@ -42,30 +42,30 @@
 {% block content %}
 <h1>{{ group.name }}</h1>
 
-<h2>Games</h2>
+<h2>Sessions</h2>
 <div class="card">
-  {% if upcoming_sessions %}
+  {% if open_nights %}
   <ul class="list">
-    {% for s in upcoming_sessions %}
+    {% for n in open_nights %}
     <li class="row">
-      <a class="grow" href="{% url 'session' s.pk %}">{{ s.table.name }} · {{ s.game_date|date:"D, M j" }}</a>
-      <span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span>
+      <a class="grow" href="{% url 'night' n.pk %}">{{ n.table.name }} · {{ n.game_date|date:"D, M j" }}</a>
+      <span class="badge {% if n.latest_set.state == 'running' %}badge-live{% endif %}">Set {{ n.latest_set.set_number }} · {{ n.latest_set.get_state_display }}</span>
     </li>
     {% endfor %}
   </ul>
-  {% else %}<p class="muted">No game is planned or in progress.</p>{% endif %}
+  {% else %}<p class="muted">No session is planned or in progress.</p>{% endif %}
   {% if me.is_host %}
-    {% if tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New game</a></p>
-    {% else %}<p class="muted small">Add a table below to create a game.</p>{% endif %}
+    {% if tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>
+    {% else %}<p class="muted small">Add a table below to create a session.</p>{% endif %}
   {% endif %}
 </div>
-{% if past_sessions %}
-<h2>Past games</h2>
+{% if closed_nights %}
+<h2>Past sessions</h2>
 <ul class="list card">
-  {% for s in past_sessions %}
+  {% for n in closed_nights %}
   <li class="row">
-    <a class="grow" href="{% url 'session' s.pk %}">{{ s.table.name }} · {{ s.game_date|date:"M j, Y" }}</a>
-    <span class="badge">{{ s.get_state_display }}</span>
+    <a class="grow" href="{% url 'night' n.pk %}">{{ n.table.name }} · {{ n.game_date|date:"M j, Y" }}</a>
+    <span class="badge">{{ n.shown_sets|length }} set{{ n.shown_sets|length|pluralize }}</span>
   </li>
   {% endfor %}
 </ul>
