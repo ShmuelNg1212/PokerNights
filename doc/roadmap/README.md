@@ -37,6 +37,10 @@ These used the plan's defaults in Stage 1. They can still change.
 | Win rate | Percentage of finalized sessions with profit; the same measure as "cash rate" |
 | Ranking threshold | 3 sessions, per group |
 
+## Possible follow-ups
+
+- **New names in the player picker.** Type several new names (one per line) on "Add players"; each becomes a roster player without a login and joins the game in the same all-or-nothing action. Not built. It needs name-clash rules and its own plan. It uses the existing roster model, not a new guest-account system.
+
 ## Later (from `SPEC.md`, not planned)
 
 RSVP with a waitlist, recurring games, reminders, IOUs across sessions, rake and tips, session timer, session notes, CSV or image export, chip denominations, bankroll graph.

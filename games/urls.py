@@ -10,6 +10,7 @@ urlpatterns = [
     path("s/<int:session_id>/settings/", views.session_settings, name="session_settings"),
     path("s/<int:session_id>/transition/", views.session_transition, name="session_transition"),
     path("s/<int:session_id>/players/add/", views.participant_add, name="participant_add"),
+    path("s/<int:session_id>/players/add-several/", views.participants_add, name="participants_add"),
     path("s/<int:session_id>/players/<int:participant_id>/withdraw/", views.participant_withdraw, name="participant_withdraw"),
     path("s/<int:session_id>/players/<int:participant_id>/left/", views.participant_left, name="participant_left"),
 ]

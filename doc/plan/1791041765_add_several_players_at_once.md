@@ -1,10 +1,10 @@
 # Plan: add several players to a game at once
 
 - **Date:** 2026-10-03 23:36 (Asia/Manila), Unix timestamp `1791041765`
-- **Status:** `awaiting-approval`
+- **Status:** `done`
 - **Study:** [../study/1791041698_add_several_players_at_once.md](../study/1791041698_add_several_players_at_once.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
-- **Approval record:** _none yet_
+- **Approval record:** Approved by the human on 2026-10-03: "for players who have a login are irrelevant for this feature. I am ok with q2. proceed with the remaining steps." Q2 = yes. Q1: read by the AI as "whether a player has a login does not matter for this feature"; the default applies (all eligible members are listed alike; no new-names box). This reading is flagged in the rendezvous report.
 
 Edit this file directly, or add a line that starts with `NOTE:`.
 
@@ -69,13 +69,13 @@ None new. PostgreSQL 17 is started for the test run and stopped after it. The de
 
 ## Tasks
 
-- [ ] **1. Add the batch action.** Model `ParticipantBatch` (session, `request_id` unique per session, added by, time) with its migration. Service `games.services.add_participants()` as the study describes. View and URL `/s/<id>/players/add/` (GET the picker, POST the confirm; a refused confirm shows the picker again with the selection kept). Template `games/add_players.html`. Script `static/js/pick.js` for search, count, capacity message and button text. "Add players" button in `templates/web/_players.html`. Tests for the service, the page and the races.
+- [x] **1. Add the batch action.** Model `ParticipantBatch` (session, `request_id` unique per session, added by, time) with its migration. Service `games.services.add_participants()` as the study describes. View and URL `/s/<id>/players/add/` (GET the picker, POST the confirm; a refused confirm shows the picker again with the selection kept). Template `games/add_players.html`. Script `static/js/pick.js` for search, count, capacity message and button text. "Add players" button in `templates/web/_players.html`. Tests for the service, the page and the races.
   - Commit: `feat(games): let a host add several players in one action`
   - Done when: the tests listed under Verification pass on SQLite and on PostgreSQL, and the existing tests pass unchanged.
-- [ ] **2. Verify in a browser.** Headless Chrome at phone width: search keeps ticks, count and button text follow the selection, the capacity message, keyboard ticking with Tab and Space, no horizontal scroll, and the live update on a second client. Look at the screenshots. Record results in this plan.
+- [x] **2. Verify in a browser.** Headless Chrome at phone width: search keeps ticks, count and button text follow the selection, the capacity message, keyboard ticking with Tab and Space, no horizontal scroll, and the live update on a second client. Look at the screenshots. Record results in this plan.
   - Commit: `docs(plan): record verification results`
   - Done when: each acceptance criterion has a recorded result.
-- [ ] **3. Rendezvous and docs.** Back up and migrate the dev database. Merge to `main`. Update `doc/wiki/features.md`, `architecture.md` and `TODO.md`; add the guest-names follow-up to the roadmap if Q1 stays "no". Restart the server. Set this plan to `done`.
+- [x] **3. Rendezvous and docs.** Back up and migrate the dev database. Merge to `main`. Update `doc/wiki/features.md`, `architecture.md` and `TODO.md`; add the guest-names follow-up to the roadmap if Q1 stays "no". Restart the server. Set this plan to `done`.
   - Commit: `docs: sync living documentation`
   - Done when: `main` has the work, the tests pass on `main`, and the server answers.
 
@@ -116,3 +116,48 @@ None. If Q1 is answered "yes", the plan is revised before work starts.
 | Date | Entry |
 |---|---|
 | 2026-10-03 23:36 | Study and plan written and committed. Status `awaiting-approval`. |
+| 2026-10-03 | Human approved. Q2 yes. Q1 default, with the AI's reading recorded above. Dev server stopped for the work. |
+| 2026-10-03 | Tasks 1–3 done. Dev database backed up to `db.before_add_players.sqlite3` (SQLite backup API), then migrated. Merged to `main` locally. Dev server restarted. Status `done`. |
+
+## Verification results (2026-10-03)
+
+| Check | Result |
+|---|---|
+| `manage.py test` on SQLite | 256 tests, pass (29 new) |
+| Same suite on PostgreSQL 17.11 | 256 tests, pass |
+| Lock mutation check | With `select_for_update()` removed, all 4 new race tests failed on PostgreSQL. Restored, all pass |
+| Existing single-add and accounting tests | Pass with no edits |
+| `manage.py check --deploy` with production-like settings | No issues |
+| `makemigrations --check` | No changes |
+| Headless Chrome at 390 × 844 | 27 of 27 checks pass. The four added players reached a second client in 3.7 s |
+| Screenshots of the picker (selection, over capacity, conflict) and the game page | Reviewed by the AI |
+| Dev database | 11 participants and 21 buy-ins before and after the migration |
+
+Not checked: a physical phone, a screen reader, and a production web server. Keyboard use was checked for Space on a focused checkbox only.
+
+| # | Result | Evidence |
+|---|---|---|
+| AC1 | Met | `games.tests.test_add_players.AddPlayersPageTests`; browser check |
+| AC2 | Met | Page test; browser check |
+| AC3 | Met | Browser check |
+| AC4 | Met | Browser check (search, hidden ticked row, clear, submit) |
+| AC5 | Met | Service and page tests; browser check |
+| AC6 | Met | Service and page tests; browser check |
+| AC7 | Met | Page test; browser check with a second host session |
+| AC8 | Met | Service, page and race tests |
+| AC9 | Met | Page test (403, 404, login redirect) |
+| AC10 | Met | `web.tests.test_add_players`; browser check, 3.7 s |
+| AC11 | Met | `web.tests.test_add_players.AddPlayersSideEffectTests` |
+| AC12 | Met in emulation | Browser check: labels, 48 px rows, Space key, no horizontal scroll |
+
+## Differences from the plan and notes
+
+| Topic | Detail |
+|---|---|
+| URL | The plan named `/s/<id>/players/add/`. That path is the existing single-add endpoint, so the picker is at `/s/<id>/players/add-several/` |
+| Dropdown label | "Add from the roster" now reads "Or add one player", because it sits under the new button. The single flow is otherwise unchanged |
+| Q1 | The human's answer was read as "the login distinction does not matter". Each active group member is listed, with or without a login. No new-names box was added. If the intent was different, this needs a small follow-up |
+| Review step | The review is the "Selected (4): …" line above the button, on the same page. There is no second confirmation page |
+| Without JavaScript | The list, the checkboxes and the confirm work. Search, the count and the button text need the script |
+| Refused confirm | The page returns HTTP 200 with the error and the kept selection, as Django forms do |
+| Extra commit | `style(games): pad the sticky action bar of the player picker` |

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add players · {{ session }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
+<h1>Add players</h1>
+<p class="muted">{{ session.table.name }} · {{ session.game_date|date:"D, M j" }}</p>
+
+{% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
+
+<p id="pick-capacity"><strong>{{ seats_free }}</strong> of {{ session.seat_count }} seat{{ session.seat_count|pluralize }} {{ seats_free|pluralize:"is,are" }} free.</p>
+
+{% if eligible_count == 0 %}
+<p class="muted">Every player of this group is already at the table.</p>
+{% else %}
+<form method="post" class="card stack" data-pick data-free="{{ seats_free }}">
+  {% csrf_token %}
+  <input type="hidden" name="request_id" value="{{ request_id }}">
+  <div class="field" data-pick-search-box hidden>
+    <label for="pick-search">Search players</label>
+    <input id="pick-search" type="text" autocomplete="off" inputmode="search" data-pick-search>
+  </div>
+  <fieldset style="border:0; margin:0; padding:0;">
+    <legend class="small muted">Tick each player to add</legend>
+    <ul class="list">
+      {% for row in rows %}
+      <li data-pick-row data-name="{{ row.member.display_name|lower }}">
+        <label class="check {% if row.at_table %}is-disabled{% endif %}">
+          <input type="checkbox" name="member_id" value="{{ row.member.pk }}" data-label="{{ row.member.display_name }}"
+                 {% if row.at_table %}disabled{% endif %} {% if row.checked %}checked{% endif %}>
+          <span class="grow">{{ row.member.display_name }}</span>
+          {% if row.at_table %}<span class="badge badge-good">At the table</span>
+          {% elif row.left_earlier %}<span class="badge">Left earlier</span>{% endif %}
+          {% if not row.member.has_login %}<span class="badge">No login</span>{% endif %}
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="muted" data-pick-empty hidden>No player matches the search.</p>
+  </fieldset>
+  <div class="sticky-actions stack">
+    <p class="small" data-pick-summary aria-live="polite">{% if selected_count %}{{ selected_count }} selected.{% else %}No player selected.{% endif %}</p>
+    <p class="notice notice-bad" data-pick-warning role="alert" hidden></p>
+    <button type="submit" class="btn btn-primary btn-block" data-pick-submit>Add selected players</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/pick.js' %}" defer></script>{% endblock %}
