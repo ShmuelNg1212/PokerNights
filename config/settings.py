@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "groups",
     "games",
     "ledger",
+    "settlement",
     "web",
 ]
 
