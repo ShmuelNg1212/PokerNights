@@ -179,3 +179,77 @@ None. No new dependency.
 4. **Q4.** Breaks: leave them out of this change?
 5. **Q5.** End-time correction: leave it out of this change?
 6. **Q6.** Older games: end time from the log, playing time "not recorded"?
+
+---
+
+## Review addendum, 2026-10-03 23:56 (Unix `1791042979`): sessions contain sets
+
+The human corrected section 2: **"a game can have multiple sets per ongoing session."** The sections above are not rewritten. Where this addendum differs from them, this addendum controls.
+
+### A1. What was wrong
+
+Section 2 said that a set is a game and that the app has no larger session. That described the code correctly, but it is not the product. The product has two levels. The code has one.
+
+### A2. Decisions by the human (2026-10-03)
+
+| # | Question | Answer |
+|---|---|---|
+| S1 | Does each set have its own money? | **Yes.** Each set has its own buy-ins, final counts, cash-outs and balance check. A new set starts with fresh buy-ins |
+| S2 | When is who-pays-whom calculated? | **Once per session.** Each set freezes its own results. The transfer list nets all sets of the session |
+| S3 | How does the next set start? | **The host starts it, and players carry over.** The host can then add or remove players |
+| S4 | Can two sets of one session run at once? | **No.** One after another |
+
+### A3. Terms from here on
+
+| Term | Meaning | In the code |
+|---|---|---|
+| **Session** | One ongoing gathering at one table on one date. It contains one or more sets and has one settle-up | New model, `GameNight` |
+| **Set** | One round of play with its own buy-ins, counts, cash-outs, balance check and frozen results | The existing `GameSession` model |
+
+REC: keep the class name `GameSession` for a set and add `GameNight` for the session. A full rename of `GameSession` and of each `session` field would touch every app and migration for no change in behavior. The mismatch between the code name and the screen word is recorded as a footgun page. Screens say "Session" and "Set 2".
+
+### A4. What exists today against what is needed (FACT, then REC)
+
+| Topic | Today | Needed |
+|---|---|---|
+| Grouping | None. Each `GameSession` stands alone | `GameNight` with table, date, location, game type and unit. `GameSession.night` and `set_number` |
+| Sequence | Any number of games can run at once | At most one set of a session in `setup`, `open` or `running`. A database constraint plus a check under a lock on the session row |
+| Next set | The host creates a new game by hand and adds each player again | "Start next set": copies the table, seats, latest settings and the players still at the table. No buy-in is copied. The new set opens for changes before play starts |
+| Results | `PlayerResult` per game | Unchanged: per set |
+| Settle-up | `finalize()` writes results **and** the transfer list for that game | Finalizing a set writes results only. A new action "Close session and settle up" nets each player's results over the session's sets and writes one transfer list |
+| Transfers and payments | Point to a `Participant` (a player in one game) | Must point to a **member**, because a player has one participant row per set. They attach to the session |
+| Unit | Per game | Per session. Each set of a session uses the session's unit, so results can be added |
+| Timers | — | Intervals belong to a set. Ending a set closes only that set's intervals. A player's session time is the sum over its sets |
+
+### A5. How the earlier design fits
+
+Sections 5.1 to 5.7 (end time, intervals, final counts, statuses, the batch, the gates, corrections) apply **per set** without change. Three points change:
+
+1. **Finalization of a set** no longer creates transfers. It freezes that set's results. The set page then offers "Start next set" and "Close session and settle up".
+2. **Resume (Q3)** applies to the latest set only. A set cannot resume after the next set has started.
+3. **Payment status** belongs to the session. A set shows "Payment: at the end of the session".
+
+### A6. Session settle-up
+
+- Allowed when each set of the session is finalized or canceled, and at least one is finalized.
+- Each player's session result = the sum of their set results. The sum over all players is zero, because each set sums to zero.
+- The existing algorithm produces the minimum transfer list from those sums. Order of ties: the order in which players first joined the session.
+- The session becomes `closed`. Paid marks work as today, on the session's transfers.
+- Before closing, the session page shows each player's running result over the finalized sets, marked "not final".
+- A session with one set works as before, with one more tap: finalize the set, then close the session.
+
+### A7. Existing data
+
+- Each existing game becomes a session with one set, number 1.
+- Each finalized game becomes a **closed** session. Its transfers and paid marks move to the session and point to members. Amounts do not change.
+- Games that are open, running or counting up become open sessions.
+
+### A8. Consequences to confirm
+
+| Topic | Consequence |
+|---|---|
+| Scope | This is now two pieces of work: (I) sessions with sets and session settle-up, then (II) end-of-set timers, counts and the batch. (II) depends on (I) for "stop only the timers of the ended set" |
+| Carry-over | Players with status "joined" at the end of the previous set carry over. Players who left do not. The host can add them again |
+| Canceled sets | A canceled set has no results and counts for nothing in the session settle-up |
+| Closed session | It cannot get another set. Reopening is not built |
+| Statistics later | Stage 3 must decide whether a "session played" is a set or a session. Results are stored per set, so both remain possible |
