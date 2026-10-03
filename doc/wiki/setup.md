@@ -47,7 +47,7 @@ To let phones on the same Wi-Fi reach it: add the machine's address to `ALLOWED_
 .venv/bin/python manage.py test
 ```
 
-227 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
+256 tests. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
 
 To run the same suite on PostgreSQL:
 

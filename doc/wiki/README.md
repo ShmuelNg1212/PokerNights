@@ -33,3 +33,4 @@ Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs fro
 |---|---|---|---|
 | Architecture and Stage 1, game night | [study](../study/1791037419_poker_home_game_architecture.md) | [plan](../plan/1791037623_poker_home_game_architecture.md) | Done, 2026-10-03 |
 | Cash amounts and a unit option | [study](../study/1791040240_cash_amounts_and_unit_option.md) | [plan](../plan/1791040305_cash_amounts_and_unit_option.md) | Done, 2026-10-03 |
+| Add several players at once | [study](../study/1791041698_add_several_players_at_once.md) | [plan](../plan/1791041765_add_several_players_at_once.md) | Done, 2026-10-03 |

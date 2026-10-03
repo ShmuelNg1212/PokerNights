@@ -29,6 +29,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 
 1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
+   - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment.
 3. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each row keeps its amount, chips and time. Each player has a running total.
 4. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
 5. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.

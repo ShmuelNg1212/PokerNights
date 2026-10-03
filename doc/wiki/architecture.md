@@ -10,7 +10,7 @@ One Django 6.1 project with server-rendered templates, one stylesheet and two sm
 | `accounts` | Custom `User`, sign-up, login, logout. `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py` |
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `groups` | `GameGroup`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
-| `games` | `Table`, `SettingsPreset`, `GameSession`, `SettingsVersion`, `Participant`, the lifecycle | `services.py`, `access.py`, `forms.py` |
+| `games` | `Table`, `SettingsPreset`, `GameSession`, `SettingsVersion`, `Participant`, `ParticipantBatch`, the lifecycle | `services.py`, `access.py`, `forms.py` |
 | `ledger` | `BuyIn`, `CashOut`, their reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()`, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
 | `web` | Pages that read from several apps: home, group, session, polling endpoint, game log. No models. It never writes | `views.py` |
@@ -52,6 +52,14 @@ AuditEvent (group_id, session_id as plain integers)
 - A **Member** is a person in a group's roster. `user` is empty for a player without a login. Results are keyed by member.
 - A **SettingsVersion** is never edited. A change adds a version. Each buy-in points to the version in force.
 - `PlayerResult` repeats `member`, `group` and `game_date` so that later statistics read one table.
+
+## Adding players
+
+- **One player:** `games.services.add_participant()`. A player joins for themselves, or a host adds one member. The unique `(session, member)` constraint makes a repeat a no-op.
+- **Several players:** `games.services.add_participants(session_id, actor, member_ids, request_id)`. Host only, in `setup`, `open` or `running`. Under the session lock it checks that each id is an active member of the group, that none is at the table, and that the count fits the free seats. Any failure raises `RuleError` and adds nobody. Success writes the participants, one audit event each, one `ParticipantBatch` and one version increment.
+- `ParticipantBatch` stores the form's `request_id` with a unique constraint per session. A repeated submission returns the players of the first call.
+- Neither function touches `ledger` or `settlement`. Joining takes one unit of capacity and gives no seat number.
+- The picker page (`games.views.participants_add`, `templates/games/add_players.html`, `static/js/pick.js`) is separate from the live game page, so polling cannot clear the ticks. Search hides rows in the browser; the checkboxes stay in the form.
 
 ## Amounts and units
 
