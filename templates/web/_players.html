@@ -1,0 +1,34 @@
+{% load money_tags %}
+<div class="card">
+  {% if participants %}
+  <ul class="list">
+    {% for p in participants %}
+    <li>
+      <div class="row">
+        <span class="grow">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}</span>
+        {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
+      </div>
+      {% if can_manage_players or p.member_id == me.pk and can_join %}
+      <details>
+        <summary class="small">More</summary>
+        <div class="stack">
+          <form method="post" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
+            <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this game{% else %}Remove from game{% endif %}</button>
+          </form>
+        </div>
+      </details>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No players yet.</p>{% endif %}
+  {% if can_manage_players and addable_members %}
+  <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
+    <div class="grow">
+      <label for="add-player">Add from the roster</label>
+      <select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select>
+    </div>
+    <button type="submit" class="btn">Add</button>
+  </form>
+  {% endif %}
+</div>

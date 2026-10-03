@@ -239,3 +239,115 @@ def mark_finalized(session: GameSession) -> None:
     session.finalized_at = timezone.now()
     session.save(update_fields=["state", "finalized_at"])
     touch(session)
+
+
+# --- Participants -----------------------------------------------------------
+
+# Checks that run before a participant is withdrawn. An app that holds a
+# participant's money registers one, so a player with money cannot disappear.
+PARTICIPANT_EXIT_GUARDS = []
+
+JOINABLE_STATES = (State.OPEN, State.RUNNING)
+HOST_ADD_STATES = (State.SETUP, State.OPEN, State.RUNNING)
+
+
+def _seats_taken(session) -> int:
+    return session.participants.filter(status=Participant.Status.JOINED).count()
+
+
+@transaction.atomic
+def add_participant(session_id, actor: Member, member_id) -> Participant:
+    """Put a member in the session: a player joins for themselves, a host adds anyone on the roster.
+
+    Joining twice returns the same row. The seat check runs under the session
+    lock, so simultaneous joins cannot overfill the table.
+    """
+    session = lock_session(session_id, actor.group_id)
+    is_self = str(member_id) == str(actor.pk)
+    if not is_self:
+        require_host(actor)
+    allowed = HOST_ADD_STATES if actor.is_host else JOINABLE_STATES
+    if session.state not in allowed:
+        raise RuleError("This game is not open for joining.")
+    member = Member.objects.filter(group_id=session.group_id, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError("That player is not in this group.")
+    participant = Participant.objects.filter(session=session, member=member).first()
+    if participant is not None and participant.status == Participant.Status.JOINED:
+        return participant
+    if participant is not None and participant.status == Participant.Status.LEFT and not actor.is_host:
+        raise RuleError("You left this game. Ask a host to add you again.")
+    if _seats_taken(session) >= session.seat_count:
+        raise RuleError(f"The table is full ({session.seat_count} seats).")
+    if participant is None:
+        participant = Participant.objects.create(
+            session=session, member=member, join_order=session.participants.count() + 1, added_by=actor.user
+        )
+    else:
+        participant.status = Participant.Status.JOINED
+        participant.left_at = None
+        participant.save(update_fields=["status", "left_at"])
+    audit.record(
+        "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
+        summary=f"{member.display_name} joined" if is_self else f"Added {member.display_name}",
+    )
+    touch(session)
+    return participant
+
+
+def _participant(session, participant_id) -> Participant:
+    participant = Participant.objects.select_related("member").filter(session=session, pk=participant_id).first()
+    if participant is None:
+        raise RuleError("That player is not in this game.")
+    return participant
+
+
+@transaction.atomic
+def withdraw_participant(session_id, actor: Member, participant_id) -> Participant:
+    """Take a player out of the session. Refused once the player has money in it."""
+    session = lock_session(session_id, actor.group_id)
+    participant = _participant(session, participant_id)
+    if participant.member_id != actor.pk:
+        require_host(actor)
+    allowed = HOST_ADD_STATES if actor.is_host else JOINABLE_STATES
+    if session.state not in allowed:
+        raise RuleError("Players cannot be removed at this stage.")
+    if participant.status == Participant.Status.WITHDRAWN:
+        return participant
+    for guard in PARTICIPANT_EXIT_GUARDS:
+        guard(participant)
+    participant.status = Participant.Status.WITHDRAWN
+    participant.save(update_fields=["status"])
+    audit.record(
+        "participant.withdrawn", actor=actor.user, group_id=session.group_id, session_id=session.pk,
+        target=participant, summary=f"{participant.member.display_name} was taken out of the game",
+    )
+    touch(session)
+    return participant
+
+
+@transaction.atomic
+def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Participant:
+    """Mark a player as gone for the night (their seat is free), or as back at the table."""
+    require_host(actor)
+    session = lock_session(session_id, actor.group_id)
+    if session.state not in (State.RUNNING, State.RECONCILIATION):
+        raise RuleError("Players can be marked as left only during the game.")
+    participant = _participant(session, participant_id)
+    wanted = Participant.Status.LEFT if left else Participant.Status.JOINED
+    if participant.status == wanted:
+        return participant
+    if participant.status == Participant.Status.WITHDRAWN:
+        raise RuleError("That player is not in this game.")
+    if not left and _seats_taken(session) >= session.seat_count:
+        raise RuleError(f"The table is full ({session.seat_count} seats).")
+    participant.status = wanted
+    participant.left_at = timezone.now() if left else None
+    participant.save(update_fields=["status", "left_at"])
+    audit.record(
+        "participant.left" if left else "participant.returned", actor=actor.user, group_id=session.group_id,
+        session_id=session.pk, target=participant,
+        summary=f"{participant.member.display_name} {'left the game' if left else 'returned to the table'}",
+    )
+    touch(session)
+    return participant

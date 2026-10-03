@@ -71,3 +71,25 @@ def session_transition(request, session_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.transition, session.pk, actor, request.POST.get("action", ""), request.POST.get("reason", ""))
     return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def participant_add(request, session_id):
+    """A player joins (no member_id), or a host adds a roster player."""
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.add_participant, session.pk, actor, request.POST.get("member_id") or actor.pk)
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def participant_withdraw(request, session_id, participant_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.withdraw_participant, session.pk, actor, participant_id)
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def participant_left(request, session_id, participant_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.set_left, session.pk, actor, participant_id, request.POST.get("left", "1") == "1")
+    return redirect("session", session_id=session.pk)

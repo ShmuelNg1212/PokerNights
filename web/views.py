@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from games import services as games
 from games.access import session_for
-from games.models import GameSession, SettingsPreset, Table
+from games.models import GameSession, Participant, SettingsPreset, Table
 from groups.models import Invite, Member
 
 
@@ -43,7 +43,34 @@ def group(request, group_id):
     return render(request, "web/group.html", context)
 
 
+def session_context(session, me) -> dict:
+    """Everything the session screen shows. Used by the page and by the polling endpoint."""
+    participants = list(
+        Participant.objects.filter(session=session)
+        .exclude(status=Participant.Status.WITHDRAWN)
+        .select_related("member")
+    )
+    seated = sum(1 for p in participants if p.status == Participant.Status.JOINED)
+    context = {
+        "session": session,
+        "me": me,
+        "settings": games.current_settings(session),
+        "participants": participants,
+        "my_participant": next((p for p in participants if p.member_id == me.pk), None),
+        "player_count": len(participants),
+        "seats_free": session.seat_count - seated,
+        "can_join": session.state in games.JOINABLE_STATES,
+        "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
+    }
+    if context["can_manage_players"]:
+        present = {p.member_id for p in participants if p.status == Participant.Status.JOINED}
+        context["addable_members"] = [
+            m for m in Member.objects.filter(group_id=session.group_id, status=Member.Status.ACTIVE)
+            if m.pk not in present
+        ]
+    return context
+
+
 def session(request, session_id):
     session, me = session_for(request.user, session_id)
-    context = {"session": session, "me": me, "settings": games.current_settings(session)}
-    return render(request, "web/session.html", context)
+    return render(request, "web/session.html", session_context(session, me))
