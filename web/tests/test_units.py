@@ -45,9 +45,10 @@ class ChipsGameTests(TestCase):
         outcome = queries.outcome(night.session)
         self.assertEqual([(r.net, r.unit) for r in outcome.results], [(600, "chips"), (-300, "chips"), (-300, "chips")])
         self.assertEqual(outcome.finalization.unit, "chips")
+        settlement.close_night(night.session.night_id, night.host)
+        transfers = queries.night_outcome(night.session.night).transfers
         self.assertEqual(
-            [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in outcome.transfers],
-            [("B", "A", 300), ("C", "A", 300)],
+            [(t.payer.display_name, t.payee.display_name, t.amount) for t in transfers], [("B", "A", 300), ("C", "A", 300)]
         )
 
     def test_balance_check_and_override_work_in_chips(self):
@@ -74,20 +75,22 @@ class ChipsGameTests(TestCase):
         self.client.force_login(night.host.user)
         counting = self.client.get(reverse("session", args=[night.session.pk]))
         settlement.finalize(night.session.pk, night.host)
-        settlement.mark_paid(night.session.pk, night.host, Transfer.objects.first().pk, uuid.uuid4())
+        settlement.close_night(night.session.night_id, night.host)
+        settlement.mark_paid(night.session.night_id, night.host, Transfer.objects.first().pk, uuid.uuid4())
         pages = [
             counting,
             self.client.get(reverse("session", args=[night.session.pk])),
             self.client.get(reverse("session_log", args=[night.session.pk])),
             self.client.get(reverse("session_state", args=[night.session.pk])),
+            self.client.get(reverse("night", args=[night.session.night_id])),
         ]
         for page in pages:
             self.assertNotContains(page, "₱")
         self.assertContains(pages[1], "Chips game")
         self.assertContains(pages[1], "+650 chips")
-        self.assertContains(pages[1], "<strong>B</strong> pays <strong>A</strong>")
-        self.assertContains(pages[1], "300 chips")
-        self.assertContains(pages[2], "Finalized: 2,500 chips bought in")
+        self.assertContains(pages[4], "<strong>B</strong> pays <strong>A</strong>")
+        self.assertContains(pages[4], "300 chips")
+        self.assertContains(pages[2], "Finalized set 1: 2,500 chips bought in")
 
     def test_chip_input_must_be_whole(self):
         night = chips_night(state="running")

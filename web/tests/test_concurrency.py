@@ -111,8 +111,33 @@ class ConcurrentFinalizeTests(TransactionTestCase):
         night = worked_example()
         outcomes = race(*[lambda: settlement.finalize(night.session.pk, night.host)] * 4)
         self.assertEqual(kinds(outcomes), ["ok"] * 4, outcomes)
-        self.assertEqual((Finalization.objects.count(), SettlementPlan.objects.count(), Transfer.objects.count()), (1, 1, 2))
-        self.assertEqual(PlayerResult.objects.count(), 3)
+        self.assertEqual((Finalization.objects.count(), PlayerResult.objects.count()), (1, 3))
+
+    def test_two_hosts_close_the_session_at_once(self):
+        night = worked_example()
+        settlement.finalize(night.session.pk, night.host)
+        outcomes = race(*[lambda: settlement.close_night(night.session.night_id, night.host)] * 4)
+        self.assertEqual(kinds(outcomes), ["ok"] * 4, outcomes)
+        self.assertEqual((SettlementPlan.objects.count(), Transfer.objects.count()), (1, 2))
+
+    def test_two_hosts_start_the_next_set_at_once(self):
+        night = worked_example()
+        outcomes = race(*[lambda: games.start_next_set(night.session.night_id, night.host)] * 4)
+        self.assertEqual(kinds(outcomes), ["ok"] + ["refused"] * 3, outcomes)
+        self.assertEqual(sorted(night.session.night.sets.values_list("set_number", flat=True)), [1, 2])
+
+    def test_close_races_with_the_next_set(self):
+        night = worked_example()
+        settlement.finalize(night.session.pk, night.host)
+        outcomes = race(
+            lambda: settlement.close_night(night.session.night_id, night.host),
+            lambda: games.start_next_set(night.session.night_id, night.host),
+        )
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        night.session.night.refresh_from_db()
+        sets = night.session.night.sets.count()
+        # Either the session closed with one set, or a second set opened and it stayed open.
+        self.assertIn((night.session.night.status, sets), (("closed", 1), ("open", 2)))
 
     def test_finalize_races_with_a_money_write(self):
         """A cash-out that would unbalance the books arrives while the host finalizes."""
@@ -156,9 +181,10 @@ class ConcurrentPaidMarkTests(TransactionTestCase):
     def test_two_hosts_mark_one_transfer_paid_at_once(self):
         night = worked_example()
         settlement.finalize(night.session.pk, night.host)
+        settlement.close_night(night.session.night_id, night.host)
         transfer = Transfer.objects.order_by("position").first()
         outcomes = race(*[
-            (lambda: settlement.mark_paid(night.session.pk, night.host, transfer.pk, uuid.uuid4())) for _ in range(6)
+            (lambda: settlement.mark_paid(night.session.night_id, night.host, transfer.pk, uuid.uuid4())) for _ in range(6)
         ])
         self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
         self.assertEqual(Payment.objects.filter(transfer=transfer, active=True).count(), 1)

@@ -2,20 +2,24 @@ from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 
-from games.models import GameSession, Participant
-from ledger.models import Finalization
+from games.models import GameNight
+from groups.models import Member
+
+# Settle-up belongs to a session (GameNight), not to one set: it nets each
+# player's results over all sets. A player has one participant row per set, so
+# transfers and payments name members.
 
 
 class SettlementPlan(models.Model):
-    """The who-pays-whom list for one finalization. Written once with it."""
+    """The who-pays-whom list of a session. Written once, when the session is closed."""
 
-    finalization = models.OneToOneField(Finalization, on_delete=models.PROTECT, related_name="plan")
+    night = models.OneToOneField(GameNight, on_delete=models.PROTECT, related_name="plan")
     # False only if the exact search was skipped (more parties than a table can seat).
     proven_minimal = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Settlement plan of {self.finalization}"
+        return f"Settlement plan of {self.night}"
 
 
 class Transfer(models.Model):
@@ -23,8 +27,8 @@ class Transfer(models.Model):
 
     plan = models.ForeignKey(SettlementPlan, on_delete=models.PROTECT, related_name="transfers")
     position = models.PositiveIntegerField()
-    payer = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="transfers_to_pay")
-    payee = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="transfers_to_receive")
+    payer = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="transfers_to_pay")
+    payee = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="transfers_to_receive")
     amount = models.BigIntegerField()
 
     class Meta:
@@ -46,9 +50,9 @@ class Payment(models.Model):
     ``payee`` is empty when that side is the banker (a later stage).
     """
 
-    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="payments")
-    payer = models.ForeignKey(Participant, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_made")
-    payee = models.ForeignKey(Participant, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_received")
+    night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="payments")
+    payer = models.ForeignKey(Member, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_made")
+    payee = models.ForeignKey(Member, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_received")
     amount = models.BigIntegerField()
     transfer = models.ForeignKey(Transfer, null=True, blank=True, on_delete=models.PROTECT, related_name="payments")
     # False once a PaymentReversal exists. Kept on the row so the database can
@@ -61,11 +65,11 @@ class Payment(models.Model):
     class Meta:
         ordering = ["created_at", "id"]
         constraints = [
-            models.UniqueConstraint(fields=["session", "request_id"], name="payment_request_once"),
+            models.UniqueConstraint(fields=["night", "request_id"], name="payment_request_once"),
             models.UniqueConstraint(fields=["transfer"], condition=Q(active=True), name="payment_one_active_per_transfer"),
             models.CheckConstraint(condition=Q(amount__gt=0), name="payment_amount_positive"),
         ]
-        indexes = [models.Index(fields=["session"], name="payment_session")]
+        indexes = [models.Index(fields=["night"], name="payment_night")]
 
     def __str__(self):
         return f"Payment {self.amount} from {self.payer_id} to {self.payee_id}"

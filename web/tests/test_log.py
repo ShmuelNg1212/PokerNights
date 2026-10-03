@@ -17,7 +17,8 @@ class SessionLogTests(TestCase):
         ledger.reverse_cash_out(night.session.pk, night.host, cash_out.pk, "counted twice")
         override(night, name="A", note="A was overpaid")
         settlement.finalize(night.session.pk, night.host)
-        settlement.mark_paid(night.session.pk, night.host, Transfer.objects.first().pk, uuid.uuid4())
+        settlement.close_night(night.session.night_id, night.host)
+        settlement.mark_paid(night.session.night_id, night.host, Transfer.objects.first().pk, uuid.uuid4())
         self.url = reverse("session_log", args=[night.session.pk])
         self.member = add_player(night.group, "ben")
 
@@ -31,8 +32,7 @@ class SessionLogTests(TestCase):
             "counted twice",  # the reversed cash-out keeps its reason
             "A was overpaid",  # the override note
             "revision 1", "+₱550", "−₱300", "−₱250",  # results
-            "B pays A", "paid",  # transfers and the paid mark
-            "Finalized: ₱2,500 bought in", "Marked paid", "Ended play",  # audit trail
+            "Finalized set 1: ₱2,500 bought in", "Closed the session", "Marked paid", "Ended play",  # audit trail
             "hana",  # who did it
         ]
         for text in expected:
@@ -46,6 +46,12 @@ class SessionLogTests(TestCase):
         self.assertContains(group_page, reverse("night", args=[self.night.session.night_id]))
         night_page = self.client.get(reverse("night", args=[self.night.session.night_id]))
         self.assertContains(night_page, reverse("session", args=[self.night.session.pk]))
+
+    def test_transfers_and_payment_records_are_on_the_session_page(self):
+        self.client.force_login(self.member.user)
+        page = self.client.get(reverse("night", args=[self.night.session.night_id]))
+        for text in ("<strong>B</strong> pays <strong>A</strong>", "Paid ·", "Payment records", "B → A ₱300"):
+            self.assertContains(page, text)
 
     def test_non_member_gets_404(self):
         self.client.force_login(make_user("stranger"))

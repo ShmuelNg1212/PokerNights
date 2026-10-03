@@ -108,17 +108,22 @@ class GameNightAcceptanceTest(TestCase):
         host.post(add_cash_out, {"participant_id": seats["C"].pk, "amount": "200"})
         self.assertContains(host.get(page_url), "The books balance")
 
-        # --- Finalize: results and who pays whom.
+        # --- Finalize the set: results only. Then close the session: who pays whom.
         results = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
-        for text in ("+₱600", "−₱300", "<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>"):
+        for text in ("+₱600", "−₱300", "Payment:</strong> at the end of the session"):
             self.assertContains(results, text)
+        self.assertEqual(Transfer.objects.count(), 0)
+        night_url = reverse("night", args=[session.night_id])
+        closed = host.post(reverse("night_close", args=[session.night_id]), follow=True)
+        for text in ("<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>"):
+            self.assertContains(closed, text)
         transfers = list(Transfer.objects.order_by("position"))
         self.assertEqual(
-            [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in transfers],
+            [(t.payer.display_name, t.payee.display_name, t.amount) for t in transfers],
             [("B", "A", 30000), ("C", "A", 30000)],
         )
-        mine = player_b.get(page_url)
-        self.assertContains(mine, "Your result")
+        mine = player_b.get(night_url)
+        self.assertContains(mine, "Your result in this session")
         self.assertContains(mine, "You pay <strong>A</strong>")
         self.assertContains(mine, "Unsettled")
 
@@ -126,17 +131,17 @@ class GameNightAcceptanceTest(TestCase):
         host.post(add_buy_in, {"participant_id": seats["A"].pk, "amount": "1000"})
         self.assertEqual(BuyIn.objects.count(), 3)
 
-        # --- Payments are marked one by one.
-        host.post(reverse("transfer_paid", args=[session.pk, transfers[0].pk]))
-        self.assertContains(player_b.get(page_url), "Partly settled")
-        host.post(reverse("transfer_paid", args=[session.pk, transfers[1].pk]))
-        self.assertContains(player_b.get(page_url), "Settled")
+        # --- Payments are marked one by one, on the session page.
+        host.post(reverse("transfer_paid", args=[session.night_id, transfers[0].pk]))
+        self.assertContains(player_b.get(night_url), "Partly settled")
+        host.post(reverse("transfer_paid", args=[session.night_id, transfers[1].pk]))
+        self.assertContains(player_b.get(night_url), "Settled")
 
         # --- The log shows the whole night, and the group lists the game as past.
         log = player_b.get(reverse("session_log", args=[session.pk]))
-        for text in ("miscounted", "Finalized: ₱2,500 bought in", "Marked paid", "B left the game"):
+        for text in ("miscounted", "Finalized set 1: ₱2,500 bought in", "Marked paid", "B left the game"):
             self.assertContains(log, text)
-        self.assertContains(player_b.get(reverse("group", args=[group.pk])), reverse("night", args=[session.night_id]))
+        self.assertContains(player_b.get(reverse("group", args=[group.pk])), "Past sessions")
 
 
 class ChipsGameAcceptanceTest(TestCase):
@@ -172,11 +177,15 @@ class ChipsGameAcceptanceTest(TestCase):
         for name, chips in (("A", "1600"), ("B", "700"), ("C", "200")):
             host.post(reverse("cash_out_add", args=[session.pk]), {"participant_id": seats[name].pk, "amount": chips})
         results = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
-        for text in ("+600 chips", "−300 chips", "<strong>B</strong> pays <strong>A</strong>", "300 chips"):
+        for text in ("+600 chips", "−300 chips"):
             self.assertContains(results, text)
         self.assertNotContains(results, "₱")
+        closed = host.post(reverse("night_close", args=[session.night_id]), follow=True)
+        for text in ("<strong>B</strong> pays <strong>A</strong>", "300 chips"):
+            self.assertContains(closed, text)
+        self.assertNotContains(closed, "₱")
         self.assertNotContains(host.get(reverse("session_log", args=[session.pk])), "₱")
         self.assertEqual(
-            [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in Transfer.objects.order_by("position")],
+            [(t.payer.display_name, t.payee.display_name, t.amount) for t in Transfer.objects.order_by("position")],
             [("B", "A", 300), ("C", "A", 300)],
         )

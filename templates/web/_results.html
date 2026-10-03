@@ -1,51 +1,13 @@
 {% load money_tags %}
 {% if my_result %}
 <div class="card">
-  <div class="stat-label">Your result</div>
+  <div class="stat-label">Your result in set {{ session.set_number }}</div>
   <div class="stat-value {{ my_result.net|sign_class }}">{{ my_result.net|signed_amount:unit }}</div>
   <p class="muted small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cash_out|amount:unit }}</p>
-  {% for t in my_transfers %}
-  <p>{% if t.payer_id == my_result.participant_id %}You pay <strong>{{ t.payee.member.display_name }}</strong> <span class="amount">{{ t.amount|amount:unit }}</span>
-     {% else %}<strong>{{ t.payer.member.display_name }}</strong> pays you <span class="amount">{{ t.amount|amount:unit }}</span>{% endif %}
-     {% if t.paid %}<span class="badge badge-good">Paid</span>{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</p>
-  {% empty %}<p class="muted">You owe nothing and are owed nothing.</p>
-  {% endfor %}
 </div>
 {% endif %}
 
-<h2>Who pays whom {% if outcome.transfers %}<span class="badge {% if outcome.status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{{ outcome.status_label }}</span>{% endif %}</h2>
-<div class="card">
-  {% if outcome.transfers %}
-  <ul class="list">
-    {% for t in outcome.transfers %}
-    <li>
-      <div class="row">
-        <span class="grow"><strong>{{ t.payer.member.display_name }}</strong> pays <strong>{{ t.payee.member.display_name }}</strong></span>
-        <span class="amount">{{ t.amount|amount:unit }}</span>
-      </div>
-      <div class="row">
-        {% if t.paid %}<span class="badge badge-good">Paid · {{ t.paid.created_at|date:"M j, H:i" }}</span>
-        {% else %}<span class="badge badge-warn">Not paid</span>{% endif %}
-        {% if me.is_host %}
-          {% if t.paid %}
-          <form method="post" action="{% url 'transfer_unpaid' session.pk t.pk %}">{% csrf_token %}
-            <button type="submit" class="btn btn-small btn-quiet">Undo</button>
-          </form>
-          {% else %}
-          <form method="post" action="{% url 'transfer_paid' session.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}
-            <button type="submit" class="btn btn-small btn-primary">Mark paid</button>
-          </form>
-          {% endif %}
-        {% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}<p class="muted">Nobody owes anything.</p>{% endif %}
-  <p class="muted small">This list assumes that no money changed hands before the results were final.</p>
-</div>
-
-<h2>Results</h2>
+<h2>Results of set {{ session.set_number }}</h2>
 <div class="card">
   <ul class="list">
     {% for r in outcome.results %}
@@ -62,4 +24,13 @@
   {% if outcome.finalization.raw_difference %}
   <p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>
   {% endif %}
+</div>
+
+<div class="card stack">
+  {% if night.is_closed %}
+  <p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>
+  {% else %}
+  <p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>
+  {% endif %}
+  <a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>
 </div>

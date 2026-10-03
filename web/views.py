@@ -18,7 +18,6 @@ from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
-from settlement.models import Payment
 
 
 def home(request):
@@ -89,8 +88,7 @@ def session_context(session, me) -> dict:
         outcome = settlement_queries.outcome(session)
         context["outcome"] = outcome
         context["my_result"] = outcome.result_for(me.pk)
-        if context["my_result"]:
-            context["my_transfers"] = outcome.transfers_for(context["my_result"].participant_id)
+        context["night"] = session.night
     if context["can_manage_players"]:
         present = {p.member_id for p in participants if p.status == Participant.Status.JOINED}
         context["addable_members"] = [
@@ -132,9 +130,6 @@ def session_log(request, session_id):
             "participant__member", "recorded_by"
         ),
         "outcome": settlement_queries.outcome(session),
-        "payments": Payment.objects.filter(session=session).select_related(
-            "payer__member", "payee__member", "recorded_by"
-        ),
         "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
     }
     return render(request, "web/session_log.html", context)
@@ -148,4 +143,17 @@ def night(request, night_id):
     context["can_start_next_set"] = (
         me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
     )
+    State = GameSession.State
+    all_sets = list(night.sets.all())
+    unfinished = [s for s in all_sets if s.state not in (State.FINALIZED, State.CANCELED)]
+    outcome = settlement_queries.night_outcome(night)
+    context.update({
+        "outcome": outcome,
+        "my_standing": outcome.standing_for(me.pk),
+        "my_transfers": outcome.transfers_for(me.pk),
+        "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
+        "unfinished_sets": unfinished,
+        "can_close": me.is_host and not night.is_closed and not unfinished
+        and any(s.state == State.FINALIZED for s in all_sets),
+    })
     return render(request, "web/night.html", context)

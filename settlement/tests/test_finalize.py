@@ -19,7 +19,13 @@ from settlement.models import SettlementPlan, Transfer
 
 
 def names(transfers):
-    return [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in transfers]
+    return [(t.payer.display_name, t.payee.display_name, t.amount) for t in transfers]
+
+
+def close(night):
+    """Close the session of a ``Night`` helper and return its outcome."""
+    services.close_night(night.session.night_id, night.host)
+    return queries.night_outcome(night.session.night)
 
 
 class FinalizeTests(TestCase):
@@ -31,11 +37,13 @@ class FinalizeTests(TestCase):
             [(r.participant.member.display_name, r.buy_in_total, r.cash_out, r.net) for r in outcome.results],
             [("A", 100000, 160000, 60000), ("B", 100000, 70000, -30000), ("C", 50000, 20000, -30000)],
         )
-        self.assertEqual(names(outcome.transfers), [("B", "A", 30000), ("C", "A", 30000)])
         self.assertEqual((finalization.total_buy_in, finalization.total_cash_out), (250000, 250000))
         self.assertEqual((finalization.revision, finalization.is_current), (1, True))
         self.assertEqual(sum(r.net for r in outcome.results), 0)
-        self.assertTrue(finalization.plan.proven_minimal)
+        # Finalizing a set freezes results only. Who pays whom waits for the session to close.
+        self.assertEqual((SettlementPlan.objects.count(), Transfer.objects.count()), (0, 0))
+        self.assertEqual(names(close(night).transfers), [("B", "A", 30000), ("C", "A", 30000)])
+        self.assertTrue(SettlementPlan.objects.get().proven_minimal)
         session = night.refresh()
         self.assertEqual(session.state, "finalized")
         self.assertIsNotNone(session.finalized_at)
@@ -67,7 +75,7 @@ class FinalizeTests(TestCase):
         self.assertEqual((b.net, c.net), (-30000, -25000))
         self.assertEqual(sum(r.net for r in outcome.results), 0)
         self.assertEqual(outcome.finalization.raw_difference, 5000)
-        self.assertEqual(names(outcome.transfers), [("B", "A", 30000), ("C", "A", 25000)])
+        self.assertEqual(names(close(night).transfers), [("B", "A", 30000), ("C", "A", 25000)])
 
     def test_centavo_amounts_stay_exact(self):
         night = worked_example((1600, 700, None))
@@ -77,7 +85,7 @@ class FinalizeTests(TestCase):
         outcome = queries.outcome(night.session)
         self.assertEqual([r.net for r in outcome.results], [60001, -30000, -30001])
         self.assertEqual(sum(r.net for r in outcome.results), 0)
-        self.assertEqual(sum(t.amount for t in outcome.transfers), 60001)
+        self.assertEqual(sum(t.amount for t in close(night).transfers), 60001)
 
     def test_several_rebuys_and_stepwise_cash_outs(self):
         night = Night("A", "B", "C", "D")
@@ -93,15 +101,16 @@ class FinalizeTests(TestCase):
         outcome = queries.outcome(night.session)
         self.assertEqual([r.net for r in outcome.results], [200000, -250000, 80000, -30000])
         self.assertEqual([r.buy_in_count for r in outcome.results], [1, 3, 2, 1])
-        self.assertEqual(len(outcome.transfers), 3)
-        self.assertEqual(sum(t.amount for t in outcome.transfers), 280000)
+        transfers = close(night).transfers
+        self.assertEqual(len(transfers), 3)
+        self.assertEqual(sum(t.amount for t in transfers), 280000)
 
     def test_break_even_night_has_no_transfers(self):
         night = worked_example((1000, 1000, 500))
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
         self.assertEqual([r.net for r in outcome.results], [0, 0, 0])
-        self.assertEqual(outcome.transfers, [])
+        self.assertEqual(close(night).transfers, [])
 
     def test_player_without_a_buy_in_gets_no_result(self):
         night = worked_example()
@@ -127,25 +136,17 @@ class FinalizeTests(TestCase):
         first = services.finalize(night.session.pk, night.host)
         again = services.finalize(night.session.pk, night.host)
         self.assertEqual(first.pk, again.pk)
-        self.assertEqual((Finalization.objects.count(), SettlementPlan.objects.count(), Transfer.objects.count()), (1, 1, 2))
+        self.assertEqual((Finalization.objects.count(), PlayerResult.objects.count()), (1, 3))
 
     def test_failure_inside_the_transaction_leaves_nothing_behind(self):
         night = worked_example()
         version = night.refresh().version
-        with mock.patch("settlement.services.algorithm.settle", side_effect=RuntimeError("boom")):
+        with mock.patch("settlement.services.games.mark_finalized", side_effect=RuntimeError("boom")):
             with self.assertRaises(RuntimeError):
                 services.finalize(night.session.pk, night.host)
-        self.assertEqual((Finalization.objects.count(), PlayerResult.objects.count(), SettlementPlan.objects.count()), (0, 0, 0))
+        self.assertEqual((Finalization.objects.count(), PlayerResult.objects.count()), (0, 0))
         session = night.refresh()
         self.assertEqual((session.state, session.version), ("reconciliation", version))
-
-    def test_transfers_that_do_not_clear_the_balances_abort(self):
-        night = worked_example()
-        a, b = night.players["A"].pk, night.players["B"].pk
-        with mock.patch("settlement.services.algorithm.settle", return_value=[(b, a, 30000)]):
-            with self.assertRaises(ledger.LedgerInvariantError):
-                services.finalize(night.session.pk, night.host)
-        self.assertEqual((Finalization.objects.count(), Transfer.objects.count()), (0, 0))
 
     def test_database_refuses_results_that_break_conservation(self):
         night = worked_example()
@@ -209,13 +210,15 @@ class FinalizeViewTests(TestCase):
         self.assertContains(page, "The books balance")
         self.assertContains(page, "Finalize results")
         page = self.client.post(reverse("session_finalize", args=[night.session.pk]), follow=True)
-        for text in ("+₱600", "−₱300", "<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>", "₱2,500"):
+        for text in ("+₱600", "−₱300", "₱2,500", "Payment:</strong> at the end of the session", "Next set or settle up"):
             self.assertContains(page, text)
+        self.assertNotContains(page, "pays <strong>")  # no transfer list on a set
         for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/", "Host controls", "Still in play", "seats free", "chips"):
             self.assertNotContains(page, gone)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertContains(page, "<strong>B</strong> pays <strong>A</strong>")
+        self.assertContains(page, "Results of set 1")
+        self.assertContains(page, "Go to the session")
 
     def test_player_sees_own_result_and_what_they_owe(self):
         night = Night("A", "C")
@@ -230,9 +233,12 @@ class FinalizeViewTests(TestCase):
         services.finalize(night.session.pk, night.host)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertContains(page, "Your result")
-        self.assertContains(page, "You pay <strong>A</strong>")
+        self.assertContains(page, "Your result in set 1")
         self.assertContains(page, "Bought in ₱1,000 · cashed out ₱700")
+        services.close_night(night.session.night_id, night.host)
+        page = self.client.get(reverse("night", args=[night.session.night_id]))
+        self.assertContains(page, "Your result in this session")
+        self.assertContains(page, "You pay <strong>A</strong>")
 
     def test_unbalanced_finalize_shows_the_reason(self):
         night = worked_example((1600, 700, 150))

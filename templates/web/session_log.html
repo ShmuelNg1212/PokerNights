@@ -3,7 +3,7 @@
 {% block title %}Log · {{ session }}{% endblock %}
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
-<h1>Game log</h1>
+<h1>Log of set {{ session.set_number }}</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.get_state_display }}</span></p>
 
 {% if session.unit == 'chips' %}<p class="small muted">This is a chips game. Amounts are chip counts with no peso value.</p>{% endif %}
@@ -65,24 +65,9 @@
   <li class="row"><span class="grow muted">Total bought in = total cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:session.unit }}</span></li>
 </ul>
 
-<h2>Transfers <span class="badge">{{ outcome.status_label }}</span></h2>
-<ul class="list card small">
-  {% for t in outcome.transfers %}
-  <li class="row"><span class="grow">{{ t.payer.member.display_name }} pays {{ t.payee.member.display_name }}</span><span class="num">{{ t.amount|amount:session.unit }} · {% if t.paid %}paid{% else %}not paid{% endif %}</span></li>
-  {% empty %}<li class="muted">Nobody owes anything.</li>
-  {% endfor %}
-</ul>
 {% endif %}
 
-{% if payments %}
-<h2>Payment records</h2>
-<ul class="list card small">
-  {% for p in payments %}
-  <li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.member.display_name }} → {{ p.payee.member.display_name }} {{ p.amount|amount:session.unit }}</span><br>
-    <span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>
-  {% endfor %}
-</ul>
-{% endif %}
+<p class="small"><a href="{% url 'night' session.night_id %}">Who pays whom and payment records are on the session page.</a></p>
 
 <h2>Who did what</h2>
 <ul class="list card small">
