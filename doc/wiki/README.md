@@ -27,6 +27,7 @@ Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs fro
 | [partial_unique_constraints_are_not_deferrable.md](footguns/partial_unique_constraints_are_not_deferrable.md) | Deactivate the old row before activating the new one |
 | [sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal.md) | A plain copy of `db.sqlite3` can miss recent data |
 | [session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md) | `GameSession` is a set; the session is `GameNight` |
+| [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 
 ## Journal
 
@@ -36,3 +37,4 @@ Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs fro
 | Cash amounts and a unit option | [study](../study/1791040240_cash_amounts_and_unit_option.md) | [plan](../plan/1791040305_cash_amounts_and_unit_option.md) | Done, 2026-10-03 |
 | Add several players at once | [study](../study/1791041698_add_several_players_at_once.md) | [plan](../plan/1791041765_add_several_players_at_once.md) | Done, 2026-10-03 |
 | Sessions with sets, end-of-set cash-outs, timers | [study](../study/1791042572_end_of_set_cash_outs_and_timers.md) | [plan](../plan/1791042668_end_of_set_cash_outs_and_timers.md) | Done, 2026-10-04 |
+| Fix: typed counts lost when confirming | [study](../study/1791044894_count_fields_cleared.md) | [plan](../plan/1791044911_count_fields_cleared.md) | Done, 2026-10-04 |

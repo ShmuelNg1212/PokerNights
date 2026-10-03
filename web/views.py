@@ -108,7 +108,15 @@ def session_context(session, me) -> dict:
 
 def session(request, session_id):
     session, me = session_for(request.user, session_id)
-    return render(request, "web/session.html", session_context(session, me))
+    context = session_context(session, me)
+    # Counts that were typed but refused are shown again, once.
+    drafts = request.session.get("count_drafts", {})
+    typed = drafts.pop(str(session.pk), None)
+    if typed is not None:
+        request.session["count_drafts"] = drafts
+        for line in context["summary"].lines:
+            line.count_draft = typed.get(str(line.participant.pk), "")
+    return render(request, "web/session.html", context)
 
 
 def session_state(request, session_id):

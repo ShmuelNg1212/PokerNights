@@ -16,6 +16,12 @@
       form.querySelectorAll("button[type=submit], button:not([type])").forEach(function (button) {
         button.disabled = true;
       });
+      // Buttons outside the form that submit it through the form attribute.
+      if (form.id) {
+        document.querySelectorAll('button[form="' + form.id + '"]').forEach(function (button) {
+          button.disabled = true;
+        });
+      }
     }, 0);
   });
 

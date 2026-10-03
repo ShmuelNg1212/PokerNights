@@ -1,7 +1,7 @@
 # Plan: keep typed counts when confirming
 
 - **Date:** 2026-10-04 00:28 (Asia/Manila), Unix timestamp `1791044911`
-- **Status:** `in-progress`
+- **Status:** `done`
 - **Study:** [../study/1791044894_count_fields_cleared.md](../study/1791044894_count_fields_cleared.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
 - **Approval record:** Approved by the human on 2026-10-04: "approved".
@@ -41,15 +41,15 @@ A host types several final counts and confirms them without losing any typed val
 
 ## Tasks
 
-- [ ] **1. Reproduce.** A browser check that types three counts, taps one "Confirm count" and expects three confirmed counts; and one that types a value, triggers a live update from a second session and expects the value to stay. Both must fail on the current code.
+- [x] **1. Reproduce.** A browser check that types three counts, taps one "Confirm count" and expects three confirmed counts; and one that types a value, triggers a live update from a second session and expects the value to stay. Both must fail on the current code.
   - Done when: both fail for the stated reason.
-- [ ] **2. Confirm every typed count in one action.** `ledger.services.confirm_counts()` (several players, one transaction, all-or-nothing, `request_id`); the count fields join one form; "Confirm all counts" button; a refused submit shows the typed values again.
+- [x] **2. Confirm every typed count in one action.** `ledger.services.confirm_counts()` (several players, one transaction, all-or-nothing, `request_id`); the count fields join one form; "Confirm all counts" button; a refused submit shows the typed values again.
   - Commit: `fix(ledger): confirm every typed count instead of clearing the other fields`
   - Done when: tests cover AC1 to AC4, AC7 and AC8, and the first reproduction passes.
-- [ ] **3. Keep typed values across a live update.** `static/js/live.js` saves and restores the values of keyed fields around a refresh.
+- [x] **3. Keep typed values across a live update.** `static/js/live.js` saves and restores the values of keyed fields around a refresh.
   - Commit: `fix(web): keep typed values when the live view refreshes`
   - Done when: the second reproduction passes, and AC6 is checked in the browser.
-- [ ] **4. Verify, merge, docs.** Full suite on SQLite and PostgreSQL. Browser run at phone width. Merge to `main`. Update `features.md`, `architecture.md` and add a footgun page. Restart the server.
+- [x] **4. Verify, merge, docs.** Full suite on SQLite and PostgreSQL. Browser run at phone width. Merge to `main`. Update `features.md`, `architecture.md` and add a footgun page. Restart the server.
   - Commit: `docs: sync living documentation`
   - Done when: `main` has the fix, the tests pass on `main`, and the server answers.
 
@@ -81,3 +81,33 @@ Branch `fix/count-fields` from `main`. No migration. Rollback is a revert of the
 |---|---|
 | 2026-10-04 00:28 | Study and plan written and committed. Status `awaiting-approval`. |
 | 2026-10-04 | Human approved. Work is done in a separate git worktree so that the running dev server on `main` is not disturbed before the merge. |
+| 2026-10-04 | Reproduced in headless Chrome on the old code: 7 of 11 checks failed (one tap confirmed one of three counts; a live update cleared a typed count, a buy-in amount and a reversal reason; a refused submit lost the typing). Fixed. Merged to `main` locally. Status `done`. |
+
+## Verification results (2026-10-04)
+
+| Check | Result |
+|---|---|
+| Reproduction on the old code | 7 of 11 browser checks failed, for the two causes in the study |
+| The same browser checks on the fix | 11 of 11 pass, at 390 × 844 |
+| `manage.py test` on SQLite | 368 tests, pass (12 new) |
+| Same suite on PostgreSQL 17.11 | 368 tests, pass |
+| `makemigrations --check` | No changes (no database change) |
+| Screenshot of the counting screen | Reviewed by the AI |
+
+| # | Result | Evidence |
+|---|---|---|
+| AC1 | Met | Browser check; `ConfirmSeveralCountsPageTests` |
+| AC2 | Met | Browser check; service and page tests |
+| AC3 | Met | Browser check; `test_refused_submit_saves_nothing_and_shows_the_typed_values_again` |
+| AC4 | Met | `test_an_unchanged_count_gets_no_new_version` |
+| AC5, AC6 | Met | Browser check with a second session |
+| AC7 | Met | `test_repeated_submission_confirms_once` |
+| AC8 | Met | `test_player_cannot_confirm_counts` |
+
+Not checked: a physical phone. The earlier end-of-set browser script was not rerun, because it drives the old one-row form; its flow is covered by the page-driven tests, which pass.
+
+Notes:
+
+- The one-row request shape (`participant_id` and `amount`) is still accepted, so a set page that was open before the fix keeps working.
+- Typed values that were refused are kept in the login session and shown once.
+- Fields that the live refresh keeps: final counts, buy-in and cash-out amounts, reversal reasons, the override note and the cancel reason.

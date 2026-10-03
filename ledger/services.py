@@ -197,6 +197,34 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     return reversal
 
 
+def _check_countable(session, participant, amount) -> None:
+    """The rules a final count must pass. Raises RuleError naming the player."""
+    name = participant.member.display_name
+    if not _is_amount(amount) or amount < 0:
+        raise RuleError(f"Enter {name}'s final count, 0 or more.")
+    if not _accepted_buy_ins(session).filter(participant=participant).exists():
+        raise RuleError(f"{name} has no buy-in, so there is nothing to count.")
+    if _final_cash_outs(participant).exists():
+        raise RuleError(f"{name} is already cashed out. Reverse that cash-out to count again.")
+
+
+def _write_count(session, actor, participant, amount, request_id) -> FinalCount:
+    """Store a confirmed count as the player's current one, with the next version."""
+    latest = FinalCount.objects.filter(participant=participant).order_by("-version").first()
+    FinalCount.objects.filter(participant=participant, is_current=True).update(is_current=False)
+    count = FinalCount.objects.create(
+        session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
+        request_id=request_id, confirmed_by=actor.user,
+    )
+    audit.record(
+        "count.confirmed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=count,
+        summary=f"Confirmed {participant.member.display_name}'s final count: "
+        f"{money.format_amount(amount, session.unit)}" + (f" (version {count.version})" if count.version > 1 else ""),
+        data={"amount": amount, "version": count.version},
+    )
+    return count
+
+
 @transaction.atomic
 def confirm_count(session_id, actor: Member, participant_id, amount: int, request_id) -> FinalCount:
     """Confirm what a player has at the end of the set. Zero is a valid count; a missing one is not zero.
@@ -211,28 +239,43 @@ def confirm_count(session_id, actor: Member, participant_id, amount: int, reques
     if session.state != State.RECONCILIATION:
         raise RuleError("Final counts are confirmed after play has ended.")
     participant = _participant(session, participant_id)
-    if not _is_amount(amount) or amount < 0:
-        raise RuleError("Enter the final count, 0 or more.")
-    if not _accepted_buy_ins(session).filter(participant=participant).exists():
-        raise RuleError(f"{participant.member.display_name} has no buy-in, so there is nothing to count.")
-    if _final_cash_outs(participant).exists():
-        raise RuleError(
-            f"{participant.member.display_name} is already cashed out. Reverse that cash-out to count again."
-        )
-    latest = FinalCount.objects.filter(participant=participant).order_by("-version").first()
-    FinalCount.objects.filter(participant=participant, is_current=True).update(is_current=False)
-    count = FinalCount.objects.create(
-        session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
-        request_id=request_id, confirmed_by=actor.user,
-    )
-    audit.record(
-        "count.confirmed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=count,
-        summary=f"Confirmed {participant.member.display_name}'s final count: "
-        f"{money.format_amount(amount, session.unit)}" + (f" (version {count.version})" if count.version > 1 else ""),
-        data={"amount": amount, "version": count.version},
-    )
+    _check_countable(session, participant, amount)
+    count = _write_count(session, actor, participant, amount, request_id)
     games.touch(session)
     return count
+
+
+@transaction.atomic
+def confirm_counts(session_id, actor: Member, amounts: dict, request_id) -> list:
+    """Confirm several players' final counts in one action: all of them, or none.
+
+    ``amounts`` maps a participant id to an integer amount. Only the players in
+    it are touched; anyone left out stays as they are and is never read as
+    zero. A player whose current count already equals the amount is skipped, so
+    no needless version is written. Returns the counts that were written.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if not amounts:
+        raise RuleError("Type at least one final count. Type 0 for a player who has nothing left.")
+    # One submission writes several rows; each gets its own id derived from the form's.
+    ids = {participant_id: uuid.uuid5(request_id, str(participant_id)) for participant_id in amounts}
+    if FinalCount.objects.filter(session=session, request_id__in=ids.values()).exists():
+        return list(FinalCount.objects.filter(session=session, request_id__in=ids.values()))  # a repeated submission
+    if session.state != State.RECONCILIATION:
+        raise RuleError("Final counts are confirmed after play has ended.")
+    checked = []
+    for participant_id, amount in amounts.items():
+        participant = _participant(session, participant_id)
+        _check_countable(session, participant, amount)
+        current = FinalCount.objects.filter(participant=participant, is_current=True).first()
+        if current is None or current.amount != amount:
+            checked.append((participant, amount, ids[participant_id]))
+    # Every value passed. Only now is anything written.
+    written = [_write_count(session, actor, participant, amount, rid) for participant, amount, rid in checked]
+    if written:
+        games.touch(session)
+    return written
 
 
 @transaction.atomic

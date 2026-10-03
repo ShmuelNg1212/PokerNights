@@ -81,20 +81,57 @@ def override_void(request, session_id):
     return redirect("session", session_id=session.pk)
 
 
+DRAFTS_KEY = "count_drafts"
+
+
+def _typed_counts(request) -> dict:
+    """``{participant_id: text}`` for every count field that holds something."""
+    typed = {}
+    for name, value in request.POST.items():
+        if name.startswith("count_") and name[6:].isdecimal() and value.strip():
+            typed[int(name[6:])] = value.strip()
+    # The earlier one-row form: participant_id and amount.
+    if request.POST.get("participant_id", "").isdecimal() and request.POST.get("amount", "").strip():
+        typed[int(request.POST["participant_id"])] = request.POST["amount"].strip()
+    return typed
+
+
 @require_POST
 def count_confirm(request, session_id):
+    """Confirm every final count that is typed on the set page, in one action.
+
+    If anything is refused, nothing is saved and the typed values are shown
+    again, so the host never has to type them twice.
+    """
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    if not request.POST.get("amount", "").strip():
+    typed = _typed_counts(request)
+    names = dict(session.participants.values_list("pk", "member__display_name"))
+    amounts, error = {}, ""
+    if not typed:
         # An empty field is never read as zero.
-        messages.error(request, "Enter the final count. Type 0 for a player who has nothing left.")
-        return redirect("session", session_id=session.pk)
-    amount = _amount(request, session)
-    if amount is not None:
-        attempt(
-            request, services.confirm_count, session.pk, actor, request.POST.get("participant_id"), amount,
-            request_id_from(request),
-        )
+        error = "Enter the final count. Type 0 for a player who has nothing left."
+    for participant_id, text in typed.items():
+        try:
+            amounts[participant_id] = money.parse_amount(text, session.unit)
+        except money.MoneyError as refused:
+            error = f"{names.get(participant_id, 'A player')}: {refused} Nothing was saved."
+            break
+    if not error:
+        try:
+            written = services.confirm_counts(session.pk, actor, amounts, request_id_from(request))
+        except RuleError as refused:
+            error = f"{refused} Nothing was saved."
+    drafts = request.session.get(DRAFTS_KEY, {})
+    if error:
+        messages.error(request, error)
+        drafts[str(session.pk)] = {str(pid): text for pid, text in typed.items()}
+    else:
+        drafts.pop(str(session.pk), None)
+        count = len(written)
+        if count:
+            messages.success(request, f"{count} count{'' if count == 1 else 's'} confirmed.")
+    request.session[DRAFTS_KEY] = drafts
     return redirect("session", session_id=session.pk)
 
 

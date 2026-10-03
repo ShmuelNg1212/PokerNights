@@ -75,6 +75,7 @@ AuditEvent (group_id, session_id as plain integers)
 
 - `FinalCount`: a host's confirmation of a player's final amount, in the session's unit. Append-only, with a `version` per participant; `is_current` marks the one in force. Zero is a count. No row means "not counted".
 - `CashOut.kind`: `partial` (the player played on) or `final`. A cash-out with "Leaving the game", any cash-out while counting, and each batch cash-out are final. A player has at most one accepted final cash-out. If the player returns or buys in again, it becomes partial again (logged).
+- The count fields of a set belong to one form (`counts-form`, through the `form` attribute). `ledger.services.confirm_counts()` confirms every typed count in one transaction and skips empty or unchanged ones. A refused submit stores the typed text in the login session and the page shows it again once.
 - Status of a player while counting: `cashed_out` (has a final cash-out), `ready` (has a current count), `awaiting`.
 - `ledger.services.cash_out_counted(session_id, actor, count_ids, request_id)`: under the set lock, each submitted count must still be current and its player not cashed out; otherwise nothing is recorded. It writes one `CashOutBatch`, one final `CashOut` per count (linked to the count and the batch), audit events and one version increment. A known `request_id` returns the first batch.
 - Reversing a batch cash-out voids its count. Resuming play voids counts that are not cashed out.
@@ -162,6 +163,7 @@ Database check constraints repeat the main invariants: `total_buy_in = total_cas
 - A hidden tab stops polling. It polls at once when it becomes visible or the browser comes back online.
 - After two failures the page shows "Reconnecting… last updated …" and backs off to 8, 16, then 30 seconds.
 - An update waits while the user types in a field of the live region, and applies when the field loses focus.
+- A refresh replaces the whole region. Fields with a `data-keep` key keep their typed, unsaved value across it: the script reads them before the swap and puts them back after it.
 - `static/js/forms.js` disables a form's buttons after the first submit. The server-side `request_id` check is the real protection.
 
 ## Front end
