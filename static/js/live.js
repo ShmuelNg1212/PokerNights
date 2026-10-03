@@ -33,10 +33,30 @@
     return !!active && region.contains(active) && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName);
   }
 
+  // Typed values that are not saved yet. A refresh replaces the whole region,
+  // so they are read before it and put back after it. Without this, a change
+  // made by someone else would clear what this person was typing.
+  function typedValues() {
+    var typed = {};
+    region.querySelectorAll("input[data-keep], textarea[data-keep]").forEach(function (el) {
+      if (el.value !== el.defaultValue) typed[el.dataset.keep] = el.value;
+    });
+    return typed;
+  }
+
+  function restore(typed) {
+    Object.keys(typed).forEach(function (key) {
+      var el = region.querySelector('[data-keep="' + key + '"]');
+      if (el) el.value = typed[key];
+    });
+  }
+
   function apply(snapshot) {
     var open = [];
+    var typed = typedValues();
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     region.innerHTML = snapshot.html;
+    restore(typed);
     version = String(snapshot.version);
     region.dataset.version = version;
     open.forEach(function (key) {
