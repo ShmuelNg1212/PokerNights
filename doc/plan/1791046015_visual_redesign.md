@@ -123,7 +123,7 @@ Slices 2–4 add their own checks in the task list.
 - [x] **8. Slice 2: count-up, cash-out review, finalized set.** Approved in the [slice 2 plan](1791050738_redesign_slice_2.md); complete on main. Player-count progress (as approved in the slice 2 plan), status tags, always-visible count fields in one form, "books balance" moment, review table, "Final" state.
   - Commit: `feat(web): recompose count-up and the finalized set`
   - Done when: the count-up browser check of the last cycle passes on the new markup; a set in count-up shows no result figure.
-- [ ] **9. Slice 3: session page and settle-up.** "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
+- [ ] **9. Slice 3: session page and settle-up.** Revalidated in the [slice 3 plan](1791053204_redesign_slice_3.md), awaiting approval. "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
   - Commit: `feat(web): recompose the session page and settle-up`
   - Done when: paid and undo flows pass; the recap opens once per session per browser and closes with one tap or key; results and payments are in separate, labelled sections.
 - [ ] **10. Slice 4: group, home, sign-in, forms, log.** Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
