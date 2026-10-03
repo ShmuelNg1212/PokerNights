@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Preset · {{ group.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' group.pk %}">← {{ group.name }}</a></p>
+<h1>{% if preset %}Edit preset{% else %}New preset{% endif %}</h1>
+<p class="muted">A preset saves the stakes for fast setup. A game copies it, so a later edit changes no game.</p>
+<form method="post" class="card stack">
+  {% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <button type="submit" class="btn btn-primary btn-block">Save preset</button>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}New game · {{ group.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' group.pk %}">← {{ group.name }}</a></p>
+<h1>New game</h1>
+{% if presets %}
+<form method="get" class="card form-row">
+  <div class="grow">
+    <label for="preset">Start from a preset</label>
+    <select id="preset" name="preset">
+      {% for p in presets %}<option value="{{ p.pk }}" {% if preset and p.pk == preset.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn">Use</button>
+</form>
+{% endif %}
+<form method="post" class="card stack">
+  {% csrf_token %}
+  {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
+  {% include "partials/form_fields.html" %}
+  <button type="submit" class="btn btn-primary btn-block">Create game</button>
+</form>
+{% endblock %}
