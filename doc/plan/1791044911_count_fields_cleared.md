@@ -1,10 +1,10 @@
 # Plan: keep typed counts when confirming
 
 - **Date:** 2026-10-04 00:28 (Asia/Manila), Unix timestamp `1791044911`
-- **Status:** `awaiting-approval`
+- **Status:** `in-progress`
 - **Study:** [../study/1791044894_count_fields_cleared.md](../study/1791044894_count_fields_cleared.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
-- **Approval record:** _none yet_
+- **Approval record:** Approved by the human on 2026-10-04: "approved".
 
 ## OPEN QUESTIONS
 
@@ -80,3 +80,4 @@ Branch `fix/count-fields` from `main`. No migration. Rollback is a revert of the
 | Date | Entry |
 |---|---|
 | 2026-10-04 00:28 | Study and plan written and committed. Status `awaiting-approval`. |
+| 2026-10-04 | Human approved. Work is done in a separate git worktree so that the running dev server on `main` is not disturbed before the merge. |
