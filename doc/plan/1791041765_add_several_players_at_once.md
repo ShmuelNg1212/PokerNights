@@ -1,10 +1,10 @@
 # Plan: add several players to a game at once
 
 - **Date:** 2026-10-03 23:36 (Asia/Manila), Unix timestamp `1791041765`
-- **Status:** `awaiting-approval`
+- **Status:** `in-progress`
 - **Study:** [../study/1791041698_add_several_players_at_once.md](../study/1791041698_add_several_players_at_once.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
-- **Approval record:** _none yet_
+- **Approval record:** Approved by the human on 2026-10-03: "for players who have a login are irrelevant for this feature. I am ok with q2. proceed with the remaining steps." Q2 = yes. Q1: read by the AI as "whether a player has a login does not matter for this feature"; the default applies (all eligible members are listed alike; no new-names box). This reading is flagged in the rendezvous report.
 
 Edit this file directly, or add a line that starts with `NOTE:`.
 
@@ -116,3 +116,4 @@ None. If Q1 is answered "yes", the plan is revised before work starts.
 | Date | Entry |
 |---|---|
 | 2026-10-03 23:36 | Study and plan written and committed. Status `awaiting-approval`. |
+| 2026-10-03 | Human approved. Q2 yes. Q1 default, with the AI's reading recorded above. Dev server stopped for the work. |
