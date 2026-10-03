@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from ledger.models import Finalization
 
-from .models import Transfer
+from .models import Payment, Transfer
 
 
 @dataclass
@@ -12,6 +12,21 @@ class Outcome:
     finalization: Finalization
     results: list
     transfers: list
+
+    @property
+    def paid_count(self) -> int:
+        return sum(1 for t in self.transfers if t.paid)
+
+    @property
+    def status(self) -> str:
+        """``settled``, ``partly`` or ``unsettled``. Derived from the paid marks; never stored."""
+        if self.paid_count == len(self.transfers):
+            return "settled"
+        return "partly" if self.paid_count else "unsettled"
+
+    @property
+    def status_label(self) -> str:
+        return {"settled": "Settled", "partly": "Partly settled", "unsettled": "Unsettled"}[self.status]
 
     def result_for(self, member_id):
         return next((r for r in self.results if r.member_id == member_id), None)
@@ -34,4 +49,7 @@ def outcome(session):
         .select_related("payer__member", "payee__member")
         .order_by("position")
     )
+    paid = {p.transfer_id: p for p in Payment.objects.filter(transfer__in=transfers, active=True)}
+    for transfer in transfers:
+        transfer.paid = paid.get(transfer.pk)
     return Outcome(finalization, results, transfers)

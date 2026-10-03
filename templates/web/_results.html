@@ -6,20 +6,38 @@
   <p class="muted small">Bought in {{ my_result.buy_in_total_centavos|peso }} · cashed out {{ my_result.cash_out_centavos|peso }}</p>
   {% for t in my_transfers %}
   <p>{% if t.payer_id == my_result.participant_id %}You pay <strong>{{ t.payee.member.display_name }}</strong> <span class="amount">{{ t.amount_centavos|peso }}</span>
-     {% else %}<strong>{{ t.payer.member.display_name }}</strong> pays you <span class="amount">{{ t.amount_centavos|peso }}</span>{% endif %}</p>
+     {% else %}<strong>{{ t.payer.member.display_name }}</strong> pays you <span class="amount">{{ t.amount_centavos|peso }}</span>{% endif %}
+     {% if t.paid %}<span class="badge badge-good">Paid</span>{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</p>
   {% empty %}<p class="muted">You owe nothing and are owed nothing.</p>
   {% endfor %}
 </div>
 {% endif %}
 
-<h2>Who pays whom</h2>
+<h2>Who pays whom {% if outcome.transfers %}<span class="badge {% if outcome.status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{{ outcome.status_label }}</span>{% endif %}</h2>
 <div class="card">
   {% if outcome.transfers %}
   <ul class="list">
     {% for t in outcome.transfers %}
-    <li class="row">
-      <span class="grow"><strong>{{ t.payer.member.display_name }}</strong> pays <strong>{{ t.payee.member.display_name }}</strong></span>
-      <span class="amount">{{ t.amount_centavos|peso }}</span>
+    <li>
+      <div class="row">
+        <span class="grow"><strong>{{ t.payer.member.display_name }}</strong> pays <strong>{{ t.payee.member.display_name }}</strong></span>
+        <span class="amount">{{ t.amount_centavos|peso }}</span>
+      </div>
+      <div class="row">
+        {% if t.paid %}<span class="badge badge-good">Paid · {{ t.paid.created_at|date:"M j, H:i" }}</span>
+        {% else %}<span class="badge badge-warn">Not paid</span>{% endif %}
+        {% if me.is_host %}
+          {% if t.paid %}
+          <form method="post" action="{% url 'transfer_unpaid' session.pk t.pk %}">{% csrf_token %}
+            <button type="submit" class="btn btn-small btn-quiet">Undo</button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'transfer_paid' session.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}
+            <button type="submit" class="btn btn-small btn-primary">Mark paid</button>
+          </form>
+          {% endif %}
+        {% endif %}
+      </div>
     </li>
     {% endfor %}
   </ul>

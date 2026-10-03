@@ -13,7 +13,7 @@ from ledger import services as ledger
 from ledger.models import Finalization
 
 from . import algorithm
-from .models import SettlementPlan, Transfer
+from .models import Payment, PaymentReversal, SettlementPlan, Transfer
 
 State = GameSession.State
 
@@ -58,3 +58,68 @@ def finalize(session_id, actor: Member) -> Finalization:
     )
     games.mark_finalized(session)
     return finalization
+
+
+def _current_transfer(session, transfer_id) -> Transfer:
+    transfer = (
+        Transfer.objects.select_related("payer__member", "payee__member")
+        .filter(pk=transfer_id, plan__finalization__session=session, plan__finalization__is_current=True)
+        .first()
+    )
+    if transfer is None:
+        raise RuleError("That transfer is not in this game's current results.")
+    return transfer
+
+
+def _describe(transfer) -> str:
+    return (
+        f"{transfer.payer.member.display_name} → {transfer.payee.member.display_name} "
+        f"{money.format_pesos(transfer.amount_centavos)}"
+    )
+
+
+@transaction.atomic
+def mark_paid(session_id, actor: Member, transfer_id, request_id) -> Payment:
+    """Record that a transfer was paid. Marking it twice changes nothing."""
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if session.state != State.FINALIZED:
+        raise RuleError("Transfers exist only after the results are final.")
+    transfer = _current_transfer(session, transfer_id)
+    existing = Payment.objects.filter(transfer=transfer, active=True).first()
+    if existing is not None:
+        return existing
+    repeated = Payment.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    payment = Payment.objects.create(
+        session=session, payer=transfer.payer, payee=transfer.payee, amount_centavos=transfer.amount_centavos,
+        transfer=transfer, request_id=request_id, recorded_by=actor.user,
+    )
+    audit.record(
+        "transfer.paid", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=transfer,
+        summary=f"Marked paid: {_describe(transfer)}",
+    )
+    games.touch(session)
+    return payment
+
+
+@transaction.atomic
+def mark_unpaid(session_id, actor: Member, transfer_id, reason: str = "") -> None:
+    """Undo a paid mark. The payment row stays, with a reversal."""
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if session.state != State.FINALIZED:
+        raise RuleError("Transfers exist only after the results are final.")
+    transfer = _current_transfer(session, transfer_id)
+    payment = Payment.objects.filter(transfer=transfer, active=True).first()
+    if payment is None:
+        return
+    payment.active = False
+    payment.save(update_fields=["active"])
+    PaymentReversal.objects.create(payment=payment, reason=(reason or "").strip()[:255], recorded_by=actor.user)
+    audit.record(
+        "transfer.unpaid", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=transfer,
+        summary=f"Marked unpaid again: {_describe(transfer)}", reason=reason,
+    )
+    games.touch(session)
