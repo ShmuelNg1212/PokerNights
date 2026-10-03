@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+from games import clock
 from groups.models import Member
 from ledger.models import Finalization
 
@@ -35,6 +36,11 @@ class Standing:
     net: int
     sets_played: int
     play_seconds: object = None
+    join_order: int = 0
+
+    @property
+    def pk(self):
+        return self.member.pk
 
 
 @dataclass
@@ -45,6 +51,18 @@ class NightOutcome:
     plan: object = None
     transfers: list = field(default_factory=list)
     payments: list = field(default_factory=list)
+
+    @property
+    def total_to_pay(self):
+        return sum(t.amount for t in self.transfers)
+
+    @property
+    def paid_amount(self):
+        return sum(t.amount for t in self.transfers if t.paid)
+
+    @property
+    def still_to_pay(self):
+        return self.total_to_pay - self.paid_amount
 
     @property
     def paid_count(self) -> int:
@@ -72,6 +90,9 @@ def night_outcome(night) -> NightOutcome:
     rows = services.session_standings(night)
     members = Member.objects.in_bulk([row[0] for row in rows])
     found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
+    for order, standing in enumerate(found.standings, 1):
+        standing.join_order = order
+    identities = {s.member.pk: s for s in found.standings}
     found.plan = SettlementPlan.objects.filter(night=night).first()
     if found.plan is not None:
         found.transfers = list(
@@ -80,7 +101,24 @@ def night_outcome(night) -> NightOutcome:
         paid = {p.transfer_id: p for p in Payment.objects.filter(transfer__in=found.transfers, active=True)}
         for transfer in found.transfers:
             transfer.paid = paid.get(transfer.pk)
+            transfer.payer_token = identities[transfer.payer_id]
+            transfer.payee_token = identities[transfer.payee_id]
         found.payments = list(
             Payment.objects.filter(night=night).select_related("payer", "payee", "recorded_by")
         )
     return found
+
+
+def night_recap(night, standings):
+    """Read-only closing recap. Buy-ins are frozen; unknown timer duration is not zero."""
+    finals = list(Finalization.objects.filter(session__night=night, is_current=True)
+                  .select_related("session"))
+    durations = [clock.set_seconds(f.session) for f in finals]
+    known = [seconds for seconds in durations if seconds is not None]
+    best = max((s.net for s in standings), default=0)
+    return {
+        "total_buy_in": sum(f.total_buy_in for f in finals),
+        "play_seconds": sum(known) if known else None,
+        "partial_time": bool(known) and len(known) != len(durations),
+        "winners": [s for s in standings if s.net == best] if best > 0 else [],
+    }

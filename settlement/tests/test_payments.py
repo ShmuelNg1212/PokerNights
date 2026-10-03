@@ -105,7 +105,7 @@ class PaidMarkViewTests(TestCase):
         page = self.client.post(reverse("transfer_paid", args=[self.night_id, self.transfer.pk]), follow=True)
         self.assertContains(page, "Partly settled")
         self.assertContains(page, "Not paid")  # the other transfer
-        self.assertContains(page, "Paid ·")
+        self.assertContains(page, '>Paid</span>')
         page = self.client.post(reverse("transfer_unpaid", args=[self.night_id, self.transfer.pk]), follow=True)
         self.assertContains(page, "Unsettled")
 

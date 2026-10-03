@@ -1,12 +1,12 @@
 # Plan: redesign slice 3
 
 - Date: 2026-10-04 (Asia/Manila), Unix timestamp `1791053204`.
-- Status: **awaiting-approval**.
+- Status: **in-progress**.
 - Study: [slice 3 revalidation](../study/1791053103_redesign_slice_3.md), committed as `4ca6763`.
 - Parent: [visual redesign, task 9](1791046015_visual_redesign.md).
 - Sources: SPEC.md, AGENTS.md, PRODUCT.md, DESIGN.md, wiki and the original redesign study. No doc/canonical directory is present.
 - Baseline: clean main before this cycle; slices 1–2 complete; 384 SQLite tests pass in 13.553 s.
-- Approval: pending. “Begin slice 3” authorizes Phase 1. Record approval of this completed plan before implementation.
+- Approval: human approved this completed plan on 2026-10-04 with “proceed.” Phase 2 is authorized.
 
 ## Goal and scope
 
@@ -62,7 +62,7 @@ Rollback: revert slice 3's implementation commits to the working slice 2 session
 
 ## Task board
 
-- [ ] **1. Build the session composition and recap.** Add read-only presentation totals/context in the appropriate query/view layer; recompose night.html and scoped CSS; implement shared dialog/recap enhancement within budget. Read Impeccable craft-floor immediately before UI edits. Preserve native forms and service contracts.
+- [x] **1. Build the session composition and recap.** Add read-only presentation totals/context in the appropriate query/view layer; recompose night.html and scoped CSS; implement shared dialog/recap enhancement within budget. Read Impeccable craft-floor immediately before UI edits. Preserve native forms and service contracts.
   - Commit: `feat(web): recompose the session page and settle-up`.
   - Done when: all page states and definitions are implemented, focused presentation tests pass and measured assets meet AC9.
 - [ ] **2. Verify flows and resolve the bounded finish review.** Add meaningful tests for unequal-transfer sums, frozen-result separation, recap snapshots/time/ties and role visibility. Extend synthetic browser fixtures and checks for real paid/undo/close/next-set flows, once-only recap, keyboard, storage refusal, reduced motion and no-JavaScript behavior. Run all Django tests on SQLite and PostgreSQL and check for unintended migrations. Run the existing active-table and end-set browser regressions, especially shared sheets/drafts/polling.
@@ -84,4 +84,6 @@ Existing browser harness regressions are 20 active-table action checks, 13 acces
 
 - Phase 1 study committed. Baseline SQLite: 384 tests pass; system check reports no issues.
 - No missing input blocks planning. Asset-budget risk is recorded above.
-- Awaiting human approval of this completed plan. Implementation has not started.
+- Phase 2 approved with “proceed.” Execution is on feat/visual-redesign-slice-3.
+
+- Initial build: 390 tests pass on SQLite (13.009 s) and PostgreSQL (20.267 s); no migrations. Added JavaScript 7,771 bytes (new sheets/changes/toasts plus existing forms/live growth); CSS 28,227 bytes. Active-table browser regressions pass. Fresh finish review identifies large-amount wrapping for the verification fix batch.

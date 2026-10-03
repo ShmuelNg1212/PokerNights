@@ -115,7 +115,7 @@ class GameNightAcceptanceTest(TestCase):
         self.assertEqual(Transfer.objects.count(), 0)
         night_url = reverse("night", args=[session.night_id])
         closed = host.post(reverse("night_close", args=[session.night_id]), follow=True)
-        for text in ("<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>"):
+        for text in ('aria-label="B pays A"', 'aria-label="C pays A"'):
             self.assertContains(closed, text)
         transfers = list(Transfer.objects.order_by("position"))
         self.assertEqual(
@@ -181,7 +181,7 @@ class ChipsGameAcceptanceTest(TestCase):
             self.assertContains(results, text)
         self.assertNotContains(results, "₱")
         closed = host.post(reverse("night_close", args=[session.night_id]), follow=True)
-        for text in ("<strong>B</strong> pays <strong>A</strong>", "300 chips"):
+        for text in ('aria-label="B pays A"', "300 chips"):
             self.assertContains(closed, text)
         self.assertNotContains(closed, "₱")
         self.assertNotContains(host.get(reverse("session_log", args=[session.pk])), "₱")
@@ -329,7 +329,7 @@ class TwoSetSessionAcceptanceTest(TestCase):
             self.assertContains(night_page, text)
 
         closed = host.post(reverse("night_close", args=[first.night_id]), follow=True)
-        for text in ("<strong>C</strong> pays <strong>A</strong>", "₱200", "<strong>C</strong> pays <strong>B</strong>", "₱100", "Session closed"):
+        for text in ('aria-label="C pays A"', "₱200", 'aria-label="C pays B"', "₱100", "Session closed"):
             self.assertContains(closed, text)
         self.assertEqual(
             [(t.payer.display_name, t.payee.display_name, t.amount) for t in Transfer.objects.order_by("position")],

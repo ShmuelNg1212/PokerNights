@@ -89,7 +89,7 @@ class ChipsGameTests(TestCase):
             self.assertNotContains(page, "₱")
         self.assertContains(pages[1], "Chips game")
         self.assertContains(pages[1], "+650 chips")
-        self.assertContains(pages[4], "<strong>B</strong> pays <strong>A</strong>")
+        self.assertContains(pages[4], 'aria-label="B pays A"')
         self.assertContains(pages[4], "300 chips")
         self.assertContains(pages[2], "Finalized set 1: 2,500 chips bought in")
 
