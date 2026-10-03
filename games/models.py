@@ -205,3 +205,27 @@ class Participant(models.Model):
 
     def __str__(self):
         return f"{self.member.display_name} in session {self.session_id}"
+
+
+class ParticipantBatch(models.Model):
+    """One "add several players" action by a host.
+
+    It exists so that a repeated submission of the same form is recognized: the
+    ``request_id`` is unique per session, and a retry returns the same players
+    instead of adding anyone twice.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="participant_batches")
+    request_id = models.UUIDField()
+    participants = models.ManyToManyField(Participant, related_name="+")
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "request_id"], name="participant_batch_request_once"),
+        ]
+
+    def __str__(self):
+        return f"Batch of players added to session {self.session_id}"

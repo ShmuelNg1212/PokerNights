@@ -11,7 +11,9 @@ from groups.errors import RuleError
 from groups.models import Member
 from groups.services import clean_name
 
-from .models import GameSession, GameType, Participant, SettingsPreset, SettingsVersion, StakesFields, Table, Unit
+from .models import (
+    GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
+)
 
 
 def validated_stakes(data: dict) -> dict:
@@ -313,6 +315,83 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
     )
     touch(session)
     return participant
+
+
+def _names(members) -> str:
+    names = [member.display_name for member in members]
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+@transaction.atomic
+def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
+    """A host adds several members to the session in one action: all of them, or nobody.
+
+    Everything is checked again here, under the session lock, whatever the
+    screen showed. Sending the same ``request_id`` again adds nobody twice and
+    returns the players of the first call. Like the single add, this only puts
+    players in the game: it records no buy-in, payment or seat.
+    """
+    require_host(actor)
+    session = lock_session(session_id, actor.group_id)
+    repeated = ParticipantBatch.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return list(repeated.participants.select_related("member").order_by("join_order"))
+    if session.state not in HOST_ADD_STATES:
+        raise RuleError("Players cannot be added at this stage of the game.")
+
+    wanted = []
+    for member_id in member_ids:
+        try:
+            member_id = int(member_id)
+        except (TypeError, ValueError):
+            raise RuleError("That selection is not valid. Select the players again.") from None
+        if member_id not in wanted:
+            wanted.append(member_id)
+    if not wanted:
+        raise RuleError("Select at least one player.")
+
+    found = Member.objects.filter(group_id=session.group_id, pk__in=wanted, status=Member.Status.ACTIVE).in_bulk()
+    if len(found) != len(wanted):
+        raise RuleError("A selected player is no longer in this group. Nothing was added. Review your selection.")
+    members = [found[member_id] for member_id in wanted]
+
+    existing = {p.member_id: p for p in Participant.objects.filter(session=session, member__in=members)}
+    at_table = [m for m in members if m.pk in existing and existing[m.pk].status == Participant.Status.JOINED]
+    if at_table:
+        verb = "is" if len(at_table) == 1 else "are"
+        raise RuleError(f"{_names(at_table)} {verb} already at the table. Nothing was added. Review your selection.")
+
+    free = session.seat_count - _seats_taken(session)
+    if len(members) > free:
+        over = len(members) - free
+        seats = "No seat is free" if free == 0 else f"Only {free} seat{' is' if free == 1 else 's are'} free"
+        raise RuleError(
+            f"{seats} and you selected {len(members)} players. "
+            f"Remove {over} player{'' if over == 1 else 's'}. Nothing was added."
+        )
+
+    next_order = session.participants.count() + 1
+    added = []
+    for member in members:
+        participant = existing.get(member.pk)
+        if participant is None:
+            participant = Participant.objects.create(
+                session=session, member=member, join_order=next_order, added_by=actor.user
+            )
+            next_order += 1
+        else:
+            participant.status = Participant.Status.JOINED
+            participant.left_at = None
+            participant.save(update_fields=["status", "left_at"])
+        audit.record(
+            "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk,
+            target=participant, summary=f"Added {member.display_name}",
+        )
+        added.append(participant)
+    batch = ParticipantBatch.objects.create(session=session, request_id=request_id, added_by=actor.user)
+    batch.participants.set(added)
+    touch(session)
+    return added
 
 
 def _participant(session, participant_id) -> Participant:

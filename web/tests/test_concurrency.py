@@ -10,7 +10,8 @@ from django.db import connection
 from django.test import TransactionTestCase
 
 from games import services as games
-from games.models import Participant
+from games.models import Participant, ParticipantBatch
+from games.tests.test_add_players import Roster
 from groups.errors import RuleError
 from groups.tests.helpers import add_player
 from ledger import queries as ledger_queries
@@ -162,3 +163,46 @@ class ConcurrentPaidMarkTests(TransactionTestCase):
         self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
         self.assertEqual(Payment.objects.filter(transfer=transfer, active=True).count(), 1)
         self.assertEqual(Payment.objects.count(), 1)
+
+
+class ConcurrentBatchAddTests(TransactionTestCase):
+    def test_two_hosts_submit_overlapping_selections_at_once(self):
+        roster = Roster()
+        outcomes = race(
+            lambda: roster.add("Ana", "Ben", "Carlo"),
+            lambda: roster.add("Carlo", "Dani"),
+        )
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        refused = next(message for kind, message in outcomes if kind == "refused")
+        self.assertIn("Carlo is already at the table. Nothing was added.", refused)
+        # Whichever request won, its whole selection is in and the other's is entirely out.
+        self.assertIn(roster.at_table(), (["Ana", "Ben", "Carlo"], ["Carlo", "Dani"]))
+        self.assertEqual(ParticipantBatch.objects.count(), 1)
+
+    def test_two_batches_race_for_the_last_seats(self):
+        roster = Roster(seat_count=3)
+        outcomes = race(lambda: roster.add("Ana", "Ben"), lambda: roster.add("Carlo", "Dani"))
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        self.assertIn("Only 1 seat is free and you selected 2 players", next(m for k, m in outcomes if k == "refused"))
+        self.assertIn(roster.at_table(), (["Ana", "Ben"], ["Carlo", "Dani"]))
+
+    def test_a_batch_races_with_single_joins(self):
+        roster = Roster(seat_count=4)
+        ana = roster.members["Ana"]
+        outcomes = race(
+            lambda: roster.add("Ana", "Ben", "Carlo", "Dani"),
+            lambda: games.add_participant(roster.session.pk, ana, ana.pk),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        # Either the batch added all four (and the self-join found Ana already in), or the
+        # self-join came first and the batch added nobody.
+        self.assertIn(roster.at_table(), (["Ana", "Ben", "Carlo", "Dani"], ["Ana"]))
+        self.assertEqual(len(set(roster.session.participants.values_list("join_order", flat=True))), len(roster.at_table()))
+
+    def test_one_request_sent_six_times_adds_one_batch(self):
+        roster = Roster()
+        request_id = uuid.uuid4()
+        outcomes = race(*[lambda: roster.add(request_id=request_id)] * 6)
+        self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
+        self.assertEqual((ParticipantBatch.objects.count(), Participant.objects.count()), (1, 4))
+        self.assertEqual(len({tuple(p.pk for p in added) for _, added in outcomes}), 1)

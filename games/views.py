@@ -2,12 +2,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from groups.access import member_for, require_host
-from groups.http import attempt
+import uuid
+
+from django.contrib import messages
+
+from groups.errors import RuleError
+from groups.http import attempt, request_id_from
+from groups.models import Member
 
 from . import services
 from .access import session_for
 from .forms import PresetForm, SessionForm, SettingsForm
-from .models import SettingsPreset, Table
+from .models import Participant, SettingsPreset, Table
 
 
 @require_POST
@@ -96,3 +102,49 @@ def participant_left(request, session_id, participant_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.set_left, session.pk, actor, participant_id, request.POST.get("left", "1") == "1")
     return redirect("session", session_id=session.pk)
+
+
+def participants_add(request, session_id):
+    """The "Add players" picker: a host ticks several members and confirms once."""
+    session, actor = session_for(request.user, session_id)
+    require_host(actor)
+    selected, error = set(), ""
+    if request.method == "POST":
+        ids = request.POST.getlist("member_id")
+        try:
+            added = services.add_participants(session.pk, actor, ids, request_id_from(request))
+        except RuleError as refused:
+            # Nothing was added. Show the picker again with the selection kept for review.
+            error = str(refused)
+            selected = {int(value) for value in ids if value.isdecimal()}
+        else:
+            names = ", ".join(p.member.display_name for p in added)
+            count = len(added)
+            messages.success(request, f"Added {count} player{'' if count == 1 else 's'}: {names}.")
+            return redirect("session", session_id=session.pk)
+        session.refresh_from_db()
+    if session.state not in services.HOST_ADD_STATES:
+        messages.error(request, "Players cannot be added at this stage of the game.")
+        return redirect("session", session_id=session.pk)
+
+    status = dict(Participant.objects.filter(session=session).values_list("member_id", "status"))
+    rows = []
+    for member in Member.objects.filter(group_id=session.group_id, status=Member.Status.ACTIVE):
+        at_table = status.get(member.pk) == Participant.Status.JOINED
+        rows.append({
+            "member": member,
+            "at_table": at_table,
+            "left_earlier": status.get(member.pk) in (Participant.Status.LEFT, Participant.Status.WITHDRAWN),
+            "checked": member.pk in selected and not at_table,
+        })
+    seated = sum(1 for row in rows if row["at_table"])
+    context = {
+        "session": session,
+        "rows": rows,
+        "error": error,
+        "seats_free": session.seat_count - seated,
+        "selected_count": sum(1 for row in rows if row["checked"]),
+        "eligible_count": sum(1 for row in rows if not row["at_table"]),
+        "request_id": uuid.uuid4(),
+    }
+    return render(request, "games/add_players.html", context)
