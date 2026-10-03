@@ -216,7 +216,7 @@ class FinalizeViewTests(TestCase):
         page = self.client.post(reverse("session_finalize", args=[night.session.pk]), follow=True)
         for text in ("+₱600", "−₱300", "<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>", "₱2,500"):
             self.assertContains(page, text)
-        for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/"):
+        for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/", "Host controls", "Chips in play", "seats free"):
             self.assertNotContains(page, gone)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))

@@ -19,7 +19,8 @@
   <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
   <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
   <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total_centavos|peso }}</div></div>
-  <div class="stat"><div class="stat-label">Chips in play</div><div class="stat-value">{{ summary.chips_in_play|chips }}</div></div>
+  {% if session.is_live %}<div class="stat"><div class="stat-label">Chips in play</div><div class="stat-value">{{ summary.chips_in_play|chips }}</div></div>
+  {% else %}<div class="stat"><div class="stat-label">Chips issued</div><div class="stat-value">{{ summary.chips_issued|chips }}</div></div>{% endif %}
 </div>
 {% endif %}
 
@@ -35,7 +36,7 @@
 
 {% if balance %}{% include "web/_balance.html" %}{% endif %}
 
-<h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+<h2>Players <span class="muted small">{{ summary.player_count }}{% if session.is_live %} · {{ seats_free }} seat{{ seats_free|pluralize }} free{% endif %}</span></h2>
 {% include "web/_players.html" %}
 
-{% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
+{% if me.is_host and session.state != 'finalized' and session.state != 'canceled' %}{% include "web/_host_controls.html" %}{% endif %}
