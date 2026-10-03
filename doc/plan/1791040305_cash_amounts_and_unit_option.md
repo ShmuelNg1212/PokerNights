@@ -1,10 +1,10 @@
 # Plan: cash amounts and a unit option
 
 - **Date:** 2026-10-03 23:11 (Asia/Manila), Unix timestamp `1791040305`
-- **Status:** `awaiting-approval`
+- **Status:** `in-progress`
 - **Study:** [../study/1791040240_cash_amounts_and_unit_option.md](../study/1791040240_cash_amounts_and_unit_option.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
-- **Approval record:** _none yet_
+- **Approval record:** Approved by the human on 2026-10-03 23:14 (Asia/Manila): "yes, the chip games mean that the chips have no peso value. for cash games, all metrics are based on the peso value of the chips. continue with the workflow." Q1 = A. Q2 not answered, so the default applies (keep and convert).
 
 Edit this file directly, or add a line that starts with `NOTE:`.
 
@@ -119,3 +119,4 @@ None. If Q1 is answered "B", this plan is replaced before any work starts.
 | Date | Entry |
 |---|---|
 | 2026-10-03 23:11 | Study and plan written and committed. Status `awaiting-approval`. |
+| 2026-10-03 23:14 | Human approved. Q1 answered: a chips game has no peso value; a pesos game shows each figure in pesos. Dev server stopped. Database backed up to `db.before_cash_units.sqlite3` with the SQLite backup API (a plain file copy would have missed data still in the write-ahead log). |
