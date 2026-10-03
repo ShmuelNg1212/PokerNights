@@ -1,26 +1,27 @@
-<div class="card stack">
-  <h2 style="margin-top:0">Host controls</h2>
+<div class="host-controls stack">
+  <h2 class="host-controls-heading">Host controls</h2>
   {% if session.state == 'setup' %}
   <p class="muted small">This game is a draft. Players cannot see it yet.</p>
-  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
-    <button class="btn btn-primary btn-block" name="action" value="open">Open for players</button>
+  <form method="post" action="{% url 'session_transition' session.pk %}" class="host-action">{% csrf_token %}
+    <button class="btn btn-primary btn-block next-action" name="action" value="open">Open for players</button>
   </form>
   {% elif session.state == 'open' %}
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
-    <button class="btn btn-primary btn-block" name="action" value="start">Start the game</button>
+    <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the game</button>
   </form>
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
     <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
   </form>
   {% elif session.state == 'running' %}
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
-    <button class="btn btn-primary btn-block" name="action" value="end">End play and count up</button>
+    <button class="btn btn-primary btn-block next-action" name="action" value="end">End play and count up</button>
   </form>
   {% elif session.state == 'reconciliation' %}
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
     <button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button>
   </form>
   {% endif %}
+  <details class="host-more" data-key="host-more"><summary>More host controls</summary>
   {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Change settings</a>
   {% endif %}
@@ -33,4 +34,12 @@
     </form>
   </details>
   {% endif %}
+{% if can_manage_players and addable_members %}
+  <details data-key="add-one"><summary class="small">Or add one player</summary>
+    <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
+      <div class="grow"><label for="add-player">Player</label><select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select></div><button class="btn" type="submit">Add</button>
+    </form>
+  </details>
+  {% endif %}
+  </details>
 </div>

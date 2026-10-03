@@ -18,14 +18,15 @@
   var pending = null; // a snapshot that waits until the user stops typing
 
   function clock(date) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   }
 
   function showStatus() {
     if (!statusLine) return;
     var stale = failures >= 2;
     statusLine.classList.toggle("stale", stale);
-    statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · updated ") + clock(lastOk);
+    region.classList.toggle("is-stale", stale);
+    statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · ") + clock(lastOk);
   }
 
   function userIsTyping() {
@@ -56,6 +57,7 @@
     var typed = typedValues();
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     region.innerHTML = snapshot.html;
+    region.dispatchEvent(new Event("live:updated", {bubbles: true}));
     restore(typed);
     version = String(snapshot.version);
     region.dataset.version = version;

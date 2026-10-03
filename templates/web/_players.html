@@ -1,114 +1,51 @@
-{% load money_tags clock_tags %}
-<div class="card">
-  {% if me.is_host and session.state == 'reconciliation' %}
-  <form id="counts-form" method="post" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
-  {% endif %}
-  {% if summary.lines %}
-  <ul class="list">
+{% load money_tags clock_tags table_tags %}
+{% if session.state != 'setup' and session.state != 'open' and session.state != 'running' %}
+  {% include "web/_players_count.html" %}
+{% else %}
+<section class="table-players" aria-label="Players at the table">
+  <div class="section-heading"><h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+    {% if can_manage_players and addable_members %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
+  </div>
+  <ul class="player-list">
+    {% if can_join and not my_participant %}<li class="join-row">
+      {% if seats_free > 0 %}<form method="post" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<button class="btn btn-quiet" type="submit">{% icon 'plus' %} Join this game</button></form>
+      {% else %}<p class="muted small">The table is full ({{ session.seat_count }} seats).</p>{% endif %}
+    </li>{% endif %}
     {% for line in summary.lines %}{% with p=line.participant %}
-    <li>
-      <div class="row">
-        <span class="grow">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}
-          {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}</span>
-        <span class="amount">{{ line.buy_in_total|amount:unit }}</span>
-      </div>
-      <div class="muted small">
-        {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}
-        {% else %}No buy-in yet{% endif %}
-        {% if line.has_cash_out %}<br>Cashed out {{ line.cashed_out|amount:unit }}{% endif %}
-        {% if line.play_seconds is not None %}<br>Played {% clock_value line.play_seconds line.clock_running %}{% endif %}
-      </div>
+    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}" data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}">
+      <div class="player-main">
+        {% player_token p participants %}
+        <div class="player-identity">
+          <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
+          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span>{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
+            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+          </span></button>
 
-      {% if session.state == 'reconciliation' and line.has_money %}
-      <p class="small">
-        <span class="badge {% if line.status == 'cashed_out' %}badge-good{% elif line.status == 'ready' %}badge-live{% else %}badge-warn{% endif %}" data-status="{{ line.status }}">{{ line.status_label }}</span>
-        {% if line.status == 'ready' %}<span class="num">Counted {{ line.count.amount|amount:unit }}</span> <span class="muted">at {{ line.count.created_at|date:"g:i A" }}</span>{% endif %}
-        {% if line.status == 'cashed_out' %}<span class="muted">Payment: at the end of the session</span>{% endif %}
-      </p>
-      {% if me.is_host and line.status != 'cashed_out' %}
-      {# These fields belong to the one counts form below, so one tap sends every typed count. #}
-      <div class="form-row">
-        <div class="grow"><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"></div>
-        <button type="submit" form="counts-form" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
+          <div class="player-meta fallback-meta">{% buy_in_stack line.buy_in_count %}
+            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+          </div>
+          {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
+          <span class="change-label badge badge-warn" hidden>Updated</span>
+        </div>
+        <div class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small></div>
+        {% if can_buy_in and p.status == 'joined' %}
+        <button hidden type="button" class="btn btn-round buy-opener" data-sheet-open="buy-{{ p.pk }}" aria-label="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} for {{ p.member.display_name }}">{% icon 'plus' %}<span class="desktop-label">{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</span></button>
+        {% endif %}
       </div>
-      {% endif %}
-      {% endif %}
-
       {% if can_buy_in and p.status == 'joined' %}
-      <form method="post" action="{% url 'buy_in_add' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
-        <input type="hidden" name="participant_id" value="{{ p.pk }}">
-        <div class="grow"><input type="text" name="amount" data-keep="buy-in-{{ p.pk }}" inputmode="decimal" autocomplete="off" value="{{ default_buy_in }}" aria-label="Buy-in amount for {{ p.member.display_name }}"></div>
-        <button type="submit" class="btn btn-primary">{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>
-      </form>
-      {% endif %}
-      {% if can_cash_out and line.has_money and session.state == 'running' and not line.is_cashed_out %}
-      {% include "web/_cash_out_form.html" %}
-      {% endif %}
-      {% if line.buy_ins or line.reversed_buy_ins or line.cash_outs or line.reversed_cash_outs or can_manage_players or p.member_id == me.pk and can_join %}
-      <details data-key="player-{{ p.pk }}">
-        <summary class="small">Details</summary>
-        <ul class="list small">
-          {% for b in line.buy_ins %}
-          <li>
-            <div class="row"><span class="grow">{% if forloop.first %}Buy-in{% else %}Rebuy{% endif %} · {{ b.created_at|date:"H:i" }}</span><span class="num">{{ b.amount|amount:unit }}</span></div>
-            {% if can_reverse %}
-            <form method="post" action="{% url 'buy_in_reverse' session.pk b.pk %}" class="form-row" data-once>{% csrf_token %}
-              <div class="grow"><input type="text" name="reason" data-keep="reverse-buy-in-{{ b.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
-              <button type="submit" class="btn btn-small btn-danger">Reverse</button>
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-          {% for b in line.reversed_buy_ins %}
-          <li><span class="struck">{{ b.created_at|date:"H:i" }} · {{ b.amount|amount:unit }}</span> <span class="muted">Reversed: {{ b.reversal.reason }}</span></li>
-          {% endfor %}
-          {% for c in line.cash_outs %}
-          <li>
-            <div class="row"><span class="grow">{% if c.kind == 'final' %}Final cash-out{% else %}Cash-out{% endif %} · {{ c.created_at|date:"H:i" }}</span><span class="num">{{ c.amount|amount:unit }}</span></div>
-            {% if can_cash_out %}
-            <form method="post" action="{% url 'cash_out_reverse' session.pk c.pk %}" class="form-row" data-once>{% csrf_token %}
-              <div class="grow"><input type="text" name="reason" data-keep="reverse-cash-out-{{ c.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
-              <button type="submit" class="btn btn-small btn-danger">Reverse</button>
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-          {% for c in line.reversed_cash_outs %}
-          <li><span class="struck">{{ c.created_at|date:"H:i" }} · {{ c.amount|amount:unit }}</span> <span class="muted">Reversed: {{ c.reversal.reason }}</span></li>
-          {% endfor %}
-        </ul>
-        {% if me.is_host and session.state == 'reconciliation' and line.has_money and not line.is_cashed_out %}
-        <p class="small muted">Exception: cash this player out now, without a confirmed count.</p>
-        {% include "web/_cash_out_form.html" %}
-        {% if line.status == 'ready' %}
-        <form method="post" action="{% url 'count_clear' session.pk p.pk %}">{% csrf_token %}
-          <button type="submit" class="btn btn-small btn-quiet">Clear the count</button>
-        </form>
-        {% endif %}
-        {% endif %}
-        {% if not line.has_money %}{% if can_manage_players or p.member_id == me.pk and can_join %}
-        <form method="post" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
-          <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this game{% else %}Remove from game{% endif %}</button>
-        </form>
-        {% endif %}{% endif %}
+      <details class="sheet-source" data-key="buy-{{ p.pk }}" data-sheet-source="buy-{{ p.pk }}" data-title="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} · {{ p.member.display_name }}">
+        <summary>{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</summary><div class="sheet-content">{% include "web/_buy_in_form.html" %}</div>
+      </details>{% endif %}
+      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
+        <summary>Details</summary><div class="sheet-content">
+        <p class="muted small">{% if line.play_seconds is not None %}Played {% clock_value line.play_seconds line.clock_running %}{% else %}Play has not started.{% endif %}</p>
+        {% if can_cash_out and line.has_money and session.state == 'running' and not line.is_cashed_out %}<h3>Cash out</h3>{% include "web/_cash_out_form.html" %}{% endif %}
+        {% include "web/_player_actions.html" %}
+        </div>
       </details>
-      {% endif %}
     </li>
-    {% endwith %}{% endfor %}
+    {% endwith %}{% empty %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this game when the host opens it.{% endif %}</p></li>{% endfor %}
   </ul>
-  {% if me.is_host and session.state == 'reconciliation' and summary.awaiting_lines or me.is_host and session.state == 'reconciliation' and summary.ready_lines %}
-  <p class="small muted">Type the counts you have, then confirm. Each button confirms every count that is typed. An empty field stays "Awaiting count".</p>
-  <button type="submit" form="counts-form" class="btn btn-primary btn-block">Confirm all counts</button>
-  {% endif %}
-  {% else %}<p class="muted">No players yet.</p>{% endif %}
-  {% if can_manage_players and addable_members %}
-  <p><a class="btn btn-primary btn-block" href="{% url 'participants_add' session.pk %}">Add players</a></p>
-  <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
-    <div class="grow">
-      <label for="add-player">Or add one player</label>
-      <select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select>
-    </div>
-    <button type="submit" class="btn">Add</button>
-  </form>
-  {% endif %}
-</div>
+
+</section>
+{% endif %}

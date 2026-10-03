@@ -8,7 +8,11 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Planned |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
-| 5. Shared use | Deployment, password reset, claim links for roster players, design pass | — | Planned |
+| 5. Shared use | Deployment, password reset, claim links for roster players; remaining design slices | — | Planned |
+
+## Visual redesign pulled forward
+
+The Rack slice 1 is built: shared foundation, active set and action sheets. [Plan](../plan/1791046015_visual_redesign.md). Count-up/finalized set, session/settle-up, and group/forms/log recomposition are slices 2–4. They need later approval. Seating and statistics remain separate feature cycles.
 
 ## What Stage 1 already prepares
 

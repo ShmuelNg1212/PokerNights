@@ -24,3 +24,7 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Design review captures and temporary build evidence
+.impeccable/review/
+.impeccable/mocks/
