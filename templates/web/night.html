@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load money_tags clock_tags %}
+{% block title %}Session · {{ night }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' night.group_id %}">← {{ night.group.name }}</a></p>
+<div class="row">
+  <h1 class="grow">{{ night.table.name }}</h1>
+  <span class="badge {% if not night.is_closed %}badge-good{% endif %}">Session {{ night.get_status_display|lower }}</span>
+</div>
+<p class="muted">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if night.unit == 'chips' %} · Chips game{% endif %}</p>
+
+<h2>Sets</h2>
+<ul class="list card">
+  {% for s in sets %}
+  <li class="row">
+    <span class="grow"><a href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span>
+    <span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}. Each set has its own timer.</p>{% endif %}
+{% if latest_set and not night.is_closed %}
+<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>
+{% endif %}
+{% if can_start_next_set %}
+<form method="post" action="{% url 'next_set' night.pk %}" class="card" data-once>{% csrf_token %}
+  <p class="small muted">The next set starts with the players still at the table and with fresh buy-ins.</p>
+  <button type="submit" class="btn btn-block">Start next set</button>
+</form>
+{% endif %}
+
+{% if my_standing %}
+<div class="card">
+  <div class="stat-label">Your result in this session{% if not night.is_closed %} so far{% endif %}</div>
+  <div class="stat-value {{ my_standing.net|sign_class }}">{{ my_standing.net|signed_amount:unit }}</div>
+  {% if night.is_closed %}
+    {% for t in my_transfers %}
+    <p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong> <span class="amount">{{ t.amount|amount:unit }}</span>
+       {% else %}<strong>{{ t.payer.display_name }}</strong> pays you <span class="amount">{{ t.amount|amount:unit }}</span>{% endif %}
+       {% if t.paid %}<span class="badge badge-good">Paid</span>{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</p>
+    {% empty %}<p class="muted">You owe nothing and are owed nothing.</p>
+    {% endfor %}
+  {% else %}<p class="muted small">Not final. Who pays whom is worked out when the host closes the session.</p>{% endif %}
+</div>
+{% endif %}
+
+{% if night.is_closed and outcome.plan %}
+<h2>Who pays whom {% if outcome.transfers %}<span class="badge {% if outcome.status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{{ outcome.status_label }}</span>{% endif %}</h2>
+<div class="card">
+  {% if outcome.transfers %}
+  <ul class="list">
+    {% for t in outcome.transfers %}
+    <li>
+      <div class="row">
+        <span class="grow"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong></span>
+        <span class="amount">{{ t.amount|amount:unit }}</span>
+      </div>
+      <div class="row">
+        {% if t.paid %}<span class="badge badge-good">Paid · {{ t.paid.created_at|date:"M j, H:i" }}</span>
+        {% else %}<span class="badge badge-warn">Not paid</span>{% endif %}
+        {% if me.is_host %}
+          {% if t.paid %}
+          <form method="post" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}
+            <button type="submit" class="btn btn-small btn-quiet">Undo</button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}
+            <button type="submit" class="btn btn-small btn-primary">Mark paid</button>
+          </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">Nobody owes anything.</p>{% endif %}
+  <p class="muted small">This list nets every set of the session. It assumes that no money changed hands before the session was closed.</p>
+</div>
+{% endif %}
+
+{% if outcome.standings %}
+<h2>{% if night.is_closed %}Session results{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
+<div class="card">
+  <ul class="list">
+    {% for row in outcome.standings %}
+    <li class="row">
+      <span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span>
+      <span class="amount {{ row.net|sign_class }}">{{ row.net|signed_amount:unit }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="muted small">Over {{ finalized_count }} finalized set{{ finalized_count|pluralize }}.</p>
+</div>
+{% endif %}
+
+{% if me.is_host and not night.is_closed %}
+<div class="card stack">
+  <h2 style="margin-top:0">Settle up</h2>
+  {% if can_close %}
+  <form method="post" action="{% url 'night_close' night.pk %}" data-once>{% csrf_token %}
+    <p class="small muted">Closing the session adds up every player's results over its sets and lists who pays whom. No further set can be started afterwards.</p>
+    <button type="submit" class="btn btn-primary btn-block">Close session and settle up</button>
+  </form>
+  {% elif unfinished_sets %}
+  <p class="muted">To settle up, finalize or cancel every set first. Not done: {% for s in unfinished_sets %}set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+  <button type="button" class="btn btn-block" disabled>Close session and settle up</button>
+  {% else %}
+  <p class="muted">No set of this session is finalized, so there is nothing to settle.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if outcome.payments %}
+<h2>Payment records</h2>
+<ul class="list card small">
+  {% for p in outcome.payments %}
+  <li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} → {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br>
+    <span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}

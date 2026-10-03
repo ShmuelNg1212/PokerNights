@@ -7,7 +7,7 @@ from .models import Payment, PaymentReversal, SettlementPlan, Transfer
 
 @admin.register(SettlementPlan)
 class SettlementPlanAdmin(ReadOnlyAdmin):
-    list_display = ("finalization", "proven_minimal", "created_at")
+    list_display = ("night", "proven_minimal", "created_at")
 
 
 @admin.register(Transfer)
@@ -17,7 +17,7 @@ class TransferAdmin(ReadOnlyAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "payer", "payee", "amount", "active")
+    list_display = ("created_at", "night", "payer", "payee", "amount", "active")
 
 
 @admin.register(PaymentReversal)

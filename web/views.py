@@ -9,16 +9,16 @@ from django.utils import timezone
 
 from audit.models import AuditEvent
 
+from games import clock
 from games import services as games
-from games.access import session_for
-from games.models import GameSession, Participant, SettingsPreset, Table
+from games.access import night_for, session_for
+from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
 from groups.models import Invite, Member
 from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
-from settlement.models import Payment
 
 
 def home(request):
@@ -28,6 +28,16 @@ def home(request):
         .order_by("group__name")
     )
     return render(request, "web/home.html", {"memberships": memberships})
+
+
+def visible_nights(me):
+    """The group's sessions with the sets that this member can see (drafts are for hosts only)."""
+    nights = GameNight.objects.filter(group=me.group).select_related("table").prefetch_related("sets")
+    for night in nights:
+        sets = sorted(night.sets.all(), key=lambda s: s.set_number)
+        night.shown_sets = [s for s in sets if me.is_host or s.state != GameSession.State.SETUP]
+        night.latest_set = night.shown_sets[-1] if night.shown_sets else None
+    return nights
 
 
 def group(request, group_id):
@@ -40,11 +50,9 @@ def group(request, group_id):
         "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
-    sessions = GameSession.objects.filter(group=me.group).select_related("table")
-    if not me.is_host:
-        sessions = sessions.exclude(state=GameSession.State.SETUP)
-    context["upcoming_sessions"] = [s for s in sessions if s.state in ("setup", "open", "running", "reconciliation")]
-    context["past_sessions"] = [s for s in sessions if s.state in ("finalized", "canceled")]
+    nights = [n for n in visible_nights(me) if n.shown_sets]
+    context["open_nights"] = [n for n in nights if not n.is_closed]
+    context["closed_nights"] = [n for n in nights if n.is_closed]
     if me.is_host:
         context["invites"] = Invite.objects.filter(
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
@@ -77,12 +85,18 @@ def session_context(session, me) -> dict:
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
     }
+    played = clock.player_seconds(session)
+    running_ids = clock.running_participant_ids(session)
+    for line in summary.lines:
+        line.play_seconds = played.get(line.participant.pk)
+        line.clock_running = line.participant.pk in running_ids
+    context["set_seconds"] = clock.set_seconds(session)
+    context["set_running"] = clock.is_running(session)
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
         context["outcome"] = outcome
         context["my_result"] = outcome.result_for(me.pk)
-        if context["my_result"]:
-            context["my_transfers"] = outcome.transfers_for(context["my_result"].participant_id)
+        context["night"] = session.night
     if context["can_manage_players"]:
         present = {p.member_id for p in participants if p.status == Participant.Status.JOINED}
         context["addable_members"] = [
@@ -124,9 +138,38 @@ def session_log(request, session_id):
             "participant__member", "recorded_by"
         ),
         "outcome": settlement_queries.outcome(session),
-        "payments": Payment.objects.filter(session=session).select_related(
-            "payer__member", "payee__member", "recorded_by"
-        ),
         "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
+        "play_periods": session.play_periods.all(),
+        "set_seconds": clock.set_seconds(session),
+        "played": clock.player_seconds(session),
     }
     return render(request, "web/session_log.html", context)
+
+
+def night(request, night_id):
+    """The session page: its sets, in order."""
+    night, me = night_for(request.user, night_id)
+    sets = [s for s in night.sets.order_by("set_number") if me.is_host or s.state != GameSession.State.SETUP]
+    for one in sets:
+        one.play_seconds = clock.set_seconds(one)
+        one.clock_running = clock.is_running(one)
+    timed = [one.play_seconds for one in sets if one.play_seconds is not None]
+    context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context["total_play_seconds"] = sum(timed) if timed else None
+    context["can_start_next_set"] = (
+        me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
+    )
+    State = GameSession.State
+    all_sets = list(night.sets.all())
+    unfinished = [s for s in all_sets if s.state not in (State.FINALIZED, State.CANCELED)]
+    outcome = settlement_queries.night_outcome(night)
+    context.update({
+        "outcome": outcome,
+        "my_standing": outcome.standing_for(me.pk),
+        "my_transfers": outcome.transfers_for(me.pk),
+        "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
+        "unfinished_sets": unfinished,
+        "can_close": me.is_host and not night.is_closed and not unfinished
+        and any(s.state == State.FINALIZED for s in all_sets),
+    })
+    return render(request, "web/night.html", context)

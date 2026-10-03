@@ -2,11 +2,11 @@
 {% load static money_tags %}
 {% block title %}{{ session }} · PokerNights{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'group' session.group_id %}">← {{ session.group.name }}</a></p>
+<p class="small"><a href="{% url 'night' session.night_id %}">← Session: {{ session.table.name }}, {{ session.game_date|date:"M j" }}</a></p>
 <div id="live" data-version="{{ session.version }}" data-url="{% url 'session_state' session.pk %}">
   {% include "web/_session_live.html" %}
 </div>
 <p class="center"><a href="{% url 'session_log' session.pk %}">Full game log</a></p>
 <p id="live-status" class="live-status" aria-live="polite"></p>
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/live.js' %}" defer></script>{% endblock %}
+{% block scripts %}<script src="{% static 'js/live.js' %}" defer></script><script src="{% static 'js/clock.js' %}" defer></script>{% endblock %}

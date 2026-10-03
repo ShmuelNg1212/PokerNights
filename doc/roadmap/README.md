@@ -19,6 +19,8 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 ## Decisions that changed the design
 
 - **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` itself is unchanged; its owner can update it.
+- **2026-10-04, sessions with sets.** A session holds several sets. Settle-up is once per session. Results and playing time are stored per set.
+- **Consequence for Stage 3:** leaderboards must state whether a "session played" is a set or a session, and can use `PlayerResult.play_seconds` for hourly figures.
 - **Consequence for Stage 3:** leaderboards and statistics are per unit. A pesos board includes only pesos games. `PlayerResult.unit` supports this.
 - The "chip denominations" item under "Later" no longer applies to pesos games.
 
@@ -38,6 +40,11 @@ These used the plan's defaults in Stage 1. They can still change.
 | Ranking threshold | 3 sessions, per group |
 
 ## Possible follow-ups
+
+- **Breaks.** A player steps away and comes back without leaving the set. Today "Left" does this, and a host brings the player back.
+- **Correcting a set's end time.** The end time is the moment the host taps "End play". A late tap adds playing time for everyone. No edit exists.
+- **A live session page.** The session page shows changes on reload only.
+- **Reopening a finalized set or a closed session** (already Stage 2).
 
 - **New names in the player picker.** Type several new names (one per line) on "Add players"; each becomes a roster player without a login and joins the game in the same all-or-nothing action. Not built. It needs name-clash rules and its own plan. It uses the existing roster model, not a new guest-account system.
 

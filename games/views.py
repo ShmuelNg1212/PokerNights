@@ -11,7 +11,7 @@ from groups.http import attempt, request_id_from
 from groups.models import Member
 
 from . import services
-from .access import session_for
+from .access import night_for, session_for
 from .forms import PresetForm, SessionForm, SettingsForm
 from .models import Participant, SettingsPreset, Table
 
@@ -148,3 +148,13 @@ def participants_add(request, session_id):
         "request_id": uuid.uuid4(),
     }
     return render(request, "games/add_players.html", context)
+
+
+@require_POST
+def next_set(request, night_id):
+    night, actor = night_for(request.user, night_id)
+    new = attempt(request, services.start_next_set, night.pk, actor)
+    if new is None:
+        return redirect("night", night_id=night.pk)
+    messages.success(request, f"Set {new.set_number} is open. Add or remove players, then start it.")
+    return redirect("session", session_id=new.pk)

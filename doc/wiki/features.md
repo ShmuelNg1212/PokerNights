@@ -25,7 +25,33 @@ What the app does today (Stage 1). Items that are planned but not built are list
 - The app does not convert between chips and pesos.
 - The unit of a game cannot change after the first accepted buy-in.
 
-## A game night
+## Sessions and sets
+
+- A **session** is one gathering at one table on one date. It holds one or more **sets**, played one after another.
+- Each set has its own buy-ins, cash-outs, balance check, results and timer. A new set starts with fresh buy-ins.
+- After play of a set has ended, the host taps **Start next set**. The new set has the same table and settings and the players who were still at the table. The host can add or remove players before starting it.
+- Who pays whom is worked out **once per session**: the host taps **Close session and settle up** when every set is finalized or canceled. The list nets each player's results over all sets.
+- A closed session cannot get another set.
+
+## Timers
+
+- Each set has its own timer. It starts when the host starts the set and stops when the host ends play. If the set is resumed, the timer continues; the time spent counting is not added.
+- Each player's playing time in a set is the part of that timer during which they were at the table. A late joiner starts later; a player who leaves stops earlier.
+- All times come from the server. A reload or another tab shows the same figure.
+- Playing time is stored with each frozen result. Sets played before this feature show "not recorded".
+
+## End of a set
+
+1. **End play.** The set's timer and every player's time stop at one moment.
+2. **Confirm final counts.** The host types what each player has left. 0 is a valid count. An empty field is refused; a player without a count is never treated as zero.
+3. **Statuses.** Each player is "Awaiting count", "Ready to cash out" or "Cashed out".
+4. **Cash out counted players (N).** The host reviews the counted players, each amount and the total, then confirms once. All of them are cashed out, or none. Players still to count stay pending; the host runs the action again later.
+5. **Stale review.** If a count changed or a player was cashed out elsewhere after the review opened, nothing is recorded and a fresh review is shown.
+6. **Finalize the set.** Needs a final cash-out for every player and balanced books (or an override). This freezes the set's results. It lists no transfers.
+
+The individual cash-out still exists: on the player row during play (for early departures), and under "Details" while counting.
+
+## A game night (one set)
 
 1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
@@ -36,8 +62,8 @@ What the app does today (Stage 1). Items that are planned but not built are list
 6. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
 7. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
 8. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
-9. **Finalize.** Results are frozen. Each player sees profit or loss. The app lists who pays whom with the minimum number of transfers.
-10. **Paid marks.** The host marks each transfer paid, and can undo it. The game shows unsettled, partly settled or settled.
+9. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
+10. **Close the session.** The app lists who pays whom with the minimum number of transfers. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
 11. **Game log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, transfers, payment records, and who did what and when.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
@@ -46,7 +72,9 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 
 - The app records who owes what. It does not move money.
 - The transfer list assumes that no money changed hands before finalization. A payment during the game cannot be recorded yet.
-- A finalized game cannot be reopened. Check the cash-outs before finalizing.
+- A finalized set and a closed session cannot be reopened. Check the cash-outs before finalizing.
+- No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
+- The session page does not refresh by itself; the set page does.
 - No banker mode, no seating, no seasons, no leaderboard, no statistics across games.
 - No password reset by email.
 - The app runs on one machine. It is not deployed.

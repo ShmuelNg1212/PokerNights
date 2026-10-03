@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)). Cash amounts and the unit option are done ([plan](doc/plan/1791040305_cash_amounts_and_unit_option.md)). Adding several players at once is done ([plan](doc/plan/1791041765_add_several_players_at_once.md)).
+Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)). Cash amounts and the unit option are done ([plan](doc/plan/1791040305_cash_amounts_and_unit_option.md)). Adding several players at once is done ([plan](doc/plan/1791041765_add_several_players_at_once.md)). Sessions with sets, end-of-set cash-outs and timers are done ([plan](doc/plan/1791042668_end_of_set_cash_outs_and_timers.md)).
 
 ## Next (each needs its own study and plan)
 
@@ -15,6 +15,7 @@ Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_g
 
 ## Waiting for the human
 
+- [ ] Test a session with two sets as a user: end a set, confirm counts, cash out counted players, start the next set, close the session.
 - [ ] Test a pesos game and a chips game as a user.
 - [ ] Decide whether to keep the leftover check data in the dev database (accounts `hana` and `ben`, group "Browser Check").
 - [ ] Update `SPEC.md` step 2 if it should match the app (cash-outs as amounts, no chip conversion).

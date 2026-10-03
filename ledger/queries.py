@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from games.models import GameSession, Participant
 
 from . import money
-from .models import BalanceAdjustment, BuyIn, CashOut
+from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount
 
 
 @dataclass
@@ -21,6 +21,7 @@ class PlayerLine:
     cash_outs: list = field(default_factory=list)  # accepted, oldest first
     reversed_cash_outs: list = field(default_factory=list)
     adjustments: list = field(default_factory=list)  # active (not voided)
+    count: object = None  # the current confirmed FinalCount, if any
 
     @property
     def buy_in_count(self) -> int:
@@ -47,6 +48,22 @@ class PlayerLine:
     def has_cash_out(self) -> bool:
         """True once any cash-out is recorded, including a cash-out of zero."""
         return bool(self.cash_outs)
+
+    @property
+    def is_cashed_out(self) -> bool:
+        """The player has a final cash-out: nothing of theirs is left on the table."""
+        return any(c.kind == CashOut.Kind.FINAL for c in self.cash_outs)
+
+    @property
+    def status(self) -> str:
+        """Where the player stands at the end of a set: ``cashed_out``, ``ready`` or ``awaiting``."""
+        if self.is_cashed_out:
+            return "cashed_out"
+        return "ready" if self.count is not None else "awaiting"
+
+    @property
+    def status_label(self) -> str:
+        return {"cashed_out": "Cashed out", "ready": "Ready to cash out", "awaiting": "Awaiting count"}[self.status]
 
     @property
     def cashed_out(self) -> int:
@@ -98,6 +115,19 @@ class Summary:
         """Players with an accepted buy-in, in join order. These are the players who get a result."""
         return [line for line in self.lines if line.has_money]
 
+    @property
+    def ready_lines(self) -> list:
+        """Counted and waiting for cash-out, in join order."""
+        return [line for line in self.money_lines if line.status == "ready"]
+
+    @property
+    def awaiting_lines(self) -> list:
+        return [line for line in self.money_lines if line.status == "awaiting"]
+
+    @property
+    def cashed_out_lines(self) -> list:
+        return [line for line in self.money_lines if line.status == "cashed_out"]
+
     def line_for(self, participant_id):
         return next((line for line in self.lines if line.participant.pk == participant_id), None)
 
@@ -120,6 +150,8 @@ def summary(session: GameSession) -> Summary:
             line.reversed_cash_outs.append(cash_out)
         else:
             line.cash_outs.append(cash_out)
+    for count in FinalCount.objects.filter(session=session, is_current=True).select_related("confirmed_by"):
+        lines[count.participant_id].count = count
     for adjustment in BalanceAdjustment.objects.filter(session=session, voided_at__isnull=True):
         lines[adjustment.participant_id].adjustments.append(adjustment)
     shown = [
@@ -134,7 +166,7 @@ class Balance:
     """The balance check: does the total cashed out equal the total bought in?"""
 
     summary: Summary
-    missing_cash_outs: list  # players with buy-ins and no cash-out record
+    missing_cash_outs: list  # players with buy-ins and no final cash-out
     stray_cash_outs: list  # players with a cash-out and no accepted buy-in
     raw_difference: int  # cashed out − bought in, before overrides
     difference: int  # the same, after active overrides
@@ -180,7 +212,10 @@ class Balance:
             return f"{names} has a cash-out but no buy-in. Record the buy-in, or reverse the cash-out."
         if self.missing_cash_outs:
             names = ", ".join(line.participant.member.display_name for line in self.missing_cash_outs)
-            return f"No cash-out is recorded for: {names}. Record what each player leaves with. Enter 0 for a player who lost everything."
+            return (
+                f"Not cashed out yet: {names}. Confirm each player's final count and cash them out. "
+                "A count of 0 is valid for a player who lost everything."
+            )
         if self.difference > 0:
             return (
                 f"{self.difference_text} too much: more was cashed out than was bought in. "
@@ -198,7 +233,7 @@ def balance(session_or_summary) -> Balance:
     found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
     return Balance(
         summary=found,
-        missing_cash_outs=[line for line in found.lines if line.has_money and not line.has_cash_out],
+        missing_cash_outs=[line for line in found.lines if line.has_money and not line.is_cashed_out],
         stray_cash_outs=[line for line in found.lines if line.has_cash_out and not line.has_money],
         raw_difference=found.cashed_out - found.total,
         difference=found.cashed_out + found.adjustment - found.total,

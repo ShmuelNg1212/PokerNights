@@ -2,7 +2,7 @@
 
 - **Date:** 2026-10-03 23:51 (Asia/Manila), Unix timestamp `1791042668`
 - **Revised:** 2026-10-03 23:56 (Unix `1791042979`), after the human stated that a session can have several sets
-- **Status:** `in-progress`
+- **Status:** `done`
 - **Study:** [../study/1791042572_end_of_set_cash_outs_and_timers.md](../study/1791042572_end_of_set_cash_outs_and_timers.md). Its **review addendum** controls where it differs from the earlier sections.
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this revised plan.
 - **Approval record:** Approved by the human on 2026-10-04: "approved." Q1–Q6 were not answered, so each default applies. The AI's reading of S5 (a clock per set, player time inside it, no session timer) was presented before the approval and not corrected.
@@ -132,40 +132,40 @@ None new. PostgreSQL 17 for the test run. The dev server stops for the work and 
 
 ### Part I: sessions with sets
 
-- [ ] **1. Group sets into a session.** `GameNight` (group, table, date, location, game type, unit, status `open` or `closed`); `GameSession.night` and `set_number`; one-set-in-play constraint; data migration (one session per existing game); creating a game creates the session and set 1; session page; group page lists sessions; screens say "Session" and "Set".
+- [x] **1. Group sets into a session.** `GameNight` (group, table, date, location, game type, unit, status `open` or `closed`); `GameSession.night` and `set_number`; one-set-in-play constraint; data migration (one session per existing game); creating a game creates the session and set 1; session page; group page lists sessions; screens say "Session" and "Set".
   - Commit: `feat(games): group sets into a session`
   - Done when: tests cover creation, numbering, access (404 outside the group), the migration, and unchanged behavior of a single set.
-- [ ] **2. Start the next set.** `start_next_set()`: host only, under a lock on the session row; refused while a set is in setup, open or running, or when the session is closed; copies table, seats, latest settings and players with status "joined"; the new set is open with no buy-ins.
+- [x] **2. Start the next set.** `start_next_set()`: host only, under a lock on the session row; refused while a set is in setup, open or running, or when the session is closed; copies table, seats, latest settings and players with status "joined"; the new set is open with no buy-ins.
   - Commit: `feat(games): start the next set with the players still at the table`
   - Done when: tests cover carry-over, players who left, refusal cases, a repeated request, and two hosts at once.
-- [ ] **3. Settle up once per session.** Set finalization writes results only. `close_session()` nets each member's results over the finalized sets, runs the existing algorithm, and writes the session's plan and transfers. `SettlementPlan` belongs to the session; `Transfer` and `Payment` point to members. Data migration for existing plans, transfers and payments. Session page shows running results, then transfers and paid marks. Set page shows set results and "Payment: at the end of the session".
+- [x] **3. Settle up once per session.** Set finalization writes results only. `close_session()` nets each member's results over the finalized sets, runs the existing algorithm, and writes the session's plan and transfers. `SettlementPlan` belongs to the session; `Transfer` and `Payment` point to members. Data migration for existing plans, transfers and payments. Session page shows running results, then transfers and paid marks. Set page shows set results and "Payment: at the end of the session".
   - Commit: `feat(settlement)!: settle up once per session across its sets`
   - Done when: tests cover AC4 to AC8, a session with a canceled set, results that sum to zero over the session, the migration on a copy of the dev database, and an atomic close.
 
 ### Part II: end of a set
 
-- [ ] **4. Give each set its own timer and track playing time.** `GameSession.ended_at`; `PlayPeriod` per set (one open at most) for the set's clock; `PlayInterval` per set and player with the one-open constraint, always inside a play period; hooks in start, end, resume, join, batch add, left, return, withdraw and next-set carry-over; the set timer on the set page and the session page, each player's time, and the session sums; a small script that advances the shown minutes from the server's figure while a set runs; `ended_at` filled from the log for existing sets.
+- [x] **4. Give each set its own timer and track playing time.** `GameSession.ended_at`; `PlayPeriod` per set (one open at most) for the set's clock; `PlayInterval` per set and player with the one-open constraint, always inside a play period; hooks in start, end, resume, join, batch add, left, return, withdraw and next-set carry-over; the set timer on the set page and the session page, each player's time, and the session sums; a small script that advances the shown minutes from the server's figure while a set runs; `ended_at` filled from the log for existing sets.
   - Commit: `feat(games): give each set its own timer and track playing time per player`
   - Done when: tests cover each event, one shared end timestamp, the set clock across a resume, a new clock at zero for the next set, early leavers, returns, repeats, that no player's time exceeds the set clock, and that ending set 2 leaves set 1 untouched.
-- [ ] **5. Confirm final counts apart from cash-outs.** `FinalCount` with versions and voiding; `CashOut.kind` with a data migration; the three statuses; count entry while counting up; individual cash-out under "Details"; the gate on final cash-outs (Q2); the resume rule (Q3).
+- [x] **5. Confirm final counts apart from cash-outs.** `FinalCount` with versions and voiding; `CashOut.kind` with a data migration; the three statuses; count entry while counting up; individual cash-out under "Details"; the gate on final cash-outs (Q2); the resume rule (Q3).
   - Commit: `feat(ledger): confirm final counts separately from cash-outs`
   - Done when: tests cover zero against empty, replace and clear, statuses, the gate message, resume, access and unchanged totals.
-- [ ] **6. Cash out counted players in one action.** `CashOutBatch`; `cash_out_counted()`; the button with its count and disabled reason; the review page; the stale-review refusal; the success line.
+- [x] **6. Cash out counted players in one action.** `CashOutBatch`; `cash_out_counted()`; the button with its count and disabled reason; the review page; the stale-review refusal; the success line.
   - Commit: `feat(ledger): cash out all counted players in one reviewed action`
   - Done when: tests cover success, a second run for the rest, a stale count, a player cashed out elsewhere, rollback on a forced failure, retry by `request_id`, access, and no finalization or payment as a side effect.
-- [ ] **7. Store playing time with results.** `PlayerResult.play_seconds`, written when a set is finalized.
+- [x] **7. Store playing time with results.** `PlayerResult.play_seconds`, written when a set is finalized.
   - Commit: `feat(ledger): store playing time with each frozen result`
   - Done when: a test shows the figure equals the interval sum at the end of play, not at finalization.
 
 ### Verification and close
 
-- [ ] **8. Races and end-to-end.** Threaded tests on both engines: two hosts start the next set; two hosts close the session; overlapping batches; a batch against an individual cash-out; a batch against a count change; "End play" twice. Page-driven tests: the six-player example, and the two-set example of AC6.
+- [x] **8. Races and end-to-end.** Threaded tests on both engines: two hosts start the next set; two hosts close the session; overlapping batches; a batch against an individual cash-out; a batch against a count change; "End play" twice. Page-driven tests: the six-player example, and the two-set example of AC6.
   - Commit: `test: cover sets, session settle-up, end-of-set batches and their races`
   - Done when: the tests pass on SQLite and PostgreSQL, and fail on PostgreSQL with the locks removed.
-- [ ] **9. Verify in a browser.** Headless Chrome at phone width over a two-set session: statuses, zero count, button, review, success line, stale review, frozen time, next set with carried players, session settle-up, second client update, keyboard, no horizontal scroll. Screenshots reviewed. Results recorded here.
+- [x] **9. Verify in a browser.** Headless Chrome at phone width over a two-set session: statuses, zero count, button, review, success line, stale review, frozen time, next set with carried players, session settle-up, second client update, keyboard, no horizontal scroll. Screenshots reviewed. Results recorded here.
   - Commit: `docs(plan): record verification results`
   - Done when: each acceptance criterion has a recorded result.
-- [ ] **10. Rendezvous and docs.** Backup, migrate the dev database, merge to `main`, update `features.md`, `architecture.md`, a footgun page for the `GameSession`/"set" naming, the roadmap and `TODO.md`, restart the server, set this plan to `done`.
+- [x] **10. Rendezvous and docs.** Backup, migrate the dev database, merge to `main`, update `features.md`, `architecture.md`, a footgun page for the `GameSession`/"set" naming, the roadmap and `TODO.md`, restart the server, set this plan to `done`.
   - Commit: `docs: sync living documentation`
   - Done when: `main` has the work, the tests pass on `main`, and the server answers.
 
@@ -208,3 +208,50 @@ None. An answer other than the default to Q1, Q2 or Q3 means a plan revision bef
 | 2026-10-03 23:56 | The human stated that a session can have several sets, and answered four questions (S1–S4). Study addendum added. Plan revised: Part I (sessions with sets, session settle-up) added before Part II. Q1–Q6 still open. Status stays `awaiting-approval`. |
 | 2026-10-03 23:59 | The human stated: "each set has its own timer." Recorded as S5. Task 4 now includes a clock per set (`PlayPeriod`), with player time inside it. AC9a and AC9b added. Status stays `awaiting-approval`. |
 | 2026-10-04 | Human approved the revised plan. Defaults apply to Q1–Q6. Dev server stopped. Database backed up to `db.before_sets.sqlite3` with the SQLite backup API. |
+| 2026-10-04 | Tasks 1–10 done on `feat/sets-and-end-of-set`. Dev database migrated after the backup. Merged to `main` locally. Dev server restarted. Status `done`. |
+
+## Verification results (2026-10-04)
+
+| Check | Result |
+|---|---|
+| `manage.py test` on SQLite | 356 tests, pass (100 new) |
+| Same suite on PostgreSQL 17.11 | 356 tests, pass |
+| Lock mutation check | With the set lock and the session lock removed, 19 of 21 race tests failed on PostgreSQL. Restored, all pass |
+| `manage.py check --deploy` with production-like settings | No issues |
+| `makemigrations --check` | No changes |
+| Migrations on a copy of the dev database, then on the real one | Buy-ins, cash-out amounts, results, transfer amounts and payments identical to the backup. Each old game is a session with one set. Finalized ones are closed. End times filled from the log. No play period invented |
+| Headless Chrome at 390 × 844 | 33 of 33 checks pass. New statuses reached a second client in 1.2 s. Playing time read "3 h 00 min" at the end of play and after all counting, in two tabs |
+| Screenshots (running set, counting, review, stale review, results, next set, closed session) | Reviewed by the AI. Two defects fixed: a truncated placeholder in the count field, and a red notice for players who were only waiting to be counted |
+
+Not checked: a physical phone, a screen reader, a production web server. Keyboard use was checked for Enter in the count field.
+
+| # | Result | Evidence |
+|---|---|---|
+| AC1 | Met | `games.tests.test_nights` |
+| AC2, AC3 | Met | `games.tests.test_next_set`; race test "two hosts start the next set"; browser check |
+| AC4 | Met | `settlement.tests.test_finalize`; browser check |
+| AC5, AC6, AC7 | Met | `settlement.tests.test_night`; `web.tests.test_acceptance.TwoSetSessionAcceptanceTest` |
+| AC8 | Met | Comparison of the dev database with its backup; `NightMigrationTests` |
+| AC9, AC9a, AC9b, AC10, AC11 | Met | `games.tests.test_clock`; browser check |
+| AC12, AC13 | Met | `ledger.tests.test_counts`; browser check |
+| AC14–AC17 | Met | `ledger.tests.test_batch`; `EndOfSetAcceptanceTest`; browser check |
+| AC18, AC19 | Met | `test_batch`; `ConcurrentEndOfSetTests`; browser check with a second host tab |
+| AC20 | Met | `test_counts.CashOutKindTests`, `CountPageTests` |
+| AC21 | Met | `test_counts`; `test_batch`; existing balance and override tests |
+| AC22 | Met | 403 and 404 tests for each new action |
+| AC23 | Met | Browser check, 1.2 s. The session page itself does not refresh live; see below |
+| AC24 | Met | `EndOfSetAcceptanceTest` (log lines); `web.tests.test_log` |
+
+## Differences from the plan and notes
+
+| Topic | Detail |
+|---|---|
+| Session page is not live | The set page refreshes by polling, as before. The session page (sets, results, transfers, paid marks) shows changes on reload. Closing a session bumps each set's version, so open set pages update |
+| `CashOut.kind` can change | A final cash-out becomes partial again if the player returns to the table or buys in again. The amount never changes. The change is logged |
+| Buy-in after a final cash-out | It puts the player back in play: the earlier cash-out becomes partial and, in a running set, the player's time starts again. The plan did not state this case |
+| Unit of a later set | A session with more than one set cannot change its unit |
+| Canceled sets | A set canceled while running stops its timers. A session whose sets are all canceled cannot be closed; it has nothing to settle |
+| Audit of session events | Session-level events (closed, paid marks) are stored against the session's latest set, so they appear in that set's log |
+| Tests updated for S2 and Q2 | `settlement.tests.test_finalize`, `test_payments`, `web.tests.test_acceptance`, `test_log`, `test_units`, `test_concurrency` (transfers now come from closing the session). `ledger.tests.test_balance`, `test_finalize`, `test_log`, `test_units` (a second cash-out for a cashed-out player is refused; the gate message changed) |
+| Extra commit | `style(web): show players still to cash out as progress, not as an error` |
+| Defaults used | Q1 no conversion. Q2 stricter gate. Q3 (a). Q4 no breaks. Q5 no end-time editing. Q6 older sets show "not recorded" |

@@ -1,10 +1,13 @@
-{% load money_tags %}
+{% load money_tags clock_tags %}
 <div class="row">
-  <h1 class="grow">{{ session.table.name }}</h1>
+  <h1 class="grow">{{ session.table.name }} <span class="muted">· Set {{ session.set_number }}</span></h1>
   <span class="badge {% if session.state == 'running' %}badge-live{% endif %}">{{ session.get_state_display }}</span>
 </div>
 <p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
 <p class="muted small">Blinds {{ settings.small_blind|amount:unit }}/{{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}</p>
+{% if session.started_at %}
+<p class="small"><strong>Set timer:</strong> {% clock_value set_seconds set_running %}{% if session.ended_at %} · <span class="muted">Play ended {{ session.ended_at|date:"g:i A" }}</span>{% endif %}</p>
+{% endif %}
 {% if unit == 'chips' %}<p class="small"><span class="badge">Chips game</span> <span class="muted">Amounts are chip counts. They have no peso value.</span></p>{% endif %}
 {% if session.state == 'canceled' %}<div class="notice">This game was canceled{% if session.cancel_reason %}: {{ session.cancel_reason }}{% endif %}. It does not count.</div>{% endif %}
 

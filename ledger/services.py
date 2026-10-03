@@ -5,6 +5,8 @@ at a time. Records are append-only: a correction is a reversal with a reason.
 Each amount is an integer in the session's unit (pesos or chips).
 """
 
+import uuid
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -17,7 +19,8 @@ from groups.models import Member
 
 from . import money, queries
 from .models import (
-    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutReversal, Finalization, PlayerResult,
+    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization,
+    PlayerResult,
 )
 
 State = GameSession.State
@@ -42,6 +45,27 @@ def _clean_reason(reason) -> str:
 
 def _is_amount(value) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _final_cash_outs(participant):
+    return CashOut.objects.filter(participant=participant, kind=CashOut.Kind.FINAL, reversal__isnull=True)
+
+
+def _void_count(participant, user) -> None:
+    FinalCount.objects.filter(participant=participant, is_current=True).update(
+        is_current=False, voided_at=timezone.now(), voided_by=user
+    )
+
+
+def _back_in_play(participant, actor: Member) -> None:
+    """The player plays on after a final cash-out: that cash-out was partial after all."""
+    changed = _final_cash_outs(participant).update(kind=CashOut.Kind.PARTIAL)
+    if changed:
+        audit.record(
+            "cash_out.reclassified", actor=actor.user, group_id=participant.session.group_id,
+            session_id=participant.session_id, target=participant,
+            summary=f"{participant.member.display_name} plays on; the earlier cash-out now counts as partial",
+        )
 
 
 def _accepted_buy_ins(session):
@@ -69,6 +93,9 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
             f"A buy-in must be between {money.format_amount(current.min_buy_in, session.unit)} "
             f"and {money.format_amount(current.max_buy_in, session.unit)}."
         )
+    _back_in_play(participant, actor)
+    if session.state == State.RUNNING:
+        games.clock.open_interval(participant, timezone.now())
     buy_in = BuyIn.objects.create(
         session=session, participant=participant, settings_version=current, amount=amount,
         request_id=request_id, recorded_by=actor.user,
@@ -120,9 +147,18 @@ def record_cash_out(session_id, actor: Member, participant_id, amount: int, requ
         raise RuleError("Enter the cash-out amount, 0 or more.")
     if not _accepted_buy_ins(session).filter(participant=participant).exists():
         raise RuleError(f"{participant.member.display_name} has no buy-in, so there is nothing to cash out.")
+    if _final_cash_outs(participant).exists():
+        raise RuleError(
+            f"{participant.member.display_name} is already cashed out. Reverse that cash-out to change it."
+        )
+    # A cash-out is the player's last when they leave, or when play has ended.
+    final = left or session.state == State.RECONCILIATION
     cash_out = CashOut.objects.create(
-        session=session, participant=participant, amount=amount, request_id=request_id, recorded_by=actor.user
+        session=session, participant=participant, amount=amount, request_id=request_id, recorded_by=actor.user,
+        kind=CashOut.Kind.FINAL if final else CashOut.Kind.PARTIAL,
     )
+    if final:
+        _void_count(participant, actor.user)  # an unused count would contradict this cash-out
     audit.record(
         "cash_out.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
         summary=f"{participant.member.display_name} cashed out {money.format_amount(amount, session.unit)}",
@@ -147,6 +183,11 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     if session.state not in CASH_OUT_STATES:
         raise RuleError("This game is closed. Its records cannot change.")
     reversal = CashOutReversal.objects.create(cash_out=cash_out, reason=_clean_reason(reason), recorded_by=actor.user)
+    if cash_out.final_count_id:
+        # The count behind this cash-out is void too: the player is "awaiting count" again.
+        FinalCount.objects.filter(pk=cash_out.final_count_id).update(
+            is_current=False, voided_at=timezone.now(), voided_by=actor.user
+        )
     audit.record(
         "cash_out.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
         summary=f"Reversed {cash_out.participant.member.display_name}'s cash-out of {money.format_amount(cash_out.amount, session.unit)}",
@@ -154,6 +195,149 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     )
     games.touch(session)
     return reversal
+
+
+@transaction.atomic
+def confirm_count(session_id, actor: Member, participant_id, amount: int, request_id) -> FinalCount:
+    """Confirm what a player has at the end of the set. Zero is a valid count; a missing one is not zero.
+
+    Confirming again replaces the count with the next version. This records no cash-out.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = FinalCount.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if session.state != State.RECONCILIATION:
+        raise RuleError("Final counts are confirmed after play has ended.")
+    participant = _participant(session, participant_id)
+    if not _is_amount(amount) or amount < 0:
+        raise RuleError("Enter the final count, 0 or more.")
+    if not _accepted_buy_ins(session).filter(participant=participant).exists():
+        raise RuleError(f"{participant.member.display_name} has no buy-in, so there is nothing to count.")
+    if _final_cash_outs(participant).exists():
+        raise RuleError(
+            f"{participant.member.display_name} is already cashed out. Reverse that cash-out to count again."
+        )
+    latest = FinalCount.objects.filter(participant=participant).order_by("-version").first()
+    FinalCount.objects.filter(participant=participant, is_current=True).update(is_current=False)
+    count = FinalCount.objects.create(
+        session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
+        request_id=request_id, confirmed_by=actor.user,
+    )
+    audit.record(
+        "count.confirmed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=count,
+        summary=f"Confirmed {participant.member.display_name}'s final count: "
+        f"{money.format_amount(amount, session.unit)}" + (f" (version {count.version})" if count.version > 1 else ""),
+        data={"amount": amount, "version": count.version},
+    )
+    games.touch(session)
+    return count
+
+
+@transaction.atomic
+def clear_count(session_id, actor: Member, participant_id) -> None:
+    """Take back a confirmed count that is not cashed out yet. The player is "awaiting count" again."""
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if session.state != State.RECONCILIATION:
+        raise RuleError("Final counts can change only after play has ended.")
+    participant = _participant(session, participant_id)
+    if FinalCount.objects.filter(participant=participant, is_current=True).exists():
+        _void_count(participant, actor.user)
+        audit.record(
+            "count.cleared", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
+            summary=f"Cleared {participant.member.display_name}'s final count",
+        )
+        games.touch(session)
+
+
+@transaction.atomic
+def cash_out_counted(session_id, actor: Member, count_ids, request_id) -> CashOutBatch:
+    """Cash out, in one action, the players whose confirmed counts the host just reviewed.
+
+    ``count_ids`` are the exact counts shown in the review. Each must still be
+    the player's current count, and the player must not be cashed out. If any
+    check fails, nothing is recorded. This does not finalize the set and marks
+    no payment.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = CashOutBatch.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if session.state != State.RECONCILIATION:
+        raise RuleError("Counted players are cashed out after play has ended.")
+    wanted = []
+    for count_id in count_ids:
+        try:
+            count_id = int(count_id)
+        except (TypeError, ValueError):
+            raise RuleError("That review is not valid. Open the review again.") from None
+        if count_id not in wanted:
+            wanted.append(count_id)
+    if not wanted:
+        raise RuleError("No player has a confirmed count yet.")
+
+    counts = FinalCount.objects.select_related("participant__member").filter(session=session, pk__in=wanted).in_bulk()
+    if len(counts) != len(wanted):
+        raise RuleError("That review does not belong to this set. Nothing was recorded. Open the review again.")
+    stale = []
+    for count_id in wanted:
+        count = counts[count_id]
+        name = count.participant.member.display_name
+        if _final_cash_outs(count.participant).exists():
+            stale.append(f"{name} was cashed out in the meantime")
+        elif not count.is_current:
+            stale.append(f"{name}'s count was changed or cleared")
+    if stale:
+        raise RuleError(
+            f"The review is out of date: {'; '.join(stale)}. Nothing was recorded. Check the new review and confirm again."
+        )
+
+    batch = CashOutBatch.objects.create(session=session, request_id=request_id, recorded_by=actor.user)
+    ordered = sorted((counts[count_id] for count_id in wanted), key=lambda count: count.participant.join_order)
+    for count in ordered:
+        cash_out = CashOut.objects.create(
+            session=session, participant=count.participant, amount=count.amount, kind=CashOut.Kind.FINAL,
+            final_count=count, batch=batch, request_id=uuid.uuid4(), recorded_by=actor.user,
+        )
+        audit.record(
+            "cash_out.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=cash_out,
+            summary=f"{count.participant.member.display_name} cashed out "
+            f"{money.format_amount(count.amount, session.unit)} (counted, batch)",
+            data={"amount": count.amount, "unit": session.unit, "count_id": count.pk, "count_version": count.version},
+        )
+    total = sum(count.amount for count in ordered)
+    audit.record(
+        "cash_out.batch", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=batch,
+        summary=f"Cashed out {len(ordered)} counted player{'' if len(ordered) == 1 else 's'}: "
+        f"{', '.join(count.participant.member.display_name for count in ordered)} "
+        f"({money.format_amount(total, session.unit)} in all)",
+        data={"participants": [count.participant_id for count in ordered], "total": total},
+    )
+    games.touch(session)
+    return batch
+
+
+def void_counts_on_resume(session: GameSession, actor: Member) -> None:
+    """Play resumes, so stacks will change: confirmed counts that are not cashed out are void."""
+    count = FinalCount.objects.filter(session=session, is_current=True).update(
+        is_current=False, voided_at=timezone.now(), voided_by=actor.user
+    )
+    if count:
+        audit.record(
+            "count.voided_on_resume", actor=actor.user, group_id=session.group_id, session_id=session.pk,
+            summary=f"Play resumed: {count} confirmed count{'' if count == 1 else 's'} voided",
+        )
+
+
+def is_cashed_out(participant: Participant) -> bool:
+    return _final_cash_outs(participant).exists()
+
+
+def back_in_play(participant: Participant, actor: Member) -> None:
+    _back_in_play(participant, actor)
 
 
 @transaction.atomic
@@ -263,6 +447,8 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
         ],
         finalized_by=actor.user,
     )
+    # Play ended before counting began, so every interval is closed: this is not "time until now".
+    played = games.clock.player_seconds(session) if session.play_periods.exists() else {}
     PlayerResult.objects.bulk_create(
         PlayerResult(
             finalization=finalization,
@@ -277,6 +463,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
             adjustment=line.adjustment,
             cash_out=line.cash_out_final,
             net=net,
+            play_seconds=played.get(line.participant.pk, 0) if played or session.play_periods.exists() else None,
         )
         for line, net in zip(lines, nets)
     )

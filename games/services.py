@@ -11,8 +11,9 @@ from groups.errors import RuleError
 from groups.models import Member
 from groups.services import clean_name
 
+from . import clock
 from .models import (
-    GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
+    GameNight, GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
 )
 
 
@@ -102,10 +103,18 @@ def create_table(actor: Member, name: str, seat_count, default_preset_id=None) -
 State = GameSession.State
 
 
+def lock_night(night_id, group_id) -> GameNight:
+    """The session row, locked for the rest of the transaction."""
+    night = GameNight.objects.select_for_update().select_related("table").filter(pk=night_id, group_id=group_id).first()
+    if night is None:
+        raise RuleError("That session is not in this group.")
+    return night
+
+
 def lock_session(session_id, group_id) -> GameSession:
     """The session row, locked for the rest of the transaction. Every session write starts here."""
     session = (
-        GameSession.objects.select_for_update().select_related("table").filter(pk=session_id, group_id=group_id).first()
+        GameSession.objects.select_for_update().select_related("table", "night").filter(pk=session_id, group_id=group_id).first()
     )
     if session is None:
         raise RuleError("That game is not in this group.")
@@ -140,7 +149,7 @@ def _clean_date(value) -> datetime.date:
 
 @transaction.atomic
 def create_session(actor: Member, data: dict) -> GameSession:
-    """Create a game in setup, with settings version 1."""
+    """Create a session with its first set. The set is in setup, with settings version 1."""
     require_host(actor)
     table = Table.objects.filter(group=actor.group, pk=data.get("table_id"), archived_at__isnull=True).first()
     if table is None:
@@ -148,22 +157,23 @@ def create_session(actor: Member, data: dict) -> GameSession:
     preset = None
     if data.get("preset_id"):
         preset = SettingsPreset.objects.filter(group=actor.group, pk=data["preset_id"]).first()
-    session = GameSession.objects.create(
-        group=actor.group,
-        table=table,
-        game_date=_clean_date(data.get("game_date")),
-        location=(data.get("location") or "").strip()[:120],
-        game_type=_game_type(data.get("game_type")),
-        unit=_unit(data.get("unit")),
-        seat_count=table.seat_count,
-        created_by=actor.user,
-    )
+    shared = {
+        "group": actor.group,
+        "table": table,
+        "game_date": _clean_date(data.get("game_date")),
+        "location": (data.get("location") or "").strip()[:120],
+        "game_type": _game_type(data.get("game_type")),
+        "unit": _unit(data.get("unit")),
+        "created_by": actor.user,
+    }
+    night = GameNight.objects.create(**shared)
+    session = GameSession.objects.create(night=night, set_number=1, seat_count=table.seat_count, **shared)
     SettingsVersion.objects.create(
         session=session, number=1, preset=preset, created_by=actor.user, **validated_stakes(data)
     )
     audit.record(
         "session.created", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
-        summary=f"Created a game at {table.name} for {session.game_date:%Y-%m-%d}",
+        summary=f"Created a session at {table.name} for {session.game_date:%Y-%m-%d} (set 1)",
     )
     return session
 
@@ -185,8 +195,11 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
         # Amounts already recorded would change meaning, so the unit is fixed once money is in.
         if has_money(session):
             raise RuleError("Buy-ins are recorded, so the unit cannot change. Reverse them first.")
+        if session.night.sets.count() > 1:
+            raise RuleError("This session has several sets. They all count in one unit, so it cannot change.")
         session.unit = unit
         session.save(update_fields=["unit"])
+        GameNight.objects.filter(pk=session.night_id).update(unit=unit)
         audit.record(
             "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
             summary=f"Changed the unit to {Unit(unit).label}",
@@ -203,6 +216,12 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
     touch(session)
     return version
 
+
+# Called when a set resumes play, inside the transaction: ``hook(session, actor)``.
+RESUME_HOOKS = []
+
+# Called when a player who had left returns to the table: ``hook(participant, actor)``.
+RETURN_HOOKS = []
 
 # action → (states it is allowed from, resulting state)
 TRANSITIONS = {
@@ -235,6 +254,8 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
     if session.state not in allowed_from:
         raise RuleError(f"This game is {session.get_state_display().lower()}, so that action is not available.")
     reason = (reason or "").strip()
+    if action == "resume" and session.night.sets.filter(set_number__gt=session.set_number).exists():
+        raise RuleError("A later set of this session has started, so this set cannot resume play.")
     if action == "close" and session.participants.filter(status=Participant.Status.JOINED).exists():
         raise RuleError("Players have joined. Remove them first, or cancel the game.")
     if action == "cancel":
@@ -243,16 +264,71 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")
         session.cancel_reason = reason[:255]
-    if action == "start" and session.started_at is None:
-        session.started_at = timezone.now()
+    now = timezone.now()
+    if action == "start":
+        session.started_at = session.started_at or now
+        clock.start(session, now)
+    elif action == "resume":
+        session.ended_at = None
+        for hook in RESUME_HOOKS:
+            hook(session, actor)
+        clock.start(session, now, resuming=True)
+    elif action == "end" or (action == "cancel" and session.state == State.RUNNING):
+        # One timestamp for the set and for every player still at the table.
+        clock.stop(session, now)
+        session.ended_at = now
     session.state = target
-    session.save(update_fields=["state", "started_at", "cancel_reason"])
+    session.save(update_fields=["state", "started_at", "ended_at", "cancel_reason"])
     audit.record(
         f"session.{action}", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=ACTION_LABELS[action], reason=reason,
     )
     touch(session)
     return session
+
+
+IN_PLAY_STATES = (State.SETUP, State.OPEN, State.RUNNING)
+
+
+@transaction.atomic
+def start_next_set(night_id, actor: Member) -> GameSession:
+    """Open the next set of a session, with the players still at the table.
+
+    Allowed once play of the previous set has ended; its counting and cash-outs
+    can still be finished. The new set copies the table, seats and latest
+    settings. It copies no money: each set has its own buy-ins.
+    """
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    if night.is_closed:
+        raise RuleError("This session is closed. Create a new session to play again.")
+    sets = list(night.sets.order_by("set_number"))
+    in_play = next((s for s in sets if s.state in IN_PLAY_STATES), None)
+    if in_play is not None:
+        raise RuleError(
+            f"Set {in_play.set_number} is still {in_play.get_state_display().lower()}. "
+            "End its play before starting the next set."
+        )
+    played = [s for s in sets if s.state != State.CANCELED]
+    previous = played[-1] if played else sets[-1]
+    new = GameSession.objects.create(
+        night=night, set_number=sets[-1].set_number + 1, group_id=night.group_id, table_id=night.table_id,
+        game_date=night.game_date, location=night.location, game_type=night.game_type, unit=night.unit,
+        seat_count=previous.seat_count, state=State.OPEN, created_by=actor.user,
+    )
+    SettingsVersion.objects.create(
+        session=new, number=1, created_by=actor.user, **current_settings(previous).stakes()
+    )
+    carried = previous.participants.filter(status=Participant.Status.JOINED).order_by("join_order")
+    for order, old in enumerate(carried, start=1):
+        Participant.objects.create(session=new, member_id=old.member_id, join_order=order, added_by=actor.user)
+    audit.record(
+        "session.created", actor=actor.user, group_id=night.group_id, session_id=new.pk, target=new,
+        summary=f"Started set {new.set_number} with {len(carried)} player{'' if len(carried) == 1 else 's'} "
+        f"from set {previous.set_number}",
+    )
+    touch(new)
+    return new
 
 
 def mark_finalized(session: GameSession) -> None:
@@ -309,6 +385,8 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         participant.status = Participant.Status.JOINED
         participant.left_at = None
         participant.save(update_fields=["status", "left_at"])
+    if session.state == State.RUNNING:
+        clock.open_interval(participant, timezone.now())
     audit.record(
         "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
         summary=f"{member.display_name} joined" if is_self else f"Added {member.display_name}",
@@ -372,6 +450,7 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
 
     next_order = session.participants.count() + 1
     added = []
+    now = timezone.now()
     for member in members:
         participant = existing.get(member.pk)
         if participant is None:
@@ -383,6 +462,8 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
             participant.status = Participant.Status.JOINED
             participant.left_at = None
             participant.save(update_fields=["status", "left_at"])
+        if session.state == State.RUNNING:
+            clock.open_interval(participant, now)
         audit.record(
             "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk,
             target=participant, summary=f"Added {member.display_name}",
@@ -417,6 +498,7 @@ def withdraw_participant(session_id, actor: Member, participant_id) -> Participa
         guard(participant)
     participant.status = Participant.Status.WITHDRAWN
     participant.save(update_fields=["status"])
+    clock.close_interval(participant, timezone.now())
     audit.record(
         "participant.withdrawn", actor=actor.user, group_id=session.group_id, session_id=session.pk,
         target=participant, summary=f"{participant.member.display_name} was taken out of the game",
@@ -440,9 +522,17 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
         raise RuleError("That player is not in this game.")
     if not left and _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")
+    now = timezone.now()
     participant.status = wanted
-    participant.left_at = timezone.now() if left else None
+    participant.left_at = now if left else None
     participant.save(update_fields=["status", "left_at"])
+    if left:
+        clock.close_interval(participant, now)
+    else:
+        for hook in RETURN_HOOKS:
+            hook(participant, actor)
+        if session.state == State.RUNNING:
+            clock.open_interval(participant, now)
     audit.record(
         "participant.left" if left else "participant.returned", actor=actor.user, group_id=session.group_id,
         session_id=session.pk, target=participant,

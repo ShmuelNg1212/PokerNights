@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block title %}Cash out counted players · {{ session }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'session' session.pk %}">← Back to set {{ session.set_number }}</a></p>
+<h1>Cash out counted players</h1>
+<p class="muted">{{ session.table.name }} · Set {{ session.set_number }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
+
+{% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
+
+{% if ready %}
+<form method="post" class="card stack" data-once>
+  {% csrf_token %}
+  <input type="hidden" name="request_id" value="{{ request_id }}">
+  <table class="review">
+    <caption class="small muted">Players with a confirmed final count</caption>
+    <thead><tr><th scope="col">Player</th><th scope="col" class="num">Confirmed count</th><th scope="col" class="num">Cash-out</th></tr></thead>
+    <tbody>
+      {% for line in ready %}
+      <tr>
+        <th scope="row">{{ line.participant.member.display_name }}<input type="hidden" name="count_id" value="{{ line.count.pk }}"></th>
+        <td class="num">{{ line.count.amount|amount:unit }}</td>
+        <td class="num amount">{{ line.count.amount|amount:unit }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot><tr><th scope="row">Total of this batch</th><td></td><td class="num amount">{{ batch_total|amount:unit }}</td></tr></tfoot>
+  </table>
+  <p class="small muted">The cash-out equals the confirmed count. This records the cash-outs. It does not finalize the set and it marks no payment.</p>
+  <p class="small muted">After this batch: {{ after_batch|amount:unit }} cashed out of {{ summary.total|amount:unit }} bought in.</p>
+  <button type="submit" class="btn btn-primary btn-block">Cash out {{ ready|length }} player{{ ready|length|pluralize }}</button>
+</form>
+{% else %}
+<div class="card"><p class="muted">No player has a confirmed count yet. Confirm a final count on the set page first; 0 is a valid count.</p></div>
+{% endif %}
+
+<h2>Still to count <span class="muted small">{{ awaiting|length }}</span></h2>
+<div class="card">
+  {% if awaiting %}
+  <ul class="list">{% for line in awaiting %}<li class="row"><span class="grow">{{ line.participant.member.display_name }}</span><span class="badge badge-warn">Awaiting count</span></li>{% endfor %}</ul>
+  <p class="small muted">They stay pending. Run this action again when their counts are confirmed.</p>
+  {% else %}<p class="muted">Nobody. Every player is counted or cashed out.</p>{% endif %}
+</div>
+
+{% if cashed_out %}
+<h2>Already cashed out <span class="muted small">{{ cashed_out|length }}</span></h2>
+<ul class="list card small">{% for line in cashed_out %}<li class="row"><span class="grow">{{ line.participant.member.display_name }}</span><span class="num">{{ line.cashed_out|amount:unit }}</span></li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}
