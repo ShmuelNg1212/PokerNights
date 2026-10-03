@@ -43,4 +43,4 @@ The Rack covers the shared foundation, compact active table, action sheets, coun
 | Sessions with sets, end-of-set cash-outs, timers | [study](../study/1791042572_end_of_set_cash_outs_and_timers.md) | [plan](../plan/1791042668_end_of_set_cash_outs_and_timers.md) | Done, 2026-10-04 |
 | Visual redesign, The Rack slice 1 | [study](../study/1791045491_visual_redesign.md) | [plan](../plan/1791046015_visual_redesign.md) | Slice 1 done, 2026-10-04; later slices need approval |
 | Fix: typed counts lost when confirming | [study](../study/1791044894_count_fields_cleared.md) | [plan](../plan/1791044911_count_fields_cleared.md) | Done, 2026-10-04 |
-| Visual redesign slice 2 | [study](../study/1791050655_redesign_slice_2.md) | [plan](../plan/1791050738_redesign_slice_2.md) | Verified; rendezvous pending |
+| Visual redesign slice 2 | [study](../study/1791050655_redesign_slice_2.md) | [plan](../plan/1791050738_redesign_slice_2.md) | Done, 2026-10-04 |

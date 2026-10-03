@@ -62,6 +62,8 @@ The concurrency tests are in `web/tests/test_concurrency.py`. They must pass on 
 
 Both engines passed on 2026-10-04.
 
+End-of-set browser fixtures and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.
+
 ## Back up the dev database
 
 SQLite runs in write-ahead-log mode, so recent data can sit in `db.sqlite3-wal`. A plain copy of `db.sqlite3` can miss it. Use the backup API:
@@ -75,5 +77,3 @@ See [footguns/sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal
 ## Admin
 
 `/admin/` is for support by a superuser. Money, result, transfer, payment and audit rows are read-only there. All changes to them go through the app.
-
-End-of-set browser fixtures and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.

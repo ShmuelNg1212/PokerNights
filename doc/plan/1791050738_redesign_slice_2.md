@@ -1,7 +1,7 @@
 # Plan: visual redesign slice 2
 
 - Date: 2026-10-04, Asia/Manila. Shell timestamp: `1791050738`.
-- Status: `in-progress`.
+- Status: `done`.
 - Study: [slice 2 revalidation](../study/1791050655_redesign_slice_2.md).
 - Parent: [visual redesign, task 8](1791046015_visual_redesign.md).
 - Sources: `SPEC.md`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, current wiki and the original visual study.
@@ -46,14 +46,14 @@ Create `feat/visual-redesign-slice-2` from current `main` in a separate worktree
 - [x] **2. Verify and finish.** Add focused markup tests and browser fixtures for zero/empty/rejected multi-count submissions, partial and final cash-outs, stale reviews, balanced/discrepant/overridden books and frozen results. Run SQLite and PostgreSQL suites, migration check, no-JavaScript flow, two-client polling, reduced motion, keyboard, contrast and asset-size checks. Capture phone and desktop together, run the Impeccable detector once and a fresh finish reviewer. Apply one fix batch and one confirmation round. Record evidence and any unavailable checks here.
   - Commit: `test(web): verify count-up and final results` (include related finish fixes if required).
   - Done when: all acceptance criteria have recorded evidence, required checks pass and the bounded finish review is resolved.
-- [ ] **3. Rendezvous and sync docs.** Merge to main, verify the merged result, have the Impeccable documenter record the built patterns, and update DESIGN.md, relevant `.impeccable` surface records, wiki features/architecture, parent task 8 and TODO. Add a footgun only if evidence warrants it. Restart the dev server and check `/healthz`.
+- [x] **3. Rendezvous and sync docs.** Merge to main, verify the merged result, have the Impeccable documenter record the built patterns, and update DESIGN.md, relevant `.impeccable` surface records, wiki features/architecture, parent task 8 and TODO. Add a footgun only if evidence warrants it. Restart the dev server and check `/healthz`.
   - Commit: `docs: sync redesigned end-of-set flow`.
   - Done when: main contains the verified slice, docs match the built result, the server answers and the plan is marked done. Slices 3–4 remain pending.
 
 ## Progress and blockers
 
 - Phase 1: source review complete. Study committed as `a6ce949`; baseline SQLite suite passes (375 tests).
-- No implementation blocker. Phase 2 authorized; implementation in progress.
+- No blockers. Approved Phase 2 is complete.
 - Initial implementation: 384 tests pass on SQLite (14.379 s) and PostgreSQL (20.723 s); no migrations. Active-table regressions: 20 action checks and 13 accessibility checks pass. Added JavaScript: 7,912 bytes; stylesheet: 24,518 bytes.
 - First capture batch: long-name explanation overflow needs a fix. Native reversal succeeded, but the browser check selected an earlier partial cash-out; update it to select the final cash-out. Full-page captures and JSON are in `/private/tmp/pn-slice2-review/`. Fresh finish review in progress.
 
@@ -77,3 +77,14 @@ Create `feat/visual-redesign-slice-2` from current `main` in a separate worktree
 | 7: frozen final results | Met: snapshot presentation test, host/player final captures and native chips finalization |
 | 8: unit, keyboard, contrast and native flow | Met: both units, 48px/focus/clearance/contrast and JavaScript-disabled flows |
 | 9: regression and budgets | Met: 384 tests on each engine, 20+13 old and 47 new browser checks, migration/asset checks |
+
+## Rendezvous complete
+
+- Local merge to main: `1004ffa`. Implementation `464d9d1`, verification/fixes `e77c65a`, living docs `1588680`. No push or deploy.
+- Main verification: all 384 tests pass on SQLite (14.850 s) and PostgreSQL (21.504 s); no migrations. Served stylesheet matches the merged file.
+- Required documenter refreshed DESIGN.md, the sidecar and two end-of-set surface briefs from finished code. Wiki, roadmap, parent plan and TODO are synchronized. SPEC.md and accounting services are unchanged.
+- Normal development server restarted at `http://127.0.0.1:8000`; `/healthz` returns `ok`. Synthetic verification data remain only in temporary databases. The temporary browser server and verification PostgreSQL process are stopped after the run.
+- Preserved pre-existing documentation drift: the slice 1 surface contract keeps its original 76px/27px targets, while DESIGN.md and the built active phone use 64px/22px. Slice 2 inherits the built system and does not reopen that older contract.
+- Slices 3–4 remain pending. Next: session page and settle-up, with its own study, plan and approval.
+
+User check: end a set, type several counts including 0, confirm once, review and record cash-outs, then finalize when the books balance. Check the Final result and the session navigation.
