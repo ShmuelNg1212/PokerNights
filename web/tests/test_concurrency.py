@@ -80,7 +80,7 @@ class ConcurrentBuyInTests(TransactionTestCase):
         self.assertEqual(kinds(outcomes), ["ok"] * 10, outcomes)
         self.assertEqual(len({buy_in.pk for _, buy_in in outcomes}), 1)
         self.assertEqual(BuyIn.objects.count(), 1)
-        self.assertEqual(ledger_queries.summary(night.session).total_centavos, 100000)
+        self.assertEqual(ledger_queries.summary(night.session).total, 100000)
 
     def test_ten_different_buy_ins_at_once_are_all_counted(self):
         night = Night("A", "B")
@@ -88,9 +88,8 @@ class ConcurrentBuyInTests(TransactionTestCase):
         outcomes = race(*[(lambda name=name: night.buy(name, 1000)) for name in "AB" * 5])
         self.assertEqual(kinds(outcomes), ["ok"] * 10, outcomes)
         summary = ledger_queries.summary(night.session)
-        self.assertEqual((summary.buy_in_count, summary.total_centavos, summary.chips_issued), (10, 1000000, 100000))
+        self.assertEqual((summary.buy_in_count, summary.total), (10, 1000000))
         session = night.refresh()
-        self.assertEqual(session.rate, (10, 1))
         self.assertEqual(session.version, before + 10)  # no update was lost
 
     def test_buy_in_races_with_the_end_of_play(self):
@@ -120,7 +119,7 @@ class ConcurrentFinalizeTests(TransactionTestCase):
             night = worked_example()
             outcomes = race(
                 lambda: settlement.finalize(night.session.pk, night.host),
-                lambda: night.cash("C", 500),
+                lambda: night.cash("C", 50),
             )
             self.assertNotIn("error", kinds(outcomes), outcomes)
             session = night.refresh()
@@ -129,14 +128,14 @@ class ConcurrentFinalizeTests(TransactionTestCase):
                 self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
                 self.assertEqual(CashOut.objects.filter(session=session).count(), 3)
                 finalization = Finalization.objects.get(session=session)
-                self.assertEqual(finalization.total_cash_out_centavos, finalization.total_buy_in_centavos)
-                self.assertEqual(sum(finalization.results.values_list("net_centavos", flat=True)), 0)
+                self.assertEqual(finalization.total_cash_out, finalization.total_buy_in)
+                self.assertEqual(sum(finalization.results.values_list("net", flat=True)), 0)
             else:
                 # The cash-out won: the books no longer balance, so finalize was refused.
                 self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
                 self.assertEqual(session.state, "reconciliation")
                 self.assertFalse(Finalization.objects.filter(session=session).exists())
-                self.assertEqual(ledger_queries.balance(session).difference, 500)
+                self.assertEqual(ledger_queries.balance(session).difference, 5000)
 
     def test_reversal_races_with_finalize(self):
         night = worked_example()
@@ -149,7 +148,7 @@ class ConcurrentFinalizeTests(TransactionTestCase):
         finalized = night.refresh().state == "finalized"
         self.assertEqual(Finalization.objects.count(), 1 if finalized else 0)
         if finalized:
-            self.assertEqual(sum(PlayerResult.objects.values_list("net_centavos", flat=True)), 0)
+            self.assertEqual(sum(PlayerResult.objects.values_list("net", flat=True)), 0)
 
 
 class ConcurrentPaidMarkTests(TransactionTestCase):

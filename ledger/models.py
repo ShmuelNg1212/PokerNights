@@ -1,13 +1,16 @@
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 
-from games.models import GameSession, Participant, SettingsVersion
+from games.models import GameSession, Participant, SettingsVersion, Unit
 from groups.models import GameGroup, Member
+
+# Every amount below is an integer in the session's unit: centavos in a pesos
+# game, whole chips in a chips game. Nothing converts between the two.
 
 
 class BuyIn(models.Model):
-    """One buy-in or rebuy. Append-only: its amount and chips never change.
+    """One buy-in or rebuy. Append-only: its amount never changes.
 
     A mistake is corrected by a BuyInReversal and, if needed, a new BuyIn.
     """
@@ -15,8 +18,7 @@ class BuyIn(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="buy_ins")
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="buy_ins")
     settings_version = models.ForeignKey(SettingsVersion, on_delete=models.PROTECT, related_name="+")
-    amount_centavos = models.BigIntegerField()
-    chips = models.BigIntegerField()
+    amount = models.BigIntegerField()
     # Sent by the form. A repeated submission carries the same value and creates nothing.
     request_id = models.UUIDField()
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
@@ -26,13 +28,12 @@ class BuyIn(models.Model):
         ordering = ["created_at", "id"]
         constraints = [
             models.UniqueConstraint(fields=["session", "request_id"], name="buy_in_request_once"),
-            models.CheckConstraint(condition=Q(amount_centavos__gt=0), name="buy_in_amount_positive"),
-            models.CheckConstraint(condition=Q(chips__gt=0), name="buy_in_chips_positive"),
+            models.CheckConstraint(condition=Q(amount__gt=0), name="buy_in_amount_positive"),
         ]
         indexes = [models.Index(fields=["participant"], name="buy_in_participant")]
 
     def __str__(self):
-        return f"Buy-in {self.amount_centavos} centavos for participant {self.participant_id}"
+        return f"Buy-in of {self.amount} for participant {self.participant_id}"
 
 
 class BuyInReversal(models.Model):
@@ -48,14 +49,14 @@ class BuyInReversal(models.Model):
 
 
 class CashOut(models.Model):
-    """Chips a player hands in. A player can cash out in several steps. Append-only.
+    """What a player takes off the table. A player can cash out in several steps. Append-only.
 
-    A cash-out of zero chips is a real record: the player lost everything.
+    A cash-out of zero is a real record: the player lost everything.
     """
 
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="cash_outs")
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="cash_outs")
-    chips = models.BigIntegerField()
+    amount = models.BigIntegerField()
     request_id = models.UUIDField()
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,12 +65,12 @@ class CashOut(models.Model):
         ordering = ["created_at", "id"]
         constraints = [
             models.UniqueConstraint(fields=["session", "request_id"], name="cash_out_request_once"),
-            models.CheckConstraint(condition=Q(chips__gte=0), name="cash_out_chips_not_negative"),
+            models.CheckConstraint(condition=Q(amount__gte=0), name="cash_out_amount_not_negative"),
         ]
         indexes = [models.Index(fields=["participant"], name="cash_out_participant")]
 
     def __str__(self):
-        return f"Cash-out of {self.chips} chips for participant {self.participant_id}"
+        return f"Cash-out of {self.amount} for participant {self.participant_id}"
 
 
 class CashOutReversal(models.Model):
@@ -87,9 +88,8 @@ class CashOutReversal(models.Model):
 class BalanceAdjustment(models.Model):
     """A host's explicit answer to books that do not balance: who absorbs the difference.
 
-    ``chips_delta`` is added to the participant's cashed-out chips at
-    finalization. It is stored in chips, not pesos, so the centavo rounding rule
-    still conserves the total. The app never creates one on its own.
+    ``amount`` is added to the participant's cash-outs at finalization. The app
+    never creates one on its own.
     """
 
     class Mode(models.TextChoices):
@@ -98,7 +98,7 @@ class BalanceAdjustment(models.Model):
 
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="adjustments")
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="adjustments")
-    chips_delta = models.BigIntegerField()
+    amount = models.BigIntegerField()
     mode = models.CharField(max_length=8, choices=Mode.choices)
     note = models.CharField(max_length=255)
     # One override can create several rows (an equal share); they carry one request_id.
@@ -114,12 +114,12 @@ class BalanceAdjustment(models.Model):
         ordering = ["created_at", "id"]
         constraints = [
             models.UniqueConstraint(fields=["session", "request_id", "participant"], name="adjustment_request_once"),
-            models.CheckConstraint(condition=~Q(chips_delta=0), name="adjustment_not_zero"),
+            models.CheckConstraint(condition=~Q(amount=0), name="adjustment_not_zero"),
         ]
         indexes = [models.Index(fields=["session"], name="adjustment_session")]
 
     def __str__(self):
-        return f"Adjustment of {self.chips_delta} chips for participant {self.participant_id}"
+        return f"Adjustment of {self.amount} for participant {self.participant_id}"
 
 
 class Finalization(models.Model):
@@ -131,13 +131,12 @@ class Finalization(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="finalizations")
     revision = models.PositiveIntegerField()
     is_current = models.BooleanField(default=True)
-    total_buy_in_centavos = models.BigIntegerField()
-    total_cash_out_centavos = models.BigIntegerField()
-    chips_issued = models.BigIntegerField()
-    # Chips cashed out minus chips issued before any host override. Zero when the books balanced.
-    raw_difference_chips = models.BigIntegerField(default=0)
-    rate_centavos = models.BigIntegerField()
-    rate_chips = models.BigIntegerField()
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
+    total_buy_in = models.BigIntegerField()
+    # Cash-outs plus any host override. Always equal to total_buy_in.
+    total_cash_out = models.BigIntegerField()
+    # Cash-outs minus buy-ins before any host override. Zero when the books balanced.
+    raw_difference = models.BigIntegerField(default=0)
     settings_snapshot = models.JSONField()
     finalized_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -147,10 +146,7 @@ class Finalization(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["session", "revision"], name="finalization_revision_unique"),
             models.UniqueConstraint(fields=["session"], condition=Q(is_current=True), name="finalization_one_current"),
-            models.CheckConstraint(
-                condition=Q(total_buy_in_centavos=models.F("total_cash_out_centavos")),
-                name="finalization_money_conserved",
-            ),
+            models.CheckConstraint(condition=Q(total_buy_in=F("total_cash_out")), name="finalization_money_conserved"),
         ]
 
     def __str__(self):
@@ -158,7 +154,10 @@ class Finalization(models.Model):
 
 
 class PlayerResult(models.Model):
-    """One player's frozen result in a finalized session. Statistics read only current rows."""
+    """One player's frozen result in a finalized session. Statistics read only current rows.
+
+    ``unit`` is repeated here so that a later leaderboard never adds pesos to chips.
+    """
 
     finalization = models.ForeignKey(Finalization, on_delete=models.PROTECT, related_name="results")
     participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="results")
@@ -166,13 +165,13 @@ class PlayerResult(models.Model):
     member = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="results")
     group = models.ForeignKey(GameGroup, on_delete=models.PROTECT, related_name="+")
     game_date = models.DateField()
-    buy_in_total_centavos = models.BigIntegerField()
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
+    buy_in_total = models.BigIntegerField()
     buy_in_count = models.PositiveIntegerField()
-    chips_cashed = models.BigIntegerField()
-    adjustment_chips = models.BigIntegerField(default=0)
-    # Value of chips_cashed + adjustment_chips at the session's chip rate.
-    cash_out_centavos = models.BigIntegerField()
-    net_centavos = models.BigIntegerField()
+    cashed_out = models.BigIntegerField()  # what the player's cash-outs add up to
+    adjustment = models.BigIntegerField(default=0)  # the player's share of a host override
+    cash_out = models.BigIntegerField()  # cashed_out + adjustment
+    net = models.BigIntegerField()  # cash_out − buy_in_total
     is_current = models.BooleanField(default=True)
 
     class Meta:
@@ -181,8 +180,10 @@ class PlayerResult(models.Model):
             models.UniqueConstraint(fields=["finalization", "participant"], name="result_once_per_finalization"),
             models.UniqueConstraint(fields=["participant"], condition=Q(is_current=True), name="result_one_current"),
             models.CheckConstraint(
-                condition=Q(net_centavos=models.F("cash_out_centavos") - models.F("buy_in_total_centavos")),
-                name="result_net_is_cash_out_minus_buy_ins",
+                condition=Q(net=F("cash_out") - F("buy_in_total")), name="result_net_is_cash_out_minus_buy_ins"
+            ),
+            models.CheckConstraint(
+                condition=Q(cash_out=F("cashed_out") + F("adjustment")), name="result_cash_out_includes_adjustment"
             ),
         ]
         indexes = [
@@ -191,4 +192,4 @@ class PlayerResult(models.Model):
         ]
 
     def __str__(self):
-        return f"Result {self.net_centavos} centavos for participant {self.participant_id}"
+        return f"Result {self.net} for participant {self.participant_id}"

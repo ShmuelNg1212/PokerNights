@@ -10,9 +10,8 @@ from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
 from groups.services import clean_name
-from ledger import money
 
-from .models import GameSession, GameType, Participant, SettingsPreset, SettingsVersion, StakesFields, Table
+from .models import GameSession, GameType, Participant, SettingsPreset, SettingsVersion, StakesFields, Table, Unit
 
 
 def validated_stakes(data: dict) -> dict:
@@ -21,20 +20,20 @@ def validated_stakes(data: dict) -> dict:
     for name in StakesFields.STAKES_FIELDS:
         value = data.get(name)
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise RuleError("Each blind, buy-in amount and chip count must be more than zero.")
+            raise RuleError("Each blind and buy-in amount must be more than zero.")
         stakes[name] = value
-    if stakes["small_blind_centavos"] > stakes["big_blind_centavos"]:
+    if stakes["small_blind"] > stakes["big_blind"]:
         raise RuleError("The small blind cannot be more than the big blind.")
-    if not stakes["min_buy_in_centavos"] <= stakes["default_buy_in_centavos"] <= stakes["max_buy_in_centavos"]:
+    if not stakes["min_buy_in"] <= stakes["default_buy_in"] <= stakes["max_buy_in"]:
         raise RuleError("The usual buy-in must be between the minimum and the maximum buy-in.")
     return stakes
 
 
-def chip_rate(stakes) -> tuple[int, int]:
-    """The reduced chip rate that a preset or settings version defines."""
-    if not isinstance(stakes, dict):
-        stakes = stakes.stakes()
-    return money.reduce_rate(stakes["default_buy_in_centavos"], stakes["chips_per_buy_in"])
+def _unit(value) -> str:
+    value = value or Unit.PHP
+    if value not in Unit.values:
+        raise RuleError("Select pesos or chips.")
+    return value
 
 
 def _game_type(value) -> str:
@@ -50,6 +49,7 @@ def save_preset(actor: Member, data: dict, *, preset_id=None) -> SettingsPreset:
     fields = {
         "name": clean_name(data.get("name"), "Preset name"),
         "game_type": _game_type(data.get("game_type")),
+        "unit": _unit(data.get("unit")),
         **validated_stakes(data),
     }
     try:
@@ -110,6 +110,16 @@ def lock_session(session_id, group_id) -> GameSession:
     return session
 
 
+# Checks that tell whether a session has money in it. The app that holds the
+# money registers one, so this app can apply its rules without importing it.
+SESSION_MONEY_CHECKS = []
+
+
+def has_money(session: GameSession) -> bool:
+    """True while the session has an accepted buy-in or cash-out. Such a game cannot be canceled."""
+    return any(check(session) for check in SESSION_MONEY_CHECKS)
+
+
 def touch(session: GameSession) -> None:
     """Record that the session changed. Call once per write, with the session locked."""
     session.version += 1
@@ -142,6 +152,7 @@ def create_session(actor: Member, data: dict) -> GameSession:
         game_date=_clean_date(data.get("game_date")),
         location=(data.get("location") or "").strip()[:120],
         game_type=_game_type(data.get("game_type")),
+        unit=_unit(data.get("unit")),
         seat_count=table.seat_count,
         created_by=actor.user,
     )
@@ -157,19 +168,28 @@ def create_session(actor: Member, data: dict) -> GameSession:
 
 @transaction.atomic
 def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
-    """Add a settings version. With money in the session, the value of a chip cannot change."""
+    """Add a settings version, and change the unit if the game has no money in it yet.
+
+    Buy-ins already recorded keep their amounts.
+    """
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
     if session.state not in (State.SETUP, State.OPEN, State.RUNNING):
         raise RuleError("Settings cannot change after play has ended.")
     stakes = validated_stakes(data)
-    if session.rate is not None and chip_rate(stakes) != session.rate:
-        raise RuleError(
-            "Buy-ins are already recorded, so the value of a chip cannot change. "
-            "Keep the same pesos-to-chips ratio, or reverse the buy-ins first."
-        )
+    unit = _unit(data.get("unit") or session.unit)
     previous = current_settings(session)
-    if previous.stakes() == stakes:
+    if unit != session.unit:
+        # Amounts already recorded would change meaning, so the unit is fixed once money is in.
+        if has_money(session):
+            raise RuleError("Buy-ins are recorded, so the unit cannot change. Reverse them first.")
+        session.unit = unit
+        session.save(update_fields=["unit"])
+        audit.record(
+            "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
+            summary=f"Changed the unit to {Unit(unit).label}",
+        )
+    elif previous.stakes() == stakes:
         return previous
     version = SettingsVersion.objects.create(
         session=session, number=previous.number + 1, created_by=actor.user, **stakes
@@ -196,7 +216,7 @@ ACTION_LABELS = {
     "open": "Opened the game for joining",
     "close": "Closed the game (back to setup)",
     "start": "Started play",
-    "end": "Ended play; counting chips",
+    "end": "Ended play; counting up",
     "resume": "Resumed play",
     "cancel": "Canceled the game",
 }
@@ -216,7 +236,7 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
     if action == "close" and session.participants.filter(status=Participant.Status.JOINED).exists():
         raise RuleError("Players have joined. Remove them first, or cancel the game.")
     if action == "cancel":
-        if session.rate is not None:
+        if has_money(session):
             raise RuleError("Buy-ins are recorded. Reverse them first, or finish and finalize the game.")
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")

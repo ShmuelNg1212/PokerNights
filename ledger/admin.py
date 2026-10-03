@@ -9,7 +9,7 @@ from .models import (
 
 @admin.register(BuyIn)
 class BuyInAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "participant", "amount_centavos", "chips")
+    list_display = ("created_at", "session", "participant", "amount")
 
 
 @admin.register(BuyInReversal)
@@ -19,7 +19,7 @@ class BuyInReversalAdmin(ReadOnlyAdmin):
 
 @admin.register(CashOut)
 class CashOutAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "participant", "chips")
+    list_display = ("created_at", "session", "participant", "amount")
 
 
 @admin.register(CashOutReversal)
@@ -29,14 +29,14 @@ class CashOutReversalAdmin(ReadOnlyAdmin):
 
 @admin.register(BalanceAdjustment)
 class BalanceAdjustmentAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "participant", "chips_delta", "mode", "note", "voided_at")
+    list_display = ("created_at", "session", "participant", "amount", "mode", "note", "voided_at")
 
 
 @admin.register(Finalization)
 class FinalizationAdmin(ReadOnlyAdmin):
-    list_display = ("created_at", "session", "revision", "is_current", "total_buy_in_centavos")
+    list_display = ("created_at", "session", "revision", "is_current", "total_buy_in")
 
 
 @admin.register(PlayerResult)
 class PlayerResultAdmin(ReadOnlyAdmin):
-    list_display = ("finalization", "member", "buy_in_total_centavos", "cash_out_centavos", "net_centavos", "is_current")
+    list_display = ("finalization", "member", "buy_in_total", "cash_out", "net", "is_current")

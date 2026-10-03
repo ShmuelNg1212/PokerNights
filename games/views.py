@@ -6,7 +6,7 @@ from groups.http import attempt
 
 from . import services
 from .access import session_for
-from .forms import PresetForm, SessionForm, StakesForm
+from .forms import PresetForm, SessionForm, SettingsForm
 from .models import SettingsPreset, Table
 
 
@@ -27,7 +27,7 @@ def preset_form(request, group_id, preset_id=None):
     initial = {"game_type": "nlh"}
     if preset_id is not None:
         preset = get_object_or_404(SettingsPreset, group=actor.group, pk=preset_id, archived_at__isnull=True)
-        initial = {"name": preset.name, "game_type": preset.game_type, **preset.stakes()}
+        initial = {"name": preset.name, "game_type": preset.game_type, "unit": preset.unit, **preset.stakes()}
     form = PresetForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
         saved = attempt(request, services.save_preset, actor, form.cleaned_data, preset_id=preset_id, success="Preset saved.")
@@ -44,7 +44,7 @@ def session_new(request, group_id):
     preset = presets.filter(pk=request.GET.get("preset") or 0).first()
     if preset is None and not request.GET.get("preset"):
         preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
-    initial = {"game_type": preset.game_type, **preset.stakes()} if preset else {}
+    initial = {"game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else {}
     form = SessionForm(request.POST or None, initial=initial, tables=tables)
     if request.method == "POST" and form.is_valid():
         data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
@@ -58,7 +58,10 @@ def session_new(request, group_id):
 def session_settings(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    form = StakesForm(request.POST or None, initial=services.current_settings(session).stakes())
+    form = SettingsForm(
+        request.POST or None, initial=services.current_settings(session).stakes(), unit=session.unit,
+        unit_locked=services.has_money(session),
+    )
     if request.method == "POST" and form.is_valid():
         saved = attempt(request, services.update_settings, session.pk, actor, form.cleaned_data, success="Settings saved.")
         if saved is not None:

@@ -25,7 +25,7 @@ class PaidMarkTests(TestCase):
     def test_status_moves_from_unsettled_to_partly_to_settled(self):
         self.assertEqual(self.status(), "unsettled")
         payment = services.mark_paid(self.session.pk, self.host, self.b_to_a.pk, uuid.uuid4())
-        self.assertEqual((payment.payer, payment.payee, payment.amount_centavos), (self.night.players["B"], self.night.players["A"], 30000))
+        self.assertEqual((payment.payer, payment.payee, payment.amount), (self.night.players["B"], self.night.players["A"], 30000))
         self.assertEqual(self.status(), "partly")
         outcome = queries.outcome(self.session)
         self.assertTrue(outcome.transfers[0].paid)
@@ -41,7 +41,7 @@ class PaidMarkTests(TestCase):
         self.assertEqual(Payment.objects.count(), 1)
         with self.assertRaises(IntegrityError), transaction.atomic():
             Payment.objects.create(
-                session=self.session, payer=first.payer, payee=first.payee, amount_centavos=1, transfer=self.b_to_a,
+                session=self.session, payer=first.payer, payee=first.payee, amount=1, transfer=self.b_to_a,
                 request_id=uuid.uuid4(), recorded_by=self.host.user,
             )
 
@@ -55,9 +55,9 @@ class PaidMarkTests(TestCase):
         self.assertEqual((Payment.objects.count(), Payment.objects.filter(active=True).count()), (2, 1))
 
     def test_paid_marks_never_change_results(self):
-        before = list(PlayerResult.objects.order_by("id").values_list("net_centavos", flat=True))
+        before = list(PlayerResult.objects.order_by("id").values_list("net", flat=True))
         services.mark_paid(self.session.pk, self.host, self.b_to_a.pk, uuid.uuid4())
-        self.assertEqual(list(PlayerResult.objects.order_by("id").values_list("net_centavos", flat=True)), before)
+        self.assertEqual(list(PlayerResult.objects.order_by("id").values_list("net", flat=True)), before)
         self.assertEqual(self.night.refresh().state, "finalized")
 
     def test_only_a_host_and_only_this_sessions_transfers(self):
@@ -73,7 +73,7 @@ class PaidMarkTests(TestCase):
         self.assertEqual(Payment.objects.count(), 0)
 
     def test_night_with_no_transfers_is_settled(self):
-        even = worked_example((10000, 10000, 5000))
+        even = worked_example((1000, 1000, 500))
         services.finalize(even.session.pk, even.host)
         self.assertEqual(queries.outcome(even.session).status, "settled")
 

@@ -4,7 +4,8 @@
   <span class="badge {% if session.state == 'running' %}badge-live{% endif %}">{{ session.get_state_display }}</span>
 </div>
 <p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }}</p>
-<p class="muted small">Blinds {{ settings.small_blind_centavos|peso }}/{{ settings.big_blind_centavos|peso }} · buy-in {{ settings.min_buy_in_centavos|peso }}–{{ settings.max_buy_in_centavos|peso }} · {{ settings.default_buy_in_centavos|peso }} = {{ settings.chips_per_buy_in|chips }} chips</p>
+<p class="muted small">Blinds {{ settings.small_blind|amount:unit }}/{{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}</p>
+{% if unit == 'chips' %}<p class="small"><span class="badge">Chips game</span> <span class="muted">Amounts are chip counts. They have no peso value.</span></p>{% endif %}
 {% if session.state == 'canceled' %}<div class="notice">This game was canceled{% if session.cancel_reason %}: {{ session.cancel_reason }}{% endif %}. It does not count.</div>{% endif %}
 
 {% if can_join and not my_participant %}
@@ -18,17 +19,17 @@
 <div class="stats">
   <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
   <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
-  <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total_centavos|peso }}</div></div>
-  {% if session.is_live %}<div class="stat"><div class="stat-label">Chips in play</div><div class="stat-value">{{ summary.chips_in_play|chips }}</div></div>
-  {% else %}<div class="stat"><div class="stat-label">Chips issued</div><div class="stat-value">{{ summary.chips_issued|chips }}</div></div>{% endif %}
+  <div class="stat"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total|amount:unit }}</div></div>
+  {% if session.state == 'open' or session.state == 'running' %}<div class="stat"><div class="stat-label">Still in play</div><div class="stat-value">{{ summary.in_play|amount:unit }}</div></div>
+  {% else %}<div class="stat"><div class="stat-label">Total cashed out</div><div class="stat-value">{{ summary.cashed_out|amount:unit }}</div></div>{% endif %}
 </div>
 {% endif %}
 
 {% if my_line and my_line.has_money %}
 <div class="card">
-  <div class="row"><span class="grow">Your buy-ins</span><span class="amount">{{ my_line.buy_in_total|peso }}</span></div>
-  <p class="muted small">{{ my_line.buy_in_count }} buy-in{{ my_line.buy_in_count|pluralize }} · {{ my_line.chips_issued|chips }} chips received</p>
-  {% if my_line.has_cash_out %}<p class="small">Cashed out {{ my_line.chips_cashed|chips }} chips{% if my_line.cash_value %} ({% if not my_line.cash_value.1 %}about {% endif %}{{ my_line.cash_value.0|peso }}){% endif %}</p>{% endif %}
+  <div class="row"><span class="grow">Your buy-ins</span><span class="amount">{{ my_line.buy_in_total|amount:unit }}</span></div>
+  <p class="muted small">{{ my_line.buy_in_count }} buy-in{{ my_line.buy_in_count|pluralize }}</p>
+  {% if my_line.has_cash_out %}<p class="small">Cashed out {{ my_line.cashed_out|amount:unit }}</p>{% endif %}
 </div>
 {% endif %}
 

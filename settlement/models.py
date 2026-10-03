@@ -25,18 +25,18 @@ class Transfer(models.Model):
     position = models.PositiveIntegerField()
     payer = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="transfers_to_pay")
     payee = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="transfers_to_receive")
-    amount_centavos = models.BigIntegerField()
+    amount = models.BigIntegerField()
 
     class Meta:
         ordering = ["plan", "position"]
         constraints = [
             models.UniqueConstraint(fields=["plan", "position"], name="transfer_position_unique"),
-            models.CheckConstraint(condition=Q(amount_centavos__gt=0), name="transfer_amount_positive"),
+            models.CheckConstraint(condition=Q(amount__gt=0), name="transfer_amount_positive"),
             models.CheckConstraint(condition=~Q(payer=F("payee")), name="transfer_payer_is_not_payee"),
         ]
 
     def __str__(self):
-        return f"Transfer {self.amount_centavos} centavos from {self.payer_id} to {self.payee_id}"
+        return f"Transfer {self.amount} from {self.payer_id} to {self.payee_id}"
 
 
 class Payment(models.Model):
@@ -49,7 +49,7 @@ class Payment(models.Model):
     session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="payments")
     payer = models.ForeignKey(Participant, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_made")
     payee = models.ForeignKey(Participant, null=True, blank=True, on_delete=models.PROTECT, related_name="payments_received")
-    amount_centavos = models.BigIntegerField()
+    amount = models.BigIntegerField()
     transfer = models.ForeignKey(Transfer, null=True, blank=True, on_delete=models.PROTECT, related_name="payments")
     # False once a PaymentReversal exists. Kept on the row so the database can
     # guarantee at most one active payment per transfer.
@@ -63,12 +63,12 @@ class Payment(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["session", "request_id"], name="payment_request_once"),
             models.UniqueConstraint(fields=["transfer"], condition=Q(active=True), name="payment_one_active_per_transfer"),
-            models.CheckConstraint(condition=Q(amount_centavos__gt=0), name="payment_amount_positive"),
+            models.CheckConstraint(condition=Q(amount__gt=0), name="payment_amount_positive"),
         ]
         indexes = [models.Index(fields=["session"], name="payment_session")]
 
     def __str__(self):
-        return f"Payment {self.amount_centavos} centavos from {self.payer_id} to {self.payee_id}"
+        return f"Payment {self.amount} from {self.payer_id} to {self.payee_id}"
 
 
 class PaymentReversal(models.Model):

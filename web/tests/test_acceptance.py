@@ -32,9 +32,8 @@ class GameNightAcceptanceTest(TestCase):
         host.post(reverse("group_create"), {"name": "Friday Game"})
         group = GameGroup.objects.get()
         host.post(reverse("preset_create", args=[group.pk]), {
-            "name": "10/20", "game_type": "nlh", "small_blind_centavos": "10", "big_blind_centavos": "20",
-            "min_buy_in_centavos": "500", "max_buy_in_centavos": "2000", "default_buy_in_centavos": "1000",
-            "chips_per_buy_in": "10000",
+            "name": "10/20", "game_type": "nlh", "small_blind": "10", "big_blind": "20",
+            "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000",
         })
         host.post(reverse("table_create", args=[group.pk]), {"name": "Friday table", "seat_count": "9"})
 
@@ -54,8 +53,8 @@ class GameNightAcceptanceTest(TestCase):
         table_id = group.tables.get().pk
         host.post(reverse("session_create", args=[group.pk]), {
             "table_id": table_id, "game_date": "2026-10-09", "location": "Miguel's place", "game_type": "nlh",
-            "small_blind_centavos": "10", "big_blind_centavos": "20", "min_buy_in_centavos": "500",
-            "max_buy_in_centavos": "2000", "default_buy_in_centavos": "1000", "chips_per_buy_in": "10000",
+            "small_blind": "10", "big_blind": "20", "min_buy_in": "500",
+            "max_buy_in": "2000", "default_buy_in": "1000",
         })
         session = GameSession.objects.get()
         page_url = reverse("session", args=[session.pk])
@@ -82,7 +81,8 @@ class GameNightAcceptanceTest(TestCase):
         live = player_b.get(page_url)
         self.assertContains(live, "Total bought in")
         self.assertContains(live, "₱2,500")
-        self.assertContains(live, ">25,000<")  # chips in play, shown as chips
+        self.assertContains(live, "Still in play")
+        self.assertNotContains(live, "chips")  # a pesos game shows no chip figure
         self.assertEqual(stranger.get(reverse("session_state", args=[session.pk])).status_code, 404)
 
         # --- B's phone learns about a change through polling.
@@ -92,20 +92,20 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- B leaves early. Then play ends and the rest is counted.
         add_cash_out = reverse("cash_out_add", args=[session.pk])
-        host.post(add_cash_out, {"participant_id": seats["B"].pk, "chips": "7000", "left": "1"})
+        host.post(add_cash_out, {"participant_id": seats["B"].pk, "amount": "700", "left": "1"})
         snapshot = player_b.get(state_url, {"v": version}).json()
-        self.assertIn("18,000", snapshot["html"])  # chips still in play
+        self.assertIn("₱1,800", snapshot["html"])  # still in play
         host.post(reverse("session_transition", args=[session.pk]), {"action": "end"})
-        host.post(add_cash_out, {"participant_id": seats["A"].pk, "chips": "16000"})
+        host.post(add_cash_out, {"participant_id": seats["A"].pk, "amount": "1600"})
 
         # --- C is not counted yet: finalize is refused and says why.
         refused = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
         self.assertContains(refused, "No cash-out is recorded for: C")
-        host.post(add_cash_out, {"participant_id": seats["C"].pk, "chips": "2500"})
-        self.assertContains(host.get(page_url), "500 chips (₱50) extra")
+        host.post(add_cash_out, {"participant_id": seats["C"].pk, "amount": "250"})
+        self.assertContains(host.get(page_url), "₱50 too much")
         wrong = session.cash_outs.get(participant=seats["C"])
         host.post(reverse("cash_out_reverse", args=[session.pk, wrong.pk]), {"reason": "miscounted"})
-        host.post(add_cash_out, {"participant_id": seats["C"].pk, "chips": "2000"})
+        host.post(add_cash_out, {"participant_id": seats["C"].pk, "amount": "200"})
         self.assertContains(host.get(page_url), "The books balance")
 
         # --- Finalize: results and who pays whom.
@@ -114,7 +114,7 @@ class GameNightAcceptanceTest(TestCase):
             self.assertContains(results, text)
         transfers = list(Transfer.objects.order_by("position"))
         self.assertEqual(
-            [(t.payer.member.display_name, t.payee.member.display_name, t.amount_centavos) for t in transfers],
+            [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in transfers],
             [("B", "A", 30000), ("C", "A", 30000)],
         )
         mine = player_b.get(page_url)
@@ -137,3 +137,46 @@ class GameNightAcceptanceTest(TestCase):
         for text in ("miscounted", "Finalized: ₱2,500 bought in", "Marked paid", "B left the game"):
             self.assertContains(log, text)
         self.assertContains(player_b.get(reverse("group", args=[group.pk])), "Past games")
+
+
+class ChipsGameAcceptanceTest(TestCase):
+    """The same night counted in chips: no peso value appears anywhere."""
+
+    def test_chips_game_through_the_pages(self):
+        host = sign_up("hana")
+        host.post(reverse("group_create"), {"name": "Play Money Night"})
+        group = GameGroup.objects.get()
+        host.post(reverse("table_create", args=[group.pk]), {"name": "Kitchen table", "seat_count": "6"})
+        for name in "ABC":
+            host.post(reverse("member_add", args=[group.pk]), {"name": name})
+        host.post(reverse("session_create", args=[group.pk]), {
+            "table_id": group.tables.get().pk, "game_date": "2026-10-09", "game_type": "nlh", "unit": "chips",
+            "small_blind": "10", "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000",
+        })
+        session = GameSession.objects.get()
+        self.assertEqual(session.unit, "chips")
+        host.post(reverse("session_transition", args=[session.pk]), {"action": "open"})
+        for member in Member.objects.filter(group=group, user__isnull=True):
+            host.post(reverse("participant_add", args=[session.pk]), {"member_id": member.pk})
+        seats = {p.member.display_name: p for p in Participant.objects.filter(session=session)}
+        for name, chips in (("A", "1000"), ("B", "1000"), ("C", "500")):
+            host.post(reverse("buy_in_add", args=[session.pk]), {"participant_id": seats[name].pk, "amount": chips})
+        host.post(reverse("session_transition", args=[session.pk]), {"action": "start"})
+        page_url = reverse("session", args=[session.pk])
+        live = host.get(page_url)
+        self.assertContains(live, "2,500 chips")
+        self.assertContains(live, "Chips game")
+        self.assertNotContains(live, "₱")
+
+        host.post(reverse("session_transition", args=[session.pk]), {"action": "end"})
+        for name, chips in (("A", "1600"), ("B", "700"), ("C", "200")):
+            host.post(reverse("cash_out_add", args=[session.pk]), {"participant_id": seats[name].pk, "amount": chips})
+        results = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
+        for text in ("+600 chips", "−300 chips", "<strong>B</strong> pays <strong>A</strong>", "300 chips"):
+            self.assertContains(results, text)
+        self.assertNotContains(results, "₱")
+        self.assertNotContains(host.get(reverse("session_log", args=[session.pk])), "₱")
+        self.assertEqual(
+            [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in Transfer.objects.order_by("position")],
+            [("B", "A", 300), ("C", "A", 300)],
+        )

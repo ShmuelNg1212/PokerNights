@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)).
+Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_game_architecture.md)). Cash amounts and the unit option are done ([plan](doc/plan/1791040305_cash_amounts_and_unit_option.md)).
 
 ## Next (each needs its own study and plan)
 
@@ -15,5 +15,7 @@ Nothing is in progress. Stage 1 is done ([plan](doc/plan/1791037623_poker_home_g
 
 ## Waiting for the human
 
-- [ ] Test Stage 1 as a user (steps in the rendezvous report).
+- [ ] Test a pesos game and a chips game as a user.
+- [ ] Decide whether to keep the leftover check data in the dev database (accounts `hana` and `ben`, group "Browser Check").
+- [ ] Update `SPEC.md` step 2 if it should match the app (cash-outs as amounts, no chip conversion).
 - [ ] Confirm or change the open product decisions in the [roadmap](doc/roadmap/README.md), mainly the settlement model and the balance override rule.

@@ -14,7 +14,7 @@
   </form>
   {% elif session.state == 'running' %}
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
-    <button class="btn btn-primary btn-block" name="action" value="end">End play and count chips</button>
+    <button class="btn btn-primary btn-block" name="action" value="end">End play and count up</button>
   </form>
   {% elif session.state == 'reconciliation' %}
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}

@@ -11,44 +11,46 @@ class GameType(models.TextChoices):
     OTHER = "other", "Other"
 
 
-class StakesFields(models.Model):
-    """Stakes and buy-in settings, shared by presets and by a session's settings versions.
+class Unit(models.TextChoices):
+    """What a game counts in. A chips game has no peso value: nothing converts between the two."""
 
-    Money is integer centavos. ``chips_per_buy_in`` is the chip count issued for
-    ``default_buy_in_centavos``; the two together define the chip rate.
+    PHP = "php", "Pesos (₱)"
+    CHIPS = "chips", "Chips"
+
+
+class StakesFields(models.Model):
+    """Stakes and buy-in limits, shared by presets and by a session's settings versions.
+
+    Each value is an integer amount in the game's unit: centavos in a pesos
+    game, whole chips in a chips game.
     """
 
-    small_blind_centavos = models.BigIntegerField()
-    big_blind_centavos = models.BigIntegerField()
-    min_buy_in_centavos = models.BigIntegerField()
-    max_buy_in_centavos = models.BigIntegerField()
-    default_buy_in_centavos = models.BigIntegerField()
-    chips_per_buy_in = models.BigIntegerField()
+    small_blind = models.BigIntegerField()
+    big_blind = models.BigIntegerField()
+    min_buy_in = models.BigIntegerField()
+    max_buy_in = models.BigIntegerField()
+    default_buy_in = models.BigIntegerField()
 
     class Meta:
         abstract = True
 
-    STAKES_FIELDS = (
-        "small_blind_centavos", "big_blind_centavos", "min_buy_in_centavos",
-        "max_buy_in_centavos", "default_buy_in_centavos", "chips_per_buy_in",
-    )
+    STAKES_FIELDS = ("small_blind", "big_blind", "min_buy_in", "max_buy_in", "default_buy_in")
 
     @staticmethod
     def stakes_constraints(prefix):
         return [
             models.CheckConstraint(
-                condition=Q(small_blind_centavos__gt=0, big_blind_centavos__gte=F("small_blind_centavos")),
+                condition=Q(small_blind__gt=0, big_blind__gte=F("small_blind")),
                 name=f"{prefix}_blinds_valid",
             ),
             models.CheckConstraint(
                 condition=Q(
-                    min_buy_in_centavos__gt=0,
-                    default_buy_in_centavos__gte=F("min_buy_in_centavos"),
-                    max_buy_in_centavos__gte=F("default_buy_in_centavos"),
+                    min_buy_in__gt=0,
+                    default_buy_in__gte=F("min_buy_in"),
+                    max_buy_in__gte=F("default_buy_in"),
                 ),
                 name=f"{prefix}_buy_in_range_valid",
             ),
-            models.CheckConstraint(condition=Q(chips_per_buy_in__gt=0), name=f"{prefix}_chips_positive"),
         ]
 
     def stakes(self) -> dict:
@@ -61,6 +63,7 @@ class SettingsPreset(StakesFields):
     group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="presets")
     name = models.CharField(max_length=60)
     game_type = models.CharField(max_length=8, choices=GameType.choices, default=GameType.HOLDEM)
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
     archived_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -107,7 +110,7 @@ class GameSession(models.Model):
         SETUP = "setup", "Setup"
         OPEN = "open", "Open"
         RUNNING = "running", "Running"
-        RECONCILIATION = "reconciliation", "Counting chips"
+        RECONCILIATION = "reconciliation", "Counting up"
         FINALIZED = "finalized", "Finalized"
         CANCELED = "canceled", "Canceled"
 
@@ -121,10 +124,8 @@ class GameSession(models.Model):
     game_type = models.CharField(max_length=8, choices=GameType.choices, default=GameType.HOLDEM)
     state = models.CharField(max_length=16, choices=State.choices, default=State.SETUP)
     seat_count = models.PositiveSmallIntegerField()
-    # The chip rate in lowest terms. Set by the first accepted buy-in, cleared
-    # when no accepted buy-in remains. While it is set, the session has money in it.
-    rate_centavos = models.BigIntegerField(null=True, blank=True)
-    rate_chips = models.BigIntegerField(null=True, blank=True)
+    # Pesos or chips. Fixed once the game has money in it.
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
     # Incremented by every write. Live screens poll it to learn that something changed.
     version = models.BigIntegerField(default=0)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
@@ -140,11 +141,7 @@ class GameSession(models.Model):
                 condition=Q(state__in=["setup", "open", "running", "reconciliation", "finalized", "canceled"]),
                 name="session_state_valid",
             ),
-            models.CheckConstraint(
-                condition=Q(rate_centavos__isnull=True, rate_chips__isnull=True)
-                | Q(rate_centavos__gt=0, rate_chips__gt=0),
-                name="session_rate_both_or_neither",
-            ),
+            models.CheckConstraint(condition=Q(unit__in=["php", "chips"]), name="session_unit_valid"),
             models.CheckConstraint(condition=Q(seat_count__gte=2, seat_count__lte=12), name="session_seat_count_valid"),
         ]
         indexes = [
@@ -154,13 +151,6 @@ class GameSession(models.Model):
 
     def __str__(self):
         return f"{self.table.name}, {self.game_date:%b %-d, %Y}"
-
-    @property
-    def rate(self):
-        """The locked chip rate ``(centavos, chips)``, or None before the first buy-in."""
-        if self.rate_centavos is None:
-            return None
-        return self.rate_centavos, self.rate_chips
 
     @property
     def is_live(self):

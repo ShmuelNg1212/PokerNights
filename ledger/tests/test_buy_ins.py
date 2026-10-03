@@ -16,13 +16,12 @@ from .helpers import Night
 
 
 class BuyInTests(TestCase):
-    def test_buy_in_stores_amount_chips_and_settings_and_locks_the_rate(self):
+    def test_buy_in_stores_its_amount_and_the_settings_in_force(self):
         night = Night("A")
-        self.assertIsNone(night.session.rate)
         buy_in = night.buy("A", 1000)
-        self.assertEqual((buy_in.amount_centavos, buy_in.chips), (100000, 10000))
+        self.assertEqual(buy_in.amount, 100000)
         self.assertEqual(buy_in.settings_version.number, 1)
-        self.assertEqual(night.refresh().rate, (10, 1))
+        self.assertFalse(hasattr(buy_in, "chips"))
 
     def test_several_rebuys_give_a_running_total(self):
         night = Night("A", "B")
@@ -32,16 +31,16 @@ class BuyInTests(TestCase):
         night.buy("B", 1000)
         summary = queries.summary(night.session)
         line = summary.line_for(night.players["A"].pk)
-        self.assertEqual((line.buy_in_count, line.rebuy_count, line.buy_in_total, line.chips_issued), (3, 2, 350000, 35000))
-        self.assertEqual(line.initial_buy_in.amount_centavos, 100000)
-        self.assertEqual((summary.player_count, summary.buy_in_count, summary.total_centavos), (2, 4, 450000))
+        self.assertEqual((line.buy_in_count, line.rebuy_count, line.buy_in_total), (3, 2, 350000))
+        self.assertEqual(line.initial_buy_in.amount, 100000)
+        self.assertEqual((summary.player_count, summary.buy_in_count, summary.total), (2, 4, 450000))
 
     def test_fixed_amount_total_equals_count_times_amount(self):
         night = Night("A", "B", "C")
         for name in ("A", "B", "C", "A", "B"):
             night.buy(name, 1000)
         summary = queries.summary(night.session)
-        self.assertEqual(summary.total_centavos, summary.buy_in_count * 100000)
+        self.assertEqual(summary.total, summary.buy_in_count * 100000)
 
     def test_amount_outside_the_range_is_refused(self):
         night = Night("A")
@@ -49,14 +48,17 @@ class BuyInTests(TestCase):
             with self.assertRaisesMessage(RuleError, "between ₱500 and ₱2,000"):
                 night.buy("A", pesos)
         self.assertEqual(BuyIn.objects.count(), 0)
-        self.assertIsNone(night.refresh().rate)
 
-    def test_amount_must_buy_whole_chips(self):
-        # ₱1,000 buys 200 chips, so one chip is ₱5.
-        night = Night("A", chips_per_buy_in=200)
-        with self.assertRaisesMessage(RuleError, "whole number of chips"):
-            services.record_buy_in(night.session.pk, night.host, night.players["A"].pk, 100300, uuid.uuid4())
-        self.assertEqual(night.buy("A", 505).chips, 101)
+    def test_any_amount_inside_the_range_is_accepted(self):
+        night = Night("A")
+        buy_in = services.record_buy_in(night.session.pk, night.host, night.players["A"].pk, 123456, uuid.uuid4())
+        self.assertEqual(buy_in.amount, 123456)  # ₱1,234.56: no chip rule applies
+
+    def test_amount_must_be_an_integer(self):
+        night = Night("A")
+        for bad in (1000.0, "100000", None, True):
+            with self.assertRaises(RuleError):
+                services.record_buy_in(night.session.pk, night.host, night.players["A"].pk, bad, uuid.uuid4())
 
     def test_repeated_request_id_records_once(self):
         night = Night("A")
@@ -68,7 +70,7 @@ class BuyInTests(TestCase):
         with self.assertRaises(IntegrityError), transaction.atomic():
             BuyIn.objects.create(
                 session=night.session, participant=night.players["A"], settings_version=first.settings_version,
-                amount_centavos=1, chips=1, request_id=request_id, recorded_by=night.host.user,
+                amount=1, request_id=request_id, recorded_by=night.host.user,
             )
 
     def test_only_a_host_records_and_only_in_open_or_running(self):
@@ -92,19 +94,19 @@ class BuyInTests(TestCase):
     def test_changed_settings_apply_to_new_buy_ins_only(self):
         night = Night("A")
         first = night.buy("A", 1000)
-        games.update_settings(night.session.pk, night.host, {**STAKES, "max_buy_in_centavos": 500000})
+        games.update_settings(night.session.pk, night.host, {**STAKES, "max_buy_in": 500000})
         second = night.buy("A", 5000)
         first.refresh_from_db()
-        self.assertEqual((first.amount_centavos, first.chips, first.settings_version.number), (100000, 10000, 1))
-        self.assertEqual((second.chips, second.settings_version.number), (50000, 2))
+        self.assertEqual((first.amount, first.settings_version.number), (100000, 1))
+        self.assertEqual((second.amount, second.settings_version.number), (500000, 2))
 
     def test_preset_edit_rewrites_no_buy_in(self):
         night = Night("A")
         preset = make_preset(night.host)
         buy_in = night.buy("A", 1000)
-        games.save_preset(night.host, {"name": "10/20", "game_type": "nlh", **STAKES, "chips_per_buy_in": 500}, preset_id=preset.pk)
+        games.save_preset(night.host, {"name": "10/20", "game_type": "nlh", **STAKES, "default_buy_in": 150000}, preset_id=preset.pk)
         buy_in.refresh_from_db()
-        self.assertEqual((buy_in.amount_centavos, buy_in.chips), (100000, 10000))
+        self.assertEqual(buy_in.amount, 100000)
 
 
 class ReversalTests(TestCase):
@@ -116,11 +118,11 @@ class ReversalTests(TestCase):
         services.reverse_buy_in(night.session.pk, night.host, wrong.pk, "recorded twice")
         summary = queries.summary(night.session)
         line = summary.line_for(night.players["B"].pk)
-        self.assertEqual((summary.total_centavos, summary.buy_in_count), (200000, 2))
+        self.assertEqual((summary.total, summary.buy_in_count), (200000, 2))
         self.assertEqual([b.pk for b in line.reversed_buy_ins], [wrong.pk])
         self.assertEqual(BuyIn.objects.count(), 3)  # nothing is deleted
         wrong.refresh_from_db()
-        self.assertEqual(wrong.amount_centavos, 100000)  # nothing is rewritten
+        self.assertEqual(wrong.amount, 100000)  # nothing is rewritten
         event = AuditEvent.objects.get(action="buy_in.reversed")
         self.assertEqual(event.reason, "recorded twice")
 
@@ -134,14 +136,14 @@ class ReversalTests(TestCase):
         self.assertEqual(first.pk, again.pk)
         self.assertEqual(BuyInReversal.objects.count(), 1)
 
-    def test_rate_unlocks_when_no_accepted_buy_in_remains(self):
+    def test_game_with_buy_ins_cannot_be_canceled_until_they_are_reversed(self):
         night = Night("A")
         buy_in = night.buy("A", 1000)
+        self.assertTrue(games.has_money(night.session))
         with self.assertRaises(RuleError):
             games.transition(night.session.pk, night.host, "cancel", "rain")
         services.reverse_buy_in(night.session.pk, night.host, buy_in.pk, "game called off")
-        self.assertIsNone(night.refresh().rate)
-        games.update_settings(night.session.pk, night.host, {**STAKES, "chips_per_buy_in": 20000})
+        self.assertFalse(games.has_money(night.session))
         self.assertEqual(games.transition(night.session.pk, night.host, "cancel", "rain").state, "canceled")
 
     def test_player_with_buy_ins_cannot_be_withdrawn(self):
@@ -170,14 +172,14 @@ class BuyInViewTests(TestCase):
     def _post(self, **data):
         return self.client.post(self.url, {"participant_id": self.night.players["A"].pk, "amount": "1,000", **data}, follow=True)
 
-    def test_host_records_and_page_shows_totals_in_pesos(self):
+    def test_host_records_and_page_shows_totals_in_pesos_only(self):
         self.client.force_login(self.night.host.user)
         self._post()
         page = self._post(amount="500")
         self.assertContains(page, "₱1,500")
         self.assertContains(page, "1 buy-in + 1 rebuy")
-        self.assertContains(page, "15,000 chips")
-        self.assertNotContains(page, "₱15,000")  # chips are never shown as pesos
+        self.assertContains(page, "Still in play")
+        self.assertNotContains(page, "chips")  # a pesos game shows no chip figure
 
     def test_double_submit_of_one_form_records_once(self):
         self.client.force_login(self.night.host.user)

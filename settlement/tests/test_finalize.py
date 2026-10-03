@@ -19,7 +19,7 @@ from settlement.models import SettlementPlan, Transfer
 
 
 def names(transfers):
-    return [(t.payer.member.display_name, t.payee.member.display_name, t.amount_centavos) for t in transfers]
+    return [(t.payer.member.display_name, t.payee.member.display_name, t.amount) for t in transfers]
 
 
 class FinalizeTests(TestCase):
@@ -28,13 +28,13 @@ class FinalizeTests(TestCase):
         finalization = services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
         self.assertEqual(
-            [(r.participant.member.display_name, r.buy_in_total_centavos, r.cash_out_centavos, r.net_centavos) for r in outcome.results],
+            [(r.participant.member.display_name, r.buy_in_total, r.cash_out, r.net) for r in outcome.results],
             [("A", 100000, 160000, 60000), ("B", 100000, 70000, -30000), ("C", 50000, 20000, -30000)],
         )
         self.assertEqual(names(outcome.transfers), [("B", "A", 30000), ("C", "A", 30000)])
-        self.assertEqual((finalization.total_buy_in_centavos, finalization.total_cash_out_centavos), (250000, 250000))
+        self.assertEqual((finalization.total_buy_in, finalization.total_cash_out), (250000, 250000))
         self.assertEqual((finalization.revision, finalization.is_current), (1, True))
-        self.assertEqual(sum(r.net_centavos for r in outcome.results), 0)
+        self.assertEqual(sum(r.net for r in outcome.results), 0)
         self.assertTrue(finalization.plan.proven_minimal)
         session = night.refresh()
         self.assertEqual(session.state, "finalized")
@@ -45,68 +45,62 @@ class FinalizeTests(TestCase):
         services.finalize(night.session.pk, night.host)
         result = PlayerResult.objects.get(participant=night.players["A"])
         self.assertEqual((result.member_id, result.group_id, result.game_date), (night.players["A"].member_id, night.group.pk, night.session.game_date))
-        self.assertEqual((result.buy_in_count, result.chips_cashed), (1, 16000))
+        self.assertEqual((result.buy_in_count, result.cashed_out, result.unit), (1, 160000, "php"))
 
     def test_unbalanced_session_is_refused(self):
-        night = worked_example((16000, 7000, 2500))
-        with self.assertRaisesMessage(RuleError, "500 chips (₱50) extra"):
+        night = worked_example((1600, 700, 250))
+        with self.assertRaisesMessage(RuleError, "₱50 too much"):
             services.finalize(night.session.pk, night.host)
-        missing = worked_example((16000, 9000, None))
+        missing = worked_example((1600, 900, None))
         with self.assertRaisesMessage(RuleError, "No cash-out is recorded for: C"):
             services.finalize(missing.session.pk, missing.host)
         self.assertEqual(Finalization.objects.count(), 0)
         self.assertEqual(night.refresh().state, "reconciliation")
 
     def test_override_lets_it_finalize_and_results_still_sum_to_zero(self):
-        night = worked_example((16000, 7000, 2500))
-        override(night, name="A", note="extra chips")
+        night = worked_example((1600, 700, 250))
+        override(night, name="A", note="overpaid")
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
         a, b, c = outcome.results
-        self.assertEqual((a.chips_cashed, a.adjustment_chips, a.cash_out_centavos, a.net_centavos), (16000, -500, 155000, 55000))
-        self.assertEqual((b.net_centavos, c.net_centavos), (-30000, -25000))
-        self.assertEqual(sum(r.net_centavos for r in outcome.results), 0)
-        self.assertEqual(outcome.finalization.raw_difference_chips, 500)
+        self.assertEqual((a.cashed_out, a.adjustment, a.cash_out, a.net), (160000, -5000, 155000, 55000))
+        self.assertEqual((b.net, c.net), (-30000, -25000))
+        self.assertEqual(sum(r.net for r in outcome.results), 0)
+        self.assertEqual(outcome.finalization.raw_difference, 5000)
         self.assertEqual(names(outcome.transfers), [("B", "A", 30000), ("C", "A", 25000)])
 
-    def test_fractional_chip_rate_loses_no_centavo(self):
-        # ₱1,000 buys 30,000 chips: 3 chips are worth 10 centavos.
-        night = Night("A", "B", "C", chips_per_buy_in=30000)
-        for name in "ABC":
-            night.buy(name, 1000)
-        night.go("reconciliation")
-        for name, chips in zip("ABC", (40001, 29999, 20000)):
-            night.cash(name, chips)
+    def test_centavo_amounts_stay_exact(self):
+        night = worked_example((1600, 700, None))
+        ledger.record_cash_out(night.session.pk, night.host, night.players["A"].pk, 1, uuid.uuid4())  # ₱0.01
+        ledger.record_cash_out(night.session.pk, night.host, night.players["C"].pk, 19999, uuid.uuid4())  # ₱199.99
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
-        # Exact values end in .67 each; two centavos are left over and go to the first two players.
-        self.assertEqual([r.cash_out_centavos for r in outcome.results], [133337, 99997, 66666])
-        self.assertEqual(sum(r.cash_out_centavos for r in outcome.results), 300000)
-        self.assertEqual(sum(r.net_centavos for r in outcome.results), 0)
-        self.assertEqual(sum(t.amount_centavos for t in outcome.transfers), 33337)
+        self.assertEqual([r.net for r in outcome.results], [60001, -30000, -30001])
+        self.assertEqual(sum(r.net for r in outcome.results), 0)
+        self.assertEqual(sum(t.amount for t in outcome.transfers), 60001)
 
     def test_several_rebuys_and_stepwise_cash_outs(self):
         night = Night("A", "B", "C", "D")
         for name, pesos in [("A", 1000), ("B", 1000), ("C", 500), ("D", 2000), ("B", 1000), ("B", 500), ("C", 500)]:
             night.buy(name, pesos)
-        night.cash("D", 5000)
-        night.cash("D", 12000, left=True)
+        night.cash("D", 500)
+        night.cash("D", 1200, left=True)
         night.go("reconciliation")
-        night.cash("A", 30000)
+        night.cash("A", 3000)
         night.cash("B", 0)
-        night.cash("C", 18000)
+        night.cash("C", 1800)
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
-        self.assertEqual([r.net_centavos for r in outcome.results], [200000, -250000, 80000, -30000])
+        self.assertEqual([r.net for r in outcome.results], [200000, -250000, 80000, -30000])
         self.assertEqual([r.buy_in_count for r in outcome.results], [1, 3, 2, 1])
         self.assertEqual(len(outcome.transfers), 3)
-        self.assertEqual(sum(t.amount_centavos for t in outcome.transfers), 280000)
+        self.assertEqual(sum(t.amount for t in outcome.transfers), 280000)
 
     def test_break_even_night_has_no_transfers(self):
-        night = worked_example((10000, 10000, 5000))
+        night = worked_example((1000, 1000, 500))
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
-        self.assertEqual([r.net_centavos for r in outcome.results], [0, 0, 0])
+        self.assertEqual([r.net for r in outcome.results], [0, 0, 0])
         self.assertEqual(outcome.transfers, [])
 
     def test_player_without_a_buy_in_gets_no_result(self):
@@ -124,7 +118,7 @@ class FinalizeTests(TestCase):
             services.finalize(night.session.pk, player)
         running = Night("X")
         running.buy("X", 1000)
-        running.cash("X", 10000)
+        running.cash("X", 1000)
         with self.assertRaises(RuleError):
             services.finalize(running.session.pk, running.host)
 
@@ -157,9 +151,9 @@ class FinalizeTests(TestCase):
         night = worked_example()
         finalization = services.finalize(night.session.pk, night.host)
         with self.assertRaises(IntegrityError), transaction.atomic():
-            Finalization.objects.filter(pk=finalization.pk).update(total_cash_out_centavos=1)
+            Finalization.objects.filter(pk=finalization.pk).update(total_cash_out=1)
         with self.assertRaises(IntegrityError), transaction.atomic():
-            PlayerResult.objects.filter(finalization=finalization).update(net_centavos=1)
+            PlayerResult.objects.filter(finalization=finalization).update(net=1)
 
 
 class AfterFinalizationTests(TestCase):
@@ -179,7 +173,7 @@ class AfterFinalizationTests(TestCase):
             lambda: ledger.reverse_cash_out(self.session.pk, self.host, cash_out.pk, "late"),
             lambda: ledger.record_override(self.session.pk, self.host, "note", "equal", None, uuid.uuid4()),
             lambda: ledger.void_override(self.session.pk, self.host),
-            lambda: games.update_settings(self.session.pk, self.host, {**STAKES, "big_blind_centavos": 4000}),
+            lambda: games.update_settings(self.session.pk, self.host, {**STAKES, "big_blind": 4000}),
             lambda: games.add_participant(self.session.pk, self.host, self.host.pk),
             lambda: games.set_left(self.session.pk, self.host, a.pk),
             lambda: games.transition(self.session.pk, self.host, "resume"),
@@ -189,13 +183,14 @@ class AfterFinalizationTests(TestCase):
             with self.assertRaises(RuleError):
                 attempt()
         outcome = queries.outcome(self.session)
-        self.assertEqual([r.net_centavos for r in outcome.results], [60000, -30000, -30000])
+        self.assertEqual([r.net for r in outcome.results], [60000, -30000, -30000])
         self.assertEqual((BuyIn.objects.count(), CashOut.objects.count()), (3, 3))
 
     def test_later_preset_or_table_changes_do_not_touch_the_snapshot(self):
         finalization = Finalization.objects.get()
-        self.assertEqual(finalization.settings_snapshot[0]["default_buy_in_centavos"], 100000)
-        self.assertEqual((finalization.rate_centavos, finalization.rate_chips), (10, 1))
+        self.assertEqual(finalization.settings_snapshot[0]["default_buy_in"], 100000)
+        self.assertEqual(finalization.unit, "php")
+        self.assertNotIn("chips_per_buy_in", finalization.settings_snapshot[0])
 
     def test_money_rows_are_read_only_in_the_admin(self):
         for model in (BuyIn, CashOut, Finalization, PlayerResult, SettlementPlan, Transfer):
@@ -216,7 +211,7 @@ class FinalizeViewTests(TestCase):
         page = self.client.post(reverse("session_finalize", args=[night.session.pk]), follow=True)
         for text in ("+₱600", "−₱300", "<strong>B</strong> pays <strong>A</strong>", "<strong>C</strong> pays <strong>A</strong>", "₱2,500"):
             self.assertContains(page, text)
-        for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/", "Host controls", "Chips in play", "seats free"):
+        for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/", "Host controls", "Still in play", "seats free", "chips"):
             self.assertNotContains(page, gone)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
@@ -229,9 +224,9 @@ class FinalizeViewTests(TestCase):
         night.buy("ben", 1000)
         night.buy("C", 500)
         night.go("reconciliation")
-        night.cash("A", 16000)
-        night.cash("ben", 7000)
-        night.cash("C", 2000)
+        night.cash("A", 1600)
+        night.cash("ben", 700)
+        night.cash("C", 200)
         services.finalize(night.session.pk, night.host)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
@@ -240,12 +235,12 @@ class FinalizeViewTests(TestCase):
         self.assertContains(page, "Bought in ₱1,000 · cashed out ₱700")
 
     def test_unbalanced_finalize_shows_the_reason(self):
-        night = worked_example((16000, 7000, 1500))
+        night = worked_example((1600, 700, 150))
         self.client.force_login(night.host.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
         self.assertNotContains(page, "Finalize results")
         page = self.client.post(reverse("session_finalize", args=[night.session.pk]), follow=True)
-        self.assertContains(page, "500 chips (₱50) missing")
+        self.assertContains(page, "₱50 is missing")
         self.assertEqual(night.refresh().state, "reconciliation")
 
     def test_player_and_stranger_cannot_finalize(self):

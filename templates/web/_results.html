@@ -2,11 +2,11 @@
 {% if my_result %}
 <div class="card">
   <div class="stat-label">Your result</div>
-  <div class="stat-value {{ my_result.net_centavos|sign_class }}">{{ my_result.net_centavos|signed_peso }}</div>
-  <p class="muted small">Bought in {{ my_result.buy_in_total_centavos|peso }} · cashed out {{ my_result.cash_out_centavos|peso }}</p>
+  <div class="stat-value {{ my_result.net|sign_class }}">{{ my_result.net|signed_amount:unit }}</div>
+  <p class="muted small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cash_out|amount:unit }}</p>
   {% for t in my_transfers %}
-  <p>{% if t.payer_id == my_result.participant_id %}You pay <strong>{{ t.payee.member.display_name }}</strong> <span class="amount">{{ t.amount_centavos|peso }}</span>
-     {% else %}<strong>{{ t.payer.member.display_name }}</strong> pays you <span class="amount">{{ t.amount_centavos|peso }}</span>{% endif %}
+  <p>{% if t.payer_id == my_result.participant_id %}You pay <strong>{{ t.payee.member.display_name }}</strong> <span class="amount">{{ t.amount|amount:unit }}</span>
+     {% else %}<strong>{{ t.payer.member.display_name }}</strong> pays you <span class="amount">{{ t.amount|amount:unit }}</span>{% endif %}
      {% if t.paid %}<span class="badge badge-good">Paid</span>{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</p>
   {% empty %}<p class="muted">You owe nothing and are owed nothing.</p>
   {% endfor %}
@@ -21,7 +21,7 @@
     <li>
       <div class="row">
         <span class="grow"><strong>{{ t.payer.member.display_name }}</strong> pays <strong>{{ t.payee.member.display_name }}</strong></span>
-        <span class="amount">{{ t.amount_centavos|peso }}</span>
+        <span class="amount">{{ t.amount|amount:unit }}</span>
       </div>
       <div class="row">
         {% if t.paid %}<span class="badge badge-good">Paid · {{ t.paid.created_at|date:"M j, H:i" }}</span>
@@ -52,14 +52,14 @@
     <li>
       <div class="row">
         <span class="grow">{{ r.participant.member.display_name }}</span>
-        <span class="amount {{ r.net_centavos|sign_class }}">{{ r.net_centavos|signed_peso }}</span>
+        <span class="amount {{ r.net|sign_class }}">{{ r.net|signed_amount:unit }}</span>
       </div>
-      <div class="muted small">Bought in {{ r.buy_in_total_centavos|peso }} ({{ r.buy_in_count }}) · cashed out {{ r.chips_cashed|chips }} chips{% if r.adjustment_chips %} · override {{ r.adjustment_chips|chips }} chips{% endif %} = {{ r.cash_out_centavos|peso }}</div>
+      <div class="muted small">Bought in {{ r.buy_in_total|amount:unit }} ({{ r.buy_in_count }}) · cashed out {{ r.cashed_out|amount:unit }}{% if r.adjustment %} · override {{ r.adjustment|signed_amount:unit }}{% endif %}</div>
     </li>
     {% endfor %}
   </ul>
-  <div class="row"><span class="grow muted small">Total bought in and cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in_centavos|peso }}</span></div>
-  {% if outcome.finalization.raw_difference_chips %}
-  <p class="small muted">The chip count was off by {{ outcome.finalization.raw_difference_chips|chips }} chips. A host override covered it; see the players' lines.</p>
+  <div class="row"><span class="grow muted small">Total bought in and cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:unit }}</span></div>
+  {% if outcome.finalization.raw_difference %}
+  <p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>
   {% endif %}
 </div>

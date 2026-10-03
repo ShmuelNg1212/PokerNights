@@ -14,18 +14,18 @@ class PresetTests(TestCase):
     def setUp(self):
         self.group, self.host = make_group()
 
-    def test_host_saves_a_preset_and_its_chip_rate(self):
+    def test_host_saves_a_preset_in_pesos_by_default(self):
         preset = make_preset(self.host)
-        self.assertEqual(preset.default_buy_in_centavos, 100000)
-        self.assertEqual(services.chip_rate(preset), (10, 1))
+        self.assertEqual((preset.default_buy_in, preset.unit), (100000, "php"))
+        self.assertFalse(hasattr(preset, "chips_per_buy_in"))
 
     def test_rules_are_checked(self):
         bad = [
-            {"small_blind_centavos": 3000},  # small blind above big blind
-            {"min_buy_in_centavos": 150000},  # minimum above the usual buy-in
-            {"max_buy_in_centavos": 50000, "min_buy_in_centavos": 50000},  # usual above maximum
-            {"chips_per_buy_in": 0},
-            {"big_blind_centavos": 20.5},  # never a float
+            {"small_blind": 3000},  # small blind above big blind
+            {"min_buy_in": 150000},  # minimum above the usual buy-in
+            {"max_buy_in": 50000, "min_buy_in": 50000},  # usual above maximum
+            {"default_buy_in": 0, "min_buy_in": 0},
+            {"big_blind": 20.5},  # never a float
         ]
         for overrides in bad:
             with self.assertRaises(RuleError, msg=overrides):
@@ -34,7 +34,7 @@ class PresetTests(TestCase):
 
     def test_database_checks_back_the_service(self):
         with self.assertRaises(IntegrityError), transaction.atomic():
-            SettingsPreset.objects.create(group=self.group, name="bad", **{**STAKES, "min_buy_in_centavos": 300000})
+            SettingsPreset.objects.create(group=self.group, name="bad", **{**STAKES, "min_buy_in": 300000})
 
     def test_duplicate_name_is_refused(self):
         make_preset(self.host)
@@ -77,22 +77,21 @@ class TablePresetViewTests(TestCase):
     def test_host_creates_a_preset_with_peso_input(self):
         self.client.force_login(self.host.user)
         response = self.client.post(reverse("preset_create", args=[self.group.pk]), {
-            "name": "10/20", "game_type": "nlh", "small_blind_centavos": "10", "big_blind_centavos": "20",
-            "min_buy_in_centavos": "500", "max_buy_in_centavos": "2,000", "default_buy_in_centavos": "1000",
-            "chips_per_buy_in": "10000",
+            "name": "10/20", "game_type": "nlh", "small_blind": "10", "big_blind": "20",
+            "min_buy_in": "500", "max_buy_in": "2,000", "default_buy_in": "1000",
         })
         self.assertRedirects(response, reverse("group", args=[self.group.pk]))
         preset = SettingsPreset.objects.get()
-        self.assertEqual((preset.max_buy_in_centavos, preset.small_blind_centavos), (200000, 1000))
+        self.assertEqual((preset.max_buy_in, preset.small_blind), (200000, 1000))
         page = self.client.get(reverse("group", args=[self.group.pk]))
-        self.assertContains(page, "₱1,000 = 10,000 chips")
+        self.assertContains(page, "buy-in ₱500–₱2,000 · usually ₱1,000")
+        self.assertNotContains(page, "chips")
 
     def test_bad_amount_shows_an_error(self):
         self.client.force_login(self.host.user)
         response = self.client.post(reverse("preset_create", args=[self.group.pk]), {
-            "name": "x", "game_type": "nlh", "small_blind_centavos": "10.005", "big_blind_centavos": "20",
-            "min_buy_in_centavos": "500", "max_buy_in_centavos": "2000", "default_buy_in_centavos": "1000",
-            "chips_per_buy_in": "10000",
+            "name": "x", "game_type": "nlh", "small_blind": "10.005", "big_blind": "20",
+            "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000",
         })
         self.assertContains(response, "two decimal places")
 

@@ -104,9 +104,9 @@
     <li>
       <div class="row">
         <span class="grow">{% if me.is_host %}<a href="{% url 'preset_edit' group.pk preset.pk %}">{{ preset.name }}</a>{% else %}{{ preset.name }}{% endif %}</span>
-        <span class="badge">{{ preset.get_game_type_display }}</span>
+        <span class="badge">{{ preset.get_game_type_display }}</span>{% if preset.unit == 'chips' %}<span class="badge">Chips</span>{% endif %}
       </div>
-      <div class="muted small">Blinds {{ preset.small_blind_centavos|peso }}/{{ preset.big_blind_centavos|peso }} · buy-in {{ preset.min_buy_in_centavos|peso }}–{{ preset.max_buy_in_centavos|peso }} · {{ preset.default_buy_in_centavos|peso }} = {{ preset.chips_per_buy_in|chips }} chips</div>
+      <div class="muted small">Blinds {{ preset.small_blind|amount:preset.unit }}/{{ preset.big_blind|amount:preset.unit }} · buy-in {{ preset.min_buy_in|amount:preset.unit }}–{{ preset.max_buy_in|amount:preset.unit }} · usually {{ preset.default_buy_in|amount:preset.unit }}</div>
     </li>
     {% endfor %}
   </ul>

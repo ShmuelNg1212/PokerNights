@@ -18,7 +18,7 @@ class GameSessionAdmin(admin.ModelAdmin):
     list_display = ("__str__", "group", "state", "game_date")
     list_filter = ("state",)
     # The state and the chip rate change only through the services.
-    readonly_fields = ("state", "rate_centavos", "rate_chips", "version", "started_at", "finalized_at")
+    readonly_fields = ("state", "unit", "version", "started_at", "finalized_at")
 
 
 @admin.register(SettingsVersion)
