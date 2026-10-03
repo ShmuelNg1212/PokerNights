@@ -273,3 +273,126 @@ class CountPageTests(TestCase):
         self.post("A", "1600")
         page = self.client.post(reverse("session_finalize", args=[self.night.session.pk]), follow=True)
         self.assertContains(page, "Not cashed out yet: A, B, C")
+
+
+class ConfirmSeveralCountsTests(TestCase):
+    """One action confirms every count the host typed. Bug: typed counts were lost on the first tap."""
+
+    def several(self, night, figures, request_id=None, actor=None):
+        amounts = {night.players[name].pk: pesos * night.scale for name, pesos in figures.items()}
+        return services.confirm_counts(night.session.pk, actor or night.host, amounts, request_id or uuid.uuid4())
+
+    def test_three_typed_counts_are_all_confirmed(self):
+        night = counting("A", "B", "C", "D")
+        before = night.refresh().version
+        written = self.several(night, {"A": 1500, "B": 700, "C": 0})
+        self.assertEqual(len(written), 3)
+        self.assertEqual(statuses(night), {"A": "ready", "B": "ready", "C": "ready", "D": "awaiting"})
+        self.assertEqual(night.line("C").count.amount, 0)
+        self.assertIsNone(night.line("D").count)  # left out: never read as zero
+        self.assertEqual(night.refresh().version, before + 1)
+        self.assertEqual(AuditEvent.objects.filter(action="count.confirmed").count(), 3)
+
+    def test_one_bad_value_saves_nothing(self):
+        night = counting("A", "B", "C")
+        night.cash("C", 800)  # C was cashed out in the meantime
+        with self.assertRaisesMessage(RuleError, "C is already cashed out"):
+            self.several(night, {"A": 1500, "B": 700, "C": 800})
+        with self.assertRaisesMessage(RuleError, "Enter B's final count"):
+            services.confirm_counts(
+                night.session.pk, night.host, {night.players["A"].pk: 150000, night.players["B"].pk: -5}, uuid.uuid4()
+            )
+        self.assertEqual(FinalCount.objects.count(), 0)
+        self.assertEqual(statuses(night)["A"], "awaiting")
+
+    def test_an_unchanged_count_gets_no_new_version(self):
+        night = counting("A", "B")
+        self.several(night, {"A": 1500})
+        written = self.several(night, {"A": 1500, "B": 500})  # A is typed again with the same figure
+        self.assertEqual([c.participant.member.display_name for c in written], ["B"])
+        self.assertEqual(night.line("A").count.version, 1)
+        changed = self.several(night, {"A": 1600})
+        self.assertEqual((changed[0].version, FinalCount.objects.filter(participant=night.players["A"]).count()), (2, 2))
+
+    def test_repeated_submission_confirms_once(self):
+        night = counting("A", "B")
+        request_id = uuid.uuid4()
+        self.several(night, {"A": 1500, "B": 500}, request_id)
+        version = night.refresh().version
+        self.several(night, {"A": 1500, "B": 500}, request_id)
+        self.assertEqual((FinalCount.objects.count(), night.refresh().version), (2, version))
+
+    def test_rules(self):
+        night = counting("A")
+        with self.assertRaisesMessage(RuleError, "Type at least one final count"):
+            services.confirm_counts(night.session.pk, night.host, {}, uuid.uuid4())
+        with self.assertRaises(NotAllowed):
+            self.several(night, {"A": 100}, actor=add_player(night.group, "ben"))
+        with self.assertRaises(RuleError):
+            services.confirm_counts(night.session.pk, night.host, {999999: 100}, uuid.uuid4())
+        games.transition(night.session.pk, night.host, "resume")
+        with self.assertRaisesMessage(RuleError, "after play has ended"):
+            self.several(night, {"A": 100})
+        self.assertEqual(FinalCount.objects.count(), 0)
+
+
+class ConfirmSeveralCountsPageTests(TestCase):
+    def setUp(self):
+        self.night = counting("A", "B", "C", "D")
+        self.url = reverse("count_confirm", args=[self.night.session.pk])
+        self.page_url = reverse("session", args=[self.night.session.pk])
+        self.client.force_login(self.night.host.user)
+
+    def post(self, **typed):
+        data = {f"count_{self.night.players[name].pk}": value for name, value in typed.items()}
+        return self.client.post(self.url, data, follow=True)
+
+    def test_all_count_fields_belong_to_one_form(self):
+        html = self.client.get(self.page_url).content.decode()
+        self.assertEqual(html.count('<form id="counts-form"'), 1)
+        for name in "ABCD":
+            self.assertIn(f'form="counts-form" name="count_{self.night.players[name].pk}"', html)
+        self.assertEqual(html.count('type="submit" form="counts-form"'), 5)  # four rows and "Confirm all counts"
+        self.assertIn("Confirm all counts", html)
+
+    def test_one_submit_confirms_every_typed_count_and_skips_empty_fields(self):
+        page = self.post(A="1,500", B="700", C="0", D="")
+        self.assertContains(page, "3 counts confirmed.")
+        self.assertEqual(statuses(self.night), {"A": "ready", "B": "ready", "C": "ready", "D": "awaiting"})
+        self.assertContains(page, "Counted ₱0")
+
+    def test_refused_submit_saves_nothing_and_shows_the_typed_values_again(self):
+        page = self.post(A="1500", B="abc", C="0")
+        self.assertContains(page, "B: Enter an amount in pesos")
+        self.assertContains(page, "Nothing was saved.")
+        self.assertEqual(FinalCount.objects.count(), 0)
+        html = page.content.decode()
+        for name, value in (("A", "1500"), ("B", "abc"), ("C", "0")):
+            self.assertIn(f'name="count_{self.night.players[name].pk}" value="{value}"', html)
+        # The typed values are shown once. A later plain visit starts clean.
+        self.assertNotIn('value="abc"', self.client.get(self.page_url).content.decode())
+
+    def test_typed_values_are_cleared_after_a_successful_submit(self):
+        self.post(A="1500", B="abc")
+        page = self.post(A="1500", B="700")
+        self.assertContains(page, "2 counts confirmed.")
+        self.assertNotIn('value="1500"', page.content.decode())
+
+    def test_nothing_typed_is_refused_and_not_read_as_zero(self):
+        page = self.post(A="", B="  ")
+        self.assertContains(page, "Enter the final count. Type 0 for a player who has nothing left.")
+        self.assertEqual(FinalCount.objects.count(), 0)
+
+    def test_player_cannot_confirm_counts(self):
+        ben = add_player(self.night.group, "ben")
+        self.client.force_login(ben.user)
+        self.assertEqual(self.client.post(self.url, {f"count_{self.night.players['A'].pk}": "5"}).status_code, 403)
+        self.assertNotIn("counts-form", self.client.get(self.page_url).content.decode())
+        self.client.force_login(make_user("stranger"))
+        self.assertEqual(self.client.post(self.url, {f"count_{self.night.players['A'].pk}": "5"}).status_code, 404)
+        self.assertEqual(FinalCount.objects.count(), 0)
+
+    def test_fields_that_the_live_refresh_must_keep_are_marked(self):
+        html = self.client.get(self.page_url).content.decode()
+        self.assertIn(f'data-keep="count-{self.night.players["A"].pk}"', html)
+        self.assertIn('data-keep="cancel-reason"', html)

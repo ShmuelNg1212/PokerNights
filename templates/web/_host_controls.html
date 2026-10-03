@@ -28,7 +28,7 @@
   <details data-key="cancel">
     <summary class="small">Cancel this game</summary>
     <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}
-      <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" maxlength="255"></div>
+      <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" data-keep="cancel-reason" maxlength="255"></div>
       <button class="btn btn-danger btn-block" name="action" value="cancel">Cancel the game</button>
     </form>
   </details>
