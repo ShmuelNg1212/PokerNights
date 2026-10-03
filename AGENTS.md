@@ -46,4 +46,5 @@ Run the tests before each commit. Use Conventional Commits. Do not push or deplo
 7. Totals are queries. Only finalization writes snapshots.
 8. Dates use Asia/Manila. Amounts display as `₱1,600` or `₱1,600.50` in a pesos game and as `1,600 chips` in a chips game.
 9. Screens are single-column, dark by default, with large touch targets.
-10. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` is a leaf.
+10. A session is `GameNight`; a set is `GameSession`. Money, counts, timers and results belong to a set. Settle-up, transfers, payments and the unit belong to a session.
+11. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` is a leaf.

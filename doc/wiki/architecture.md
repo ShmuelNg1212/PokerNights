@@ -10,10 +10,10 @@ One Django 6.1 project with server-rendered templates, one stylesheet and two sm
 | `accounts` | Custom `User`, sign-up, login, logout. `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py` |
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `groups` | `GameGroup`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
-| `games` | `Table`, `SettingsPreset`, `GameSession`, `SettingsVersion`, `Participant`, `ParticipantBatch`, the lifecycle | `services.py`, `access.py`, `forms.py` |
-| `ledger` | `BuyIn`, `CashOut`, their reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
-| `settlement` | Settle-up algorithm, `finalize()`, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
-| `web` | Pages that read from several apps: home, group, session, polling endpoint, game log. No models. It never writes | `views.py` |
+| `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, the lifecycle, the clock | `services.py`, `access.py`, `forms.py` |
+| `ledger` | `BuyIn`, `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
+| `settlement` | Settle-up algorithm, `finalize()` for a set, `close_night()` for a session, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
+| `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. It never writes | `views.py` |
 
 Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` depends only on `accounts`. Two exceptions are deliberate:
 
@@ -52,6 +52,33 @@ AuditEvent (group_id, session_id as plain integers)
 - A **Member** is a person in a group's roster. `user` is empty for a player without a login. Results are keyed by member.
 - A **SettingsVersion** is never edited. A change adds a version. Each buy-in points to the version in force.
 - `PlayerResult` repeats `member`, `group` and `game_date` so that later statistics read one table.
+
+## Sessions and sets
+
+- **Naming:** the screen word "session" is the `GameNight` model. The screen word "set" is the `GameSession` model, which existed first. See [footguns/session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md).
+- `GameNight` holds table, date, location, game type, unit and status (`open`, `closed`). `GameSession.night` and `set_number` place a set in it.
+- **One set in play:** a partial unique constraint allows one set per session in `setup`, `open` or `running`. `games.services.start_next_set()` checks the same under a lock on the session row, copies seats and the latest settings, and carries over participants with status `joined`. It copies no money.
+- **Resume:** a set cannot resume once a later set of its session exists.
+- **Settle-up:** `settlement.services.finalize()` freezes one set's results and writes no transfers. `close_night()` requires every set to be finalized or canceled, sums each member's results over the finalized sets, runs the settle-up algorithm, and writes one `SettlementPlan` for the session. `Transfer` and `Payment` name members, because a player has one participant row per set.
+
+## Timers
+
+- `PlayPeriod(session, started_at, ended_at)`: a stretch of play of one set. One open period per set (database constraint). The set's timer is the sum of its periods.
+- `PlayInterval(session, participant, started_at, ended_at)`: a stretch during which a player was at the table while the set was in play. One open interval per participant.
+- `games/clock.py` opens and closes them. The lifecycle services call it with one `now`: start and resume open; end and cancel close everything of that set at one timestamp and set `GameSession.ended_at`; join, return, leave and withdraw touch one player.
+- Opening is a no-op if one is open; closing touches only open rows. A repeated request changes nothing.
+- `clock.SKIP_ON_RESUME` lets `ledger` keep a cashed-out player out of a resumed set.
+- Pages show the server's figure. `static/js/clock.js` only advances the shown minutes of a running timer between page updates.
+- `PlayerResult.play_seconds` stores the player's time when the set is finalized. Play has ended by then, so the figure is the time up to the end of play.
+
+## End of a set: counts and batch
+
+- `FinalCount`: a host's confirmation of a player's final amount, in the session's unit. Append-only, with a `version` per participant; `is_current` marks the one in force. Zero is a count. No row means "not counted".
+- `CashOut.kind`: `partial` (the player played on) or `final`. A cash-out with "Leaving the game", any cash-out while counting, and each batch cash-out are final. A player has at most one accepted final cash-out. If the player returns or buys in again, it becomes partial again (logged).
+- Status of a player while counting: `cashed_out` (has a final cash-out), `ready` (has a current count), `awaiting`.
+- `ledger.services.cash_out_counted(session_id, actor, count_ids, request_id)`: under the set lock, each submitted count must still be current and its player not cashed out; otherwise nothing is recorded. It writes one `CashOutBatch`, one final `CashOut` per count (linked to the count and the batch), audit events and one version increment. A known `request_id` returns the first batch.
+- Reversing a batch cash-out voids its count. Resuming play voids counts that are not cashed out.
+- The finalization gate: each player with a buy-in needs a final cash-out, and the totals must match or be overridden.
 
 ## Adding players
 
