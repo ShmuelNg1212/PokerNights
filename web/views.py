@@ -9,6 +9,9 @@ from games import services as games
 from games.access import session_for
 from games.models import GameSession, Participant, SettingsPreset, Table
 from groups.models import Invite, Member
+from ledger import money
+from ledger import queries as ledger_queries
+from ledger import services as ledger
 
 
 def home(request):
@@ -45,19 +48,21 @@ def group(request, group_id):
 
 def session_context(session, me) -> dict:
     """Everything the session screen shows. Used by the page and by the polling endpoint."""
-    participants = list(
-        Participant.objects.filter(session=session)
-        .exclude(status=Participant.Status.WITHDRAWN)
-        .select_related("member")
-    )
+    summary = ledger_queries.summary(session)
+    participants = [line.participant for line in summary.lines]
     seated = sum(1 for p in participants if p.status == Participant.Status.JOINED)
+    current = games.current_settings(session)
     context = {
         "session": session,
         "me": me,
-        "settings": games.current_settings(session),
+        "settings": current,
+        "default_buy_in": money.plain_pesos(current.default_buy_in_centavos),
+        "summary": summary,
         "participants": participants,
         "my_participant": next((p for p in participants if p.member_id == me.pk), None),
-        "player_count": len(participants),
+        "my_line": next((line for line in summary.lines if line.participant.member_id == me.pk), None),
+        "can_buy_in": me.is_host and session.state in ledger.BUY_IN_STATES,
+        "can_reverse": me.is_host and session.state in ledger.REVERSAL_STATES,
         "seats_free": session.seat_count - seated,
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,

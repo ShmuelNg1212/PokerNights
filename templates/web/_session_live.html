@@ -14,7 +14,22 @@
 </form>
 {% endif %}
 
-<h2>Players <span class="muted small">{{ player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+{% if session.state != 'setup' and session.state != 'canceled' %}
+<div class="stats">
+  <div class="stat"><div class="stat-label">Players</div><div class="stat-value">{{ summary.player_count }}</div></div>
+  <div class="stat"><div class="stat-label">Buy-ins</div><div class="stat-value">{{ summary.buy_in_count }}</div></div>
+  <div class="stat stat-wide"><div class="stat-label">Total bought in</div><div class="stat-value">{{ summary.total_centavos|peso }}</div></div>
+</div>
+{% endif %}
+
+{% if my_line and my_line.has_money %}
+<div class="card">
+  <div class="row"><span class="grow">Your buy-ins</span><span class="amount">{{ my_line.buy_in_total|peso }}</span></div>
+  <p class="muted small">{{ my_line.buy_in_count }} buy-in{{ my_line.buy_in_count|pluralize }} · {{ my_line.chips_issued|chips }} chips received</p>
+</div>
+{% endif %}
+
+<h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
 {% include "web/_players.html" %}
 
 {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}

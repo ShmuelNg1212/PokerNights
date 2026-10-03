@@ -15,5 +15,6 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("", include("groups.urls")),
     path("", include("games.urls")),
+    path("", include("ledger.urls")),
     path("", include("web.urls")),
 ]

@@ -1,4 +1,7 @@
+import uuid
+
 from django import template
+from django.utils.html import format_html
 
 from ledger import money
 
@@ -28,3 +31,9 @@ def sign_class(value):
     if not value:
         return ""
     return "plus" if value > 0 else "minus"
+
+
+@register.simple_tag
+def request_id_field():
+    """A hidden field that identifies one form, so a repeated submission records nothing twice."""
+    return format_html('<input type="hidden" name="request_id" value="{}">', uuid.uuid4())

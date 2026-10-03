@@ -24,10 +24,7 @@ class PesoField(forms.CharField):
             raise ValidationError(str(error)) from None
 
     def prepare_value(self, value):
-        if isinstance(value, int):
-            pesos, cents = divmod(value, 100)
-            return str(pesos) if cents == 0 else f"{pesos}.{cents:02d}"
-        return value
+        return money.plain_pesos(value) if isinstance(value, int) else value
 
 
 class StakesForm(forms.Form):

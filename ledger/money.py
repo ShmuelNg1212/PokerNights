@@ -45,6 +45,12 @@ def format_pesos(centavos: int) -> str:
     return f"{sign}{PESO}{text}"
 
 
+def plain_pesos(centavos: int) -> str:
+    """The value for an input field: ``1000`` or ``1000.50``, with no sign or separators."""
+    pesos, cents = divmod(centavos, 100)
+    return str(pesos) if cents == 0 else f"{pesos}.{cents:02d}"
+
+
 def format_signed(centavos: int) -> str:
     """A result: ``+₱600``, ``−₱300`` or ``₱0``."""
     return f"+{format_pesos(centavos)}" if centavos > 0 else format_pesos(centavos)
