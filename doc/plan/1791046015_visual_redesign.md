@@ -1,11 +1,11 @@
 # Plan: visual redesign
 
 - **Date:** 2026-10-04 00:46 (Asia/Manila), Unix timestamp `1791046015`
-- **Status:** `awaiting-approval`
+- **Status:** `in-progress`
 - **Study:** [../study/1791045491_visual_redesign.md](../study/1791045491_visual_redesign.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
-- **Visual direction:** **proposed**, not approved. See Q1.
-- **Approval record:** none yet.
+- **Visual direction:** **approved: A, The Rack**, with the two loans.
+- **Approval record:** Human approved on 2026-10-04: "approved. continue with the plan." Defaults Q1–Q5 apply; preparation and slice 1 (tasks 1–7) are authorized.
 
 Edit this file directly, or add a line that starts with `NOTE:`.
 
