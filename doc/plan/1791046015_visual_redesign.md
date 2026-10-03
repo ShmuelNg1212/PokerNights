@@ -1,7 +1,7 @@
 # Plan: visual redesign
 
 - **Date:** 2026-10-04 00:46 (Asia/Manila), Unix timestamp `1791046015`
-- **Status:** `in-progress`
+- **Status:** `slice-1-done` (approved scope complete; slices 2–4 await later approval)
 - **Study:** [../study/1791045491_visual_redesign.md](../study/1791045491_visual_redesign.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
 - **Visual direction:** **approved: A, The Rack**, with the two loans.
@@ -114,7 +114,7 @@ Slices 2–4 add their own checks in the task list.
 - [x] **6. Verify slice 1.** Tests on both database engines. Browser flows: host buy-in, rebuy, cash-out, reversal; player view; a second client changes data while the first types and while a sheet is open. Reduced-motion run. Keyboard run. Contrast measurement. Then the bounded visual review: screenshots at 390 px and 1,280 px together, Impeccable detector once, Impeccable finish review once, one batch of fixes, one confirmation round.
   - Commit: `test(web): cover the redesigned set page`
   - Done when: each criterion AC1–AC16 has a recorded result in this plan.
-- [ ] **7. Rendezvous and docs for slice 1.** Merge to `main`. `DESIGN.md` from the built result. Update `AGENTS.md` (design rule 9, sources of truth), `doc/wiki/architecture.md` and `features.md`, a footgun page if one was found, the roadmap and `TODO.md`. Restart the server.
+- [x] **7. Rendezvous and docs for slice 1.** Merge to `main`. `DESIGN.md` from the built result. Update `AGENTS.md` (design rule 9, sources of truth), `doc/wiki/architecture.md` and `features.md`, a footgun page if one was found, the roadmap and `TODO.md`. Restart the server.
   - Commit: `docs: sync living documentation`
   - Done when: `main` has the work, the tests pass on `main`, and the server answers. **With the Q2 default, work stops here and I report.**
 
@@ -204,6 +204,21 @@ Tasks 3–5 were integrated in one commit because the new template composition, 
 
 Not checked: a physical phone, a screen reader, or a production server. Long names and larger money totals can make a page taller than the eight-player fixture. Initial tokens may use a join-order suffix for exact duplicate names. The set's colours are presentation only.
 
-### Remaining authorized close steps
+### Rendezvous complete
 
-Finish the design-system record, sync living docs, merge locally to `main`, run the suite on `main`, restart the normal dev server, and mark task 7 complete. Do not start slices 2–4 without later approval.
+- Design-system record: `DESIGN.md` and `.impeccable/design.json` written from the finished code by the independent documenter. Product context, AGENTS.md, wiki, setup, roadmap and TODO synchronized. SPEC.md is unchanged.
+- Local merge to `main`: `4e5c72b`. No push or deployment.
+- Main verification: 375 tests pass on SQLite (14.264 s) and PostgreSQL (20.614 s). Migration check reports no changes.
+- Normal development server restarted with `DEBUG=True` at `http://127.0.0.1:8000`. `/healthz` returns `ok`; login, stylesheet and font return successfully. Served stylesheet/font match the merged files.
+- Temporary browser server and PostgreSQL verification process stopped after checks. Synthetic records remain only in the temporary fixture database, not in the dev database.
+- Approved tasks 1–7 are complete. Slices 2–4 need later approval.
+
+| Commit | Outcome |
+|---|---|
+| `a484ffa` | Product context, direction and approval record |
+| `6614e0e` | Tokens, base components, locally hosted Archivo |
+| `53d0eeb` | Active table, native action sheets, server-value highlights and toasts |
+| `b7d2bf4` | Compact phone layout, finish fixes and reproducible verification |
+| `403f3ee` | Built design system and living documentation |
+
+**User check:** open an active set, tap `+`, confirm a default rebuy, tap a player's name for cash-out/details, and use the bottom host action. Review the real phone experience before approving a later slice.
