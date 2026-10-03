@@ -4,9 +4,9 @@ Living documentation. It describes the project **as it exists now**. For decisio
 
 ## Current state
 
-**PokerNights** is a web app for home poker cash games in Philippine pesos. A host creates a game, records buy-ins, rebuys and cash-outs, and checks that the books balance. The app then freezes the results and lists who pays whom with the minimum number of transfers. Players follow the game live on their phones. The app records who owes what. It does not move money.
+**PokerNights** is a web app for home poker cash games. Each game counts in Philippine pesos or, as an option, in chips with no peso value. A host creates a game, records buy-ins, rebuys and cash-outs as amounts, and checks that the books balance. The app then freezes the results and lists who pays whom with the minimum number of transfers. Players follow the game live on their phones. The app records who owes what. It does not move money.
 
-Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. The app runs locally. It is not deployed.
+Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs from `SPEC.md` step 2 in one point, by a later decision of the owner: cash-outs are typed as amounts, and the app has no chip-to-cash conversion. The app runs locally. It is not deployed.
 
 ## Pages
 
@@ -25,10 +25,11 @@ Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. The app runs l
 |---|---|
 | [sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md) | A missing row lock passes on SQLite and races on PostgreSQL |
 | [partial_unique_constraints_are_not_deferrable.md](footguns/partial_unique_constraints_are_not_deferrable.md) | Deactivate the old row before activating the new one |
-| [adjustments_are_in_chips.md](footguns/adjustments_are_in_chips.md) | Balance overrides are stored in chips, not pesos |
+| [sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal.md) | A plain copy of `db.sqlite3` can miss recent data |
 
 ## Journal
 
 | Request | Study | Plan | Status |
 |---|---|---|---|
 | Architecture and Stage 1, game night | [study](../study/1791037419_poker_home_game_architecture.md) | [plan](../plan/1791037623_poker_home_game_architecture.md) | Done, 2026-10-03 |
+| Cash amounts and a unit option | [study](../study/1791040240_cash_amounts_and_unit_option.md) | [plan](../plan/1791040305_cash_amounts_and_unit_option.md) | Done, 2026-10-03 |

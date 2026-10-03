@@ -14,17 +14,25 @@ What the app does today (Stage 1). Items that are planned but not built are list
 ## Tables and presets
 
 - A table has a name and 2 to 12 seats.
-- A preset saves stakes: blinds, game type, minimum and maximum buy-in, the usual buy-in and its chips.
+- A preset saves stakes: blinds, game type, minimum and maximum buy-in, the usual buy-in, and the unit.
 - Editing a preset changes no existing game.
+
+## Units
+
+- Each game counts in **pesos** (the default) or in **chips**. The host selects the unit on the preset or when creating the game.
+- In a pesos game, each figure is a peso amount: buy-ins, cash-outs, results and transfers.
+- In a chips game, each figure is a chip count, shown as "1,600 chips". A chips game has no peso value. No ₱ appears on its screens, and its transfers are in chips.
+- The app does not convert between chips and pesos.
+- The unit of a game cannot change after the first accepted buy-in.
 
 ## A game night
 
-1. **Create.** The host picks a table, date, location, game type and stakes. The game starts as a draft that only hosts see.
+1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
 3. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each row keeps its amount, chips and time. Each player has a running total.
-4. **Live view.** Each member sees the player count, buy-in count, total pesos bought in and chips in play. A change by someone else appears within about 5 seconds.
-5. **Cash-outs.** The host records the chips a player hands in. A player can cash out in several steps and can leave early.
-6. **Balance check.** After play ends, the screen compares chips cashed out with chips issued. A difference is shown in chips and pesos, with its direction and likely causes.
+4. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
+5. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
+6. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
 7. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
 8. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
 9. **Finalize.** Results are frozen. Each player sees profit or loss. The app lists who pays whom with the minimum number of transfers.
@@ -37,7 +45,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 
 - The app records who owes what. It does not move money.
 - The transfer list assumes that no money changed hands before finalization. A payment during the game cannot be recorded yet.
-- A finalized game cannot be reopened. Check the chip counts before finalizing.
+- A finalized game cannot be reopened. Check the cash-outs before finalizing.
 - No banker mode, no seating, no seasons, no leaderboard, no statistics across games.
 - No password reset by email.
 - The app runs on one machine. It is not deployed.

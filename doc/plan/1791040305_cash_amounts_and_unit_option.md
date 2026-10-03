@@ -1,7 +1,7 @@
 # Plan: cash amounts and a unit option
 
 - **Date:** 2026-10-03 23:11 (Asia/Manila), Unix timestamp `1791040305`
-- **Status:** `in-progress`
+- **Status:** `done`
 - **Study:** [../study/1791040240_cash_amounts_and_unit_option.md](../study/1791040240_cash_amounts_and_unit_option.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
 - **Approval record:** Approved by the human on 2026-10-03 23:14 (Asia/Manila): "yes, the chip games mean that the chips have no peso value. for cash games, all metrics are based on the peso value of the chips. continue with the workflow." Q1 = A. Q2 not answered, so the default applies (keep and convert).
@@ -74,25 +74,25 @@ None new. PostgreSQL 17 is started for the test run and stopped after it.
 
 ## Tasks
 
-- [ ] **1. Add unit-aware amounts to `ledger/money.py`.** `parse_amount(text, unit)`, `format_amount(value, unit)`, signed format, input-field format. Template filters take the unit.
+- [x] **1. Add unit-aware amounts to `ledger/money.py`.** `parse_amount(text, unit)`, `format_amount(value, unit)`, signed format, input-field format. Template filters take the unit.
   - Commit: `feat(ledger): add unit-aware amount parsing and formatting`
   - Done when: unit tests cover pesos and chips, including refused decimals for chips.
-- [ ] **2. Move the "this game has money" rule off the chip rate.** `games` gets a guard list that `ledger` registers with, as the withdraw guard does. Cancel uses it.
+- [x] **2. Move the "this game has money" rule off the chip rate.** `games` gets a guard list that `ledger` registers with, as the withdraw guard does. Cancel uses it.
   - Commit: `refactor(games): detect money in a session with a guard, not the chip rate`
   - Done when: the lifecycle and cancel tests pass without reading the rate.
-- [ ] **3. Record amounts instead of chips.** Models: add `unit` to presets, sessions, finalizations and results; turn `CashOut.chips` and `BalanceAdjustment.chips_delta` into amounts; drop `BuyIn.chips`, `chips_per_buy_in`, the session rate and the chip columns on results; rename `…_centavos` columns to neutral names. One schema-and-data migration converts existing chip values to centavos per session with the largest-remainder rule. Services, queries, balance check, finalization, forms, templates and tests follow. All games are pesos games at this point.
+- [x] **3. Record amounts instead of chips.** Models: add `unit` to presets, sessions, finalizations and results; turn `CashOut.chips` and `BalanceAdjustment.chips_delta` into amounts; drop `BuyIn.chips`, `chips_per_buy_in`, the session rate and the chip columns on results; rename `…_centavos` columns to neutral names. One schema-and-data migration converts existing chip values to centavos per session with the largest-remainder rule. Services, queries, balance check, finalization, forms, templates and tests follow. All games are pesos games at this point.
   - Commit: `feat!: record cash-outs and overrides as amounts, without chip conversion`
   - Done when: the full suite passes on both engines; a migration test converts a session with a fractional chip rate and the amounts still sum to the buy-ins; the migration runs on a copy of your database and AC10 holds.
-- [ ] **4. Add chips as a unit.** Unit choice on the preset form and the new-game form; unit change refused once money is in the game; each screen and the log format by the game's unit.
+- [x] **4. Add chips as a unit.** Unit choice on the preset form and the new-game form; unit change refused once money is in the game; each screen and the log format by the game's unit.
   - Commit: `feat(games): add chips as a session unit`
   - Done when: tests cover AC6, AC7 and AC8, and a test asserts that a chips game's pages contain no ₱.
-- [ ] **5. Remove dead chip arithmetic.** `reduce_rate`, `chips_for_amount`, `value_floor`, `allocate` and their tests, where nothing uses them after task 3. The migration keeps its own frozen copy.
+- [x] **5. Remove dead chip arithmetic.** `reduce_rate`, `chips_for_amount`, `value_floor`, `allocate` and their tests, where nothing uses them after task 3. The migration keeps its own frozen copy.
   - Commit: `refactor(ledger): remove chip-rate arithmetic`
   - Done when: the suite passes and a search for these names finds only the migration.
-- [ ] **6. Update the end-to-end and concurrency tests, and verify.** Both engines, `check --deploy`, the headless-browser run at phone width with a pesos game and a chips game, and a look at the screenshots.
+- [x] **6. Update the end-to-end and concurrency tests, and verify.** Both engines, `check --deploy`, the headless-browser run at phone width with a pesos game and a chips game, and a look at the screenshots.
   - Commit: `test: cover cash amounts and the chips unit end to end`
   - Done when: each acceptance criterion has a recorded result in this plan.
-- [ ] **7. Rendezvous and docs.** Apply the migration to the real dev database after the backup. Merge to `main`. Update `architecture.md`, `features.md`, the footguns (remove `adjustments_are_in_chips.md`), the roadmap (per-unit leaderboards; the `SPEC.md` difference) and `TODO.md`. Restart the server. Set this plan to `done`.
+- [x] **7. Rendezvous and docs.** Apply the migration to the real dev database after the backup. Merge to `main`. Update `architecture.md`, `features.md`, the footguns (remove `adjustments_are_in_chips.md`), the roadmap (per-unit leaderboards; the `SPEC.md` difference) and `TODO.md`. Restart the server. Set this plan to `done`.
   - Commit: `docs: sync living documentation`
   - Done when: `main` has the work, the tests pass on `main`, and the server answers.
 
@@ -120,3 +120,44 @@ None. If Q1 is answered "B", this plan is replaced before any work starts.
 |---|---|
 | 2026-10-03 23:11 | Study and plan written and committed. Status `awaiting-approval`. |
 | 2026-10-03 23:14 | Human approved. Q1 answered: a chips game has no peso value; a pesos game shows each figure in pesos. Dev server stopped. Database backed up to `db.before_cash_units.sqlite3` with the SQLite backup API (a plain file copy would have missed data still in the write-ahead log). |
+| 2026-10-03 23:27 | Tasks 1–6 done on `feat/cash-units`. Migration applied to the real dev database after the backup. Docs synced. Merged to `main` locally. Dev server restarted. Status `done`. |
+
+## Verification results (2026-10-03)
+
+| Check | Result |
+|---|---|
+| `manage.py test` on SQLite | 227 tests, pass |
+| Same suite on PostgreSQL 17.11 | 227 tests, pass |
+| Lock mutation check | With `select_for_update()` removed, 8 of 9 concurrency tests failed on PostgreSQL. Restored, all pass |
+| `manage.py check --deploy` with production-like settings | No issues |
+| `makemigrations --check` | No changes |
+| Migration test (`ledger.tests.test_migrations`) | A whole-rate game with an override, a fractional-rate game and a running game convert; each finalized game still balances |
+| Migration on a copy of the dev database, then on the real one | Finalized game: results and transfers identical before and after. Running game: buy-ins unchanged, unit pesos |
+| Headless Chrome at 390 × 844, a pesos game and a chips game | 18 of 18 checks pass. A cash-out reached a second client in 4.0 s |
+| Screenshots | Reviewed by the AI. One defect found and fixed: "Still in play" showed −₱50 while counting up with a surplus. The tile now shows "Total cashed out" in that stage |
+
+Not checked: a physical phone and a production web server.
+
+| # | Result | Evidence |
+|---|---|---|
+| AC1 | Met | `web.tests.test_units.UnitChoiceTests`; browser check |
+| AC2 | Met | `ledger.tests.test_cash_outs`; browser check |
+| AC3 | Met | `web.tests.test_acceptance`; browser check |
+| AC4 | Met | `ledger.tests.test_balance`, `settlement.tests.test_finalize`; browser check |
+| AC5 | Met | `test_cash_outs` |
+| AC6 | Met | `test_units.ChipsGameTests`; browser check |
+| AC7 | Met | `test_units`, `test_acceptance.ChipsGameAcceptanceTest` |
+| AC8 | Met | `test_units.UnitChangeTests` |
+| AC9 | Met | `ledger.tests.test_buy_ins`, `test_units.PesosGameShowsNoChipsTests` |
+| AC10 | Met | Comparison of the dev database before and after |
+| AC11 | Met | The Stage 1 tests for overrides, reversals, paid marks, access and live updates, updated and passing |
+
+## Differences from the plan and findings
+
+| Topic | Detail |
+|---|---|
+| Whose test games | The plan called both games in the dev database "your test games". Only the running one ("Kyler Tan Gambling Den") is the human's. The finalized one ("Browser Check", accounts `hana` and `ben`) is left over from the AI's Stage 1 browser check. A shell command that should have deleted that database did not run, and the Stage 1 report wrongly said the database was empty. Both games were kept and converted. Removal of the leftover data waits for a human decision |
+| Backup | The first backup was a plain file copy that missed the write-ahead log. It was replaced with a backup through the SQLite API before any change |
+| Unit change | Allowed until the first accepted buy-in, through the game settings page. Older settings versions of that game then display in the new unit |
+| Settings rule | With the chip rate gone, a settings change after buy-ins has no restriction other than the unit |
+| Extra fix | "Still in play" is hidden while counting up |

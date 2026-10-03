@@ -37,13 +37,13 @@ Run the tests before each commit. Use Conventional Commits. Do not push or deplo
 
 ## Design rules
 
-1. Money is integer centavos. Chips are integer chip units. No `float`. A chip is never a peso.
+1. Each amount is an integer in the game's unit: centavos in a pesos game, whole chips in a chips game. No `float`. Nothing converts chips to pesos.
 2. Only `services.py` functions write. Each write to a session runs in `transaction.atomic()` and locks the session row with `select_for_update()` first.
 3. Each write that a person starts carries a `request_id` with a unique constraint.
 4. Money records are append-only. A correction is a reversal or a new row with a reason.
 5. Each view resolves objects through the requester's active membership. A miss returns 404. Host actions check the role in the service.
 6. Each write service calls `audit.record()` and increments `GameSession.version`.
 7. Totals are queries. Only finalization writes snapshots.
-8. Dates use Asia/Manila. Money displays as `₱1,600` or `₱1,600.50`.
+8. Dates use Asia/Manila. Amounts display as `₱1,600` or `₱1,600.50` in a pesos game and as `1,600 chips` in a chips game.
 9. Screens are single-column, dark by default, with large touch targets.
 10. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` is a leaf.

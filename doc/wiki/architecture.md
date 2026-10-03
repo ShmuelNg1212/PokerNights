@@ -11,14 +11,14 @@ One Django 6.1 project with server-rendered templates, one stylesheet and two sm
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `groups` | `GameGroup`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
 | `games` | `Table`, `SettingsPreset`, `GameSession`, `SettingsVersion`, `Participant`, the lifecycle | `services.py`, `access.py`, `forms.py` |
-| `ledger` | `BuyIn`, `CashOut`, their reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, money arithmetic | `services.py`, `queries.py`, `money.py` |
+| `ledger` | `BuyIn`, `CashOut`, their reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()`, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
 | `web` | Pages that read from several apps: home, group, session, polling endpoint, game log. No models. It never writes | `views.py` |
 
 Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` depends only on `accounts`. Two exceptions are deliberate:
 
-- `ledger/money.py` and `settlement/algorithm.py` are pure modules with no project imports. `games` imports `ledger.money` to parse and format pesos.
-- `games.services.PARTICIPANT_EXIT_GUARDS` is a list of checks. `ledger` registers one at start-up, so `games` can refuse to withdraw a player who has money without importing `ledger`.
+- `ledger/money.py` and `settlement/algorithm.py` are pure modules with no project imports. `games` imports `ledger.money` to parse and format amounts.
+- `games.services.PARTICIPANT_EXIT_GUARDS` and `SESSION_MONEY_CHECKS` are lists of checks. `ledger` registers one in each at start-up, so `games` can refuse to withdraw a player with money, to cancel a game with money, or to change its unit, without importing `ledger`.
 
 ## Rules that the code follows
 
@@ -53,19 +53,22 @@ AuditEvent (group_id, session_id as plain integers)
 - A **SettingsVersion** is never edited. A change adds a version. Each buy-in points to the version in force.
 - `PlayerResult` repeats `member`, `group` and `game_date` so that later statistics read one table.
 
-## Money and chips
+## Amounts and units
 
-- Money is integer **centavos**. Chips are integer **chip units**. No `float` is used. `ledger/money.py` is the only place that parses and formats pesos.
-- The **chip rate** is two integers in lowest terms, `(rate_centavos, rate_chips)`. ₱1,000 for 10,000 chips is `(10, 1)`.
-- The first accepted buy-in locks the rate on the session. Each buy-in must be between the minimum and the maximum and must buy a whole number of chips at that rate. When no accepted buy-in remains, the rate unlocks.
-- While the rate is locked, the session has money in it. It cannot be canceled, and a settings change must keep the same rate.
+- A game has a **unit**: `php` (pesos, the default) or `chips`. Presets and sessions carry it. A session copies it from the form or the preset.
+- Each amount is one integer in the unit's smallest step: **centavos** in a pesos game, **whole chips** in a chips game. No `float` is used.
+- A chips game has **no peso value**. Nothing in the code converts chips to pesos. There is no chip rate and no "chips per buy-in".
+- `ledger/money.py` is the only place that parses and formats: `parse_amount(text, unit)` and `format_amount(value, unit)` give `₱1,600` or `1,600 chips`. Chip input must be a whole number. Templates use `{{ value|amount:unit }}`.
+- A buy-in must be between the minimum and the maximum of the settings in force.
+- The unit can change only while the game has no accepted buy-in or cash-out. `games.services.has_money()` asks the checks in `SESSION_MONEY_CHECKS`; `ledger` registers one at start-up. The same check blocks cancel.
+- `Finalization` and `PlayerResult` store the unit, so later statistics never add pesos to chips.
 - Totals are calculated on demand in `ledger/queries.py`. Nothing is stored until finalization.
 
 | Figure | Definition |
 |---|---|
 | Total bought in | Sum of the amounts of accepted buy-ins |
-| Chips issued | Sum of the chips of accepted buy-ins |
-| Chips in play | Chips issued − chips of accepted cash-outs |
+| Total cashed out | Sum of the amounts of accepted cash-outs |
+| Still in play | Total bought in − total cashed out (shown while the game is open or running) |
 | Rebuys | Accepted buy-ins after a player's first |
 
 ## Session lifecycle
@@ -80,7 +83,7 @@ setup, open, running, reconciliation ──cancel──▶ canceled   (refused w
 | State | Who sees it | Host can | Player can |
 |---|---|---|---|
 | `setup` | Hosts | Edit settings, add players, open, cancel | — |
-| `open` | Members | The same, record and reverse buy-ins, start | Join, withdraw (before a buy-in) |
+| `open` | Members | The same, record and reverse buy-ins, start. Change the unit before the first buy-in | Join, withdraw (before a buy-in) |
 | `running` | Members | Buy-ins, rebuys, cash-outs, mark a player left, end play | Join late, withdraw (before a buy-in) |
 | `reconciliation` | Members | Cash-outs, reversals, override, resume, finalize | — |
 | `finalized` | Members | Mark transfers paid or unpaid | — |
@@ -90,24 +93,24 @@ setup, open, running, reconciliation ──cancel──▶ canceled   (refused w
 
 ## Balance check and override
 
-`ledger.queries.balance()` compares chips cashed out with chips issued.
+`ledger.queries.balance()` compares the total cashed out with the total bought in, in the game's unit.
 
 - Finalization is refused while a player with a buy-in has no cash-out record. A player who lost everything needs a cash-out of 0.
-- A difference is shown in chips and pesos with its direction (chips extra or chips missing) and likely causes.
-- The app never spreads a difference by itself. A host can record an **override** with a note: one named player absorbs the difference, or all players share it equally (chips that do not divide go one each in join order). The override is stored as `BalanceAdjustment` rows **in chips**, so the centavo rule below still conserves the total.
+- A difference is shown as an amount with its direction ("₱50 too much" or "₱50 is missing") and likely causes.
+- The app never spreads a difference by itself. A host can record an **override** with a note: one named player absorbs the difference, or all players share it equally (units that do not divide go one each in join order). The override is stored as `BalanceAdjustment` rows.
 
 ## Finalization
 
 `settlement.services.finalize()` runs one transaction with the session locked:
 
 1. The balance check must pass.
-2. Each player's cash-out value comes from `money.allocate()` (largest-remainder rule): each value is rounded down, and the centavos left over go one each to the largest fractional parts, ties to the earlier join order. The values sum to the total bought in exactly.
-3. It asserts that cash-outs equal buy-ins and that results sum to zero. A failure raises `LedgerInvariantError` and rolls back.
+2. Each player's result is cash-outs plus any override, minus buy-ins. No conversion or rounding takes place.
+3. It asserts that cash-outs plus overrides equal buy-ins and that results sum to zero. A failure raises `LedgerInvariantError` and rolls back.
 4. It writes `Finalization` and one `PlayerResult` per player with a buy-in.
 5. It calculates transfers and asserts that they clear each balance.
 6. It writes `SettlementPlan` and `Transfer` rows, sets the state, and records an audit event.
 
-Database check constraints repeat the main invariants: `total_buy_in = total_cash_out` on `Finalization`, and `net = cash_out − buy_ins` on `PlayerResult`.
+Database check constraints repeat the main invariants: `total_buy_in = total_cash_out` on `Finalization`; `net = cash_out − buy_in_total` and `cash_out = cashed_out + adjustment` on `PlayerResult`.
 
 ## Settle-up
 

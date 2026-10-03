@@ -16,6 +16,12 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 - `Finalization` has `revision` and `is_current`, and `write_results()` already retires an older revision. Reopening needs a lifecycle action and a rule for payments made under the old revision.
 - `Payment` has optional `payer`, `payee` and `transfer`, so a banker and a payment before finalization fit the same table. `algorithm.balances()` already accepts payments, and its tests cover the prior-payment and banker cases.
 
+## Decisions that changed the design
+
+- **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` itself is unchanged; its owner can update it.
+- **Consequence for Stage 3:** leaderboards and statistics are per unit. A pesos board includes only pesos games. `PlayerResult.unit` supports this.
+- The "chip denominations" item under "Later" no longer applies to pesos games.
+
 ## Open product decisions
 
 These used the plan's defaults in Stage 1. They can still change.
