@@ -11,6 +11,8 @@ _, long_token = groups.create_invite(long)
 expired, expired_token = groups.create_invite(host)
 expired.expires_at = timezone.now()
 expired.save(update_fields=['expires_at'])
+from accounts.models import User
+User.objects.create_user('visitor', password='tablestakes-91')
 manifest = {'group': host.group.name, 'invite': f'/join/{token}/', 'long': f'/join/{long_token}/', 'expired': f'/join/{expired_token}/'}
 Path('/private/tmp/pn-entry-manifest.json').write_text(json.dumps(manifest))
 print(manifest)

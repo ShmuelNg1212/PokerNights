@@ -34,10 +34,10 @@ class InviteOnlySignupTests(TestCase):
     def test_a_usable_invite_opens_sign_up_and_leads_to_joining(self):
         self.assertContains(self.client.get(self.url, {"next": self.invite_url}), "Create account")
         response = self.client.post(self.url, {**DATA, "next": self.invite_url})
-        self.assertRedirects(response, self.invite_url)
+        # An account created from an invite joins that group at once.
+        self.assertRedirects(response, reverse("group", args=[self.group.pk]))
         self.invite.refresh_from_db()
-        self.assertEqual(self.invite.use_count, 0)  # signing up does not use the invite
-        self.client.post(self.invite_url)
+        self.assertEqual(self.invite.use_count, 1)
         self.assertTrue(Member.objects.filter(group=self.group, user__username="newbie").exists())
 
     def test_revoked_expired_and_used_up_invites_do_not_open_sign_up(self):
@@ -57,10 +57,13 @@ class InviteOnlySignupTests(TestCase):
         self.assertFalse(get_user_model().objects.filter(username="newbie").exists())
 
     def test_the_whole_invite_flow_from_a_logged_out_browser(self):
+        from urllib.parse import urlencode
         response = self.client.get(self.invite_url)
-        login_url = f"{reverse('login')}?next={self.invite_url}"
-        self.assertRedirects(response, login_url)
-        self.assertContains(self.client.get(login_url), f"{self.url}?next=")
+        signup_url = f"{self.url}?{urlencode({'next': self.invite_url})}"
+        self.assertRedirects(response, signup_url)  # a signed-out visitor is a newcomer
+        page = self.client.get(signup_url)
+        self.assertContains(page, "Create account")
+        self.assertContains(page, f"{reverse('login')}?next=")
 
 
 @override_settings(SIGNUP_REQUIRES_INVITE=False)

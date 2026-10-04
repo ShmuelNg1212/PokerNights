@@ -124,6 +124,15 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Templates: `games/_game_fields.html`, `games/_stakes_fields.html`, `games/_rake_fields.html`, and `partials/field.html` for one field. Other forms still use `partials/form_fields.html`.
 - Every form shares one field box in `app.css`; see the footgun on the iPhone date input.
 
+## Entry flow (after the critique)
+
+- A signed-out visitor to `/join/<token>/` with a usable invite is redirected to Sign up (`groups.views.accept_invite` is exempt from the login requirement). A bad link shows its reason at once with status 404.
+- An account created from a usable invite joins the group in the same request: `accounts.signup.AFTER_SIGNUP` holds `groups.access.join_from_invite`, which calls `services.accept_invite`. If the invite stopped being usable in between, the account exists and the visitor lands on the invite page.
+- An existing account still confirms on the Join page.
+- Words: `accounts.forms.LoginForm` and `SignupForm.WORDS` replace Django's messages by error code. Validators are unchanged.
+- Log in offers Sign up only when `accounts.signup.allowed` would open it.
+- Two critique snapshots for these pages are in `.impeccable/critique/` (24 then 25 of 40).
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

@@ -1,4 +1,8 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_not_required
+from django.contrib.auth.views import redirect_to_login
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -53,15 +57,21 @@ def revoke_invite(request, group_id, invite_id):
     return group_settings(group_id, "invites")
 
 
+@login_not_required
 def accept_invite(request, token):
+    """The address in an invite link. A signed-out visitor is a newcomer: they go to sign-up."""
     try:
         invite = services.usable_invite(token)
     except RuleError as error:
         return render(request, "groups/invite_accept.html", {"error": str(error)}, status=404)
+    if not request.user.is_authenticated:
+        if request.method == "POST":
+            return redirect_to_login(request.path)
+        return redirect(f"{reverse('signup')}?{urlencode({'next': request.path})}")
     if request.method == "POST":
         member = attempt(request, services.accept_invite, request.user, token)
         if member is not None:
-            messages.success(request, f"You are in {invite.group.name}.")
+            messages.success(request, f"Welcome to {invite.group.name}. You're in.")
             return redirect("group", group_id=invite.group_id)
         return redirect("home")
     players = Member.objects.filter(group=invite.group, status=Member.Status.ACTIVE).count()

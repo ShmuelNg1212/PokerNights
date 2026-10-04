@@ -645,20 +645,20 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .entry-head { display: grid; justify-items: center; gap: var(--s-2); margin-bottom: var(--s-5); text-align: center; }
 .entry-head-compact { margin-bottom: var(--s-3); }
 .entry-name { margin: 0; font-size: 2rem; font-weight: 800; font-stretch: 88%; letter-spacing: -.01em; line-height: 1.1; }
-.entry-line { margin: 0; max-width: 34ch; color: var(--muted); text-wrap: balance; }
+.entry-line { margin: 0; max-width: 42ch; color: var(--muted); text-wrap: balance; }
 .entry-page h1 { margin: 0; font-size: 1.375rem; font-weight: 700; text-align: center; text-wrap: balance; }
 .entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
 .entry-note { margin: var(--s-3) auto var(--s-5); max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-page .form-section { margin: var(--s-4) 0 0; padding: 0; border-top: 0; }
-.entry-page .form-section .btn-block { margin-top: var(--s-3); }
+.entry-page .form-section .btn-block { margin-top: var(--s-4); }
 .entry-page .notice { margin: 0 0 var(--s-2); }
-.entry-page > .notice { margin: var(--s-4) 0; }
+.entry-page > .notice { margin: var(--s-4) 0; text-align: center; }
 .entry-alt { margin: var(--s-4) 0 0; text-align: center; color: var(--muted); }
 .entry-alt a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); justify-content: center; color: var(--text); text-underline-offset: 4px; }
 .password-wrap { position: relative; }
 .password-wrap input { padding-right: 76px; }
 .password-toggle { position: absolute; top: 0; right: 0; min-width: 68px; height: 100%; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-field); background: transparent; color: var(--muted); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
-.password-toggle:hover, .password-toggle[aria-pressed=true] { color: var(--text); }
+.password-toggle:hover, .password-toggle[data-shown="1"] { color: var(--text); }
 
 /* Settle status: the badge says it in words; settled also carries a check. */
 .badge .icon { width: .875rem; height: .875rem; margin-right: 4px; vertical-align: -2px; stroke-width: 3; }
@@ -703,3 +703,14 @@ legend { padding: 0; }
 }
 /* Dropdown values need the full phone width to stay readable; they pair up from 480px. */
 @media (max-width: 479px) { .field-pair-wide { grid-template-columns: minmax(0, 1fr); } }
+
+/* Entry flow: readable help, one error summary, and a skip link that meets the target size. */
+.entry-page .hint { font-size: .9rem; }
+.hint-note { display: block; margin-top: 2px; }
+.hint-note strong { color: var(--text); font-weight: 600; }
+.entry-forgot { margin: 0 0 var(--s-2); }
+.skip-link:focus { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-4); border-radius: var(--r-btn); }
+@media (min-width: 900px) and (min-height: 1000px) { .entry-page { padding-top: 12vh; } }
+/* A link inside a sentence keeps a 48px touch height without stretching the line. */
+.inline-target { display: inline-block; min-height: var(--tap); padding: 14px 0; margin: -14px 0; line-height: 20px; color: var(--text); text-underline-offset: 4px; }
+.entry-alt-plain { min-height: var(--tap); display: flex; align-items: center; justify-content: center; }

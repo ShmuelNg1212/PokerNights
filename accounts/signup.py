@@ -28,3 +28,18 @@ def invited_to(request, next_path: str):
         if name:
             return name
     return None
+
+
+# What happens right after an account is created, registered like CHECKS. Each takes the
+# request, the new user and the path the person came from, and returns the address to go
+# to, or None to leave the decision to the next one.
+AFTER_SIGNUP = []
+
+
+def after_signup(request, user, next_path: str):
+    """Where a new user goes when an app has already finished what they came for, else None."""
+    for hook in AFTER_SIGNUP:
+        target = hook(request, user, next_path)
+        if target:
+            return target
+    return None

@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
+
 The stakes forms revamp is done ([plan](doc/plan/1791121411_session_form.md)): one field box for every form, and New session, Set settings and presets in titled groups with pairs. No migration.
 
 The session settled indicator is done ([plan](doc/plan/1791120060_session_settled_indicator.md)): Past sessions rows and the session top bar say Settled, Partly settled or Unsettled, with the amount still to pay. No migration. Released 2026-10-04 as `e5a7ed2` (previous production commit `19c9744`).
@@ -38,6 +40,9 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Next (each needs its own study and plan)
 
+- [ ] **Password reset.** The repeat critique still rates account recovery P1. A host-issued reset link (hosts already issue invite links) is the candidate; it needs a token model and a migration.
+- [ ] Entry pages: make the invitation the subject (group name as the heading, compact mark), shorten the password help, and give a new player a first step on the group page. From the repeat critique.
+
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
 - [ ] Stage 2: roster management, history list, optional banker, payments before finalization, reopen a finalized game. See the [roadmap](doc/roadmap/README.md).
 - [ ] Stage 3: leaderboard and stats.
@@ -45,6 +50,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] Try the new way in: create an invite, open it in a private window, sign up and check you land in the group with the welcome. Open the same link signed out as an existing player and use “Already have an account? Log in”. Say when to push.
 
 - [ ] **Check on your iPhone:** open New session. The Date field should be as wide and as tall as Table and Location, with its date at the left. Check the dropdowns too. Chrome on the development machine cannot show this, so yours is the only confirmation.
 
