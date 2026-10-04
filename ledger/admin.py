@@ -3,7 +3,7 @@ from django.contrib import admin
 from audit.admin import ReadOnlyAdmin
 
 from .models import (
-    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization, PlayerResult,
+    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization, PlayerResult, RakeEntry,
 )
 
 
@@ -50,3 +50,8 @@ class FinalCountAdmin(ReadOnlyAdmin):
 @admin.register(CashOutBatch)
 class CashOutBatchAdmin(ReadOnlyAdmin):
     list_display = ("created_at", "session", "recorded_by")
+
+
+@admin.register(RakeEntry)
+class RakeEntryAdmin(ReadOnlyAdmin):
+    list_display = ("buy_in", "account", "amount", "unit", "rake_mode")

@@ -292,3 +292,46 @@ class ConcurrentEndOfSetTests(TransactionTestCase):
         session = night.refresh()
         self.assertEqual(set(PlayInterval.objects.values_list("ended_at", flat=True)), {session.ended_at})
         self.assertEqual((PlayPeriod.objects.count(), PlayInterval.objects.count()), (1, 3))
+
+
+class ConcurrentRakeTests(TransactionTestCase):
+    def setUp(self):
+        if connection.vendor != 'postgresql':
+            self.skipTest('Rake serialization requires PostgreSQL row locks.')
+        from ledger.tests.test_rake import configure
+        self.n = Night('A', 'B', state='open')
+        configure(self.n, rake_mode='percent', rake_basis_points=500)
+
+    def test_opening_retries_have_one_fee_per_player(self):
+        from ledger.models import RakeEntry
+        request = uuid.uuid4()
+        outcomes = race(*[lambda: games.transition(self.n.session.pk, self.n.host, 'start', request_id=request)] * 4)
+        self.assertEqual(kinds(outcomes), ['ok'] * 4, outcomes)
+        self.assertEqual(RakeEntry.objects.count(), 2)
+        self.assertEqual(ledger_queries.group_rake(self.n.group)[0]['php'], 10000)
+
+    def test_configuration_racing_buy_in_never_rewrites_fee(self):
+        data = {**games.current_settings(self.n.session).stakes(), 'rake_mode': 'percent', 'rake_basis_points': 1000}
+        outcomes = race(lambda: self.n.buy('A', 1000),
+                        lambda: games.update_settings(self.n.session.pk, self.n.host, data, request_id=uuid.uuid4()))
+        self.assertEqual(outcomes[0][0], 'ok', outcomes)
+        self.assertIn(outcomes[1][0], ('ok', 'refused'), outcomes)
+        buy = BuyIn.objects.get()
+        self.assertEqual(buy.rake_amount, 10000 if outcomes[1][0] == 'ok' else 5000)
+        self.assertEqual(buy.settings_version.rake_basis_points, 1000 if outcomes[1][0] == 'ok' else 500)
+
+    def test_simultaneous_buy_ins_have_exact_fees_and_versions(self):
+        from ledger.models import RakeEntry
+        before = self.n.refresh().version
+        outcomes = race(*[lambda: self.n.buy('A', 1000)] * 5)
+        self.assertEqual(kinds(outcomes), ['ok'] * 5, outcomes)
+        self.assertEqual(RakeEntry.objects.count(), 5)
+        self.assertEqual(ledger_queries.group_rake(self.n.group)[0]['php'], 25000)
+        self.assertEqual(self.n.refresh().version, before + 5)
+
+    def test_reversal_racing_rebuy_excludes_only_reversed_fee(self):
+        b = self.n.buy('A', 1000)
+        outcomes = race(lambda: ledger.reverse_buy_in(self.n.session.pk, self.n.host, b.pk, 'duplicate'),
+                        lambda: self.n.buy('A', 1000))
+        self.assertEqual(kinds(outcomes), ['ok', 'ok'], outcomes)
+        self.assertEqual(ledger_queries.group_rake(self.n.group)[0]['php'], 5000)

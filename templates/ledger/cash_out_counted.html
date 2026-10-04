@@ -9,7 +9,7 @@
 <section class="felt felt-slate" data-unit="{{ unit }}">
 <h1>Cash out counted players</h1>
 <p class="where">{{ session.table.name }} · Set {{ session.set_number }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
-<dl class="set-totals"><div><dt>Total of this batch</dt><dd>{{ batch_total|amount:unit }}</dd></div><div><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div><div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
+<dl class="set-totals"><div><dt>Total of this batch</dt><dd>{{ batch_total|amount:unit }}</dd></div><div><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div>{% include "web/_rake_totals.html" %}<div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
 </section>
 <p class="small muted">Check each confirmed count. Earlier cash-outs are already included in the recorded total.</p>
 </aside>
@@ -34,7 +34,7 @@
     <tfoot><tr><th scope="row">Total of this batch</th><td class="num amount">{{ batch_total|amount:unit }}</td></tr></tfoot>
   </table>
   <p class="small muted">The cash-out equals the confirmed count. This records the cash-outs. It does not finalize the set and it marks no payment.</p>
-  <p class="small muted">After this batch: {{ after_batch|amount:unit }} cashed out of {{ summary.total|amount:unit }} bought in.</p>
+  <p class="small muted">After this batch: {{ after_batch|amount:unit }} cashed out{% if summary.rake %} + {{ summary.rake|amount:unit }} collected rake{% endif %} of {{ summary.total|amount:unit }} bought in.</p>
   <button type="submit" class="btn btn-primary btn-block">Cash out {{ ready|length }} player{{ ready|length|pluralize }}</button>
 </form>
 {% else %}

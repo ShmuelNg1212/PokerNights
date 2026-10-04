@@ -4,9 +4,10 @@
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Game settings</h1>
-<p class="muted">Type each amount in the game's unit. Buy-ins already recorded keep their amounts.</p>
+<p class="muted">Configure rake before the first buy-in. Type each amount in the game's unit. Buy-ins already recorded keep their amounts.</p>
 <form method="post" class="form-section stack">
   {% csrf_token %}
+  <input type="hidden" name="request_id" value="{{ request_id }}">
   {% include "partials/form_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Save settings</button>
 </form>

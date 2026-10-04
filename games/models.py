@@ -245,6 +245,11 @@ class SettingsVersion(StakesFields):
     def __str__(self):
         return f"Settings v{self.number} of session {self.session_id}"
 
+    @property
+    def rake_percentage(self):
+        whole, fraction = divmod(self.rake_basis_points, 100)
+        return str(whole) + (("." + f"{fraction:02d}").rstrip("0") if fraction else "")
+
     def rake(self):
         return {name: getattr(self, name) for name in ("rake_mode", "rake_basis_points", "rake_flat")}
 

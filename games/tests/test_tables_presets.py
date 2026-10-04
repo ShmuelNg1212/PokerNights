@@ -85,7 +85,8 @@ class TablePresetViewTests(TestCase):
         self.assertEqual((preset.max_buy_in, preset.small_blind), (200000, 1000))
         page = self.client.get(reverse("group", args=[self.group.pk]))
         self.assertContains(page, "buy-in ₱500–₱2,000 · usually ₱1,000")
-        self.assertNotContains(page, "chips")
+        # Group rake shows both units even when this preset is pesos-only.
+        self.assertNotContains(page, "usually 1,000 chips")
 
     def test_bad_amount_shows_an_error(self):
         self.client.force_login(self.host.user)

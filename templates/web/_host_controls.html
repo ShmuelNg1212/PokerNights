@@ -9,7 +9,7 @@
   {% elif session.state == 'open' %}
   <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}{% request_id_field %}
     <label class="check" for="opening-buy-ins"><input id="opening-buy-ins" type="checkbox" name="opening_buy_ins" checked data-keep="opening-buy-ins" aria-describedby="opening-buy-ins-help"><span class="grow">Add usual buy-in ({{ settings.default_buy_in|amount:unit }}) for players without a buy-in</span></label>
-    <p id="opening-buy-ins-help" class="small muted">Existing buy-ins stay unchanged.</p>
+    <p id="opening-buy-ins-help" class="small muted">Existing buy-ins stay unchanged. {% include "web/_rake_rule.html" %}</p>
     <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the game</button>
   </form>
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}

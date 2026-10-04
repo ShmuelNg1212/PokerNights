@@ -37,6 +37,10 @@ class BuyIn(models.Model):
         return self.rake_entry.amount if hasattr(self, "rake_entry") else 0
 
     @property
+    def recorded_unit(self):
+        return self.rake_entry.unit if hasattr(self, "rake_entry") else self.session.unit
+
+    @property
     def playable_amount(self):
         return self.amount - self.rake_amount
 

@@ -1,0 +1,2 @@
+{% load money_tags %}
+{% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake deducted from each buy-in, rounded down.{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake deducted from each buy-in.{% else %}Rake is Off.{% endif %}

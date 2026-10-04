@@ -11,5 +11,6 @@
     <button type="button" class="btn btn-small" data-amount="{{ settings.max_buy_in|plain:unit }}">Max</button>
   </div>
   <p class="hint">Allowed: {{ settings.min_buy_in|amount:unit }}–{{ settings.max_buy_in|amount:unit }}. Default: {{ settings.default_buy_in|amount:unit }}.</p>
+  <p class="hint">{% include "web/_rake_rule.html" %}</p>
   <button type="submit" class="btn btn-primary btn-block">{% if line.has_money %}Confirm rebuy{% else %}Confirm buy-in{% endif %}</button>
 </form>

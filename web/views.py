@@ -46,10 +46,13 @@ def visible_nights(me):
 def group(request, group_id):
     me = member_for(request.user, group_id)
     members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
+    rake_totals, rake_sets = ledger_queries.group_rake(me.group)
     context = {
         "me": me,
         "group": me.group,
         "members": members,
+        "rake_totals": rake_totals,
+        "rake_sets": rake_sets,
         "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
@@ -149,7 +152,7 @@ def session_log(request, session_id):
         "participants": Participant.objects.filter(session=session).select_related("member"),
         "settings_versions": session.settings_versions.select_related("created_by").order_by("number"),
         "buy_ins": BuyIn.objects.filter(session=session).select_related(
-            "participant__member", "recorded_by", "reversal__recorded_by"
+            "participant__member", "recorded_by", "reversal__recorded_by", "rake_entry"
         ),
         "cash_outs": CashOut.objects.filter(session=session).select_related(
             "participant__member", "recorded_by", "reversal__recorded_by"
@@ -176,6 +179,7 @@ def night(request, night_id):
     timed = [one.play_seconds for one in sets if one.play_seconds is not None]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
     context["total_play_seconds"] = sum(timed) if timed else None
+    context["total_rake"] = sum(ledger_queries.summary(s).rake for s in sets)
     context["can_start_next_set"] = (
         me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
     )

@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import GameGroup, Invite, Member
+from audit.admin import ReadOnlyAdmin
+
+from .models import GameGroup, GroupRakeAccount, Invite, Member
 
 
 @admin.register(GameGroup)
@@ -18,3 +20,8 @@ class MemberAdmin(admin.ModelAdmin):
 class InviteAdmin(admin.ModelAdmin):
     list_display = ("group", "expires_at", "use_count", "max_uses", "revoked_at")
     exclude = ("token_hash",)
+
+
+@admin.register(GroupRakeAccount)
+class GroupRakeAccountAdmin(ReadOnlyAdmin):
+    list_display = ("group", "created_at")

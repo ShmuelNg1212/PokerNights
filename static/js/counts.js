@@ -35,7 +35,7 @@
       if (value !== null) remaining += value;
     });
     var cash = BigInt(box.dataset.cash), bought = BigInt(box.dataset.bought);
-    var total = remaining + cash, difference = total - bought;
+    var total = remaining + cash + BigInt(box.dataset.rake || "0"), difference = total - bought;
     var complete = box.dataset.players !== "0" && !missing && !invalid && box.dataset.stray !== "1";
     var status;
     if (invalid) status = "Preview unavailable: check the highlighted counts.";
