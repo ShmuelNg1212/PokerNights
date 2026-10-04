@@ -31,8 +31,8 @@ Add a late arrival from the ongoing set without returning to group management.
 
 - [x] Record approval, confirm current main and create isolated branch/worktree `feat/add-player-during-play`. Link the active plan from TODO during execution.
 - [x] **`feat(games): add new players from an ongoing set`**: implement the atomic operation, explicit form action, error preservation and visible entry point with directly related tests. Completion: AC1–AC5 demonstrated with exact record/timer/audit assertions and synthetic browser flows.
-- [ ] Verify AC6 and address material in-scope findings: full SQLite/PostgreSQL, shared roster picker regressions, opening/default-late-buy-in boundary, native forms and required finish review.
-- [ ] **`docs: document adding players during play`**: sync affected wiki/features/architecture, PRODUCT capability wording if needed, built design/surface notes, TODO and plan evidence. Completion: docs explain roster persistence, late timer start and separate buy-in.
+- [x] Verify AC6 and address material in-scope findings: full SQLite/PostgreSQL, shared roster picker regressions, opening/default-late-buy-in boundary, native forms and required finish review.
+- [x] **`docs: document adding players during play`**: sync affected wiki/features/architecture, PRODUCT capability wording if needed, built design/surface notes, TODO and plan evidence. Completion: docs explain roster persistence, late timer start and separate buy-in.
 - [ ] Rendezvous: merge verified work into local main, check the running app and record completion. No push or deployment.
 
 ## Verification and dependencies
@@ -68,3 +68,7 @@ Verification: 21 added tests bring the suite to 444. SQLite passes in 15.348 s (
 All 21 dedicated native browser checks pass on fresh synthetic data: visible Add players with exhausted roster, phone/desktop overflow, no-JS creation, separate money/timer, second-host polling arrival, saved roster identity, seated duplicate recovery, full/ended rejection, chips manual buy-in, existing roster selection, permissions and 48px labelled form. Evidence `/private/tmp/pn-late-review/late-player.json`. Two initial harness selector errors were corrected (wrong total key and a submit selector matching logout; the named action control also shadows form.action, so the harness reads the attribute). These did not change production behavior. A native fieldset border was removed by reusing the incumbent picker-fields class; no CSS was added.
 
 Budgets remain CSS 32,942 bytes, cumulative added JS 11,440 bytes and font 103,912 bytes. No new JS, style rules, dependencies or assets. Physical-device verification is unavailable.
+
+The finish reviewer scored its sole duplicate recovery fix resolved and returned ship for the scored fix. All required recaptures are valid. Detector ran once with advisory-only unstyled template palette/type findings; native renders inherit Rack. Feature commit: `2672542`.
+
+The documenter updated only DESIGN.md supporting-form prose and the existing supporting-forms surface addendum. It inspected all three captures and 21 passing checks, preserved machine tokens/sidecar and reported no new bounded visual drift. Wiki/product/browser documentation and TODO are synced to built behavior.
