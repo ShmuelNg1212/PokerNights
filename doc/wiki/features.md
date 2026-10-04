@@ -118,6 +118,12 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The session page shows the same status in its top bar and in its overview.
 - Hosts and players see the same thing.
 
+## Stakes forms
+
+- New session, Set settings and the preset form group their fields: When and where, Game, Stakes, Rake per buy-in. Short fields sit in pairs. Field names, validation and what is saved are unchanged.
+- Templates: `games/_game_fields.html`, `games/_stakes_fields.html`, `games/_rake_fields.html`, and `partials/field.html` for one field. Other forms still use `partials/form_fields.html`.
+- Every form shares one field box in `app.css`; see the footgun on the iPhone date input.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

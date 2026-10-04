@@ -1,0 +1,12 @@
+<section class="form-group{% if first %} form-group-first{% endif %}" aria-labelledby="group-game">
+  <h2 class="group-title" id="group-game">Game</h2>
+  {% if form.game_type %}
+  <div class="field-pair field-pair-wide">
+    {% include "partials/field.html" with field=form.game_type %}
+    {% include "partials/field.html" with field=form.unit no_help=True %}
+  </div>
+  <div id="{{ form.unit.auto_id }}_helptext" class="hint">{{ form.unit.help_text }}</div>
+  {% else %}
+  {% include "partials/field.html" with field=form.unit %}
+  {% endif %}
+</section>

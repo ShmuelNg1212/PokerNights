@@ -15,11 +15,18 @@
   <button type="submit" class="btn">Use</button>
 </form>
 {% endif %}
-<form method="post" class="form-section stack">
+<form method="post" class="form-section form-groups">
   {% csrf_token %}
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
-  <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>
-  {% include "partials/form_fields.html" with fields=form.general_fields %}
+  {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <section class="form-group form-group-first" aria-labelledby="group-when">
+    <h2 class="group-title" id="group-when">When and where</h2>
+    {% include "partials/field.html" with field=form.table_id %}
+    {% include "partials/field.html" with field=form.game_date %}
+    {% include "partials/field.html" with field=form.location %}
+  </section>
+  {% include "games/_game_fields.html" %}
+  {% include "games/_stakes_fields.html" %}
   {% include "games/_rake_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Create session</button>
 </form>

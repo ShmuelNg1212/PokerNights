@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The stakes forms revamp is done ([plan](doc/plan/1791121411_session_form.md)): one field box for every form, and New session, Set settings and presets in titled groups with pairs. No migration.
+
 The session settled indicator is done ([plan](doc/plan/1791120060_session_settled_indicator.md)): Past sessions rows and the session top bar say Settled, Partly settled or Unsettled, with the amount still to pay. No migration. Released 2026-10-04 as `e5a7ed2` (previous production commit `19c9744`).
 
 Released 2026-10-04 as `19c9744`: the collapsible host dock with its motion, archive and delete (migrations `games.0012`, `groups.0004`) and the entry pages. The previous production commit was `8e75aaf`.
@@ -43,6 +45,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **Check on your iPhone:** open New session. The Date field should be as wide and as tall as Table and Location, with its date at the left. Check the dropdowns too. Chrome on the development machine cannot show this, so yours is the only confirmation.
 
 - [ ] Try the settled indicator: open a group's Sessions tab and read the Past sessions badges; mark the last transfer of a session paid and check its row turns to Settled; undo it.
 

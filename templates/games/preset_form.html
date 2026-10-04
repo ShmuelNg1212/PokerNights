@@ -5,10 +5,12 @@
 <p class="small"><a href="{% url 'group' group.pk %}?view=settings#presets">{{ group.name }} settings</a></p>
 <h1>{% if preset %}Edit preset{% else %}New preset{% endif %}</h1>
 <p class="muted">A preset saves the stakes for fast setup. A set copies it, so a later edit changes no existing set.</p>
-<form method="post" class="form-section stack">
+<form method="post" class="form-section form-groups">
   {% csrf_token %}
-  <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>
-  {% include "partials/form_fields.html" %}
+  {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  {% include "partials/field.html" with field=form.name %}
+  {% include "games/_game_fields.html" %}
+  {% include "games/_stakes_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Save preset</button>
 </form>
 {% endblock %}

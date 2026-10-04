@@ -84,3 +84,5 @@ For the entry pages, seed a fresh temporary database with `seed.py` and `seed_en
 Since 2026-10-04 the shared login line in every script submits with `form.form-section [type=submit]`, because the Show button is now the first button in the login form.
 
 For the settle status, seed a fresh temporary database with `seed.py`, `seed_end_set.py` and `seed_night.py`, delete `/private/tmp/pn-settled-chrome`, then run `settled.mjs` (24 checks): the Past sessions rows at 320, 390 and 1280 px, all three statuses, agreement between each row and its session page, and a row changing after the last paid mark and after undo.
+
+For the stakes forms, seed a fresh temporary database with `seed.py`, delete `/private/tmp/pn-form-chrome2`, then run `session_form.mjs` (69 checks): New session, Set settings and the preset form at 320, 390 and 1280 px, field edges and heights, pairs, a refused pair, locked settings, keyboard order and submission without JavaScript. It creates one session. Chrome does not reproduce the iPhone date control; that needs a real phone.
