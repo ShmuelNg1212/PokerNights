@@ -48,7 +48,7 @@ def double_default(settings, unit):
     return plain_amount(min(settings.default_buy_in * 2, settings.max_buy_in), unit)
 
 # Lucide SVG paths, ISC licensed; see static/icons/LICENSE.
-ICONS = {'plus': '<path d="M5 12h14" />\n  <path d="M12 5v14" />', 'arrow-left': '<path d="m12 19-7-7 7-7" />\n  <path d="M19 12H5" />', 'arrow-right': '<path d="M5 12h14" />\n  <path d="m12 5 7 7-7 7" />', 'arrow-up-right': '<path d="M7 7h10v10" />\n  <path d="M7 17 17 7" />', 'arrow-down-right': '<path d="m7 7 10 10" />\n  <path d="M17 7v10H7" />', 'minus': '<path d="M5 12h14" />', 'x': '<path d="M18 6 6 18" />\n  <path d="m6 6 12 12" />', 'check': '<path d="M20 6 9 17l-5-5" />', 'ellipsis': '<circle cx="12" cy="12" r="1" />\n  <circle cx="19" cy="12" r="1" />\n  <circle cx="5" cy="12" r="1" />', 'log-out': '<path d="m16 17 5-5-5-5" />\n  <path d="M21 12H9" />\n  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />'}
+ICONS = {'chevron-down': '<path d="m6 9 6 6 6-6" />', 'plus': '<path d="M5 12h14" />\n  <path d="M12 5v14" />', 'arrow-left': '<path d="m12 19-7-7 7-7" />\n  <path d="M19 12H5" />', 'arrow-right': '<path d="M5 12h14" />\n  <path d="m12 5 7 7-7 7" />', 'arrow-up-right': '<path d="M7 7h10v10" />\n  <path d="M7 17 17 7" />', 'arrow-down-right': '<path d="m7 7 10 10" />\n  <path d="M17 7v10H7" />', 'minus': '<path d="M5 12h14" />', 'x': '<path d="M18 6 6 18" />\n  <path d="m6 6 12 12" />', 'check': '<path d="M20 6 9 17l-5-5" />', 'ellipsis': '<circle cx="12" cy="12" r="1" />\n  <circle cx="19" cy="12" r="1" />\n  <circle cx="5" cy="12" r="1" />', 'log-out': '<path d="m16 17 5-5-5-5" />\n  <path d="M21 12H9" />\n  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />'}
 
 @register.simple_tag
 def icon(name):

@@ -1,5 +1,6 @@
-{% load money_tags %}
+{% load money_tags table_tags %}
 <div class="host-controls stack">
+  <button type="button" class="dock-toggle" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span><span class="dock-next muted small">{% if session.state == 'reconciliation' %}<span data-dock-status>{{ count_total.status_text }}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: Open for players{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
   <h2 class="host-controls-heading">Host controls</h2>
   {% if can_configure_rake %}
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Choose rake before buy-ins</a>

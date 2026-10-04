@@ -604,3 +604,19 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .home-many .group-home:nth-child(2) { border-top: 0; padding-top: 0; }
   .home-many .home-create { max-width: 560px; }
 }
+
+/* Collapsible host dock: below 900px a host can fold the dock to one bar. The choice is a class on <html>. */
+.dock-toggle { display: none; }
+@media (max-width: 899px) {
+  .dock-enabled .table-layout .dock-toggle { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; column-gap: var(--s-2); width: 100%; min-height: var(--tap); margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+  .dock-toggle .dock-next { display: none; grid-column: 1; font-weight: 400; overflow-wrap: anywhere; }
+  .dock-toggle .icon { grid-column: 2; grid-row: 1 / span 2; color: var(--muted); }
+  .dock-collapsed .dock-toggle { padding: 6px 0; }
+  .dock-collapsed .dock-toggle .dock-title { font-size: .8125rem; color: var(--muted); }
+  .dock-collapsed .dock-toggle .dock-next { display: block; color: var(--text); font-size: .9375rem; }
+  .dock-collapsed .dock-toggle .icon { transform: rotate(180deg); }
+  .dock-enabled .table-layout .host-controls { padding-top: 0; }
+  .dock-collapsed .table-layout .host-controls > :not(.dock-toggle) { display: none; }
+  .dock-enabled .table-page:has(.table-layout .host-controls) { padding-bottom: calc(var(--dock-h, 128px) + 16px); }
+  .dock-enabled .count-entry input { scroll-margin-block-end: calc(var(--dock-h, 200px) + 16px); }
+}

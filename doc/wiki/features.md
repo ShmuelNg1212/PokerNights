@@ -81,6 +81,15 @@ The set shows gross bought in, collected rake and available to play. Counts/cash
 
 Group settings shows the group's lifetime collected rake across all sessions and sets, including games in progress. Peso and chip totals stay separate. Expand the session/set breakdown to see where each total came from. Reversing a buy-in excludes its fee; payment marks and Undo do not change rake totals. Historical records start at zero rake.
 
+## Collapsible host dock
+
+- On a phone, the host dock on the set page starts with a “Host controls” row. Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
+- The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
+- No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
+- The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
+- There is no toggle from 900 px, without JavaScript, or for players.
+- Code: `templates/web/_host_controls.html`, `static/js/dock.js`, the last block of `static/css/app.css`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

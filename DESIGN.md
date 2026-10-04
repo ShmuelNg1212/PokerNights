@@ -353,6 +353,19 @@ Each group on the home page is an unboxed block separated by a Line rule, not a 
 - From 900px, two or more groups use two columns; one group keeps a 560px frame.
 - **Measured.** 16 captures over four viewers at 320, 375, 768 and 1280px: no horizontal overflow, no target under 48px, new text pairs from 7.58:1, felt present only with a set in play.
 
+### 2026-10-04 addendum — Collapsible host dock
+
+Below 900px a host can fold the host dock to one bar and open it again. [Plan](doc/plan/1791111069_collapsible_host_dock.md).
+
+- **Toggle row.** The first row of the dock is a full-width 48px button. Expanded, it reads “Host controls” at weight 700 with a muted chevron pointing down; the dock content follows unchanged.
+- **Collapsed bar.** Only the toggle row is rendered: “Host controls” as a 13px muted label over one 15px status line, with the chevron pointing up. The status line is “Next: Open for players”, “Next: Start the set” or “Next: End play and count up”. In count-up it is the live count verdict (“₱1,000 still to account for. 1 still to count.”), which follows typed counts as the full preview does. The bar is 55px high, or 69px when the verdict wraps to two lines; very large amounts at 320px may wrap further.
+- **No action while collapsed.** The primary action, its options and its guidance appear together only when the dock is expanded.
+- **State.** The choice is the class `dock-collapsed` on `<html>`, mirrored in `localStorage` as `rack-dock`. It applies to every set and state on that browser, starts expanded, and survives live updates, reloads and state changes. Refused storage keeps the toggle working for the page view.
+- **Clearance.** With JavaScript, the set page reserves the measured dock height plus 16px (`--dock-h`, kept current by a `ResizeObserver`), in either state and with “More host controls” open. This replaces the fixed 128/200/340px phone clearances, which remain as the no-JavaScript values. Count fields use the same value for their bottom scroll margin.
+- **No motion.** The dock changes size at once; the chevron turns without a transition.
+- **Unchanged.** From 900px there is no toggle and a stored choice has no effect. Without JavaScript there is no toggle and the dock is expanded. Players have no dock. No token, colour or asset is added; the chevron is Lucide `chevron-down`.
+- **Measured.** 137 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
+
 ## Do's and Don'ts
 
 ### Do:

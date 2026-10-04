@@ -61,6 +61,37 @@ class TablePageTests(TestCase):
         self.assertNotContains(page, 'buyins/add')
         self.assertNotContains(page, 'next-action')
 
+    def test_host_dock_toggle_names_the_next_step_in_each_state(self):
+        for state, text in [('open', 'Next: Start the set'), ('running', 'Next: End play and count up')]:
+            night = Night('Ben', state=state)
+            self.client.force_login(night.host.user)
+            page = self.client.get(reverse('session', args=[night.session.pk]))
+            self.assertContains(page, 'class="dock-toggle"', count=1)
+            self.assertContains(page, 'class="dock-toggle" hidden aria-expanded="true" data-focus-key="dock-toggle"')
+            self.assertContains(page, text, count=1)
+            self.assertContains(page, 'js/dock.js')
+
+    def test_host_dock_toggle_on_a_draft(self):
+        from games import services as games
+        night = Night(state='open')
+        games.transition(night.session.pk, night.host, 'close')
+        self.client.force_login(night.host.user)
+        page = self.client.get(reverse('session', args=[night.session.pk]))
+        self.assertContains(page, 'Next: Open for players', count=1)
+
+    def test_host_dock_toggle_carries_the_count_verdict(self):
+        self.night.go('reconciliation')
+        page = self.client.get(self.url)
+        self.assertContains(page, 'class="dock-toggle"', count=1)
+        self.assertContains(page, 'data-dock-status>₱1,000 still to account for.</span>')
+        self.assertContains(page, 'data-dock-coverage>1 still to count.</span>')
+        self.assertNotContains(page, 'Next:')
+
+    def test_player_and_final_set_have_no_dock_toggle(self):
+        member = self.night.add_login_player('viewer')
+        self.client.force_login(member.user)
+        self.assertNotContains(self.client.get(self.url), 'dock-toggle')
+
     def test_count_up_keeps_the_one_form_and_has_no_results(self):
         self.night.go('reconciliation')
         page = self.client.get(self.url)

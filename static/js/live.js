@@ -56,6 +56,8 @@
   function apply(snapshot) {
     var open = [];
     var typed = typedValues();
+    var active = document.activeElement;
+    var focusKey = active && region.contains(active) ? active.dataset.focusKey : null;
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     region.innerHTML = snapshot.html;
     restore(typed);
@@ -66,6 +68,9 @@
       if (el) el.open = true;
     });
     region.dispatchEvent(new Event("live:updated", {bubbles: true}));
+    // A focused control that the redraw replaced gets keyboard focus again, once listeners have shown it.
+    var again = focusKey && region.querySelector('[data-focus-key="' + focusKey + '"]');
+    if (again) again.focus();
   }
 
   function schedule() {
