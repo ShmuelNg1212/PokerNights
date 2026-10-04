@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Preset · {{ group.name }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'group' group.pk %}">← {{ group.name }}</a></p>
+<p class="small"><a href="{% url 'group' group.pk %}">{{ group.name }}</a></p>
 <h1>{% if preset %}Edit preset{% else %}New preset{% endif %}</h1>
 <p class="muted">A preset saves the stakes for fast setup. A game copies it, so a later edit changes no game.</p>
-<form method="post" class="card stack">
+<form method="post" class="form-section stack">
   {% csrf_token %}
   <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>
   {% include "partials/form_fields.html" %}

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Log in · PokerNights{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
 <h1>Log in</h1>
-<form method="post" class="card stack">
+<form method="post" class="form-section stack">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
   {% include "partials/form_fields.html" %}

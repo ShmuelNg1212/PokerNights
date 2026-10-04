@@ -1,15 +1,17 @@
 {% extends "base.html" %}
-{% load money_tags clock_tags %}
+{% load money_tags clock_tags table_tags %}
 {% block title %}Log · {{ session }}{% endblock %}
+{% block page_class %}log-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
+<p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Log of set {{ session.set_number }}</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.get_state_display }}</span></p>
 
 {% if session.unit == 'chips' %}<p class="small muted">This is a chips game. Amounts are chip counts with no peso value.</p>{% endif %}
 
-<h2>Play time</h2>
-<ul class="list card small">
+<nav class="log-nav" aria-label="Log sections"><a href="#play-time">Play time</a><a href="#players">Players</a><a href="#settings">Settings</a><a href="#buy-ins">Buy-ins</a><a href="#cash-outs">Cash-outs</a><a href="#audit">Who did what</a></nav>
+<h2 id="play-time">Play time</h2>
+<ul class="list log-records">
   {% for period in play_periods %}
   <li class="row"><span class="grow">Play from {{ period.started_at|date:"M j, g:i:s A" }}</span><span class="muted">{% if period.ended_at %}ended {{ period.ended_at|date:"g:i:s A" }}{% else %}running{% endif %}</span></li>
   {% empty %}<li class="muted">{% if session.ended_at %}Play ended {{ session.ended_at|date:"M j, g:i A" }}. Playing time was not recorded for this set.{% else %}No play has been timed.{% endif %}</li>
@@ -17,24 +19,24 @@
   {% if play_periods %}<li class="row"><span class="grow">Set timer</span><span class="amount">{{ set_seconds|duration }}</span></li>{% endif %}
 </ul>
 
-<h2>Players</h2>
-<ul class="list card small">
+<h2 id="players">Players</h2>
+<ul class="list log-records">
   {% for p in participants %}
   <li class="row"><span class="grow">{{ p.join_order }}. {{ p.member.display_name }}</span><span class="muted">{{ p.get_status_display }}{% if p.left_at %} at {{ p.left_at|date:"H:i" }}{% endif %}</span></li>
   {% empty %}<li class="muted">No players.</li>
   {% endfor %}
 </ul>
 
-<h2>Settings</h2>
-<ul class="list card small">
+<h2 id="settings">Settings</h2>
+<ul class="list log-records">
   {% for v in settings_versions %}
   <li>Version {{ v.number }} · {{ v.created_at|date:"M j, H:i" }} · {{ v.created_by.username }}<br>
     <span class="muted">Blinds {{ v.small_blind|amount:session.unit }}/{{ v.big_blind|amount:session.unit }} · buy-in {{ v.min_buy_in|amount:session.unit }}–{{ v.max_buy_in|amount:session.unit }} · usually {{ v.default_buy_in|amount:session.unit }}</span></li>
   {% endfor %}
 </ul>
 
-<h2>Buy-ins</h2>
-<ul class="list card small">
+<h2 id="buy-ins">Buy-ins</h2>
+<ul class="list log-records">
   {% for b in buy_ins %}
   <li>
     <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:session.unit }}</span></div>
@@ -44,8 +46,8 @@
   {% endfor %}
 </ul>
 
-<h2>Cash-outs</h2>
-<ul class="list card small">
+<h2 id="cash-outs">Cash-outs</h2>
+<ul class="list log-records">
   {% for c in cash_outs %}
   <li>
     <div class="row"><span class="grow {% if c.reversal %}struck{% endif %}">{{ c.created_at|date:"H:i" }} · {{ c.participant.member.display_name }}</span><span class="num {% if c.reversal %}struck{% endif %}">{{ c.amount|amount:session.unit }}</span></div>
@@ -57,7 +59,7 @@
 
 {% if adjustments %}
 <h2>Balance overrides</h2>
-<ul class="list card small">
+<ul class="list log-records">
   {% for a in adjustments %}
   <li><span class="{% if a.voided_at %}struck{% endif %}">{{ a.created_at|date:"H:i" }} · {{ a.participant.member.display_name }} {{ a.amount|signed_amount:session.unit }} ({{ a.get_mode_display }})</span><br>
     <span class="muted">By {{ a.recorded_by.username }}. Note: {{ a.note }}{% if a.voided_at %} · removed at {{ a.voided_at|date:"H:i" }}{% endif %}</span></li>
@@ -66,10 +68,10 @@
 {% endif %}
 
 {% if outcome %}
-<h2>Results <span class="muted small">revision {{ outcome.finalization.revision }} · {{ outcome.finalization.created_at|date:"M j, H:i" }} · {{ outcome.finalization.finalized_by.username }}</span></h2>
-<ul class="list card small">
+<h2>Results <span class="badge">Final</span> <span class="muted small">revision {{ outcome.finalization.revision }} · {{ outcome.finalization.created_at|date:"M j, H:i" }} · {{ outcome.finalization.finalized_by.username }}</span></h2>
+<ul class="list log-records">
   {% for r in outcome.results %}
-  <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount {{ r.net|sign_class }}">{{ r.net|signed_amount:session.unit }}</span></li>
+  <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:session.unit }}</span></li>
   {% endfor %}
   <li class="row"><span class="grow muted">Total bought in = total cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:session.unit }}</span></li>
 </ul>
@@ -78,8 +80,8 @@
 
 <p class="small"><a href="{% url 'night' session.night_id %}">Who pays whom and payment records are on the session page.</a></p>
 
-<h2>Who did what</h2>
-<ul class="list card small">
+<h2 id="audit">Who did what</h2>
+<ul class="list log-records">
   {% for e in events %}
   <li>{{ e.created_at|date:"M j, H:i:s" }} · <strong>{{ e.actor.username }}</strong> · {{ e.summary }}{% if e.reason %}<br><span class="muted">Reason: {{ e.reason }}</span>{% endif %}</li>
   {% endfor %}

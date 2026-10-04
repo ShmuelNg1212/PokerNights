@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Add players · {{ session }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
+<p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Add players</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"D, M j" }}</p>
 
@@ -13,14 +14,14 @@
 {% if eligible_count == 0 %}
 <p class="muted">Every player of this group is already at the table.</p>
 {% else %}
-<form method="post" class="card stack" data-pick data-free="{{ seats_free }}">
+<form method="post" class="form-section stack" data-pick data-free="{{ seats_free }}">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
   <div class="field" data-pick-search-box hidden>
     <label for="pick-search">Search players</label>
     <input id="pick-search" type="text" autocomplete="off" inputmode="search" data-pick-search>
   </div>
-  <fieldset style="border:0; margin:0; padding:0;">
+  <fieldset class="picker-fields">
     <legend class="small muted">Tick each player to add</legend>
     <ul class="list">
       {% for row in rows %}

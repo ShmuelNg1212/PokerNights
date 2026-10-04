@@ -5,6 +5,9 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from groups.access import member_for
+from groups.forms import GroupForm, NameForm
+from groups.http import take_form
+from games.forms import TableForm
 from django.utils import timezone
 
 from audit.models import AuditEvent
@@ -27,7 +30,7 @@ def home(request):
         .select_related("group")
         .order_by("group__name")
     )
-    return render(request, "web/home.html", {"memberships": memberships})
+    return render(request, "web/home.html", {"memberships": memberships, "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
 
 
 def visible_nights(me):
@@ -42,7 +45,7 @@ def visible_nights(me):
 
 def group(request, group_id):
     me = member_for(request.user, group_id)
-    members = Member.objects.filter(group=me.group, status=Member.Status.ACTIVE)
+    members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
     context = {
         "me": me,
         "group": me.group,
@@ -54,6 +57,11 @@ def group(request, group_id):
     context["open_nights"] = [n for n in nights if not n.is_closed]
     context["closed_nights"] = [n for n in nights if n.is_closed]
     if me.is_host:
+        context["add_form"] = take_form(request, f"{group_id}:add", NameForm, auto_id="add_%s")
+        context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
+        for member in members:
+            member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", NameForm,
+                initial={"name": member.display_name}, auto_id=f"rename_{member.pk}_%s")
         context["invites"] = Invite.objects.filter(
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
         )

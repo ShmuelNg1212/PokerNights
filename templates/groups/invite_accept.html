@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Invite · PokerNights{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
 {% if error %}
 <h1>Invite</h1>
@@ -8,7 +9,7 @@
 {% else %}
 <h1>Join {{ invite.group.name }}</h1>
 <p class="muted">You will see this group's games and can join them.</p>
-<form method="post" class="card">
+<form method="post" class="form-section">
   {% csrf_token %}
   <button type="submit" class="btn btn-primary btn-block">Join group</button>
 </form>

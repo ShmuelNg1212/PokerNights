@@ -7,22 +7,24 @@ import uuid
 from django.contrib import messages
 
 from groups.errors import RuleError
-from groups.http import attempt, request_id_from
+from groups.http import attempt, request_id_from, attempt_bound, keep_form
 from groups.models import Member
 
 from . import services
 from .access import night_for, session_for
-from .forms import PresetForm, SessionForm, SettingsForm
+from .forms import PresetForm, SessionForm, SettingsForm, TableForm
 from .models import Participant, SettingsPreset, Table
 
 
 @require_POST
 def create_table(request, group_id):
     actor = member_for(request.user, group_id)
-    attempt(
-        request, services.create_table, actor, request.POST.get("name", ""), request.POST.get("seat_count"),
-        request.POST.get("default_preset") or None, success="Table added.",
-    )
+    require_host(actor)
+    form = TableForm(request.POST, presets=SettingsPreset.objects.filter(group=actor.group, archived_at__isnull=True))
+    if not form.is_valid() or attempt_bound(request, form, services.create_table, actor,
+            form.cleaned_data["name"], form.cleaned_data["seat_count"],
+            form.cleaned_data["default_preset"] or None, success="Table added.") is None:
+        keep_form(request, f"{group_id}:table", form)
     return redirect("group", group_id=group_id)
 
 
@@ -36,7 +38,7 @@ def preset_form(request, group_id, preset_id=None):
         initial = {"name": preset.name, "game_type": preset.game_type, "unit": preset.unit, **preset.stakes()}
     form = PresetForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
-        saved = attempt(request, services.save_preset, actor, form.cleaned_data, preset_id=preset_id, success="Preset saved.")
+        saved = attempt_bound(request, form, services.save_preset, actor, form.cleaned_data, preset_id=preset_id, success="Preset saved.")
         if saved is not None:
             return redirect("group", group_id=group_id)
     return render(request, "games/preset_form.html", {"form": form, "group": actor.group, "preset": preset})
@@ -54,7 +56,7 @@ def session_new(request, group_id):
     form = SessionForm(request.POST or None, initial=initial, tables=tables)
     if request.method == "POST" and form.is_valid():
         data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
-        session = attempt(request, services.create_session, actor, data)
+        session = attempt_bound(request, form, services.create_session, actor, data)
         if session is not None:
             return redirect("session", session_id=session.pk)
     context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset}
@@ -69,7 +71,7 @@ def session_settings(request, session_id):
         unit_locked=services.has_money(session),
     )
     if request.method == "POST" and form.is_valid():
-        saved = attempt(request, services.update_settings, session.pk, actor, form.cleaned_data, success="Settings saved.")
+        saved = attempt_bound(request, form, services.update_settings, session.pk, actor, form.cleaned_data, success="Settings saved.")
         if saved is not None:
             return redirect("session", session_id=session.pk)
     return render(request, "games/settings_form.html", {"form": form, "session": session})

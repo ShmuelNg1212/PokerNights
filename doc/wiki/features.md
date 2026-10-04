@@ -64,7 +64,7 @@ The individual cash-out still exists: tap the player name to open Details during
 8. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
 9. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
 10. **Close the session.** The app lists who pays whom with the minimum number of transfers. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
-11. **Game log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, transfers, payment records, and who did what and when.
+11. **Game log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
 
@@ -83,7 +83,7 @@ See the [roadmap](../roadmap/README.md).
 
 ## Active set design (slice 1)
 
-- The Rack uses an indigo table field, warm dark ground, Archivo figures and player tokens with initials. Shared forms and remaining group, home and log screens use the same base styles; their composition is not yet redesigned.
+- The Rack uses an indigo table field, warm dark ground, Archivo figures and player tokens with initials. Home, group, accounts, forms and log use the completed Rack compositions.
 - The first phone viewport shows still in play, clock and blinds. Total bought in and cashed out remain separate labels. From 900 px, the field and host controls sit beside the player list.
 - Tap a player's name for cash-out, playing time, money records and corrections. Tap `+` for buy-in or rebuy. The next host action sits in an opaque phone dock. More host controls includes settings, cancellation and adding one player.
 - Without JavaScript, each row has expandable forms for the same actions.
@@ -113,3 +113,14 @@ See the [roadmap](../roadmap/README.md).
 - The page is one column on phones and 400 px / flexible columns from 900 px. Long settlement amounts use a smaller fixed type size to preserve the whole numeric value on one line. This page still requires reload to see another client's payment changes.
 
 The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice 4; [slice 2](../plan/1791050738_redesign_slice_2.md) and [slice 3](../plan/1791053204_redesign_slice_3.md) record verification.
+
+
+## Remaining screen design (slice 4)
+
+- Home shows group navigation and roles, then group creation. Empty home explains how to create or join a group.
+- Group shows current sessions first, with New session above the list for hosts. Past sessions follow. Tables, presets, roster and invitations form a management rail from 900 px and follow sessions on phones.
+- Roster names stay alphabetic. Initial tokens use member ID and the existing palette; colour is not a cross-view identity guarantee. Host tools use native disclosures.
+- Failed group creation, table creation, roster add and rename keep editable values, show a local error and open the failed disclosure. Success uses the existing redirect. Passwords stay blank on refused account submissions.
+- Account, invitation, session, preset, settings and picker pages share a narrow form frame. The picker still supports search and native all-or-nothing submission.
+- The set log groups complete records by category, with exact amounts, actors, times and reasons. Reversed and voided rows stay visible. Frozen results show signed values and Final labels. Native section links aid navigation.
+- Canceled sets show their reason, retained roster and log link, with no final result or money action.

@@ -31,3 +31,24 @@ node web/tests/browser/end_set.mjs
 `seed_end_set.py` adds sets 6–11: chips counting with an earlier partial cash-out, no money, balanced books, a discrepancy, an override, and long names with large amounts. `end_set.mjs` captures the count-up, review and finalized layouts at 390 and 1280 px, plus the 320 px large-content case and player views. It checks deferred live updates, draft retention after refusal, multi-count submission with zero and empty fields, stale review rejection, keyboard focus, dock guidance/clearance, reduced motion and the once-only balance rule. It also performs counts, batch review, finalization and a final cash-out reversal without JavaScript.
 
 The script expects those exact fixture IDs and consumes its counting fixtures. Use another fresh temporary database for the confirmation run. Its overflow checks compare against the requested device width, because mobile Chrome can expand `innerWidth` when content overflows. Full-page capture uses CDP's content dimensions; the fixed dock appears at its viewport position within the tall image.
+
+
+For slices 3 and 4, seed the session and remaining-screen states after both seeds above:
+
+```sh
+DEBUG=True DATABASE_URL=sqlite:////private/tmp/pn-rack-check.sqlite3 .venv/bin/python manage.py shell < web/tests/browser/seed_night.py
+DEBUG=True DATABASE_URL=sqlite:////private/tmp/pn-rack-check.sqlite3 .venv/bin/python manage.py shell < web/tests/browser/seed_remaining.py
+```
+
+Start the temporary server after seeding. Run these scripts sequentially:
+
+```sh
+node web/tests/browser/night.mjs
+node web/tests/browser/remaining.mjs
+node web/tests/browser/remaining_supplement.mjs
+node web/tests/browser/remaining_actions.mjs
+```
+
+`night.mjs` checks the session overview, settlement, paid/Undo, frozen results, recap and native fallback. `remaining.mjs` captures home, group, accounts, invitation recovery, supporting forms, picker, canceled set and log. It checks 48 px action links, first-viewport session access, bound errors and native roster actions. `remaining_supplement.mjs` captures the one-time invite URL, invitation acceptance, reversed large-money final log and override log. `remaining_actions.mjs` exercises account/group/table creation, pesos and chips presets, new session, settings refusal and save, rename refusal and save, and native picker refusal and success.
+
+The default run reports 20 Rack, 13 accessibility, 47 end-set, 53 night, 95 remaining, 10 supplement and 12 action checks (250 total). For the complete run, seed all four files before starting, then run all seven browser scripts in the order above and in the first examples. Fixtures are consumed: reset to a fresh database for a repeat. The remaining scripts read synthetic IDs from `/private/tmp/pn-slice4-manifest.json`; night checks use `/private/tmp/pn-slice3-manifest.json`. `PN_EMPTY_ACCOUNT` can select a fresh synthetic account for an empty-home recapture when an earlier invitation run has consumed `unattached`.

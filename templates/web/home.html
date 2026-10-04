@@ -1,26 +1,8 @@
 {% extends "base.html" %}
+{% block page_class %}hub-page{% endblock %}
 {% block content %}
-<h1>Your groups</h1>
-{% if memberships %}
-<ul class="list card">
-  {% for m in memberships %}
-  <li class="row">
-    <a class="grow" href="{% url 'group' m.group_id %}">{{ m.group.name }}</a>
-    <span class="badge">{{ m.get_role_display }}</span>
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p class="muted">You are not in a group yet. Create one, or open an invite link from a host.</p>
-{% endif %}
-
-<h2>Create a group</h2>
-<form method="post" action="{% url 'group_create' %}" class="card stack">
-  {% csrf_token %}
-  <div class="field">
-    <label for="group-name">Group name</label>
-    <input id="group-name" type="text" name="name" maxlength="60" required>
-  </div>
-  <button type="submit" class="btn btn-primary btn-block">Create group</button>
-</form>
+<header class="page-heading"><h1>Your groups</h1><p class="muted">Choose the people you play with.</p></header>
+{% if memberships %}<ul class="hub-list">{% for m in memberships %}<li><a class="hub-link" href="{% url 'group' m.group_id %}"><strong>{{ m.group.name }}</strong><span class="badge">{{ m.get_role_display }}</span></a></li>{% endfor %}</ul>
+{% else %}<div class="empty-state"><h2>A place for your game</h2><p>Create a group, or open an invite link from a host.</p></div>{% endif %}
+<section class="form-section"><h2>Create a group</h2><form method="post" action="{% url 'group_create' %}" class="stack">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-primary btn-block" type="submit">Create group</button></form></section>
 {% endblock %}
