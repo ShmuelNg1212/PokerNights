@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "django",
+  "regions": [
+    "sin1"
+  ],
+  "buildCommand": "HTTPS_ONLY=False DATABASE_URL=sqlite:////tmp/pokernights-build-tests.sqlite3 python manage.py test --noinput && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" python manage.py migrate --noinput"
+}
