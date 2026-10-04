@@ -1,6 +1,6 @@
 # Live counted total
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [study](../study/1791089661_live_counted_total.md), committed as `fe89e53`. Main implementation baseline: `6ccad9a`. Canonical sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 410 SQLite tests pass, with three PostgreSQL-only skips.
 
@@ -34,7 +34,7 @@ Help the host check all remaining stacks against total buy-ins before cashing ou
 - [x] **`feat(web): add a live counted total`**: implement the query, templates, integer preview and post-restoration integration. Completion: AC1–AC6 demonstrated with focused automated checks and real browser flows on synthetic data.
 - [x] Verify AC7: full SQLite and PostgreSQL suites, relevant existing count-up/live/dock regressions, scoped screenshots and required finish review. Resolve material findings within this feature.
 - [x] **`docs: document live counted total`**: sync the affected wiki, built design/surface notes, TODO and plan evidence. Completion: docs explain confirmed totals versus preview, missing counts, partial cash-outs and override boundary.
-- [ ] Rendezvous: merge verified work into local main, check the running app and mark the plan done. No push or deployment.
+- [x] Rendezvous: merge verified work into local main, check the running app and mark the plan done. No push or deployment.
 
 ## Verification
 
@@ -70,3 +70,7 @@ The live redraw now emits its event after fields/details are restored. Nonblank 
 Budgets: counts.js 3,467 bytes plus 60 bytes in live.js = 3,527 new JS bytes; cumulative added JS 11,440 bytes, within approved 12,000. CSS 32,942 bytes; font unchanged at 103,912 bytes. No new asset/dependency/motion. Physical-phone verification is unavailable.
 
 All 152 incumbent regression checks pass: Rack 20, accessibility/live updates 13, end-set/native cash-out 47, session/settlement/recap 53, default opening buy-ins 16 and opening opt-out redraw 3. Together with the 35 counter checks, 187 browser checks pass. A browser-port overlap interrupted the first session harness; its sequential rerun completed all 53 checks. Existing fixtures were only synthetic temporary data. Feature commit: `1bc7bc5`.
+
+## Rendezvous
+
+Completed 2026-10-04. Feature `1bc7bc5` and synced docs `b074c8e` merged into local main. Main's full 423-test SQLite suite passes (15.729 s; three PostgreSQL-only races skipped here, all passed on PostgreSQL above). The existing development server remains at http://127.0.0.1:8000; `/healthz` returns 200 and its served counts.js/CSS exactly match main. No migration or development game mutation was needed. Temporary verification server and PostgreSQL are stopped. No push or deployment.
