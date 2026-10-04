@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-- [ ] Live counted total: approved and in progress ([plan](doc/plan/1791089905_live_counted_total.md)).
+Live counted total is verified; local rendezvous is in progress ([plan](doc/plan/1791089905_live_counted_total.md)).
 
 Default opening buy-ins are done ([plan](doc/plan/1791088166_default_opening_buy_ins.md)). Start the game adds the usual amount for joined players without an accepted buy-in; uncheck to opt out.
 
@@ -20,6 +20,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] Try the live stack counter: end play, enter counts and watch the total/difference. Include 0 and clear an unsaved field. Confirm counts, review cash-outs and check the accounted total stays the same.
 
 - [ ] Try opening buy-ins: add players to an open set, start it and check one usual buy-in each. For another set, uncheck the option and confirm no opening money is added.
 

@@ -74,6 +74,9 @@ AuditEvent (group_id, session_id as plain integers)
 
 ## End of a set: counts and batch
 
+`ledger.queries.count_total()` derives remaining confirmed stacks plus accepted cash-outs from the existing summary. It excludes final-cashed-out players from remaining stacks and reports count coverage, stray cash-outs and the raw difference from buy-ins. It neither stores a total nor changes Balance/finalization. The shared `_count_total.html` renders a confirmed baseline and host dock preview. `counts.js` uses BigInt to replace saved amounts with valid drafts, parse ordinary native amount syntax and format exact values. Invalid or unsupported input makes the preview unavailable. No write or extra request occurs.
+
+
 - `FinalCount`: a host's confirmation of a player's final amount, in the session's unit. Append-only, with a `version` per participant; `is_current` marks the one in force. Zero is a count. No row means "not counted".
 - `CashOut.kind`: `partial` (the player played on) or `final`. A cash-out with "Leaving the game", any cash-out while counting, and each batch cash-out are final. A player has at most one accepted final cash-out. If the player returns or buys in again, it becomes partial again (logged).
 - The count fields of a set belong to one form (`counts-form`, through the `form` attribute). `ledger.services.confirm_counts()` confirms every typed count in one transaction and skips empty or unchanged ones. A refused submit stores the typed text in the login session and the page shows it again once.
@@ -164,7 +167,7 @@ Database check constraints repeat the main invariants: `total_buy_in = total_cas
 - A hidden tab stops polling. It polls at once when it becomes visible or the browser comes back online.
 - After two failures the page shows "Reconnecting… last updated …", marks the figures as stale, and backs off to 8, 16, then 30 seconds.
 - An update waits while the user types in a field of the live region, and applies when the field loses focus.
-- A refresh replaces the whole region. Fields with a `data-keep` key keep their typed, unsaved value across it: the script reads them before the swap and puts them back after it.
+- A refresh replaces the whole region. Fields with a `data-keep` key keep their typed, unsaved value across it: the script reads them before the swap and puts them back after it. Nonblank count inputs are also retained when their value equals the rendered default, because refused submissions render unsaved drafts as defaults. `live:updated` fires after typed values and open details are restored, so derived previews read the restored fields.
 - `static/js/forms.js` disables a form's buttons after the first submit. The server-side `request_id` check is the real protection.
 
 ## Front end

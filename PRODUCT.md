@@ -20,7 +20,7 @@ The approved brief describes a dim room, late at night, one hand free and short 
 
 ## Capabilities and Constraints
 
-Django templates, plain CSS and small vanilla JavaScript modules. Integer money only: centavos in pesos games, whole chips in chips games. Chips have no peso value. Server-confirmed figures are authoritative. Accounting and permissions stay unchanged in the redesign. Seating and statistics are future features.
+Django templates, plain CSS and small vanilla JavaScript modules. Integer money only: centavos in pesos games, whole chips in chips games. Chips have no peso value. Server-confirmed figures are authoritative. Count-up also shows an explicitly labelled local preview while the host types, to compare remaining stacks plus cash-outs with buy-ins before recording cash-outs. Accounting and permissions stay unchanged in the redesign. Seating and statistics are future features.
 
 ## Brand Commitments
 

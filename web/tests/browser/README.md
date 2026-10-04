@@ -63,3 +63,5 @@ node web/tests/browser/opening_drafts.mjs
 ```
 
 `opening.mjs` checks the default and exact amount, phone/desktop fit, native start, mixed existing buy-ins, exact retry, log, a new set, opt-out and chips (16 checks). `opening_drafts.mjs` checks that another host’s write and live redraw preserve the unchecked option and that native submission then records no extra opening buy-ins (3 checks). Run sequentially; each consumes separate synthetic fixtures named in `/private/tmp/pn-opening-manifest.json`. Reset the temporary database for a repeat.
+
+For the live counted total, seed `seed_counts.py` after the normal fixtures and run `counts.mjs` sequentially with the other Chrome scripts. The fixture writes `/private/tmp/pn-counts-manifest.json` and isolates its own pesos/chips sets. Checks cover immediate input, saved fallback, zero, invalid syntax, exact large amounts, partial cash-outs, confirmation and batch recording, two-host polling, refused-default draft retention, no-JS baseline and phone/desktop placement. Captures cover 390 px pesos/chips and 1280 px pesos. Use a fresh temporary database for each fixture run.
