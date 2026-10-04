@@ -207,6 +207,7 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 - `settlement.queries.group_stats()` reads `PlayerResult` rows that are current, belong to a finalized set and a closed session, in one unit. One grouped query adds each member's sets per session; Python then counts sessions and profitable sessions. `stat_periods()` lists the units and months that have data and decides whether the Stats tab shows. Both are read-only: two queries for a ranking, whatever the number of players.
 - `.felt` is the in-play field; `.felt.hero` is the same panel on a neutral surface for every other state. `.panel`, `.notice-info`, `.tabs`, `.pills` and `.player-actions` are shared components listed at the top of `app.css`.
 - `static/branding/` holds four hand-written SVGs. The wordmark is Archivo converted to outlines, so the files need no font.
+- `web/home.py` builds the Your groups page. `home_cards(user)` returns one `Card` per active membership from eleven batched queries, whatever the number of groups or players: memberships, members, tables, open sessions with their sets, timers and seated counts for sets in play, `settlement.queries.member_records()`, `unpaid_transfers()`, the latest closed session per group and `session_nets()`. `_choose_status()` picks the one status and action for the viewer. `games.clock.seconds_by_set()` reads several timers in one query. All read-only.
 - No build step, front-end framework, added package or external runtime request.
 
 ## Security

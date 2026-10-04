@@ -139,6 +139,15 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Canceled sets show their reason, retained roster and log link, with no final result or money action.
 
 
+## Your groups home
+
+- The first page lists each group with its players, one status band and one next action for the viewer: **Open the table** for a set in play, **Open set N** for a draft, open or counting set, **Go to the session** when every set is finished, and **New session** or **Add a table** for a host in a quiet group. A player in a quiet group gets no button.
+- A set in play shows players at the table and the timer on the blue felt band. Money still in play is not shown here; the page does not refresh by itself.
+- **To settle** lists the viewer's unpaid transfers from closed sessions ("You owe Miguel ₱425", "Jerome owes you ₱1,375"), three at most, each linking to its session. Nobody sees another member's debts here.
+- **Your record** shows profit or loss, sessions and wins per unit, by the same rules as Stats. **Last session** shows the viewer's result in the latest closed session, or "You did not play".
+- Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
+- Create a group is a closed section under the groups. A person with no group gets a first-group screen.
+
 ## Group page, stats and branding (UI evolution)
 
 - The group page has tabs on the one group address: **Sessions** (default), **Stats** and **Group settings** (`?view=stats`, `?view=settings`). An unknown `view` shows Sessions.

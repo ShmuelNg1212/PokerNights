@@ -83,3 +83,14 @@ Not in this cycle: live polling on the home page, a cross-group feed, charts, gr
 2026-10-04: Study and plan complete. Discovery answers recorded in the study. Implementation awaits approval of this plan and the three decisions above.
 
 2026-10-04: Human approved this plan with “approved” and answered the three decisions: leave money still in play off the card; show “you owe / owes you”; keep this page for one-group members. Execution uses branch `feat/group-home`, worktree `/private/tmp/pn-home`.
+
+2026-10-04 execution: two feature commits on `feat/group-home`, each after the full SQLite suite and `manage.py check`.
+
+1. `b882610` `web/home.py` with `home_cards()`, three read helpers in `settlement.queries` (`member_records`, `unpaid_transfers`, `session_nets`; `stat_results` now builds on `counted_results`) and `games.clock.seconds_by_set()`. Eight query tests.
+2. `874b985` new `home.html`, `_group_card.html` and styles. Four page tests. The blocks are unboxed sections with one status band each, not nested cards.
+
+2026-10-04 verification: 510 SQLite tests pass (ten PostgreSQL-only skips); all 510 pass on a temporary PostgreSQL 17 instance, now stopped. System and migration-drift checks pass. No change to models, migrations, URL patterns, services or `static/js/`. Query budget (AC7): 11 queries for one group and for four groups with eight players each. Browser, synthetic database, four viewers (host with four groups, player with dues and both units, no group, empty group) at 320, 375, 768 and 1280px: no horizontal overflow; after one fix to the Last session link no target under 48px; new text pairs from 7.58:1; felt present only with a set in play; keyboard order follows the page and every stop shows the focus ring. CSS is 42326 bytes; the 40,000-byte figure from earlier plans is exceeded and was not a criterion of this plan.
+
+Not verified: a physical phone, a screen reader, and the page with JavaScript off (the page has no script of its own; the timer then stays at the server figure). No independent finish review was run.
+
+AC1–AC8 are met. Documentation synced: DESIGN.md, PRODUCT.md, the group-and-home surface record, wiki features and architecture, TODO.

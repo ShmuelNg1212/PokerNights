@@ -575,6 +575,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .home-dues { margin-top: var(--s-5); }
 .home-dues h3, .home-facts dt a { font-size: 1rem; font-weight: 650; }
 .home-dues h3 { margin: 0; color: var(--brass); }
+.home-facts dt a { padding-block: 16px; }
 .home-dues ul { list-style: none; margin: 0; padding: 0; }
 .home-dues li + li { border-top: 1px solid var(--rule); }
 .home-dues a { display: flex; align-items: center; gap: var(--s-3); min-height: 56px; padding: var(--s-2) 0; text-decoration: none; overflow-wrap: anywhere; }
