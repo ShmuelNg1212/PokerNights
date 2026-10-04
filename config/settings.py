@@ -10,13 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 import sys
 from pathlib import Path
 
 import environ
 from django.core.exceptions import ImproperlyConfigured
 
-from config.deploy import database_config
+from config.deploy import database_config, vercel_hosts
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,10 +36,11 @@ SECRET_KEY = env("SECRET_KEY", default="") or (
 if not SECRET_KEY:
     raise ImproperlyConfigured("Set SECRET_KEY (or DEBUG=True for local development).")
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"]) + vercel_hosts(os.environ)
 
-# HTTPS-only deployment: Secure cookies, HSTS and an HTTPS redirect.
-HTTPS_ONLY = env.bool("HTTPS_ONLY", default=False)
+# HTTPS-only deployment: Secure cookies, HSTS and an HTTPS redirect. On by default
+# on Vercel (which sets VERCEL=1, terminates TLS and forwards X-Forwarded-Proto).
+HTTPS_ONLY = env.bool("HTTPS_ONLY", default=bool(os.environ.get("VERCEL")))
 if HTTPS_ONLY:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
@@ -113,6 +115,9 @@ DATABASES = {
         conn_max_age=env.int("DB_CONN_MAX_AGE", default=60),
     )
 }
+if os.environ.get("VERCEL") and "DATABASE_URL" not in os.environ:
+    # Vercel's filesystem is not persistent: SQLite there would lose every record.
+    raise ImproperlyConfigured("Set DATABASE_URL (Neon Postgres) for Vercel deployments.")
 if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # File-backed, so threaded tests see the same locking as development.
     DATABASES["default"]["TEST"] = {"NAME": BASE_DIR / "test_db.sqlite3"}
