@@ -154,3 +154,5 @@ AC1 to AC9 are met.
 Documentation synced: wiki features and architecture, PRODUCT.md, DESIGN.md, roadmap decisions, browser README, TODO.
 
 2026-10-04 rendezvous: merged into local main as `c92fb55 feat: merge archive and delete for sessions and groups`. Main SQLite: 569 pass, ten PostgreSQL-only skips. Two migrations (`games.0012`, `groups.0004`), both additive and nullable. The temporary server and PostgreSQL are stopped. Not pushed: a push to `main` is a production release and runs the migrations.
+
+2026-10-04 release: the human said “push this iterated version of the app”. Pushed `main` at `19c9744` (previous production commit `8e75aaf`). The new version answered on https://pokernights-five.vercel.app about two minutes later: the login page serves the entry frame, sign-up without an invite still answers 403, and the stylesheet carries the dock, archive and entry rules. The build runs the tests and then the migrations before switching, so a live new version means both passed. Not checked on production: any signed-in page, because the agent has no production account.

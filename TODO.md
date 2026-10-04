@@ -4,13 +4,15 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Released 2026-10-04 as `19c9744`: the collapsible host dock with its motion, archive and delete (migrations `games.0012`, `groups.0004`) and the entry pages. The previous production commit was `8e75aaf`.
+
 PokerNights is live at https://pokernights-five.vercel.app ([plan](doc/plan/1791104210_vercel_deployment.md), [deployment page](doc/wiki/deployment.md)). A push to `main` is a release.
 
-The entry pages revamp is done ([plan](doc/plan/1791115804_entry_pages.md)): Log in, Sign up, the invite pages share a branded front door, name the inviting group and have a Show password button. No migration. Not pushed yet.
+The entry pages revamp is done ([plan](doc/plan/1791115804_entry_pages.md)): Log in, Sign up, the invite pages share a branded front door, name the inviting group and have a Show password button. No migration.
 
-Archive and delete are done ([plan](doc/plan/1791114191_archive_and_delete_groups_and_sessions.md)): hosts archive, restore and delete sessions and groups; anything with money can be archived only. Two migrations. Not pushed yet.
+Archive and delete are done ([plan](doc/plan/1791114191_archive_and_delete_groups_and_sessions.md)): hosts archive, restore and delete sessions and groups; anything with money can be archived only. Two migrations.
 
-The collapsible host dock is done ([plan](doc/plan/1791111069_collapsible_host_dock.md)): on a phone the host's bottom menu folds to one bar and the choice is remembered. Not pushed yet.
+The collapsible host dock is done ([plan](doc/plan/1791111069_collapsible_host_dock.md)): on a phone the host's bottom menu folds to one bar and the choice is remembered.
 
 Your groups home is done ([plan](doc/plan/1791102439_your_groups_home.md)): each group reports its state, next action, what you owe or are owed, your record and last result.
 
@@ -42,10 +44,10 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 - [ ] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
 
-- [ ] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. Say when to push; this release runs two migrations.
+- [ ] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. It is live.
 - [ ] `SPEC.md` does not mention archiving or deleting. Add it if the spec should match the app.
 
-- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons. Say when to push it to production.
+- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons.
 
 - [ ] Create your superuser against production (command in the [deployment page](doc/wiki/deployment.md)), then add the first host in `/admin/` → Users and play a game on the live site from a phone.
 
