@@ -1,7 +1,7 @@
 # Plan: visual redesign
 
 - **Date:** 2026-10-04 00:46 (Asia/Manila), Unix timestamp `1791046015`
-- **Status:** `slice-3-done` (slices 1–3 complete; slice 4 awaits later approval)
+- **Status:** `done` (all four slices complete)
 - **Study:** [../study/1791045491_visual_redesign.md](../study/1791045491_visual_redesign.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
 - **Visual direction:** **approved: A, The Rack**, with the two loans.
@@ -126,7 +126,7 @@ Slices 2–4 add their own checks in the task list.
 - [x] **9. Slice 3: session page and settle-up.** Approved with “proceed” and verified in the [slice 3 plan](1791053204_redesign_slice_3.md). "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
   - Commit: `feat(web): recompose the session page and settle-up`
   - Done when: paid and undo flows pass; the recap opens once per session per browser and closes with one tap or key; results and payments are in separate, labelled sections.
-- [ ] **10. Slice 4: group, home, sign-in, forms, log.** Study complete; [slice 4 plan](1791084843_redesign_slice_4.md) awaits approval. Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
+- [x] **10. Slice 4: group, home, sign-in, forms, log.** Approved with “proceed”, verified and merged in the [slice 4 plan](1791084843_redesign_slice_4.md). Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
   - Commit: `feat(web): recompose the group, forms and log screens`
   - Done when: each form shows a field error with the typed value kept; the group page puts sessions in the first screen.
 
@@ -230,3 +230,8 @@ Human approved the [revalidated slice 2 plan](1791050738_redesign_slice_2.md) wi
 ## Slice 3 rendezvous
 
 Human approved the slice 3 plan with “proceed.” The session page now separates payment progress and transfer instructions from frozen results and offers a once-only accessible closing recap. All 390 tests pass on both engines, with 53 session browser checks plus 20 active-table, 13 accessibility and 47 end-set regressions. The finish verdict resolves the one large-figure readability fix. Task 10 remains unapproved.
+
+
+## Final slice rendezvous (2026-10-04)
+
+Slice 4 completes the current home/group/account/form/log and canceled-set compositions. Inline refusals retain non-sensitive editable input at local errors. All 395 tests pass on SQLite and PostgreSQL 17; all 250 browser checks pass. The finish reviewer resolved both material fixes. DESIGN.md and living docs are synced, main contains the work and the development server serves its exact stylesheet. Physical-phone checks remain unavailable. All four slices are complete; seating and statistics remain separate feature work.

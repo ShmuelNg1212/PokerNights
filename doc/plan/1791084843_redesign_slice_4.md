@@ -1,6 +1,6 @@
 # Redesign slice 4: group, home, account, forms and log
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [slice 4 study](../study/1791084725_redesign_slice_4.md). Parent: [visual redesign task 10](1791046015_visual_redesign.md). Sources of truth: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and the wiki. Main was clean at `cd0d6e7`; study commit `efc5f16`. Baseline: 390 tests pass on SQLite.
 
@@ -65,7 +65,7 @@ After approval, record the human answer and mark in-progress. Use an isolated `f
 - [x] **2. Verify and finish.** Run both database suites. Add a dependency-free browser harness/fixtures for the remaining routes and rerun the existing Rack, accessibility, end-set and night checks. Complete the bounded visual review below. Record criterion evidence, exact budgets and limitations here.
   - Commit: `test(web): verify remaining Rack screens`.
   - Done when AC1–AC10 have recorded results and the required finish handoff is resolved or the human explicitly accepts a remaining finding.
-- [ ] **3. Rendezvous and sync docs.** Use the required documenter after the final correction, then update affected living docs. Merge to main, run the suite there, restart the development server if needed and verify it serves the merged CSS/pages.
+- [x] **3. Rendezvous and sync docs.** Use the required documenter after the final correction, then update affected living docs. Merge to main, run the suite there, restart the development server if needed and verify it serves the merged CSS/pages.
   - Commit: `docs: sync completed Rack redesign`.
   - Done when main contains the slice, the server answers and docs describe verified behavior. Mark this plan and parent task 10 done only then.
 
@@ -118,3 +118,10 @@ Limits: no physical phone was tested. Reversed cash-out and voided override appe
 | Date | Entry |
 |---|---|
 | 2026-10-04 | Human approved “proceed”; built remaining compositions and scoped inline error retention. SQLite and PostgreSQL suites passed. All 250 browser checks passed; bounded finish review resolved both fixes. Documentation sync and main rendezvous follow |
+
+
+## Rendezvous
+
+Completed on 2026-10-04. Verification commit `c8d94e9`; documentation commit `bfde3bb`. The Impeccable documenter recorded the built patterns in DESIGN.md prose and three surface briefs. Token frontmatter, machine sidecar, PRODUCT.md and AGENTS.md remain unchanged. Historical sidecar/early surface-brief narrative drift was reported and left outside this cycle.
+
+Merged into local main with `feat: merge Rack redesign slice 4`. All **395 SQLite tests pass on main** (13.647 s). The running development server answers `/healthz` and the merged login page with HTTP 200. Its served stylesheet matches main exactly at **32,201 bytes**. No push or deployment. All four slices of the Rack redesign are complete for the current screens.
