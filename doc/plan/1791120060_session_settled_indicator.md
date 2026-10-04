@@ -83,3 +83,5 @@ Revert the feature commit. No data change.
 Not verified: a physical phone and a screen reader.
 
 AC1 to AC5 are met. Documentation synced: DESIGN.md, wiki features, browser README, TODO.
+
+2026-10-04 rendezvous: merged into local main as `eefa65f feat(ui): merge the session settled indicator`. Main SQLite: 589 pass, ten PostgreSQL-only skips. No migration. The temporary server and PostgreSQL are stopped. Not pushed.
