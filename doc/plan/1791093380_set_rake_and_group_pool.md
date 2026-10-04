@@ -1,6 +1,6 @@
 # Set rake and group pool
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [study](../study/1791093189_set_rake_and_group_pool.md), commit `59d28a7`. Main implementation baseline: `0b55fd9`. Sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 444 SQLite tests pass; six PostgreSQL-only races skip.
 
@@ -56,7 +56,7 @@ Player result after rake = cash-outs + override − gross buy-ins. Player remain
 - [x] **`feat(settlement): account for collected rake in balances and results`**: rake-aware read models, constraints/snapshots, overrides, separate transfer balances and zero-double-charge closure. Completion: rake-enabled sets finalize and sessions settle with exact conservation; old snapshots/transfers remain unchanged.
 - [x] **`feat(web): show rake rules and accumulated pools`**: expose host configuration and all affected facts, group lifetime breakdown and recap distinctions. Completion: native end-to-end percentage/flat/Off flows, live preview, group totals and membership gates meet AC1–AC9. Apply Impeccable as a bounded Operate extension during this UI task; inherit Rack, use batched captures and required finish-review/documenter roles.
 - [x] **`docs: document rake accounting and group pools`**: sync PRODUCT/DESIGN as needed, wiki architecture/features/setup/journal, confirmed footguns, relevant surface addenda, TODO and plan evidence. Keep SPEC.md and studies immutable.
-- [ ] Rendezvous: merge only after required checks pass; verify main and the running app, apply compatible migrations and record exact evidence. No push or deployment.
+- [x] Rendezvous: merge only after required checks pass; verify main and the running app, apply compatible migrations and record exact evidence. No push or deployment.
 
 ## Verification
 
@@ -88,3 +88,7 @@ Use additive defaults and staged constraints so existing development data migrat
 Migration compatibility checked with a WAL-safe development backup: 58 buy-ins, 4 reversals, 39 cash-outs, 2 cash-out reversals, 9 finalizations, 37 results, 17 transfers and 16 payments retain every original column/value. Every existing group gains its account; historical settings and rake snapshots stay zero and no fee entry is invented. Migration drift check passes. Physical-phone verification remains unavailable.
 
 2026-10-04: Living docs synced: PRODUCT/DESIGN narrative and six surface addenda by the required documenter, wiki architecture/features/setup/journal and rake settlement footgun, browser commands and TODO. DESIGN token frontmatter and sidecar remain unchanged. Local rendezvous follows final checks; no push/deployment.
+
+2026-10-04 rendezvous: merged into local main as `5c9c2dd feat: merge set rake and group pool`. Main SQLite: 465 tests pass in 15.850s, ten PostgreSQL-only skips. Final branch PostgreSQL: all 465 pass in 25.286s. Development migrations applied after WAL-safe backup `/private/tmp/pn-before-rake-1791095302.sqlite3`; comparison confirms every historical accounting column/value remains unchanged and no retroactive fee exists. Migration drift check passes. Existing development server on `http://127.0.0.1:8000` answers `/healthz` and login with HTTP 200. Temporary fixture servers and the verification PostgreSQL instance were stopped. SPEC.md and sidecar remain unchanged; no push or deployment.
+
+All AC1–AC9 are implemented and verified. The user can configure rake in Change settings before the first buy-in, finish a rake-balanced set, and inspect separate lifetime pools on the group page. The only unavailable check is physical-phone use; Chrome checked 390px/1280px with native forms and two hosts.

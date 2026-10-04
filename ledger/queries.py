@@ -119,7 +119,7 @@ class Summary:
 
     @property
     def in_play(self) -> int:
-        """Bought in and not yet cashed out."""
+        """Playable money not yet cashed out."""
         return self.playable - self.cashed_out
 
     @property
@@ -179,12 +179,12 @@ def summary(session: GameSession) -> Summary:
 
 @dataclass
 class Balance:
-    """The balance check: does the total cashed out equal the total bought in?"""
+    """The balance check: do cash-outs plus rake equal gross buy-ins?"""
 
     summary: Summary
     missing_cash_outs: list  # players with buy-ins and no final cash-out
     stray_cash_outs: list  # players with a cash-out and no accepted buy-in
-    raw_difference: int  # cashed out − bought in, before overrides
+    raw_difference: int  # cashed out + rake − gross bought in, before overrides
     difference: int  # the same, after active overrides
 
     @property
@@ -258,7 +258,7 @@ def balance(session_or_summary) -> Balance:
 
 @dataclass
 class CountTotal:
-    """Remaining confirmed stacks plus accepted cash-outs, before overrides."""
+    """Remaining confirmed stacks plus accepted cash-outs and rake, before overrides."""
 
     summary: Summary
 

@@ -236,7 +236,7 @@ class Finalization(models.Model):
     total_rake = models.BigIntegerField(default=0)
     # Cash-outs plus any host override. With rake, equals total_buy_in.
     total_cash_out = models.BigIntegerField()
-    # Cash-outs minus buy-ins before any host override. Zero when the books balanced.
+    # Cash-outs plus rake minus gross buy-ins, before any host override.
     raw_difference = models.BigIntegerField(default=0)
     settings_snapshot = models.JSONField()
     finalized_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
