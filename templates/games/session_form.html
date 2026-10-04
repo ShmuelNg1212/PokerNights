@@ -19,7 +19,8 @@
   {% csrf_token %}
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
   <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>
-  {% include "partials/form_fields.html" %}
+  {% include "partials/form_fields.html" with fields=form.general_fields %}
+  {% include "games/_rake_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Create session</button>
 </form>
 {% endblock %}

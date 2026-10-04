@@ -8,7 +8,8 @@
 <form method="post" class="form-section stack">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
-  {% include "partials/form_fields.html" %}
+  {% include "partials/form_fields.html" with fields=form.general_fields %}
+  {% include "games/_rake_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Save settings</button>
 </form>
 {% endblock %}

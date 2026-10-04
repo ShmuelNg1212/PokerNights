@@ -321,6 +321,12 @@ The active overview places Collected rake and Available to play below the gross/
 
 No shared token, CSS, motion, raster asset or dependency is introduced. The incumbent phone/desktop topology, Archivo hierarchy, exact unit formatting, focus and 48px actions are reused. DESIGN.md frontmatter and `.impeccable/design.json` are preserved. Pre-existing drift remains: the first active-set contract gives 76px phone totals / 27px clock and blinds, while the finish-reviewed build uses 64px / 22px (16px chips blinds); the sidecar narrative still describes the earlier slice-2 scope and predates the labelled local count preview. This extension does not repair those historical records.
 
+### 2026-10-04 addendum — rake setup controls
+
+New session and Game settings now share a native Rake per buy-in fieldset with Off, Flat amount and Percentage of buy-in radios. Off is selected on creation. The existing check-row treatment gives each written radio label a 48px minimum target and the radio a 22px control with the shared accent. The borderless fieldset uses a 16px top inset and 12px value-field gaps within the incumbent narrow task frame. Both flat and percentage text fields remain visible with decimal keyboard hints; adjacent help says only the chosen option applies. Only the selected value can refuse submission, and local error text retains the chosen radio and both typed values. No script or fee calculator is added.
+
+An empty set places Choose rake before buy-ins in the ordinary host-action stack before opening-buy-in and start controls. Accepted money disables the radios and both value fields; written help explicitly includes default opening buy-ins and gives the next-set recovery path. Other stakes and Save settings remain available. This bounded Operate extension reuses The Rack palette, Archivo hierarchy, focus, reduced-motion behavior and phone/desktop topology. CSS only extends the native-control treatment and fieldset spacing; frontmatter tokens and `.impeccable/design.json` remain unchanged. The historical token/sidecar drift recorded above remains unrepaired.
+
 ## Do's and Don'ts
 
 ### Do:

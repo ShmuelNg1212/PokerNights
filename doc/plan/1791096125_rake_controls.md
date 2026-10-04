@@ -1,6 +1,6 @@
 # Usable rake choices before buy-ins
 
-Status: **awaiting-approval**. Date: 2026-10-04.
+Status: **in-progress**. Date: 2026-10-04.
 
 Source: [study](../study/1791096071_rake_controls.md), commit `16d367a`. Implementation baseline: main `7011a71`. Sources of truth: AGENTS.md, SPEC.md (read-only), PRODUCT.md, DESIGN.md, current wiki and the approved set-rake plan. Baseline: 465 SQLite tests pass with ten PostgreSQL-only skips.
 
@@ -27,9 +27,9 @@ Extend `create_session` to pass validated rake to the first SettingsVersion. Abs
 
 ## Ordered task board
 
-- [ ] Record explicit approval in this plan, recheck main and create `fix/rake-controls` in an isolated worktree. Link TODO to the active plan. Reproduce the two failures as maintained regression tests.
-- [ ] **`fix(games): make rake choices usable before buy-ins`**: implement shared active-only parsing, initial service configuration, native rake section, pre-start discovery and lock explanation. Apply Impeccable as a bounded extension of Rack for the form changes; follow its applicable finish-review and documenter requirements. Completion: AC1–AC5 pass automated and browser verification; saved money and accounting behavior remain unchanged.
-- [ ] **`docs: document rake setup controls`**: sync affected PRODUCT/DESIGN narrative and surface notes as needed, wiki feature/setup guidance, the confirmed default-opening lock footgun, TODO and plan evidence. Preserve SPEC and historical studies. Completion: documentation matches the verified forms and lifecycle.
+- [x] Record explicit approval in this plan, recheck main and create `fix/rake-controls` in an isolated worktree. Link TODO to the active plan. Reproduce the two failures as maintained regression tests.
+- [x] **`fix(games): make rake choices usable before buy-ins`**: implement shared active-only parsing, initial service configuration, native rake section, pre-start discovery and lock explanation. Apply Impeccable as a bounded extension of Rack for the form changes; follow its applicable finish-review and documenter requirements. Completion: AC1–AC5 pass automated and browser verification; saved money and accounting behavior remain unchanged.
+- [x] **`docs: document rake setup controls`**: sync affected PRODUCT/DESIGN narrative and surface notes as needed, wiki feature/setup guidance, the confirmed default-opening lock footgun, TODO and plan evidence. Preserve SPEC and historical studies. Completion: documentation matches the verified forms and lifecycle.
 - [ ] Rendezvous: run required checks, finish review, merge into local main, and confirm the existing development server serves the updated forms. Mark done only after merge and doc sync. No push or deployment.
 
 ## Verification
@@ -51,3 +51,11 @@ The branch contains a form/service fix and documentation. Roll back code by reve
 ## Progress and blockers
 
 2026-10-04: Study complete. Two desired-behavior probes fail (missing creation choice and inactive percentage validation); the opening-buy-in lock probe passes. Existing 465-test SQLite baseline passes with ten PostgreSQL-only skips. Phase 1 contains documentation only. Implementation awaits approval of this completed plan.
+
+2026-10-04: Human approved this plan with “approved”. Execution uses branch `fix/rake-controls`, worktree `/private/tmp/pn-rake-controls`.
+
+2026-10-04 verification: 472 SQLite tests pass in 15.863s (ten PostgreSQL-only skips); all 472 PostgreSQL tests pass in 25.198s. System and migration-drift checks pass. Native browser: 25/25 checks, JS disabled/enabled, both units, next-set setup, inactive stale values and accepted-money lock. Ten valid 390/1280px captures are in `.impeccable/review/rake-controls/`. CSS is 33,125 bytes; no added JS (cumulative 11,474). Detector reports zero primary findings and 64 advisories from fragment default colors and existing palette analysis. Independent finish reviewer: **ship** for the changed setup controls; report `/private/tmp/pn-rake-controls-finish-review.md`.
+
+2026-10-04: Implementation committed as `fcb2dbf fix(games): make rake choices usable before buy-ins`. Documenter is syncing the bounded Rack extension; local merge follows doc completion.
+
+2026-10-04: Documentation sync complete. PRODUCT/DESIGN prose and two surface addenda describe the native controls; machine frontmatter and design.json are preserved. Wiki feature/architecture/setup/index and the opening-buy-in lock footgun are current. Documentation-commit SQLite: 472 pass in 15.693s, ten PostgreSQL-only skips. Local rendezvous pending.
