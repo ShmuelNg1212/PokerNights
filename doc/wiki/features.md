@@ -111,6 +111,13 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Join group shows the group name and the number of active players.
 - Log in is `accounts.views.Login`, Django's `LoginView` with the invite name added to the context.
 
+## Settle status of a session
+
+- A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
+- Group → Sessions → Past sessions shows the status badge on each row and the amount still to pay; the heading counts the sessions not settled. `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
+- The session page shows the same status in its top bar and in its overview.
+- Hosts and players see the same thing.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

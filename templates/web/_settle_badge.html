@@ -1,0 +1,1 @@
+{% load table_tags %}<span class="badge {% if status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{% if status == 'settled' %}{% icon 'check' %}{% endif %}{{ label }}</span>

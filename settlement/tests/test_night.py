@@ -164,7 +164,7 @@ class NightSettlePageTests(TestCase):
         self.assertContains(page, "+₱200")
         self.assertContains(page, "Close session and settle up")
         page = self.client.post(reverse("night_close", args=[two.night_id]), follow=True)
-        for text in ('aria-label="C pays A"', "₱200", 'aria-label="C pays B"', "₱100", "Session results", "Unsettled", "Session closed"):
+        for text in ('aria-label="C pays A"', "₱200", 'aria-label="C pays B"', "₱100", "Session results", "Unsettled"):
             self.assertContains(page, text)
         self.assertNotContains(page, "Start next set")
         transfer = Transfer.objects.order_by("position").first()

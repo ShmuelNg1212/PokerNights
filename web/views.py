@@ -65,6 +65,10 @@ def group(request, group_id):
         nights = [n for n in visible_nights(me) if n.shown_sets]
         context["open_nights"] = [n for n in nights if not n.is_closed]
         context["closed_nights"] = [n for n in nights if n.is_closed]
+        states = settlement_queries.settle_states([n.pk for n in context["closed_nights"]])
+        for night in context["closed_nights"]:
+            night.settle = states[night.pk]
+        context["not_settled"] = sum(1 for state in states.values() if state.status != "settled")
         context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
 

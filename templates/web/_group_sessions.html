@@ -1,4 +1,4 @@
-<section class="group-sessions" aria-labelledby="current-sessions">
+{% load money_tags %}<section class="group-sessions" aria-labelledby="current-sessions">
 <h2 id="current-sessions">Current sessions</h2>
 {% if open_nights %}
   {% if me.is_host and tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>{% endif %}
@@ -23,12 +23,12 @@
 </section>
 {% if closed_nights %}
 <section class="group-sessions" aria-labelledby="past-sessions">
-<h2 id="past-sessions">Past sessions</h2>
+<h2 id="past-sessions">Past sessions{% if not_settled %} <span class="muted small heading-count">{{ not_settled }} not settled</span>{% endif %}</h2>
 <ul class="session-list">
   {% for n in closed_nights %}
   <li><a class="session-link" href="{% url 'night' n.pk %}">
-    <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"M j, Y" }}</span></span>
-    <span class="badge">{{ n.shown_sets|length }} set{{ n.shown_sets|length|pluralize }}</span>
+    <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"M j, Y" }} · {{ n.shown_sets|length }} set{{ n.shown_sets|length|pluralize }}{% if n.settle.still_to_pay %} · {{ n.settle.still_to_pay|amount:n.unit }} still to pay{% endif %}</span></span>
+    {% include "web/_settle_badge.html" with status=n.settle.status label=n.settle.label %}
   </a></li>
   {% endfor %}
 </ul>

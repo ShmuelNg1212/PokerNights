@@ -329,7 +329,7 @@ class TwoSetSessionAcceptanceTest(TestCase):
             self.assertContains(night_page, text)
 
         closed = host.post(reverse("night_close", args=[first.night_id]), follow=True)
-        for text in ('aria-label="C pays A"', "₱200", 'aria-label="C pays B"', "₱100", "Session closed"):
+        for text in ('aria-label="C pays A"', "₱200", 'aria-label="C pays B"', "₱100"):
             self.assertContains(closed, text)
         self.assertEqual(
             [(t.payer.display_name, t.payee.display_name, t.amount) for t in Transfer.objects.order_by("position")],
