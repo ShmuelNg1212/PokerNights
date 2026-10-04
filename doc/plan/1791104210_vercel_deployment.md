@@ -82,3 +82,20 @@ Roll back code by reverting the commits; the settings changes do nothing off Ver
 - First hosts: a superuser adds the account in `/admin/` → Users. That person logs in, creates a group and sends invite links.
 - `accounts` must not import `groups` (design rule 11). `accounts` keeps a small list of checks; `groups` registers its invite check when the app loads, the same way `games.clock.SKIP_ON_RESUME` works.
 - No model, migration or URL change.
+
+2026-10-04 execution, branch `feat/vercel-deploy`:
+
+1. `303901a` settings for Vercel with three tests. 2. `4ab8001` `vercel.json` and `.vercelignore`. 3. `3e8bd87` invite-only sign-up with five tests. 4. `15b42f5` tests no longer depend on the build environment.
+
+On Vercel and Neon:
+
+- Project `pokernights` created and linked. Neon `pokernights-db` (Free, `sin1`, auth off) connected to Production and Preview. `SECRET_KEY` (random, sensitive, different per environment) and `DB_CONN_MAX_AGE=0` set for both.
+- **First deploy mistake.** A plain `vercel deploy` on the new project targeted production. Its build failed at the test gate (seven tests saw `VERCEL=1` and got invite-only sign-up), so nothing went live and no migration ran. The tests were fixed (`15b42f5`) and every later deploy names its target.
+- The Neon integration wrote `.agents/`, `.claude/skills/` and `skills-lock.json` into the worktree. They were not asked for and were deleted, uncommitted.
+- Preview `pokernights-lkixhct6c-…vercel.app`: build ran 518 tests, then all migrations.
+
+2026-10-04 verification: local SQLite 518 pass (ten PostgreSQL-only skips), also under the build's variables. Preview HTTP checks, a 26-check full game in two browsers and a three-minute polling measurement are recorded in `doc/wiki/deployment.md`. The CLI preview shares the production database; its two test users and one test group were removed with `flush`, leaving an empty migrated database. Local copies of the database credentials and the test password were deleted.
+
+Deviations from the plan: the polling measurement ran three minutes, not thirty, and read client-side timings only; function invocations and active CPU on Vercel's side were not read. The rollback rehearsal needs a production release first and is still to do. The local PostgreSQL suite is run before the merge (next entry).
+
+2026-10-04: PostgreSQL 17 (temporary local instance, now stopped): all 518 tests pass. Documentation synced: new `doc/wiki/deployment.md`; setup, external dependencies, wiki index, features, roadmap, TODO and AGENTS.md updated.

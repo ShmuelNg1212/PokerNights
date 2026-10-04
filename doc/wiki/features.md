@@ -89,8 +89,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - The session page does not refresh by itself; the set page does.
 - No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
-- No password reset by email.
-- The app runs on one machine. It is not deployed.
+- No password reset by email. A superuser sets a new password in `/admin/`.
+- On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
 
 See the [roadmap](../roadmap/README.md).
 

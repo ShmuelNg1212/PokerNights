@@ -1,6 +1,6 @@
 # Setup
 
-How to install, configure, run and test PokerNights on one machine. The app is not deployed.
+How to install, configure, run and test PokerNights on one machine. For the Vercel deployment see [deployment.md](deployment.md).
 
 ## Requirements
 
@@ -30,6 +30,7 @@ cp .env.example .env
 | `DATABASE_URL` | no | For example `postgres://user@127.0.0.1:5432/pokernights`. Default: `db.sqlite3` |
 | `DB_CONN_MAX_AGE` | no | Seconds to keep a database connection. Default 60 |
 | `HTTPS_ONLY` | no | Secure cookies, HSTS and HTTPS redirect |
+| `SIGNUP_REQUIRES_INVITE` | no | Sign-up only from a usable invite link. Default: on at Vercel, off locally |
 | `LOG_LEVEL` | no | Level for `pokernights.*` loggers. Default `INFO` |
 
 ## Run

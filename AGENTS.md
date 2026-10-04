@@ -34,7 +34,7 @@ Python 3.14, Django 6.1, Django templates, plain CSS, small vanilla JavaScript m
 DATABASE_URL=postgres://localhost:5432/pokernights .venv/bin/python manage.py test   # PostgreSQL
 ```
 
-Run the tests before each commit. Use Conventional Commits. Do not push or deploy without an instruction.
+Run the tests before each commit. Use Conventional Commits. Do not push or deploy without an instruction. Once GitHub is connected to Vercel, a push to `main` is a production release: the build runs the tests, then the migrations. Run the PostgreSQL suite locally before a release; the Vercel build skips the PostgreSQL-only tests. See [doc/wiki/deployment.md](doc/wiki/deployment.md).
 
 ## Design rules
 
