@@ -1,6 +1,6 @@
 # Add a player during play
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [study](../study/1791091289_add_player_during_play.md), commit `7973c50`. Main implementation baseline: `e133a1a`. Canonical sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 423 SQLite tests pass, with three PostgreSQL-only skips.
 
@@ -33,7 +33,7 @@ Add a late arrival from the ongoing set without returning to group management.
 - [x] **`feat(games): add new players from an ongoing set`**: implement the atomic operation, explicit form action, error preservation and visible entry point with directly related tests. Completion: AC1–AC5 demonstrated with exact record/timer/audit assertions and synthetic browser flows.
 - [x] Verify AC6 and address material in-scope findings: full SQLite/PostgreSQL, shared roster picker regressions, opening/default-late-buy-in boundary, native forms and required finish review.
 - [x] **`docs: document adding players during play`**: sync affected wiki/features/architecture, PRODUCT capability wording if needed, built design/surface notes, TODO and plan evidence. Completion: docs explain roster persistence, late timer start and separate buy-in.
-- [ ] Rendezvous: merge verified work into local main, check the running app and record completion. No push or deployment.
+- [x] Rendezvous: merge verified work into local main, check the running app and record completion. No push or deployment.
 
 ## Verification and dependencies
 
@@ -72,3 +72,7 @@ Budgets remain CSS 32,942 bytes, cumulative added JS 11,440 bytes and font 103,9
 The finish reviewer scored its sole duplicate recovery fix resolved and returned ship for the scored fix. All required recaptures are valid. Detector ran once with advisory-only unstyled template palette/type findings; native renders inherit Rack. Feature commit: `2672542`.
 
 The documenter updated only DESIGN.md supporting-form prose and the existing supporting-forms surface addendum. It inspected all three captures and 21 passing checks, preserved machine tokens/sidecar and reported no new bounded visual drift. Wiki/product/browser documentation and TODO are synced to built behavior.
+
+## Rendezvous
+
+Completed 2026-10-04. Feature `2672542` and synced docs `34355b9` merged into local main. All 444 tests pass on main's SQLite suite (six PostgreSQL-only races skipped here; all passed on PostgreSQL above). The existing development server remains at http://127.0.0.1:8000 and `/healthz` returns 200. No migration, development game mutation, push or deployment. Temporary verification server and PostgreSQL are stopped.

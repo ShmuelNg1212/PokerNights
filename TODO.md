@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Add a player during play is verified; rendezvous is in progress ([plan](doc/plan/1791091385_add_player_during_play.md)).
+Add a player during play is done ([plan](doc/plan/1791091385_add_player_during_play.md)). Add players offers a new-name form during play; late buy-ins stay separate.
 
 Live counted total is done ([plan](doc/plan/1791089905_live_counted_total.md)). Count-up previews remaining stacks plus cash-outs against buy-ins while typing.
 
