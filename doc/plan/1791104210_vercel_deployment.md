@@ -99,3 +99,5 @@ On Vercel and Neon:
 Deviations from the plan: the polling measurement ran three minutes, not thirty, and read client-side timings only; function invocations and active CPU on Vercel's side were not read. The rollback rehearsal needs a production release first and is still to do. The local PostgreSQL suite is run before the merge (next entry).
 
 2026-10-04: PostgreSQL 17 (temporary local instance, now stopped): all 518 tests pass. Documentation synced: new `doc/wiki/deployment.md`; setup, external dependencies, wiki index, features, roadmap, TODO and AGENTS.md updated.
+
+2026-10-04 rendezvous: merged into local main as `ef35d53 feat: merge Vercel deployment preparation`. Main SQLite: 518 pass, ten PostgreSQL-only skips. Not pushed. Waiting for the human's go-ahead to connect GitHub and release `main` to production, then for the human to create the superuser. AC2, AC5, AC6 and AC8 are met; AC1, AC3 and AC4 are met on the preview and still to confirm on production; AC7's runbooks are written, the rollback rehearsal is still to do.
