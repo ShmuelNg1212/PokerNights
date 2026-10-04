@@ -1,6 +1,6 @@
 # Set rake and group pool
 
-Status: **awaiting-approval**. Date: 2026-10-04.
+Status: **in-progress**. Date: 2026-10-04.
 
 Source: [study](../study/1791093189_set_rake_and_group_pool.md), commit `59d28a7`. Main implementation baseline: `0b55fd9`. Sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 444 SQLite tests pass; six PostgreSQL-only races skip.
 
@@ -8,7 +8,7 @@ Source: [study](../study/1791093189_set_rake_and_group_pool.md), commit `59d28a7
 
 Funding and settlement are resolved by the human: deduct rake from gross buy-ins; give every group its own rake entity; rake is already collected at each buy-in and is tracked only, without a final transfer to that entity.
 
-Approval also confirms these proposed rules: Off by default; percentage precision of two decimal places; round down separately for each buy-in to the native smallest unit; flat fee per buy-in/rebuy; rake must leave a positive playable amount; lock the rule while accepted money exists; next sets inherit the prior rule. No blocking external input remains. Implementation has not started.
+Approval also confirms these proposed rules: Off by default; percentage precision of two decimal places; round down separately for each buy-in to the native smallest unit; flat fee per buy-in/rebuy; rake must leave a positive playable amount; lock the rule while accepted money exists; next sets inherit the prior rule. No blocking external input remains. The human approved this plan on 2026-10-04 with “approved”. Implementation is authorized.
 
 ## Goal and observable accounting
 
@@ -51,8 +51,8 @@ Player result after rake = cash-outs + override − gross buy-ins. Player remain
 
 ## Ordered task board and commit boundaries
 
-- [ ] Record approval, recheck current main and create isolated branch/worktree `feat/set-rake`. Link TODO to this plan. Approval covers this multi-commit accounting change, its required verification, local merge and docs.
-- [ ] **`feat(ledger): record per-buy-in rake and group accounts`**: group identity, set rule/version/request tracking, entry model, atomic recording/reversal and compatible migrations. Completion: exact integer fees and accepted pool aggregates verified; default-Off app remains workable at this commit boundary. Do not expose an enabled fee through forms until balance/finalization support is integrated.
+- [x] Record approval, recheck current main and create isolated branch/worktree `feat/set-rake`. Link TODO to this plan. Approval covers this multi-commit accounting change, its required verification, local merge and docs.
+- [x] **`feat(ledger): record per-buy-in rake and group accounts`**: group identity, set rule/version/request tracking, entry model, atomic recording/reversal and compatible migrations. Completion: exact integer fees and accepted pool aggregates verified; default-Off app remains workable at this commit boundary. Do not expose an enabled fee through forms until balance/finalization support is integrated.
 - [ ] **`feat(settlement): account for collected rake in balances and results`**: rake-aware read models, constraints/snapshots, overrides, separate transfer balances and zero-double-charge closure. Completion: rake-enabled sets finalize and sessions settle with exact conservation; old snapshots/transfers remain unchanged.
 - [ ] **`feat(web): show rake rules and accumulated pools`**: expose host configuration and all affected facts, group lifetime breakdown and recap distinctions. Completion: native end-to-end percentage/flat/Off flows, live preview, group totals and membership gates meet AC1–AC9. Apply Impeccable as a bounded Operate extension during this UI task; inherit Rack, use batched captures and required finish-review/documenter roles.
 - [ ] **`docs: document rake accounting and group pools`**: sync PRODUCT/DESIGN as needed, wiki architecture/features/setup/journal, confirmed footguns, relevant surface addenda, TODO and plan evidence. Keep SPEC.md and studies immutable.
@@ -78,3 +78,5 @@ Use additive defaults and staged constraints so existing development data migrat
 ## Progress and blockers
 
 2026-10-04: study and completed plan prepared. Deducted funding, group-owned entity and already-collected tracking are confirmed. No external blocker. Proposed precision/rounding/configuration rules and this implementation scope await approval.
+
+2026-10-04: Approved by the human (“approved”). Worktree `/private/tmp/pn-set-rake`, branch `feat/set-rake`. Ledger/configuration step verified: 452 SQLite tests pass (six PostgreSQL-only skips).

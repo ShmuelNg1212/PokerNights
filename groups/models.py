@@ -15,6 +15,16 @@ class GameGroup(models.Model):
         return self.name
 
 
+class GroupRakeAccount(models.Model):
+    """The group’s collected rake identity. Its totals are ledger queries."""
+
+    group = models.OneToOneField(GameGroup, on_delete=models.PROTECT, related_name="rake_account")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rake — {self.group}"
+
+
 class Member(models.Model):
     """A person in a group's roster. ``user`` is empty for a player without a login."""
 

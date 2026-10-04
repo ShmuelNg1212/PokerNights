@@ -20,7 +20,7 @@ from groups.models import Member
 from . import money, queries
 from .models import (
     BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization,
-    PlayerResult,
+    PlayerResult, RakeEntry,
 )
 
 State = GameSession.State
@@ -93,6 +93,10 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
             f"A buy-in must be between {money.format_amount(current.min_buy_in, session.unit)} "
             f"and {money.format_amount(current.max_buy_in, session.unit)}."
         )
+    rake = (amount * current.rake_basis_points // 10000 if current.rake_mode == "percent"
+            else current.rake_flat if current.rake_mode == "flat" else 0)
+    if not 0 <= rake < amount:
+        raise RuleError("Rake must leave a positive amount in play. Increase the buy-in or change rake before recording money.")
     _back_in_play(participant, actor)
     if session.state == State.RUNNING:
         games.clock.open_interval(participant, timezone.now())
@@ -100,10 +104,12 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
         session=session, participant=participant, settings_version=current, amount=amount,
         request_id=request_id, recorded_by=actor.user,
     )
+    RakeEntry.objects.create(buy_in=buy_in, account=session.group.rake_account, amount=rake,
+                             unit=session.unit, **current.rake())
     audit.record(
         "buy_in.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
         summary=f"{participant.member.display_name} bought in for {money.format_amount(amount, session.unit)}",
-        data={"amount": amount, "unit": session.unit},
+        data={"amount": amount, "unit": session.unit, "rake": rake, "playable": amount - rake},
     )
     games.touch(session)
     return buy_in

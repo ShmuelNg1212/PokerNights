@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from games.models import GameSession, Participant
 
 from . import money
-from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount
+from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount, RakeEntry
 
 
 @dataclass
@@ -138,7 +138,7 @@ def summary(session: GameSession) -> Summary:
         p.pk: PlayerLine(p)
         for p in Participant.objects.filter(session=session).select_related("member").order_by("join_order")
     }
-    for buy_in in BuyIn.objects.filter(session=session).select_related("reversal", "recorded_by"):
+    for buy_in in BuyIn.objects.filter(session=session).select_related("reversal", "recorded_by", "rake_entry"):
         line = lines[buy_in.participant_id]
         if hasattr(buy_in, "reversal"):
             line.reversed_buy_ins.append(buy_in)
@@ -296,3 +296,17 @@ class CountTotal:
 def count_total(session_or_summary) -> CountTotal:
     found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
     return CountTotal(found)
+
+
+def group_rake(group):
+    """Accepted fees in native units, with a reconciling per-set breakdown."""
+    from django.db.models import Sum
+    rows = list(RakeEntry.objects.filter(account__group=group, buy_in__reversal__isnull=True)
+                .values("unit", "buy_in__session_id", "buy_in__session__set_number",
+                        "buy_in__session__night_id", "buy_in__session__game_date",
+                        "buy_in__session__table__name")
+                .annotate(total=Sum("amount")).order_by("-buy_in__session__game_date", "-buy_in__session_id"))
+    totals = {"php": 0, "chips": 0}
+    for row in rows:
+        totals[row["unit"]] += row["total"]
+    return totals, rows

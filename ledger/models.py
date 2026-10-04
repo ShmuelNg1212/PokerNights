@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import F, Q
 
 from games.models import GameSession, Participant, SettingsVersion, Unit
-from groups.models import GameGroup, Member
+from groups.models import GameGroup, GroupRakeAccount, Member
 
 # Every amount below is an integer in the session's unit: centavos in a pesos
 # game, whole chips in a chips game. Nothing converts between the two.
@@ -32,8 +32,34 @@ class BuyIn(models.Model):
         ]
         indexes = [models.Index(fields=["participant"], name="buy_in_participant")]
 
+    @property
+    def rake_amount(self):
+        return self.rake_entry.amount if hasattr(self, "rake_entry") else 0
+
+    @property
+    def playable_amount(self):
+        return self.amount - self.rake_amount
+
     def __str__(self):
         return f"Buy-in of {self.amount} for participant {self.participant_id}"
+
+
+class RakeEntry(models.Model):
+    """Immutable fee collected from one gross buy-in, including explicit zero fees."""
+
+    buy_in = models.OneToOneField(BuyIn, on_delete=models.PROTECT, related_name="rake_entry")
+    account = models.ForeignKey(GroupRakeAccount, on_delete=models.PROTECT, related_name="entries")
+    amount = models.BigIntegerField()
+    unit = models.CharField(max_length=8, choices=Unit.choices)
+    rake_mode = models.CharField(max_length=8)
+    rake_basis_points = models.PositiveIntegerField(default=0)
+    rake_flat = models.BigIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(amount__gte=0), name="rake_amount_not_negative"),
+            models.CheckConstraint(condition=Q(unit__in=["php", "chips"]), name="rake_unit_valid"),
+        ]
 
 
 class BuyInReversal(models.Model):
