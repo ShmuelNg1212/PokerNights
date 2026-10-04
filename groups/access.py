@@ -26,8 +26,8 @@ def require_host(member: Member) -> None:
         raise NotAllowed("Only a host can do this.")
 
 
-def invite_vouches(request, next_path: str) -> bool:
-    """True when ``next_path`` is the address of an invite that can still be used."""
+def _usable_invite_at(next_path: str):
+    """The invite whose address is ``next_path`` if it can still be used, else None."""
     from urllib.parse import urlsplit
 
     from django.urls import Resolver404, resolve
@@ -38,11 +38,21 @@ def invite_vouches(request, next_path: str) -> bool:
     try:
         match = resolve(urlsplit(next_path).path)
     except Resolver404:
-        return False
+        return None
     if match.url_name != "invite_accept":
-        return False
+        return None
     try:
-        services.usable_invite(match.kwargs["token"])
+        return services.usable_invite(match.kwargs["token"])
     except RuleError:
-        return False
-    return True
+        return None
+
+
+def invite_vouches(request, next_path: str) -> bool:
+    """True when ``next_path`` is the address of an invite that can still be used."""
+    return _usable_invite_at(next_path) is not None
+
+
+def invite_group_name(request, next_path: str):
+    """The group behind a usable invite address, for the entry pages. The link holder may know it."""
+    invite = _usable_invite_at(next_path)
+    return invite.group.name if invite else None

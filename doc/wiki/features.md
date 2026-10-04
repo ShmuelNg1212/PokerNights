@@ -102,6 +102,15 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Money records are never removed by any of these. Each action writes an audit event; the events of a deleted session or group stay.
 - Not possible: archiving or deleting a single set, purging an archived group, deleting a user account.
 
+## Entry pages
+
+- Log in, Sign up, “Sign-up needs an invite” and Join group share a centred frame led by the mark and the name. Signed-out pages have no site header.
+- A person who arrives from a usable invite link sees “You’re invited to {group}” on Log in and Sign up. An invalid, expired, used-up or revoked link shows nothing. `accounts.signup.INVITERS` is filled by `groups.access.invite_group_name`, so `accounts` does not import `groups`.
+- Sign up asks for a username, a password and the password again. The help is one short line each; the password rules are Django's four validators, unchanged. A broken rule is reported under Password.
+- Password fields have a Show / Hide button when JavaScript runs (`static/js/password.js`).
+- Join group shows the group name and the number of active players.
+- Log in is `accounts.views.Login`, Django's `LoginView` with the invite name added to the context.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

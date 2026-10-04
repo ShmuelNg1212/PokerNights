@@ -639,3 +639,23 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .home-archived .list a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--muted); text-underline-offset: 4px; overflow-wrap: anywhere; }
 .home-first + .home-archived { max-width: 440px; margin-left: auto; margin-right: auto; }
 .home-archived, .form-page h1, .form-page p, .form-page label, .form-page .notice { overflow-wrap: anywhere; }
+
+/* Entry pages: log in, sign up, invite. One centred column led by the mark; the site header is left out while signed out. */
+.entry-page { max-width: 472px; padding-top: var(--s-6); padding-bottom: 48px; overflow-wrap: anywhere; }
+.entry-head { display: grid; justify-items: center; gap: var(--s-2); margin-bottom: var(--s-5); text-align: center; }
+.entry-head-compact { margin-bottom: var(--s-3); }
+.entry-name { margin: 0; font-size: 2rem; font-weight: 800; font-stretch: 88%; letter-spacing: -.01em; line-height: 1.1; }
+.entry-line { margin: 0; max-width: 34ch; color: var(--muted); text-wrap: balance; }
+.entry-page h1 { margin: 0; font-size: 1.375rem; font-weight: 700; text-align: center; text-wrap: balance; }
+.entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
+.entry-note { margin: var(--s-3) auto var(--s-5); max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
+.entry-page .form-section { margin: var(--s-4) 0 0; padding: 0; border-top: 0; }
+.entry-page .form-section .btn-block { margin-top: var(--s-3); }
+.entry-page .notice { margin: 0 0 var(--s-2); }
+.entry-page > .notice { margin: var(--s-4) 0; }
+.entry-alt { margin: var(--s-4) 0 0; text-align: center; color: var(--muted); }
+.entry-alt a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); justify-content: center; color: var(--text); text-underline-offset: 4px; }
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 76px; }
+.password-toggle { position: absolute; top: 0; right: 0; min-width: 68px; height: 100%; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-field); background: transparent; color: var(--muted); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.password-toggle:hover, .password-toggle[aria-pressed=true] { color: var(--text); }
