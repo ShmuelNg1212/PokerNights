@@ -25,6 +25,7 @@ The Rack slices 1–4 are built: shared foundation, active set and action sheets
 - **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` itself is unchanged; its owner can update it.
 - **2026-10-04, sessions with sets.** A session holds several sets. Settle-up is once per session. Results and playing time are stored per set.
 - **2026-10-04, stats.** A "session played" is a closed session, not a set; the win rate is profitable sessions over sessions played; profit is after rake; no minimum-session threshold yet.
+- **2026-10-04, archive and delete.** A session or group with any money record can be archived and never deleted. An archived session is out of the totals until restored. An archived group is hidden from every member. Single sets are not archived.
 - **Consequence for Stage 3:** leaderboards must state whether a "session played" is a set or a session, and can use `PlayerResult.play_seconds` for hourly figures.
 - **Consequence for Stage 3:** leaderboards and statistics are per unit. A pesos board includes only pesos games. `PlayerResult.unit` supports this.
 - The "chip denominations" item under "Later" no longer applies to pesos games.

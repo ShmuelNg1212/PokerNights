@@ -22,8 +22,8 @@
   <p class="small muted">Hidden from every member. Nothing was removed.</p>
   <ul class="list">{% for m in archived_groups %}
     <li class="stack"><div><strong>{{ m.group.name }}</strong><br><span class="muted small">Archived {{ m.group.archived_at|date:"M j, Y" }}{% if m.group.archived_by %} by {{ m.group.archived_by.username }}{% endif %}</span></div>
-      <form method="post" action="{% url 'group_restore' m.group.pk %}" data-once>{% csrf_token %}<button type="submit" class="btn btn-block">Restore {{ m.group.name }}</button></form>
-      <a class="small" href="{% url 'group_delete' m.group.pk %}">Delete {{ m.group.name }}</a></li>
+      <form method="post" action="{% url 'group_restore' m.group.pk %}" data-once>{% csrf_token %}<button type="submit" class="btn btn-block" aria-label="Restore {{ m.group.name }}">Restore</button></form>
+      <a class="small" href="{% url 'group_delete' m.group.pk %}" aria-label="Delete {{ m.group.name }}">Delete this group</a></li>
   {% endfor %}</ul>
 </details>
 {% endif %}

@@ -116,3 +116,39 @@ Two slices, each committed after the full suite passes.
 ## Rollback
 
 Revert the feature commits and migrate `games` and `groups` back one step each; the columns are nullable and hold no money data. Rows already deleted through the feature cannot be brought back, by design.
+
+## Progress and blockers
+
+2026-10-04: Study and plan complete. The human approved with “im fine with the defaults. proceed”; all nine decisions stand as recommended.
+
+2026-10-04 execution on `feat/archive-delete`, two feature commits, each after the full SQLite suite.
+
+1. `9881967` sessions: migration `games.0012_night_archive`, services, the write gate in `lock_night` and `lock_session`, query filters, views, pages.
+2. Groups: migration `groups.0004_group_archive`, `member_for` 404, services, `delete_group`, views, pages.
+
+Changes from the plan:
+
+1. **The session views and URLs are in `settlement`, not `games`.** The archive confirmation lists unpaid transfers, which `games` may not import.
+2. **The money check is a registry** (`games.NIGHT_RECORD_CHECKS`, filled by `ledger` and `settlement`), not reverse relations. It follows the existing `SESSION_MONEY_CHECKS`.
+3. **Every action has a GET confirmation page and a POST.** The plan gave archive a direct POST with an extra page only for unpaid transfers; one page for all cases is simpler and always states the consequences. `confirm_unpaid` is therefore not a service argument: the confirmation is a screen, not a rule.
+4. **The index `night_group_status_date` is unchanged.** The tables are small and no query needed it.
+5. **The typed group name is checked in the service**, so a direct POST cannot skip it.
+6. **`create_invite` now locks the group**, found by a test: an invite could be created for an archived group.
+7. **`session_nets` needed no filter**; its callers pass only sessions that are already filtered.
+8. **Archived pages hide host controls by rendering with a player-role copy of the membership** (`games.access.read_only`), instead of a condition on each control.
+
+2026-10-04 verification:
+
+- 569 tests pass on SQLite (ten PostgreSQL-only skips) and all 569 on local PostgreSQL 17, started for the run and stopped after. The four new race tests ran five more times on PostgreSQL without a failure.
+- 46 new tests: service rules, every existing write service refused on an archived session, totals before/during/after, database `ProtectedError`, pages, 403 and 404, invites, group delete.
+- `makemigrations --check` reports no drift. Both migrations applied forward on the local development database with seeded data.
+- `archive.mjs`: 85 of 85 on a fresh temporary database; captures inspected at 320 and 390px.
+- The home page stays at 11 queries (`web/tests/test_home.py`); the archived-groups lookup is in the view, outside that count, and adds one.
+
+Not verified: a physical phone, a screen reader, migration on a copy of production data, and the live-page case from the plan as a browser check (the 404 of the state endpoint after delete is covered by a Django test; `live.js` already reloads on 404).
+
+Known gap: a write on a finished set in a group that is being archived at the same moment can land, because set writes do not lock the group row. It breaks no money rule and is visible after restore. Recorded in the wiki.
+
+AC1 to AC9 are met.
+
+Documentation synced: wiki features and architecture, PRODUCT.md, DESIGN.md, roadmap decisions, browser README, TODO.
