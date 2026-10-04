@@ -99,6 +99,9 @@ TEMPLATES = [
 ]
 
 AUTH_USER_MODEL = "accounts.User"
+# On a public address, an account can be created only from a usable invite link.
+# First hosts are added by a superuser in /admin/.
+SIGNUP_REQUIRES_INVITE = env.bool("SIGNUP_REQUIRES_INVITE", default=bool(os.environ.get("VERCEL")))
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"

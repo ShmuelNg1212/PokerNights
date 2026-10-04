@@ -72,3 +72,13 @@ Roll back code by reverting the commits; the settings changes do nothing off Ver
 2026-10-04: Study and plan complete. Implementation and all actions on Vercel and Neon await approval of this plan and the five decisions above.
 
 2026-10-04: Human approved this plan with “approved. I agree with the defaults.” Decisions: invite-only sign-up with first hosts created in `/admin/`; empty production database; GitHub connected so a push to `main` releases; project name `pokernights`, no custom domain; the Hobby plan's personal-use terms accepted by the human. Execution uses branch `feat/vercel-deploy`, worktree `/private/tmp/pn-vercel`. The production release and the superuser password still need the human at the time.
+
+## 2026-10-04 addendum — the invite-only sign-up rule (step 3)
+
+- A setting, `SIGNUP_REQUIRES_INVITE`, read from the environment. It is on by default on Vercel and off elsewhere, so local development and the existing tests keep open sign-up.
+- When it is on, the sign-up page shows its form only if `next` points at an invite address (`/join/<token>/`) whose invite can still be used: not revoked, not expired, not used up. The same check runs again when the form is posted.
+- Otherwise the page answers 403 with one sentence and a link to log in. No account is created.
+- The invite itself is not used up by signing up. It is used when the new person accepts it on the next page, as today.
+- First hosts: a superuser adds the account in `/admin/` → Users. That person logs in, creates a group and sends invite links.
+- `accounts` must not import `groups` (design rule 11). `accounts` keeps a small list of checks; `groups` registers its invite check when the app loads, the same way `games.clock.SKIP_ON_RESUME` works.
+- No model, migration or URL change.

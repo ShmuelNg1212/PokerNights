@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from . import signup as signup_gate
 from .forms import SignupForm
 
 
@@ -18,6 +19,8 @@ def safe_next(request, default="home"):
 def signup(request):
     if request.user.is_authenticated:
         return redirect(safe_next(request))
+    if not signup_gate.allowed(request, safe_next(request, "")):
+        return render(request, "accounts/signup_closed.html", status=403)
     form = SignupForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
