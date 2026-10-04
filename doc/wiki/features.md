@@ -83,7 +83,7 @@ See the [roadmap](../roadmap/README.md).
 
 ## Active set design (slice 1)
 
-- The Rack uses an indigo table field, warm dark ground, Archivo figures and player tokens with initials. Shared forms and other screens use the same base styles; their composition is not yet redesigned.
+- The Rack uses an indigo table field, warm dark ground, Archivo figures and player tokens with initials. Shared forms and remaining group, home and log screens use the same base styles; their composition is not yet redesigned.
 - The first phone viewport shows still in play, clock and blinds. Total bought in and cashed out remain separate labels. From 900 px, the field and host controls sit beside the player list.
 - Tap a player's name for cash-out, playing time, money records and corrections. Tap `+` for buy-in or rebuy. The next host action sits in an opaque phone dock. More host controls includes settings, cancellation and adding one player.
 - Without JavaScript, each row has expandable forms for the same actions.
@@ -102,4 +102,14 @@ See the [roadmap](../roadmap/README.md).
 - Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check follows the count list. Long names wrap. JavaScript-free forms remain usable.
 
 
-The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slices; the [slice 2 plan](../plan/1791050738_redesign_slice_2.md) records end-of-set verification.
+## Session and settle-up design (slice 3)
+
+- Open sessions lead with the current set action and show Results so far over finalized sets. Host close controls explain unfinished sets. Closed sessions lead with Still to pay and settled/partly settled/unsettled status.
+- Still to pay sums unpaid transfers. The progress bar measures paid amounts against all transfer amounts; the paid transfer count is labelled separately. With no transfers, the page says Nobody owes anything. Paying or undoing a transfer does not change frozen poker results.
+- Transfer rows show payer, payee, tokens, amount and Paid / Not paid. Only hosts see Mark paid and Undo. Payment records retain undone rows and name the recorder. Session results use signed figures, directional icons and a Final tag only after closing.
+- Initial tokens use session standings' first-appearance order, keyed by member. They may have different colours from an individual set. Full names stay visible.
+- The closing recap opens automatically once per session, signed-in viewer and browser. View session recap reopens it manually. Close, backdrop tap and Escape dismiss it; Tab stays in the modal, and focus returns to the trigger. Reduced motion is static. Storage refusal skips automatic opening; manual access remains. Without JavaScript, the recap is inline and native payment/close/next-set forms still work.
+- Recap Recorded play time sums known finalized-set durations, says Not recorded if none are known, and marks a partial sum. It excludes canceled sets. Total bought in across finalized sets sums frozen buy-in snapshots, so money bought in again in another set is counted again. Top session result names all tied winners; break-even sessions say Everyone broke even. Your session result is omitted for a non-playing viewer.
+- The page is one column on phones and 400 px / flexible columns from 900 px. Long settlement amounts use a smaller fixed type size to preserve the whole numeric value on one line. This page still requires reload to see another client's payment changes.
+
+The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice 4; [slice 2](../plan/1791050738_redesign_slice_2.md) and [slice 3](../plan/1791053204_redesign_slice_3.md) record verification.

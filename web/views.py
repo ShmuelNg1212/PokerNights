@@ -183,4 +183,6 @@ def night(request, night_id):
         "can_close": me.is_host and not night.is_closed and not unfinished
         and any(s.state == State.FINALIZED for s in all_sets),
     })
+    if night.is_closed:
+        context["recap"] = settlement_queries.night_recap(night, outcome.standings)
     return render(request, "web/night.html", context)

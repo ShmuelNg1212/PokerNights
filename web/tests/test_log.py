@@ -51,7 +51,7 @@ class SessionLogTests(TestCase):
     def test_transfers_and_payment_records_are_on_the_session_page(self):
         self.client.force_login(self.member.user)
         page = self.client.get(reverse("night", args=[self.night.session.night_id]))
-        for text in ("<strong>B</strong> pays <strong>A</strong>", "Paid ·", "Payment records", "B → A ₱300"):
+        for text in ('aria-label="B pays A"', '>Paid</span>', "Payment records", "B pays A ₱300"):
             self.assertContains(page, text)
 
     def test_non_member_gets_404(self):

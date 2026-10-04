@@ -1,12 +1,12 @@
 # Plan: redesign slice 3
 
 - Date: 2026-10-04 (Asia/Manila), Unix timestamp `1791053204`.
-- Status: **awaiting-approval**.
+- Status: **in-progress**.
 - Study: [slice 3 revalidation](../study/1791053103_redesign_slice_3.md), committed as `4ca6763`.
 - Parent: [visual redesign, task 9](1791046015_visual_redesign.md).
 - Sources: SPEC.md, AGENTS.md, PRODUCT.md, DESIGN.md, wiki and the original redesign study. No doc/canonical directory is present.
 - Baseline: clean main before this cycle; slices 1–2 complete; 384 SQLite tests pass in 13.553 s.
-- Approval: pending. “Begin slice 3” authorizes Phase 1. Record approval of this completed plan before implementation.
+- Approval: human approved this completed plan on 2026-10-04 with “proceed.” Phase 2 is authorized.
 
 ## Goal and scope
 
@@ -62,10 +62,10 @@ Rollback: revert slice 3's implementation commits to the working slice 2 session
 
 ## Task board
 
-- [ ] **1. Build the session composition and recap.** Add read-only presentation totals/context in the appropriate query/view layer; recompose night.html and scoped CSS; implement shared dialog/recap enhancement within budget. Read Impeccable craft-floor immediately before UI edits. Preserve native forms and service contracts.
+- [x] **1. Build the session composition and recap.** Add read-only presentation totals/context in the appropriate query/view layer; recompose night.html and scoped CSS; implement shared dialog/recap enhancement within budget. Read Impeccable craft-floor immediately before UI edits. Preserve native forms and service contracts.
   - Commit: `feat(web): recompose the session page and settle-up`.
   - Done when: all page states and definitions are implemented, focused presentation tests pass and measured assets meet AC9.
-- [ ] **2. Verify flows and resolve the bounded finish review.** Add meaningful tests for unequal-transfer sums, frozen-result separation, recap snapshots/time/ties and role visibility. Extend synthetic browser fixtures and checks for real paid/undo/close/next-set flows, once-only recap, keyboard, storage refusal, reduced motion and no-JavaScript behavior. Run all Django tests on SQLite and PostgreSQL and check for unintended migrations. Run the existing active-table and end-set browser regressions, especially shared sheets/drafts/polling.
+- [x] **2. Verify flows and resolve the bounded finish review.** Add meaningful tests for unequal-transfer sums, frozen-result separation, recap snapshots/time/ties and role visibility. Extend synthetic browser fixtures and checks for real paid/undo/close/next-set flows, once-only recap, keyboard, storage refusal, reduced motion and no-JavaScript behavior. Run all Django tests on SQLite and PostgreSQL and check for unintended migrations. Run the existing active-table and end-set browser regressions, especially shared sheets/drafts/polling.
   - Commit: `test(web): verify session settle-up and recap` (include directly related fixes).
   - Done when: AC1–AC9 have evidence and the required finish disposition is resolved.
 - [ ] **3. Rendezvous and sync docs.** Have the required Impeccable documenter compare the finished build with the incumbent system. Update the session surface brief and built-pattern documentation within its write boundary. Update affected wiki pages/index, parent task 9 and TODO. Merge locally to main, verify the merged result, restart the development server and check health and served assets. Mark this plan done only after required work completes.
@@ -84,4 +84,26 @@ Existing browser harness regressions are 20 active-table action checks, 13 acces
 
 - Phase 1 study committed. Baseline SQLite: 384 tests pass; system check reports no issues.
 - No missing input blocks planning. Asset-budget risk is recorded above.
-- Awaiting human approval of this completed plan. Implementation has not started.
+- Phase 2 approved with “proceed.” Execution is on feat/visual-redesign-slice-3.
+
+- Initial build: 390 tests pass on SQLite (13.009 s) and PostgreSQL (20.267 s); no migrations. Added JavaScript 7,771 bytes (new sheets/changes/toasts plus existing forms/live growth); CSS 28,227 bytes. Active-table browser regressions pass. Fresh finish review identifies large-amount wrapping for the verification fix batch.
+
+
+## Verification evidence
+
+- Build `4374197`: read-only transfer totals and recap context, session composition and shared dialog enhancement. Existing money services, routes and schema are unchanged.
+- Final fix batch: all 390 tests pass on SQLite (13.121 s) and PostgreSQL 17 (19.984 s). No migrations. New tests cover uneven transfer progress, repeat paid, undo/history, frozen results, two-set snapshot totals, unknown/partial time, canceled-set exclusion, ties, chips break-even and non-playing host. Existing role/draft visibility and accounting tests remain passing. Existing assertion edits follow moved markup and drawn/text direction; financial assertions remain intact.
+- Session browser script: 53/53 checks pass on fresh synthetic fixtures. Phone390/desktop1280 and 320 stress cases; host/player views; recap once per viewer/session, manual reopening, storage refusal, Tab/Escape/focus return, reduced motion, paid/repeat paid/undo, reload-based second client, no-JS payment/undo/close/next-set and 48px targets. No runtime exceptions were observed. Native next-set fixture was corrected after the first harness targeted a setup-only session where that action is rightly blocked.
+- Existing browser regressions: 20 active-table, 13 accessibility and 47 end-set checks pass. Shared sheets preserve drafts and focused inputs under polling; native fallbacks and stale recovery still work. Slate text contrast ratios remain 9.38:1 secondary, 11.71:1 bone, 8.68:1 positive and 6.32:1 negative.
+- Detector ran once: one advisory black-text finding on a standalone unrendered Django template; rendered application uses palette CSS. Fresh finish reviewer returned one material fix: large Still to pay digits/cents split across lines. One session-scoped formatted-length size fix and one confirmation round resolved it. Verdict: ship for that scored fix, not a second whole-surface audit.
+- All 35 confirmation captures were opened and validated. Evidence: `/private/tmp/pn-slice3-confirm-review/`, including desktop recaps and inline no-JS recap/history. Reviewer records: `/private/tmp/pn-slice3-finish-review.md` and `/private/tmp/pn-slice3-finish-verdict.md`. No further polishing or detector round.
+- Assets: CSS 28,431 bytes; cumulative added JavaScript 7,771 bytes (sheets 5,204 + changes 1,578 + toasts 802 + forms growth 81 + live growth 106); font 103,912 bytes. All budgets pass. No package, external runtime request or build step added.
+- Not checked: physical devices, screen-reader playback or production deployment. Multi-set and unknown/partial recap time are covered by Django tests rather than new visual fixtures.
+
+| Criteria | Evidence |
+|---|---|
+| AC1–AC3 | Host/player and open/closed captures; native service/permission suite; uneven transfer/payment and frozen-result tests |
+| AC4 | Snapshot/time/cancellation/tie/break-even tests; host/player and tie recap captures |
+| AC5–AC7 | 53 session browser checks including once-only, storage refusal, modal focus, motion and native actions |
+| AC8–AC9 | Width/48px/focus checks, confirmed exact large amount, old contrast/regression checks and measured assets |
+| AC10 | Verification complete; documentation and local rendezvous remain in task 3 |
