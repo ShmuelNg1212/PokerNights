@@ -116,3 +116,5 @@ Execution uses branch `feat/ui-evolution`, worktree `/private/tmp/pn-ui-evolutio
 Not verified: a physical phone, a screen reader, contrast of token initials on the ten player colours, and the no-JavaScript paths in a browser (the native forms are covered by server tests only). `.impeccable/design.json` lost its two slate colours; its component previews were not regenerated and one still shows a slate sample. No independent finish review was run in this cycle.
 
 2026-10-04: Documentation synced: DESIGN.md (frontmatter, prose, addendum), PRODUCT.md addendum, five surface addenda, wiki features and architecture, roadmap, TODO.
+
+2026-10-04 rendezvous: merged into local main as `595c2fd feat(ui): merge the UI evolution`. Main SQLite: 498 pass, ten PostgreSQL-only skips. The existing localhost:8000 server answers health and serves the new header mark; no migration is required. The fixture server and the verification PostgreSQL instance are stopped. No push or deployment.
