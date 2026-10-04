@@ -85,3 +85,5 @@ Not verified: a physical phone and a screen reader.
 AC1 to AC5 are met. Documentation synced: DESIGN.md, wiki features, browser README, TODO.
 
 2026-10-04 rendezvous: merged into local main as `eefa65f feat(ui): merge the session settled indicator`. Main SQLite: 589 pass, ten PostgreSQL-only skips. No migration. The temporary server and PostgreSQL are stopped. Not pushed.
+
+2026-10-04 release: the human said “go push”. Pushed `main` at `e5a7ed2` (previous production commit `19c9744`). The live stylesheet carried the new rules about two and a half minutes later, and the login page answers 200. Not checked on production: the signed-in Sessions tab, because the agent has no production account.

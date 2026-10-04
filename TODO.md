@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-The session settled indicator is done ([plan](doc/plan/1791120060_session_settled_indicator.md)): Past sessions rows and the session top bar say Settled, Partly settled or Unsettled, with the amount still to pay. No migration. Not pushed yet.
+The session settled indicator is done ([plan](doc/plan/1791120060_session_settled_indicator.md)): Past sessions rows and the session top bar say Settled, Partly settled or Unsettled, with the amount still to pay. No migration. Released 2026-10-04 as `e5a7ed2` (previous production commit `19c9744`).
 
 Released 2026-10-04 as `19c9744`: the collapsible host dock with its motion, archive and delete (migrations `games.0012`, `groups.0004`) and the entry pages. The previous production commit was `8e75aaf`.
 
@@ -44,7 +44,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] Try the settled indicator: open a group's Sessions tab and read the Past sessions badges; mark the last transfer of a session paid and check its row turns to Settled; undo it. Say when to push.
+- [ ] Try the settled indicator: open a group's Sessions tab and read the Past sessions badges; mark the last transfer of a session paid and check its row turns to Settled; undo it.
 
 - [ ] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
 
