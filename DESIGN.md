@@ -313,6 +313,14 @@ A canceled set uses the warm rail vocabulary, written Canceled state, recorded r
 
 Focused buy-in and player-detail tasks use a native modal dialog outside the polling region. The close control, Escape and outside click close it; keyboard focus stays within the dialog and returns to the opener. Typed values persist during updates; refused submissions reopen the matching form with the exact values and an error. Native details and forms provide the fallback when sheets are unavailable.
 
+### 2026-10-04 addendum — rake facts
+
+This approved Operate extension inherits The Rack. Native set settings append labelled Off / Percentage / Flat amount controls, per-buy-in deduction help and local errors inside the existing task form. Accepted money disables the rule fields with a written reason. Buy-in help repeats the agreed rule without adding a client fee calculator.
+
+The active overview places Collected rake and Available to play below the gross/cash-out split in the existing definition-list treatment. Count-up and cash-out review reuse those facts on slate; the confirmed total and unsaved preview add accepted rake once to their equation. Final results retain gross buy-ins, playable value, frozen rake and signed after-rake results. Session overview and recap use existing fact rows and explanatory prose to distinguish those results from remaining payments; an all-negative rake-only result says No positive result after rake. The group page adds a quiet Group rake account rail after past sessions, with separate peso/chip totals and a native session/set breakdown disclosure. Settings versions, buy-in records and reversals retain rule and exact fee/playable provenance in the existing reading surface.
+
+No shared token, CSS, motion, raster asset or dependency is introduced. The incumbent phone/desktop topology, Archivo hierarchy, exact unit formatting, focus and 48px actions are reused. DESIGN.md frontmatter and `.impeccable/design.json` are preserved. Pre-existing drift remains: the first active-set contract gives 76px phone totals / 27px clock and blinds, while the finish-reviewed build uses 64px / 22px (16px chips blinds); the sidecar narrative still describes the earlier slice-2 scope and predates the labelled local count preview. This extension does not repair those historical records.
+
 ## Do's and Don'ts
 
 ### Do:

@@ -38,3 +38,9 @@ The approved [default opening buy-ins plan](../../doc/plan/1791088166_default_op
 Below 900px, only a table page containing this option reserves 340px bottom clearance for the enlarged fixed dock. Desktop retains the incumbent two-column layout and in-flow controls. The Rack palette, Archivo hierarchy, shared focus and reduced-motion rules continue unchanged. This addendum extends the earlier preparation/slice-1 scope and money-service boundary for this approved feature; it does not rewrite the historical contract.
 
 Finish disposition: ship, reviewed in `/private/tmp/pn-opening-finish-review.md` against valid 390px/1280px pesos and 390px chips captures. No new visual world, motion or shipping raster asset was introduced.
+
+## 2026-10-04 addendum — per-buy-in rake
+
+The approved `doc/plan/1791093380_set_rake_and_group_pool.md` extends this Operate surface with per-buy-in deductions, preserving the Rack direction. Still in play now excludes collected rake; gross bought in remains in its original split. Collected rake and Available to play follow below in the existing definition list, then short rule help. Percentage help states per-buy-in rounding; flat help uses the native unit. Buy-in and opening controls explain the same agreed rule. Accepted buy-in details show gross, rake and playable amounts; reversals retain the original fee with a written reversal note. No new fee-calculation interaction is added.
+
+This addendum preserves the incumbent Rack and machine-token records. Finish review: **ship** for the approved rake extension, `/private/tmp/pn-rake-finish-review.md`. Shared evidence and preserved historical drift are recorded in the rake addendum of `templates-web-end-set.md`; this is not a new whole-product audit.

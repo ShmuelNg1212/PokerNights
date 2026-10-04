@@ -40,3 +40,9 @@ SPEC.md, the wiki, and the approved visual-redesign study and plan. Mockups cont
 ## Accessibility & Inclusion
 
 Large touch targets, visible keyboard focus, labelled controls, reduced-motion support and text contrast of at least 4.5:1.
+
+## 2026-10-04 addendum — per-buy-in rake
+
+Hosts can configure each set with rake Off, a percentage or a flat amount before accepting money. Rake is deducted from every gross buy-in and rebuy, including opening and late-player buy-ins. Percentages use up to two decimal places and round down separately for each buy-in to centavos or whole chips. The deduction must leave a positive playable amount. The rule stays locked while accepted money exists; the next set inherits it. Buy-in limits and the usual buy-in remain gross amounts.
+
+Screens distinguish total bought in, collected rake, available to play and money still in play. Counting compares remaining stacks plus accepted cash-outs plus already-collected rake with gross buy-ins. Final results include the player's rake as a loss; settle-up adds that already-collected contribution back when calculating remaining player payments. Equal losses consisting only of rake therefore require no further transfer. The dedicated group rake account tracks accepted lifetime fees by session and set, with pesos and chips separate and reversed buy-ins excluded. It is not a player, login or transfer recipient. PokerNights records these facts and payments; it does not move money.
