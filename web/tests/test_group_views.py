@@ -14,7 +14,7 @@ class GroupViewTests(TestCase):
         self.client.force_login(self.host.user)
 
     def test_sessions_is_the_default_and_an_unknown_view_falls_back(self):
-        for query in ({}, {"view": "nonsense"}, {"view": "stats"}):
+        for query in ({}, {"view": "nonsense"}):
             page = self.client.get(self.url, query)
             self.assertEqual(page.context["view"], "sessions")
             self.assertContains(page, 'aria-current="page">Sessions</a>')

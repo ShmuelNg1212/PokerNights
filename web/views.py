@@ -43,7 +43,7 @@ def visible_nights(me):
     return nights
 
 
-GROUP_VIEWS = ("sessions", "settings")
+GROUP_VIEWS = ("sessions", "stats", "settings")
 
 
 def group(request, group_id):
@@ -56,13 +56,36 @@ def group(request, group_id):
         "view": view if view in GROUP_VIEWS else "sessions",
         "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
     }
+    periods = settlement_queries.stat_periods(me.group)
+    # The Stats tab appears once a closed session gives it something to show.
+    context["has_stats"] = bool(periods)
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
+    elif context["view"] == "stats":
+        context.update(group_stats_context(request, me, periods))
     else:
         nights = [n for n in visible_nights(me) if n.shown_sets]
         context["open_nights"] = [n for n in nights if not n.is_closed]
         context["closed_nights"] = [n for n in nights if n.is_closed]
     return render(request, "web/group.html", context)
+
+
+def group_stats_context(request, me, periods) -> dict:
+    """Profit or loss, sessions played and win rate for one unit and one period. Read-only."""
+    unit = request.GET.get("unit")
+    if unit not in periods:
+        unit = money.PHP if money.PHP in periods or not periods else next(iter(periods))
+    months = periods.get(unit, [])
+    month = next((m for m in months if m.strftime("%Y-%m") == request.GET.get("month")), None)
+    stats = settlement_queries.group_stats(me.group, unit, month) if months else []
+    return {
+        "stats": stats,
+        "stat_members": [line.member for line in stats],
+        "stat_unit": unit,
+        "stat_units": [u for u in (money.PHP, money.CHIPS) if u in periods],
+        "stat_month": month,
+        "stat_months": months,
+    }
 
 
 def group_settings_context(request, me) -> dict:

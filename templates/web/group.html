@@ -6,7 +6,8 @@
 <p class="table-bar"><a href="{% url 'home' %}">{% icon 'arrow-left' %} Your groups</a></p><header class="page-heading"><h1>{{ group.name }}</h1><span class="badge">{{ me.get_role_display }}</span></header>
 <nav class="tabs" aria-label="{{ group.name }}">
   <a href="{% url 'group' group.pk %}" {% if view == 'sessions' %}aria-current="page"{% endif %}>Sessions</a>
+  {% if has_stats %}<a href="{% url 'group' group.pk %}?view=stats" {% if view == 'stats' %}aria-current="page"{% endif %}>Stats</a>{% endif %}
   <a href="{% url 'group' group.pk %}?view=settings" {% if view == 'settings' %}aria-current="page"{% endif %}>Group settings</a>
 </nav>
-{% if view == 'settings' %}{% include "web/_group_settings.html" %}{% else %}{% include "web/_group_sessions.html" %}{% endif %}
+{% if view == 'settings' %}{% include "web/_group_settings.html" %}{% elif view == 'stats' %}{% include "web/_group_stats.html" %}{% else %}{% include "web/_group_sessions.html" %}{% endif %}
 {% endblock %}

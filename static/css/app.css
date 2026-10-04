@@ -481,6 +481,22 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .group-settings summary.small { color:var(--muted); }
 .group-settings .set-totals { border-top:0; }
 .group-settings .set-totals dt { color:var(--muted); }
+.pills { display:flex; gap:var(--s-2); margin:0 0 var(--s-3); padding-bottom:var(--s-1); overflow-x:auto; }
+.pills a { flex:none; display:inline-flex; align-items:center; min-height:var(--tap); padding:0 var(--s-4); border:1px solid var(--line); border-radius:var(--r-pill); color:var(--muted); font-weight:600; font-size:.9rem; text-decoration:none; white-space:nowrap; }
+.pills a[aria-current] { background:var(--bone); border-color:var(--bone); color:var(--ink); }
+.pills a:focus-visible { outline-offset:-3px; }
+.stat-list { list-style:none; margin:var(--s-3) 0; padding:0; }
+.stat-row { display:flex; align-items:center; gap:var(--s-3); padding:var(--s-3) 0; border-top:1px solid var(--rule); min-width:0; }
+.stat-row:first-child { border-top:0; }
+.stat-row .grow { flex:1 1 0; min-width:0; overflow-wrap:anywhere; }
+.stat-rank { flex:none; width:1.5rem; color:var(--muted); font-weight:700; text-align:center; }
+.stat-row .chip { flex:none; }
+.stat-facts { display:block; }
+.stat-net { flex:none; display:inline-flex; align-items:center; gap:var(--s-1); font-size:1.375rem; font-weight:750; font-stretch:85%; text-align:right; white-space:nowrap; }
+.stat-net .icon { width:1rem; height:1rem; }
+.stat-notes p { margin:0 0 var(--s-2); }
+.stat-notes strong { color:var(--text); }
+@media (max-width:420px) { .stat-row { gap:var(--s-2); } .stat-net { font-size:1.125rem; } .stat-row .chip { width:36px; height:36px; font-size:.8125rem; } .tabs a { padding:0 var(--s-1); font-size:.875rem; } }
 .session-list { list-style:none; margin:0; padding:0; }
 .session-list li + li { border-top:1px solid var(--rule); }
 .session-link { display:flex; align-items:center; justify-content:space-between; gap:var(--s-3); flex-wrap:wrap; min-height:64px; padding:var(--s-3) 0; text-decoration:none; overflow-wrap:anywhere; }
