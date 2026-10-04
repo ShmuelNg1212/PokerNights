@@ -1,6 +1,6 @@
 # Deploying PokerNights on Vercel: plan
 
-Status: awaiting approval. Date: 2026-10-04, Asia/Manila. Study: [Deploying PokerNights on Vercel](../study/1791104094_vercel_deployment.md).
+Status: approved 2026-10-04. Date: 2026-10-04, Asia/Manila. Study: [Deploying PokerNights on Vercel](../study/1791104094_vercel_deployment.md).
 
 ## Outcome
 
@@ -70,3 +70,5 @@ Roll back code by reverting the commits; the settings changes do nothing off Ver
 ## Progress and blockers
 
 2026-10-04: Study and plan complete. Implementation and all actions on Vercel and Neon await approval of this plan and the five decisions above.
+
+2026-10-04: Human approved this plan with “approved. I agree with the defaults.” Decisions: invite-only sign-up with first hosts created in `/admin/`; empty production database; GitHub connected so a push to `main` releases; project name `pokernights`, no custom domain; the Hobby plan's personal-use terms accepted by the human. Execution uses branch `feat/vercel-deploy`, worktree `/private/tmp/pn-vercel`. The production release and the superuser password still need the human at the time.
