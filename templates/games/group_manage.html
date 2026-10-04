@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} group · {{ group.name }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<p class="small">{% if group.is_archived %}<a href="{% url 'home' %}">Your groups</a>{% else %}<a href="{% url 'group' group.pk %}?view=settings#manage">{{ group.name }} settings</a>{% endif %}</p>
+<h1>{% if mode == 'delete' %}Delete this group?{% else %}Archive this group?{% endif %}</h1>
+<p><strong>{{ group.name }}</strong></p>
+{% if unfinished %}
+<div class="notice notice-info">Finish or cancel every set first. Not done: {% for s in unfinished %}{{ s.table.name }} set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</div>
+{% elif mode == 'delete' and has_records %}
+<div class="notice notice-info">Money was recorded in this group, so it cannot be deleted. Money records are never removed.{% if not group.is_archived %} You can archive it instead.{% endif %}</div>
+{% if not group.is_archived %}<p><a class="btn btn-block" href="{% url 'group_archive' group.pk %}">Archive instead</a></p>{% endif %}
+{% elif mode == 'delete' %}
+<ul class="muted manage-effects">
+  <li>This removes the group, its roster, tables, presets, invite links and empty sessions for good.</li>
+  <li>It holds no money record. Players keep their accounts and their other groups.</li>
+  <li>It cannot be undone.</li>
+</ul>
+<form method="post" class="form-section stack" data-once>{% csrf_token %}
+  <div class="field"><label for="confirm-name">Type the group name to confirm</label>
+    <input id="confirm-name" type="text" name="confirm_name" value="{{ typed }}" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="confirm-help">
+    <p id="confirm-help" class="small muted">The name is: {{ group.name }}</p></div>
+  <button type="submit" class="btn btn-danger btn-block">Delete the group</button>
+</form>
+{% else %}
+<ul class="muted manage-effects">
+  <li>The group leaves Your groups for every member. Its pages and invite links stop working.</li>
+  <li>Nothing is removed: sessions, results, payments and the roster are kept.</li>
+  <li>A host can restore it from Archived groups on the Your groups page.</li>
+</ul>
+<form method="post" class="form-section stack" data-once>{% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-block">Archive the group</button>
+</form>
+{% endif %}
+<p><a class="btn btn-quiet btn-block" href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings{% endif %}">Keep the group</a></p>
+{% endblock %}

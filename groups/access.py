@@ -6,13 +6,16 @@ from .errors import NotAllowed
 from .models import Member
 
 
-def member_for(user, group_id) -> Member:
-    """The requester's active membership in the group, or 404 so IDs do not leak."""
-    member = (
-        Member.objects.select_related("group")
-        .filter(group_id=group_id, user=user, status=Member.Status.ACTIVE)
-        .first()
-    )
+def member_for(user, group_id, *, archived=False) -> Member:
+    """The requester's active membership in the group, or 404 so IDs do not leak.
+
+    An archived group is not found, for hosts too. ``archived=True`` is for the
+    few views that restore or delete it: they accept the group in either condition.
+    """
+    members = Member.objects.select_related("group").filter(group_id=group_id, user=user, status=Member.Status.ACTIVE)
+    if not archived:
+        members = members.filter(group__archived_at__isnull=True)
+    member = members.first()
     if member is None:
         raise Http404("Not found")
     return member

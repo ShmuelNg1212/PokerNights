@@ -11,7 +11,8 @@ from audit import services as audit
 from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
-from groups.services import clean_name, add_roster_player
+from groups.models import GroupRakeAccount
+from groups.services import clean_name, add_roster_player, lock_group
 
 from . import clock
 from .models import (
@@ -179,6 +180,7 @@ def _clean_date(value) -> datetime.date:
 def create_session(actor: Member, data: dict) -> GameSession:
     """Create a session with its first set. The set is in setup, with settings version 1."""
     require_host(actor)
+    lock_group(actor.group_id)  # so a new session and archiving the group cannot pass each other
     table = Table.objects.filter(group=actor.group, pk=data.get("table_id"), archived_at__isnull=True).first()
     if table is None:
         raise RuleError("Select a table of this group.")
@@ -426,6 +428,55 @@ def _delete_night(night, actor) -> None:
     )
     GameSession.objects.filter(night=night).delete()
     night.delete()
+
+
+# --- Archive and delete a group ---------------------------------------------
+
+def group_unfinished_sets(group) -> list:
+    return list(
+        GameSession.objects.filter(group=group, state__in=UNFINISHED_STATES)
+        .select_related("table").order_by("game_date", "pk")
+    )
+
+
+def guard_group_archive(group, verb="archive") -> None:
+    """A group with a set that is not finished stays as it is."""
+    unfinished = group_unfinished_sets(group)
+    if unfinished:
+        names = ", ".join(f"{s.table.name} set {s.set_number} ({s.get_state_display().lower()})" for s in unfinished[:3])
+        more = f" and {len(unfinished) - 3} more" if len(unfinished) > 3 else ""
+        raise RuleError(f"Finish or cancel every set before you {verb} the group. Not done: {names}{more}.")
+
+
+def group_has_records(group) -> bool:
+    """True when any session of the group holds a money record. Such a group is never deleted."""
+    return any(night_has_records(night) for night in GameNight.objects.filter(group=group))
+
+
+@transaction.atomic
+def delete_group(actor: Member, confirm_name: str) -> None:
+    """Remove a group that never held money: its sessions, tables, presets, invites and memberships.
+
+    User accounts stay. The audit log keeps what happened.
+    """
+    require_host(actor)
+    group = lock_group(actor.group_id, allow_archived=True)
+    if (confirm_name or "").strip() != group.name:
+        raise RuleError("Type the group name exactly to delete the group.")
+    guard_group_archive(group, "delete")
+    if group_has_records(group):
+        raise RuleError("Money was recorded in this group, so it cannot be deleted. Archive it instead.")
+    nights = list(GameNight.objects.filter(group=group).select_related("table"))
+    audit.record(
+        "group.deleted", actor=actor.user, group_id=group.pk, target=group, summary=f"Deleted group {group.name}",
+        data={"name": group.name, "members": group.members.count(), "sessions": len(nights)},
+    )
+    # Protected links decide the order: sets, sessions, tables, the rake account, then the group.
+    GameSession.objects.filter(group=group).delete()
+    GameNight.objects.filter(group=group).delete()
+    Table.objects.filter(group=group).delete()
+    GroupRakeAccount.objects.filter(group=group).delete()
+    group.delete()
 
 
 def _last_set_id(night):

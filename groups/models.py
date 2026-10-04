@@ -10,9 +10,18 @@ class GameGroup(models.Model):
     name = models.CharField(max_length=60)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
+    # An archived group is hidden from every member until a host restores it. Nothing is removed.
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_archived(self):
+        return self.archived_at is not None
 
 
 class GroupRakeAccount(models.Model):

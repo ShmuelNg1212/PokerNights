@@ -379,3 +379,23 @@ class ConcurrentArchiveTests(TransactionTestCase):
             self.assertEqual(GameSession.objects.filter(night_id=night_id).count(), 2)
         else:
             self.assertEqual(GameSession.objects.filter(night_id=night_id).count(), 0)
+
+
+class ConcurrentGroupArchiveTests(TransactionTestCase):
+    def test_archive_races_with_a_new_session(self):
+        from games.models import GameNight
+        from games.tests.helpers import make_session, make_table
+        from groups import services as groups
+        from groups.models import GameGroup
+        from groups.tests.helpers import make_group
+        group, host = make_group()
+        table = make_table(host)
+        outcomes = race(
+            lambda: make_session(host, table=table),
+            lambda: groups.archive_group(host),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        # Exactly one wins: an archived group never gains a session, and a group with a draft set is not archived.
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        archived = GameGroup.objects.get(pk=group.pk).is_archived
+        self.assertEqual(GameNight.objects.filter(group=group).count(), 0 if archived else 1)

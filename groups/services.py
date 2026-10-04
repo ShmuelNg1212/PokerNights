@@ -49,8 +49,49 @@ def _free_name(group, name) -> str:
     return candidate
 
 
-def _lock_group(group_id) -> GameGroup:
-    return GameGroup.objects.select_for_update().get(pk=group_id)
+GROUP_ARCHIVED = "This group is archived. A host can restore it from Your groups."
+
+
+def lock_group(group_id, *, allow_archived=False) -> GameGroup:
+    """The group row, locked for the rest of the transaction. An archived group takes no write."""
+    group = GameGroup.objects.select_for_update().get(pk=group_id)
+    if group.is_archived and not allow_archived:
+        raise RuleError(GROUP_ARCHIVED)
+    return group
+
+
+_lock_group = lock_group
+
+# Reasons a group cannot be archived yet. An app that knows about play registers a guard:
+# guard(group) raises RuleError. This app does not import the apps that depend on it.
+ARCHIVE_GUARDS = []
+
+
+@transaction.atomic
+def archive_group(actor: Member) -> GameGroup:
+    """Hide the group from every member. Nothing is removed; a host can restore it."""
+    require_host(actor)
+    group = lock_group(actor.group_id, allow_archived=True)
+    if group.is_archived:
+        return group  # a repeated tap
+    for guard in ARCHIVE_GUARDS:
+        guard(group)
+    group.archived_at, group.archived_by = timezone.now(), actor.user
+    group.save(update_fields=["archived_at", "archived_by"])
+    audit.record("group.archived", actor=actor.user, group_id=group.pk, target=group, summary=f"Archived group {group.name}")
+    return group
+
+
+@transaction.atomic
+def restore_group(actor: Member) -> GameGroup:
+    require_host(actor)
+    group = lock_group(actor.group_id, allow_archived=True)
+    if not group.is_archived:
+        return group  # a repeated tap
+    group.archived_at = group.archived_by = None
+    group.save(update_fields=["archived_at", "archived_by"])
+    audit.record("group.restored", actor=actor.user, group_id=group.pk, target=group, summary=f"Restored group {group.name}")
+    return group
 
 
 @transaction.atomic
@@ -119,6 +160,7 @@ def hash_token(token: str) -> str:
 def create_invite(actor: Member) -> tuple[Invite, str]:
     """Create an invite. The token is returned once and is not stored."""
     require_host(actor)
+    lock_group(actor.group_id)
     token = secrets.token_urlsafe(32)
     invite = Invite.objects.create(
         group=actor.group,
@@ -150,7 +192,7 @@ def usable_invite(token: str, *, lock=False) -> Invite:
     if lock:
         invites = Invite.objects.select_for_update()
     invite = invites.filter(token_hash=hash_token(token or "")).first()
-    if invite is None or invite.revoked_at is not None:
+    if invite is None or invite.revoked_at is not None or invite.group.is_archived:
         raise RuleError("This invite link is not valid.")
     if invite.expires_at <= timezone.now():
         raise RuleError("This invite link has expired. Ask a host for a new one.")

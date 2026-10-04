@@ -23,11 +23,11 @@ from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
 
-from .home import home_cards
+from .home import archived_groups, home_cards
 
 
 def home(request):
-    return render(request, "web/home.html", {"cards": home_cards(request.user), "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
+    return render(request, "web/home.html", {"cards": home_cards(request.user), "archived_groups": archived_groups(request.user), "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
 
 
 def visible_nights(me, archived=False):

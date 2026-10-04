@@ -9,6 +9,7 @@ from django.contrib import messages
 from groups.errors import RuleError
 from groups.forms import NameForm
 from groups.http import attempt, request_id_from, attempt_bound, group_settings, keep_form
+from groups import services as groups
 from groups.models import Member
 
 from . import services
@@ -176,3 +177,46 @@ def next_set(request, night_id):
         return redirect("night", night_id=night.pk)
     messages.success(request, f"Set {new.set_number} is open. Add or remove players, then start it.")
     return redirect("session", session_id=new.pk)
+
+
+def _group_manage(request, actor, mode):
+    group = actor.group
+    context = {"group": group, "mode": mode, "unfinished": services.group_unfinished_sets(group),
+               "typed": request.POST.get("confirm_name", "")}
+    if mode == "delete":
+        context["has_records"] = services.group_has_records(group)
+    return render(request, "games/group_manage.html", context)
+
+
+def group_archive(request, group_id):
+    """Confirm, then archive the group."""
+    actor = member_for(request.user, group_id)
+    require_host(actor)
+    if request.method == "POST" and attempt(
+            request, groups.archive_group, actor,
+            success=f"{actor.group.name} is archived. A host can restore it from Archived groups.") is not None:
+        return redirect("home")
+    return _group_manage(request, actor, "archive")
+
+
+@require_POST
+def group_restore(request, group_id):
+    actor = member_for(request.user, group_id, archived=True)
+    attempt(request, groups.restore_group, actor, success=f"{actor.group.name} is restored.")
+    return redirect("group", group_id=group_id)
+
+
+def group_delete(request, group_id):
+    """Confirm by typing the group name, then delete a group that never held money."""
+    actor = member_for(request.user, group_id, archived=True)
+    require_host(actor)
+    if request.method == "POST":
+        name = actor.group.name
+        if attempt(request, _deleted, actor, request.POST.get("confirm_name", ""), success=f"Deleted the group {name}.") is not None:
+            return redirect("home")
+    return _group_manage(request, actor, "delete")
+
+
+def _deleted(actor, confirm_name) -> bool:
+    services.delete_group(actor, confirm_name)
+    return True

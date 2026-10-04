@@ -70,7 +70,8 @@ class Card:
 
 def home_cards(user) -> list:
     memberships = list(
-        Member.objects.filter(user=user, status=Member.Status.ACTIVE).select_related("group").order_by("group__name")
+        Member.objects.filter(user=user, status=Member.Status.ACTIVE, group__archived_at__isnull=True)
+        .select_related("group").order_by("group__name")
     )
     if not memberships:
         return []
@@ -165,3 +166,11 @@ def _choose_status(card, nights, has_table) -> None:
     else:
         card.action_label, card.action_url = "Go to the session", reverse("night", args=[card.night.pk])
         card.action_primary = card.me.is_host
+
+
+def archived_groups(user) -> list:
+    """The viewer's host memberships in archived groups: only a host can restore one."""
+    return list(
+        Member.objects.filter(user=user, status=Member.Status.ACTIVE, role=Member.Role.HOST, group__archived_at__isnull=False)
+        .select_related("group", "group__archived_by").order_by("group__name")
+    )
