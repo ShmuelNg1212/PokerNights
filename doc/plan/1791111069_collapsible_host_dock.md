@@ -122,3 +122,5 @@ Not verified: a physical phone, a screen reader, the on-screen keyboard over the
 Acceptance criteria: all met, with one qualification. "All existing browser checks pass" holds only relative to `main`, where several already fail.
 
 Documentation synced: DESIGN.md addendum, wiki features, browser README, TODO.
+
+2026-10-04 rendezvous: merged into local main as `ea164a1 feat(ui): merge the collapsible host dock`. Main SQLite: 522 pass, ten PostgreSQL-only skips. No migration. The temporary server and PostgreSQL are stopped. Not pushed: a push to `main` is a production release and waits for the human.
