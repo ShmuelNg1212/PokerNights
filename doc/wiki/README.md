@@ -8,7 +8,7 @@ Living documentation. It describes the project **as it exists now**. For decisio
 
 Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs from `SPEC.md` step 2 in one point, by a later decision of the owner: cash-outs are typed as amounts, and the app has no chip-to-cash conversion. The app runs locally. It is not deployed.
 
-The Rack covers the shared foundation, compact active table, action sheets, count-up, cash-out review and finalized sets. [DESIGN.md](../../DESIGN.md) records the built system. Later screens keep their earlier composition.
+The Rack covers the shared foundation, compact active table, action sheets, count-up, cash-out review, finalized sets, session settle-up and closing recap. [DESIGN.md](../../DESIGN.md) records the built system. Later screens keep their earlier composition.
 
 ## Pages
 
@@ -44,3 +44,4 @@ The Rack covers the shared foundation, compact active table, action sheets, coun
 | Visual redesign, The Rack slice 1 | [study](../study/1791045491_visual_redesign.md) | [plan](../plan/1791046015_visual_redesign.md) | Slice 1 done, 2026-10-04; later slices need approval |
 | Fix: typed counts lost when confirming | [study](../study/1791044894_count_fields_cleared.md) | [plan](../plan/1791044911_count_fields_cleared.md) | Done, 2026-10-04 |
 | Visual redesign slice 2 | [study](../study/1791050655_redesign_slice_2.md) | [plan](../plan/1791050738_redesign_slice_2.md) | Done, 2026-10-04 |
+| Visual redesign slice 3 | [study](../study/1791053103_redesign_slice_3.md) | [plan](../plan/1791053204_redesign_slice_3.md) | Done, 2026-10-04 |

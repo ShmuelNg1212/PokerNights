@@ -1,7 +1,7 @@
 # Plan: visual redesign
 
 - **Date:** 2026-10-04 00:46 (Asia/Manila), Unix timestamp `1791046015`
-- **Status:** `slice-2-done` (slices 1–2 complete; slices 3–4 await later approval)
+- **Status:** `slice-3-done` (slices 1–3 complete; slice 4 awaits later approval)
 - **Study:** [../study/1791045491_visual_redesign.md](../study/1791045491_visual_redesign.md)
 - **Workflow:** `agentic-workflow`. Phase 2 starts only after explicit human approval of this plan.
 - **Visual direction:** **approved: A, The Rack**, with the two loans.
@@ -123,7 +123,7 @@ Slices 2–4 add their own checks in the task list.
 - [x] **8. Slice 2: count-up, cash-out review, finalized set.** Approved in the [slice 2 plan](1791050738_redesign_slice_2.md); complete on main. Player-count progress (as approved in the slice 2 plan), status tags, always-visible count fields in one form, "books balance" moment, review table, "Final" state.
   - Commit: `feat(web): recompose count-up and the finalized set`
   - Done when: the count-up browser check of the last cycle passes on the new markup; a set in count-up shows no result figure.
-- [ ] **9. Slice 3: session page and settle-up.** Revalidated in the [slice 3 plan](1791053204_redesign_slice_3.md), awaiting approval. "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
+- [x] **9. Slice 3: session page and settle-up.** Approved with “proceed” and verified in the [slice 3 plan](1791053204_redesign_slice_3.md). "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
   - Commit: `feat(web): recompose the session page and settle-up`
   - Done when: paid and undo flows pass; the recap opens once per session per browser and closes with one tap or key; results and payments are in separate, labelled sections.
 - [ ] **10. Slice 4: group, home, sign-in, forms, log.** Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
@@ -226,3 +226,7 @@ Not checked: a physical phone, a screen reader, or a production server. Long nam
 ### Slice 2 complete, 2026-10-04
 
 Human approved the [revalidated slice 2 plan](1791050738_redesign_slice_2.md) with “continue.” Local merge `1004ffa` adds count-up, batch cash-out review and finalized sets. All 384 tests pass on both engines; 47 end-set browser checks pass. The bounded finish verdict resolved three fixes. Built design and living docs are synchronized. Tasks 9–10 remain unapproved.
+
+## Slice 3 rendezvous
+
+Human approved the slice 3 plan with “proceed.” The session page now separates payment progress and transfer instructions from frozen results and offers a once-only accessible closing recap. All 390 tests pass on both engines, with 53 session browser checks plus 20 active-table, 13 accessibility and 47 end-set regressions. The finish verdict resolves the one large-figure readability fix. Task 10 remains unapproved.

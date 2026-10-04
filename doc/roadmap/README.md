@@ -12,7 +12,7 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 
 ## Visual redesign pulled forward
 
-The Rack slices 1 and 2 are built: shared foundation, active set and action sheets, then count-up, cash-out review and finalized sets. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). Session/settle-up and group/forms/log recomposition are slices 3–4. Each needs its own study, plan and approval. Seating and statistics remain separate feature cycles.
+The Rack slices 1–3 are built: shared foundation, active set and action sheets, count-up, cash-out review, finalized sets, session settle-up and closing recap. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). [Slice 3 plan](../plan/1791053204_redesign_slice_3.md). Group/home/forms/log recomposition is slice 4 and needs its own study, plan and approval. Seating and statistics remain separate feature cycles.
 
 ## What Stage 1 already prepares
 

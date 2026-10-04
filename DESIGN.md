@@ -127,7 +127,7 @@ components:
 
 The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.
 
-The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, the active set and its sheets, and the end-of-set flow: count-up, batch cash-out review and frozen final results. Deferred screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study and the approved slice 2 plan supply the visual authority. The build ships no raster imagery.
+The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, the active set and its sheets, the end-of-set flow (count-up, batch cash-out review and frozen final results), and the session page with settle-up and closing recap. Deferred screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study and the approved slice 2 and slice 3 plans supply the visual authority. The build ships no raster imagery.
 
 **Key Characteristics:**
 - Warm dark rails and indigo felt.
@@ -181,6 +181,8 @@ The same family shifts from ordinary-width reading text to compressed figures. T
 
 Count-up progress uses a compressed 48px tabular numerator with a 28px denominator. The viewer’s frozen result uses a responsive 32–52px figure at 70% width; result rows use 22px at 85% width, reduced to 18px below 360px. These contextual figures preserve the shared family without introducing another universal display role.
 
+The session’s closed “Still to pay” figure reuses the 64px display role. Its complete formatted value stays on one line: formatted lengths above 10 use 32px, and above 17 use 24px. These session-scoped content adaptations preserve currency, grouping, precision and the chips unit without abbreviation. The session viewer result uses 32px at 80% width; transfer amounts use 24px and aggregate result rows use 22px. Recap facts use 22px below 14px labels.
+
 The timer and blinds use 70% width, weight 800 and line height 1.2. On phones they are 22px; chips-game blinds are 16px. At desktop they are 27px. They are supporting figures, not a second display role.
 
 **The Figure Rule.** Keep money and timers tabular. Use compressed display figures for the active total and quieter right-aligned amounts in player rows.
@@ -195,6 +197,8 @@ At 900px and above, the active-set layout becomes a 400px left column plus flexi
 
 Count-up, review and final pages inherit the 1180px table container and the 400px-plus-flexible two-column layout from 900px. On phones, count-up orders the slate overview, all inline player counts, then the balance check; the host dock remains fixed with visible next-step guidance and a 48px “More host controls” target. Count-up reserves 200px bottom clearance and count fields use 90px top / 200px bottom scroll margins. Review and final pages reserve 48px at the bottom and keep actions in document flow. Below 360px each count button stacks at full width beneath its input. End-set and review containers, names and figures wrap anywhere to contain long unbroken names and large amounts.
 
+The session page inherits the 1180px table container and remains one column on phones. From 900px it uses a 400px overview/action column and flexible detail column with a 28px gap. Its document order is task summary, closed-session transfers, aggregate results, sets and payment records. Actions stay in document flow with 48px bottom clearance; detail sections have 32px separation. Transfer identities occupy two flexible columns around a written direction, with 32px tokens; amount, status and actions wrap on the next line. Full names and result rows can wrap while the primary Still to pay value remains intact.
+
 Sheets are at most 440px wide and 85dvh tall, scrolling internally. They sit against the phone's bottom edge and become centred at desktop. Quick amounts occupy four equal columns with an 8px gap. Shared form stacks and field gaps use the spacing values in frontmatter; there is no additional invented spacing scale.
 
 ## Elevation & Depth
@@ -204,6 +208,8 @@ Depth comes from tonal rails, fine rules and CSS-built felt grain. Buttons have 
 The sidecar records the built shadows, timings and easing curves. Sheet entry moves 24px in 320ms; exit takes 200ms. Accepted-change attention uses a 600ms treatment and remains labelled briefly. Chip-edge entry accompanies a confirmed rebuy. Reduced-motion preferences suppress animations, transitions and button displacement.
 
 The balanced-books message uses a green double rule with a 5px band and one-pixel top and bottom strokes. In count-up, only the existing balanced state makes it eligible for a 600ms left-to-right reveal. A localStorage marker records the set per browser, keeping reloads and later polls static; unavailable storage leaves the rule static. Final results use the static rule. Reduced motion suppresses the reveal while keeping its message.
+
+The closing recap reuses the shared sheet. Its fact lines reveal with a 360ms clip, staggered by 60ms, finishing within 540ms for four lines. Reduced motion leaves them static; accepted money appears immediately without a count animation. Automatic opening is consumed once per session and signed-in viewer in each browser, before opening; manual reopening remains available. Storage failure suppresses only automatic opening.
 
 **The Accepted Change Rule.** Figures change only to accepted server values. Highlight the changed row or total without interpolating the amount.
 
@@ -256,6 +262,20 @@ Slate totals separate “Total of this batch,” “Recorded cash-outs,” prosp
 ### Final results
 
 The slate overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. Facts list buy-in count and total, cumulative cash-outs, any override and recorded time played. Snapshot values supply the results. Override disclosure remains written, and the session link explains where the next set or settle-up belongs. Set-level transfers and payment controls are absent.
+
+### Session overview and settle-up
+
+The open-session indigo overview leads with the current set action and the viewer’s result so far when a standing exists; it explains that transfers follow closing. Close and next-set actions retain their service gates beside that task. A closed session uses slate, an intact Still to pay figure, written settlement status, amount-based progress and a separately labelled paid-transfer count. Remaining and paid sums use exact integer transfers; zero transfers show “Nobody owes anything” without a progress denominator.
+
+Transfer rows pair payer and payee identity tokens with full names, “pays,” an exact amount and Paid / Not paid text. Paid includes its recorded time and “marked by the host.” Host Mark paid and Undo are native POST actions. The session identity order follows first appearance in aggregate standings and keys tokens by member; it need not match a set’s colour order. Payment records retain recorder and undone status, with struck text for reversed records.
+
+Aggregate results remain separate from transfers and payments, using frozen finalized-set values, signed figures and direction icons. Closed results carry Final; open results say “Over finalized sets; session still open.” No-finalization state is explicit. A viewer without a standing receives no invented result. Sets retain number, written state and known timer values; the existing “Play time over all sets” line is distinct from the recap’s finalized-only duration.
+
+### Closing recap
+
+A closed session offers “View session recap” and inline facts when dialog enhancement is unavailable. Recorded play time sums known finalized-set durations only, says Not recorded when none are known and labels partial sums. Total bought in explicitly covers current finalization snapshots across finalized sets, independent of transfers. Top session result names every tied highest positive standing; all-zero results say Everyone broke even. Your session result appears only for a viewer with a standing.
+
+The browser key includes session and signed-in viewer. Automatic opening happens once per key and is consumed before opening; storage refusal leaves manual access. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the manual trigger. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
 
 ### Sheets
 
