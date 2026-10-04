@@ -28,7 +28,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 ## Sessions and sets
 
 - A **session** is one gathering at one table on one date. It holds one or more **sets**, played one after another.
-- Each set has its own buy-ins, cash-outs, balance check, results and timer. A new set starts with fresh buy-ins.
+- Each set has its own buy-ins, cash-outs, balance check, results and timer. A new set starts money-free. Before play starts, the host can record fresh opening buy-ins with the default start option.
 - After play of a set has ended, the host taps **Start next set**. The new set has the same table and settings and the players who were still at the table. The host can add or remove players before starting it.
 - Who pays whom is worked out **once per session**: the host taps **Close session and settle up** when every set is finalized or canceled. The list nets each player's results over all sets.
 - A closed session cannot get another set.
@@ -56,15 +56,16 @@ The individual cash-out still exists: tap the player name to open Details during
 1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment.
-3. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s `+` and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
-4. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
-5. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
-6. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
-7. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
-8. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
-9. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
-10. **Close the session.** The app lists who pays whom with the minimum number of transfers. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
-11. **Game log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
+3. **Start play and opening buy-ins.** Start the game includes a checked option to add the set’s usual buy-in for each player at the table without an accepted buy-in. Existing buy-ins are kept, even at a different amount. Uncheck the option to start without automatic entries. Records and timers commit together; repeated confirmation creates nothing twice. Each new set uses its own current settings. Resume and late joining add no automatic buy-in. A reversed-only player qualifies again before first start; uncheck when that is intentional.
+4. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s `+` and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
+5. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
+6. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
+7. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
+8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
+9. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
+10. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
+11. **Close the session.** The app lists who pays whom with the minimum number of transfers. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
+12. **Game log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
 
