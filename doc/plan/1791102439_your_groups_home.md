@@ -94,3 +94,5 @@ Not in this cycle: live polling on the home page, a cross-group feed, charts, gr
 Not verified: a physical phone, a screen reader, and the page with JavaScript off (the page has no script of its own; the timer then stays at the server figure). No independent finish review was run.
 
 AC1–AC8 are met. Documentation synced: DESIGN.md, PRODUCT.md, the group-and-home surface record, wiki features and architecture, TODO.
+
+2026-10-04 rendezvous: merged into local main as `a1a6eec feat(ui): merge the Your groups home revamp`. Main SQLite: 510 pass, ten PostgreSQL-only skips. No migration is required. The fixture server and the verification PostgreSQL instance are stopped. No push or deployment.
