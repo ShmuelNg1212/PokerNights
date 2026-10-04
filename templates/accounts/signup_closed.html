@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Sign up · PokerNights{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<h1>Sign-up needs an invite</h1>
+<p>Ask a host of your group for an invite link, then open that link to create your account.</p>
+<p class="muted">An invite link that was revoked, has expired or was used up no longer works. A host can send a new one.</p>
+<p><a class="btn btn-primary" href="{% url 'login' %}">Log in</a></p>
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Settings helpers that depend on where the app runs.
+"""Settings helpers that depend on where the app runs (local or Vercel).
 
 Kept free of Django imports so settings.py can call them and tests can
 exercise them directly.
@@ -22,3 +22,9 @@ def database_config(url: str, *, conn_max_age: int) -> dict:
         # Safe behind PgBouncer in transaction mode (e.g. a pooled Neon URL).
         db["DISABLE_SERVER_SIDE_CURSORS"] = True
     return db
+
+
+def vercel_hosts(environ) -> list[str]:
+    """Host names Vercel assigns to this deployment (empty when not on Vercel)."""
+    names = ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL")
+    return [environ[n] for n in names if environ.get(n)]

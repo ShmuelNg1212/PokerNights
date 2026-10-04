@@ -17,6 +17,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [setup.md](setup.md) | Install, `.env`, run, test on SQLite and PostgreSQL |
 | [architecture.md](architecture.md) | Apps, data model, money rules, lifecycle, balance check, finalization, settle-up, live updates |
 | [features.md](features.md) | What hosts and players can do today, and the limits |
+| [deployment.md](deployment.md) | Vercel and Neon: what runs where, releasing, rollback, leaked secrets, limits |
 | [external-dependencies.md](external-dependencies.md) | Pinned packages and services |
 | [footguns/](footguns/) | Behavior that surprised us, with evidence and remedy |
 | [../roadmap/README.md](../roadmap/README.md) | Stages 2 to 5 and open product decisions |

@@ -17,13 +17,11 @@ There is no other runtime dependency, no JavaScript package and no build tool.
 
 | Service | Use | Status |
 |---|---|---|
-| PostgreSQL 17 | Test target, and the database for shared use | Local Homebrew install. Started by hand for test runs (see [setup.md](setup.md)) |
+| PostgreSQL 17 | Local test target | Local Homebrew install. Started by hand for test runs (see [setup.md](setup.md)) |
+| Vercel (Hobby) | Hosting: one Python function in `sin1` and the static CDN | Project `pokernights`. See [deployment.md](deployment.md) |
+| Neon Postgres (Free) | Production database, `aws-ap-southeast-1` | Resource `pokernights-db`, added through the Vercel integration |
 
-The app calls no external API. It needs no key or secret for local use.
-
-## Not decided
-
-A deployment target is a Stage 5 decision. LightChat's Vercel with Neon PostgreSQL is a known working pattern for this stack. `config/deploy.py` already disables server-side cursors on PostgreSQL, which a pooled Neon URL needs.
+The app calls no external API. It needs no key or secret for local use. No Python package was added for deployment.
 
 ## Local visual assets
 

@@ -24,3 +24,47 @@ class SmokeTests(TestCase):
     def test_time_zone_is_manila(self):
         self.assertEqual(settings.TIME_ZONE, "Asia/Manila")
         self.assertTrue(settings.USE_TZ)
+
+
+class DeploymentSettingsTests(SimpleTestCase):
+    def manage(self, *args, **environ):
+        import os
+        import subprocess
+        import sys
+
+        base = {k: v for k, v in os.environ.items() if k not in ("HTTPS_ONLY", "DATABASE_URL")}
+        return subprocess.run(
+            [sys.executable, "manage.py", *args], cwd=settings.BASE_DIR,
+            env={**base, "DEBUG": "False", "SECRET_KEY": "test-" + "k7Qz9xW2pL" * 6, **environ},
+            capture_output=True, text=True,
+        )
+
+    def test_vercel_hosts_come_from_system_variables(self):
+        from config.deploy import vercel_hosts
+
+        environ = {
+            "VERCEL_URL": "pokernights-abc123.vercel.app",
+            "VERCEL_BRANCH_URL": "",
+            "VERCEL_PROJECT_PRODUCTION_URL": "pokernights.vercel.app",
+        }
+        self.assertEqual(vercel_hosts(environ), ["pokernights-abc123.vercel.app", "pokernights.vercel.app"])
+        self.assertEqual(vercel_hosts({}), [])
+
+    def test_deploy_check_passes_on_vercel(self):
+        """`check --deploy` is clean with the settings a Vercel deployment gets."""
+        result = self.manage(
+            "check", "--deploy", "--fail-level", "WARNING",
+            VERCEL="1", VERCEL_URL="pokernights-abc123.vercel.app",
+            DATABASE_URL="postgres://u:p@db.example.com:5432/app",
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_vercel_refuses_to_start_without_a_database_url(self):
+        from pathlib import Path
+
+        local = Path(settings.BASE_DIR) / ".env"
+        if local.exists() and any(line.startswith("DATABASE_URL=") for line in local.read_text().splitlines()):
+            self.skipTest("the local .env sets DATABASE_URL")
+        result = self.manage("check", VERCEL="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Set DATABASE_URL", result.stderr)

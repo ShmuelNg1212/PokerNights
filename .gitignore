@@ -39,3 +39,7 @@ htmlcov/
 
 # Local agent and tool settings
 .claude/
+
+# Vercel CLI project link and pulled environment (local)
+.vercel/
+.env.local

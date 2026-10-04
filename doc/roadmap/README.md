@@ -8,7 +8,7 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Partly built 2026-10-04: profit/loss, sessions and win rate by month or all time. Seasons, year filter, average, ROI and a ranking threshold remain |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
-| 5. Shared use | Deployment, password reset, claim links for roster players | — | Planned |
+| 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployment prepared 2026-10-04 (Vercel and Neon, invite-only sign-up). Password reset and claim links remain |
 
 ## Visual redesign pulled forward
 
@@ -38,7 +38,7 @@ These used the plan's defaults in Stage 1. They can still change.
 | Settlement model | Direct settle-up. Banker optional in Stage 2 |
 | Balance override | A note, and one named player or an equal share |
 | Tables per session | One. A two-table night is two sessions |
-| Audience | One private group. Sign-up is open; access needs an invite |
+| Audience | Private groups. On the public address sign-up needs an invite link; a superuser adds first hosts |
 | Seating | Stays in the roadmap as Stage 4 |
 | Whole-peso rounding | None. Exact centavos |
 | Win rate | Percentage of finalized sessions with profit; the same measure as "cash rate" |

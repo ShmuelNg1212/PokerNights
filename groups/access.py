@@ -21,3 +21,25 @@ def member_for(user, group_id) -> Member:
 def require_host(member: Member) -> None:
     if not member.is_host:
         raise NotAllowed("Only a host can do this.")
+
+
+def invite_vouches(request, next_path: str) -> bool:
+    """True when ``next_path`` is the address of an invite that can still be used."""
+    from urllib.parse import urlsplit
+
+    from django.urls import Resolver404, resolve
+
+    from . import services
+    from .errors import RuleError
+
+    try:
+        match = resolve(urlsplit(next_path).path)
+    except Resolver404:
+        return False
+    if match.url_name != "invite_accept":
+        return False
+    try:
+        services.usable_invite(match.kwargs["token"])
+    except RuleError:
+        return False
+    return True

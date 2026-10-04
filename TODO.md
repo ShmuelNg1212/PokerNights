@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Vercel deployment is prepared ([plan](doc/plan/1791104210_vercel_deployment.md)): settings, build gate, invite-only sign-up, Neon database in Singapore and a verified private preview. The production release waits for the human's go-ahead.
+
 Your groups home is done ([plan](doc/plan/1791102439_your_groups_home.md)): each group reports its state, next action, what you owe or are owed, your record and last result.
 
 UI evolution is done ([plan](doc/plan/1791098885_ui_evolution.md)): shared tokens, SVG branding, Sessions / Stats / Group settings tabs, Session and Set wording, written row actions, neutral non-play states, clearer discrepancy and settle-up, and first player stats.
