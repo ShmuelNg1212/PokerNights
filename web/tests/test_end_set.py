@@ -101,7 +101,9 @@ class EndSetPageTests(TestCase):
         empty.go('reconciliation')
         self.client.force_login(empty.host.user)
         page = self.client.get(reverse('session', args=[empty.session.pk]))
-        self.assertContains(page, '<strong>0 <span>of 0</span></strong>')
+        # No progress figure without players to count: "0 of 0" would mean nothing.
+        self.assertNotContains(page, '<span>of 0</span>')
+        self.assertContains(page, 'nothing to count')
         self.assertContains(page, 'No buy-in is recorded')
         self.assertNotContains(page, 'Finalize results')
         self.assertNotContains(page, 'data-balance=')
@@ -120,3 +122,35 @@ class EndSetPageTests(TestCase):
         page = self.client.get(url)
         self.assertNotContains(page, '₱')
         self.assertContains(page, '1,000 chips')
+
+
+class NeutralStateTests(TestCase):
+    """The blue felt belongs to a set in play; every other state has a neutral lead panel."""
+
+    def test_only_a_running_set_uses_the_felt(self):
+        night = Night('A', state='open')
+        self.client.force_login(night.host.user)
+        url = reverse('session', args=[night.session.pk])
+        self.assertContains(self.client.get(url), 'class="felt hero"')
+        night.go('running')
+        page = self.client.get(url)
+        self.assertContains(page, '<section class="felt" data-unit')
+        self.assertNotContains(page, 'split-track')
+        night.buy('A', 1000)
+        night.go('reconciliation')
+        self.assertContains(self.client.get(url), 'class="felt hero"')
+        self.assertContains(self.client.get(reverse('night', args=[night.session.night_id])), 'class="felt hero"')
+
+    def test_discrepancy_states_the_signed_amount_and_waiting_is_not_a_warning(self):
+        night = Night('A', 'B')
+        night.buy('A', 1000); night.buy('B', 1000)
+        night.go('reconciliation')
+        self.client.force_login(night.host.user)
+        url = reverse('session', args=[night.session.pk])
+        page = self.client.get(url)
+        self.assertContains(page, 'class="notice notice-info"')
+        self.assertNotContains(page, 'class="discrepancy"')
+        night.cash('A', 1500); night.cash('B', 400)
+        page = self.client.get(url)
+        self.assertContains(page, '<p class="discrepancy-amount">−₱100</p>')
+        self.assertContains(page, 'role="alert"')

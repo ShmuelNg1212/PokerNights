@@ -44,10 +44,6 @@ def buy_in_stack(count):
     return format_html('<span class="buy-stack" aria-hidden="true">{}{}</span>', mark_safe(edges), mark_safe(extra))
 
 @register.simple_tag
-def play_percent(summary):
-    return min(100, max(0, summary.in_play * 100 // summary.total)) if summary.total else 0
-
-@register.simple_tag
 def double_default(settings, unit):
     return plain_amount(min(settings.default_buy_in * 2, settings.max_buy_in), unit)
 

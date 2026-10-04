@@ -6,7 +6,7 @@
 <nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a><span class="badge">Session {{ night.get_status_display|lower }}</span></nav>
 <div class="night-layout">
   <div class="night-overview">
-    <section class="felt {% if night.is_closed %}felt-slate{% endif %}" data-unit="{{ unit }}">
+    <section class="felt hero" data-unit="{{ unit }}">
       <h1>{{ night.table.name }}</h1>
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}

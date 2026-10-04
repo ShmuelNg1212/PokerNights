@@ -12,9 +12,19 @@
     {% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
     {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}
   </div>
+  {% elif balance.counted %}
+  {# Every player is cashed out and the books still differ: show the exact signed amount first. #}
+  <div class="discrepancy" role="alert">
+    <p class="discrepancy-label">The books are off by</p>
+    <p class="discrepancy-amount">{{ balance.difference|signed_amount:unit }}</p>
+    <p>{{ balance.explanation }}</p>
+    <p class="small">Next: reverse and re-enter the wrong buy-in or cash-out in a player's records{% if me.is_host %}, or record an override below if the error cannot be found{% endif %}.</p>
+  </div>
+  {% elif balance.stray_cash_outs %}
+  <div class="notice">{{ balance.explanation }}</div>
   {% else %}
-  {# Red is for a real discrepancy. Players still to be cashed out are normal progress. #}
-  <div class="notice {% if balance.counted %}notice-bad{% endif %}" {% if balance.counted %}role="alert"{% endif %}>{{ balance.explanation }}</div>
+  {# Players still to be counted or cashed out are normal progress, not a warning. #}
+  <div class="notice notice-info">{{ balance.explanation }}</div>
   {% endif %}
 
   {% for line in summary.lines %}{% for a in line.adjustments %}

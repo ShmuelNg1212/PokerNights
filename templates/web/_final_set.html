@@ -1,7 +1,7 @@
 {% load money_tags clock_tags table_tags %}
 <div class="table-layout end-set-layout final-layout">
   <aside class="table-left">
-    <section class="felt felt-slate" data-unit="{{ unit }}" aria-label="Final set overview">
+    <section class="felt hero" data-unit="{{ unit }}" aria-label="Final set overview">
       <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Final</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
       {% if my_result %}

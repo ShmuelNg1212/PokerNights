@@ -12,7 +12,8 @@
    .sheet         bottom sheet (native dialog) for one focused task
    .empty-state   calm explanation with one next action
    .notice        -info is neutral, default is a warning, -bad is an error, -good is success
-   .felt          the blue diamond field; only for a set that is in play */
+   .felt          the blue diamond field; only for a set that is in play
+   .hero          with .felt: the same lead panel on a neutral surface, for every other state */
 
 @font-face { font-family: Archivo; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; src: url('../fonts/archivo.woff2') format('woff2'); }
 @font-face { font-family: ArchivoFallback; src: local('Arial'); size-adjust: 100%; ascent-override: 95%; descent-override: 25%; line-gap-override: 0%; }
@@ -27,7 +28,6 @@
   --bg: var(--ground); --surface: var(--rail); --surface-2: var(--rail-2);
   --text: var(--bone); --muted: var(--bone-dim); --accent: var(--bone); --accent-ink: var(--ink);
   --danger: var(--down); --danger-bg: oklch(0.24 0.035 25); --warn: var(--brass); --warn-bg: oklch(0.26 0.03 85); --good: var(--up);
-  --slate: oklch(0.285 0.025 265); --slate-ink: oklch(0.86 0.025 265);
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px;
   --radius: 1rem; --r-bar: 4px; --r-field: 10px; --r-row: 12px; --r-btn: 15px; --r-sheet: 26px; --r-pill: 999px;
   --shadow-btn: 0 3px 0 oklch(0.12 0.01 60); --shadow-primary: 0 3px 0 oklch(0.65 0.035 80);
@@ -204,11 +204,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .pot-side { display: grid; justify-content: space-between; gap: 10px; text-align: right; }
 .pot-side strong { display: block; font-size: 1.6875rem; line-height: 1.2; font-stretch: var(--w-money); font-weight: 800; font-variant-numeric: tabular-nums; }
 .pot-side > div:last-child { text-align: right; }
-.split-track { display: flex; height: 8px; border-radius: var(--r-bar); overflow: hidden; background: repeating-linear-gradient(135deg,var(--felt-ink) 0 2px,transparent 2px 5px); margin-top: 16px; }
-.split-track > span { background: var(--bone); }
-.split-labels { display: flex; justify-content: space-between; gap: 16px; color: var(--felt-ink); font-size: .8125rem; margin-top: 6px; }
-.split-labels > span:last-child { text-align: right; }
-.split-labels b { display: block; color: var(--bone); font-variant-numeric: tabular-nums; }
+.felt.hero { --felt-ink: var(--bone-dim); --felt-deep: var(--ground); background: var(--rail); border-bottom: 1px solid var(--rule); }
+.felt.hero .set-totals { border-top-color: var(--rule); }
 .felt-hint { margin: 8px 0 0; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 16px 0 4px; }
 .section-heading h2 { margin: 0; font-size: 1.0625rem; }
@@ -269,6 +266,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .table-layout { display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 28px; align-items: start; }
   .table-left { position: sticky; top: 90px; }
   .felt { margin: 0; border-radius: var(--r-sheet); padding: 20px; }
+  .felt.hero { border: 1px solid var(--rule); }
   .section-heading { padding-top: 0; }
   .player-main { gap: 12px; }
   .sheets-enabled .player-row:has(.player-actions) { display: grid; grid-template-columns: minmax(0,1fr) auto; column-gap: 12px; align-items: center; }
@@ -309,14 +307,12 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .pot-side { width: 100%; gap: 8px; }
   .pot-side strong { font-size: 1.375rem; white-space: nowrap; }
   .felt[data-unit=chips] .pot-side > div:last-child strong { font-size: 1rem; }
-  .split-track { margin-top: 12px; }
   .section-heading { padding: 8px 0 0; }
 }
 .player-row { position: relative; }
 .player-row .change-label { position: absolute; top: -4px; right: 0; }
 
 /* End of set: inline counting work, a slate overview and frozen results. */
-.felt-slate { --felt: var(--slate); --felt-ink: var(--slate-ink); }
 .count-progress { margin: 18px 0 12px; font-size: .875rem; color: var(--felt-ink); }
 .count-progress strong { display: block; color: var(--bone); font-size: 3rem; line-height: 1.1; font-stretch: var(--w-money); font-variant-numeric: tabular-nums; }
 .count-progress strong span { font-size: 1.75rem; }
@@ -340,6 +336,10 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .count-list > .btn { margin-top: 12px; }
 .balance-panel { padding: 12px 0; border-top: 1px solid var(--line); }
 .balance-panel .notice { margin-bottom: 0; }
+.discrepancy { padding: var(--s-4); border: 2px solid var(--danger); border-radius: var(--radius); background: var(--danger-bg); }
+.discrepancy p { margin: var(--s-1) 0 0; }
+.discrepancy-label { color: var(--danger); font-weight: 600; }
+.discrepancy-amount { color: var(--danger); font-size: 2.5rem; line-height: 1.1; font-weight: 800; font-stretch: var(--w-money); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .books-balanced { position: relative; padding: 16px 0 12px; color: var(--up); font-size: .875rem; }
 .books-balanced::before { content: ''; position: absolute; inset: 0 0 auto; height: 5px; border-block: 1px solid var(--up); }
 .balance-arrived::before { animation: books-balance var(--t-focal) var(--ease-out); transform-origin: left; }
@@ -364,8 +364,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .end-set-layout:not(.final-layout) { display: flex; flex-direction: column; }
   .end-set-layout:not(.final-layout) .table-left { display: contents; }
   .end-set-layout .felt { order: 0; }
-  .count-workspace { order: 1; }
-  .end-balance { order: 2; }
+  .end-balance { order: 1; }
+  .count-workspace { order: 2; }
   .end-set-layout .host-more > summary { min-height: var(--tap); }
   .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 154px; }
   .table-page:has(.final-layout), .table-page:has(.review-layout) { padding-bottom: 48px; }
