@@ -126,7 +126,7 @@ Slices 2–4 add their own checks in the task list.
 - [x] **9. Slice 3: session page and settle-up.** Approved with “proceed” and verified in the [slice 3 plan](1791053204_redesign_slice_3.md). "Still to pay" field with progress, transfer rows, result rows, payment records, set list, the once-only recap sheet.
   - Commit: `feat(web): recompose the session page and settle-up`
   - Done when: paid and undo flows pass; the recap opens once per session per browser and closes with one tap or key; results and payments are in separate, labelled sections.
-- [ ] **10. Slice 4: group, home, sign-in, forms, log.** Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
+- [ ] **10. Slice 4: group, home, sign-in, forms, log.** Study complete; [slice 4 plan](1791084843_redesign_slice_4.md) awaits approval. Sessions first on the group page; management sections; roster rows with tokens; form and error styles; log layout.
   - Commit: `feat(web): recompose the group, forms and log screens`
   - Done when: each form shows a field error with the typed value kept; the group page puts sessions in the first screen.
 
