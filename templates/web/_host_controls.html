@@ -1,3 +1,4 @@
+{% load money_tags %}
 <div class="host-controls stack">
   <h2 class="host-controls-heading">Host controls</h2>
   {% if session.state == 'setup' %}
@@ -6,7 +7,9 @@
     <button class="btn btn-primary btn-block next-action" name="action" value="open">Open for players</button>
   </form>
   {% elif session.state == 'open' %}
-  <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+  <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}{% request_id_field %}
+    <label class="check" for="opening-buy-ins"><input id="opening-buy-ins" type="checkbox" name="opening_buy_ins" checked data-keep="opening-buy-ins" aria-describedby="opening-buy-ins-help"><span class="grow">Add usual buy-in ({{ settings.default_buy_in|amount:unit }}) for players without a buy-in</span></label>
+    <p id="opening-buy-ins-help" class="small muted">Existing buy-ins stay unchanged.</p>
     <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the game</button>
   </form>
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}

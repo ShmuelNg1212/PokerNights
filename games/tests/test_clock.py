@@ -47,7 +47,7 @@ class Table:
 
     def do(self, action, when):
         with at(when):
-            self.game = services.transition(self.game.pk, self.host, action, "reason")
+            self.game = services.transition(self.game.pk, self.host, action, "reason", opening_buy_ins=False)
 
     def left(self, name, when, value=True):
         with at(when):

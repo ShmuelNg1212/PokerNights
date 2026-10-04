@@ -23,7 +23,7 @@ def counting(name, *, unit='php', empty=False, large=False):
     ps = games.add_participants(s.pk, host, [p.pk for p in members], u())
     if not empty:
         for p in ps: ledger.record_buy_in(s.pk, host, p.pk, 1000 if unit == 'chips' else (9999999999 if large else 100000), u())
-    games.transition(s.pk, host, 'start')
+    games.transition(s.pk, host, 'start', opening_buy_ins=not empty)
     if not empty and not large: ledger.record_cash_out(s.pk, host, ps[0].pk, 100 if unit == 'chips' else 10000, u())
     games.transition(s.pk, host, 'end')
     return s, ps

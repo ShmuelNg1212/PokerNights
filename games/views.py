@@ -80,7 +80,9 @@ def session_settings(request, session_id):
 @require_POST
 def session_transition(request, session_id):
     session, actor = session_for(request.user, session_id)
-    attempt(request, services.transition, session.pk, actor, request.POST.get("action", ""), request.POST.get("reason", ""))
+    action = request.POST.get("action", "")
+    options = {"request_id": request_id_from(request), "opening_buy_ins": request.POST.get("opening_buy_ins") == "on"} if action == "start" else {}
+    attempt(request, services.transition, session.pk, actor, action, request.POST.get("reason", ""), **options)
     return redirect("session", session_id=session.pk)
 
 

@@ -527,3 +527,15 @@ def guard_participant_exit(participant: Participant) -> None:
         raise RuleError(
             f"{participant.member.display_name} has buy-ins in this game. Record a cash-out, or reverse the buy-ins first."
         )
+
+
+def opening_buy_ins(session: GameSession, actor: Member, request_id) -> None:
+    """Called before first start, inside the lifecycle transaction with the set locked."""
+    settings = games.current_settings(session)
+    accepted = _accepted_buy_ins(session).values_list("participant_id", flat=True)
+    players = session.participants.filter(status=Participant.Status.JOINED).exclude(pk__in=accepted).order_by("join_order")
+    for player in players:
+        record_buy_in(session.pk, actor, player.pk, settings.default_buy_in,
+                      uuid.uuid5(request_id, f"opening-buy-in:{player.pk}"))
+    # record_buy_in touches a separately loaded instance; keep the caller's version current.
+    session.refresh_from_db(fields=["version"])
