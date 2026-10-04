@@ -399,3 +399,29 @@ class ConcurrentGroupArchiveTests(TransactionTestCase):
         self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
         archived = GameGroup.objects.get(pk=group.pk).is_archived
         self.assertEqual(GameNight.objects.filter(group=group).count(), 0 if archived else 1)
+
+
+class ConcurrentInviteSignupTests(TransactionTestCase):
+    def test_two_sign_ups_race_for_the_last_use_of_an_invite(self):
+        from django.contrib.auth import get_user_model
+        from django.test import Client
+        from django.urls import reverse
+        from groups import services as groups
+        from groups.models import Invite, Member
+        from groups.tests.helpers import make_group
+
+        group, host = make_group()
+        invite, token = groups.create_invite(host)
+        Invite.objects.filter(pk=invite.pk).update(max_uses=1)
+        url = reverse("invite_accept", args=[token])
+
+        def sign_up(name):
+            data = {"username": name, "password1": "tablestakes-91", "password2": "tablestakes-91", "next": url}
+            return lambda: Client().post(reverse("signup"), data).status_code
+
+        outcomes = race(sign_up("first"), sign_up("second"))
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        # Both accounts exist; the invite admits exactly one of them and is never used past its limit.
+        self.assertEqual(get_user_model().objects.filter(username__in=["first", "second"]).count(), 2)
+        self.assertEqual(Member.objects.filter(group=group, user__username__in=["first", "second"]).count(), 1)
+        self.assertEqual(Invite.objects.get(pk=invite.pk).use_count, 1)

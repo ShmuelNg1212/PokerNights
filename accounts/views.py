@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from . import signup as signup_gate
-from .forms import SignupForm
+from .forms import LoginForm, SignupForm
 
 
 def safe_next(request, default="home"):
@@ -19,9 +19,22 @@ def safe_next(request, default="home"):
 class Login(auth_views.LoginView):
     """Django's login, with the name of the inviting group when the person came from an invite link."""
 
+    form_class = LoginForm
+
+    def form_invalid(self, form):
+        # The username is kept, so the cursor goes to the field that came back empty.
+        form.fields["username"].widget.attrs.pop("autofocus", None)
+        form.fields["password"].widget.attrs["autofocus"] = True
+        for field in form.fields.values():
+            field.widget.attrs.update({"aria-invalid": "true", "aria-describedby": "login-error"})
+        return super().form_invalid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["invited_to"] = signup_gate.invited_to(self.request, safe_next(self.request, ""))
+        target = safe_next(self.request, "")
+        context["invited_to"] = signup_gate.invited_to(self.request, target)
+        # Where sign-up needs an invite, the link is offered only when this visit carries one.
+        context["can_sign_up"] = signup_gate.allowed(self.request, target)
         return context
 
 
@@ -35,7 +48,7 @@ def signup(request):
     if request.method == "POST" and form.is_valid():
         user = form.save()
         login(request, user)
-        return redirect(safe_next(request))
+        return redirect(signup_gate.after_signup(request, user, safe_next(request, "")) or safe_next(request))
     target = safe_next(request, "")
     context = {"form": form, "next": target, "invited_to": signup_gate.invited_to(request, target)}
     return render(request, "accounts/signup.html", context)

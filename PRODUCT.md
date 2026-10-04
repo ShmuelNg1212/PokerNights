@@ -64,3 +64,7 @@ The first page after sign-in reports each group's state: whether a set is in pla
 ## 2026-10-04 addendum — Archive and delete
 
 Hosts can clear away a session or a group. Archiving hides it and takes a session out of the stats, records, “To settle” and the rake total; a host can restore it. Deleting is permanent and is offered only where no money was ever recorded. Money records are never removed. Any host of the group may do this; a group delete asks for the typed group name.
+
+## 2026-10-05 addendum — Entry flow
+
+An invite link is the way in. A signed-out visitor who opens one creates an account and is in the group at once; a person who already has an account logs in and confirms. Sign up says that friends see the username and that there is no password reset yet; only the site administrator can set a new password. The entry pages state that PokerNights records the game and never moves money.

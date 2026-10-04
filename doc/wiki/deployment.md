@@ -41,7 +41,9 @@ When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects
 
 ## Who can get in
 
-Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email; a superuser sets a new password in `/admin/`.
+Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email; a superuser sets a new password in `/admin/`. Sign up and a refused login say so.
+
+A signed-out visitor who opens a usable invite link lands on Sign up, and the new account joins that group at once. A person who already has an account logs in and confirms on the Join page. Where sign-up needs an invite, Log in offers the Sign up link only when the visit carries a usable one.
 
 ## Releasing a change
 

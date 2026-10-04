@@ -16,7 +16,7 @@
       Array.from(form.elements).filter(function (el) { return el.tagName === "BUTTON" && el.type === "submit"; }).forEach(function (button) {
         button.disabled = true;
         button.dataset.label = button.textContent;
-        button.textContent = "Sending…";
+        button.textContent = button.dataset.busy || "Sending…";
         button.setAttribute("aria-busy", "true");
       });
     }, 0);

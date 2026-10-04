@@ -26,7 +26,7 @@ def require_host(member: Member) -> None:
         raise NotAllowed("Only a host can do this.")
 
 
-def _usable_invite_at(next_path: str):
+def _usable_invite_at(next_path: str, *, with_token=False):
     """The invite whose address is ``next_path`` if it can still be used, else None."""
     from urllib.parse import urlsplit
 
@@ -42,9 +42,10 @@ def _usable_invite_at(next_path: str):
     if match.url_name != "invite_accept":
         return None
     try:
-        return services.usable_invite(match.kwargs["token"])
+        invite = services.usable_invite(match.kwargs["token"])
     except RuleError:
         return None
+    return (invite, match.kwargs["token"]) if with_token else invite
 
 
 def invite_vouches(request, next_path: str) -> bool:
@@ -56,3 +57,27 @@ def invite_group_name(request, next_path: str):
     """The group behind a usable invite address, for the entry pages. The link holder may know it."""
     invite = _usable_invite_at(next_path)
     return invite.group.name if invite else None
+
+
+def join_from_invite(request, user, next_path: str):
+    """Put a newly created account into the group whose invite it signed up from.
+
+    Returns the group's address, or None when the path is no usable invite or the invite
+    stopped being usable in the meantime; the invite page then explains.
+    """
+    from django.contrib import messages
+    from django.urls import reverse
+
+    from . import services
+    from .errors import RuleError
+
+    found = _usable_invite_at(next_path, with_token=True)
+    if found is None:
+        return None
+    invite, token = found
+    try:
+        services.accept_invite(user, token)
+    except RuleError:
+        return None
+    messages.success(request, f"Welcome to {invite.group.name}. You're in.")
+    return reverse("group", args=[invite.group_id])

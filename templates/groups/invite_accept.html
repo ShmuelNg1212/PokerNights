@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Invite · PokerNights{% endblock %}
+{% block header %}{% if user.is_authenticated %}{{ block.super }}{% endif %}{% endblock %}
 {% block page_class %}entry-page{% endblock %}
 {% block content %}
-{% include "partials/entry_head.html" with compact=True %}
+{% if user.is_authenticated %}{% include "partials/entry_head.html" with compact=True %}{% else %}{% include "partials/entry_head.html" %}{% endif %}
 {% if error %}
-<h1>Invite</h1>
-<div class="notice notice-bad">{{ error }}</div>
-<p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
+<h1>This invite link doesn't work</h1>
+<div class="notice notice-bad" role="alert">{{ error }}</div>
+{% if user.is_authenticated %}<p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
+{% else %}<p class="entry-alt">Already have an account? <a href="{% url 'login' %}">Log in</a></p>{% endif %}
 {% else %}
 <h1>Join {{ invite.group.name }}</h1>
-<p class="entry-invite">{{ players }} player{{ players|pluralize }}. You will see this group's sessions and can join their sets.</p>
+<p class="entry-invite">{{ players }} player{{ players|pluralize }}. You will see this group's sessions and can join their games.</p>
 <form method="post" class="form-section">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary btn-block">Join group</button>
+  <button type="submit" class="btn btn-primary btn-block" data-busy="Joining…">Join group</button>
 </form>
 <p class="entry-alt"><a href="{% url 'home' %}">Not now</a></p>
 {% endif %}

@@ -18,7 +18,7 @@ const key=async(k,code,vk,extra={})=>{await send('Input.dispatchKeyEvent',{type:
 await size(390);return {s,js,go,click,shot,size,key};}
 const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${ok?'PASS':'FAIL'} ${name}`)};
 const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
-const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
+const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
 // WCAG contrast of an element's text against the page ground, via canvas so oklch resolves.
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.body).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
 try {
@@ -30,20 +30,21 @@ try {
   check(`${name} lockup, no site header ${width}`,await A.js(`!!document.querySelector('.entry-head img')&&!document.querySelector('.site-header')&&document.querySelector('form [type=submit]').getBoundingClientRect().width>=Math.min(${width},472)-40`));
   await A.shot(`entry-${name}-${width}`);}
  await A.size(390);
- await A.go('/accounts/signup/');check('empty sign-up fits a 390x844 phone',await A.js(`document.documentElement.scrollHeight<=844`));
+ await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));console.log('  invited sign-up height at 390:',await A.js(`document.documentElement.scrollHeight`),'button bottom:',await A.js(`Math.round(document.querySelector('form [type=submit]').getBoundingClientRect().bottom)`));check('invited sign-up: Create account visible without scrolling at 390x844',await A.js(`document.querySelector('form [type=submit]').getBoundingClientRect().bottom<=844`));
  await A.go('/accounts/login/');check('login fits a 390x844 phone',await A.js(`document.documentElement.scrollHeight<=844`));
- for(const sel of ['.entry-line','.entry-alt','.entry-alt a','.password-toggle','h1'])check('contrast '+sel,await A.js(contrast(sel))>=4.5);
+ await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));check('contrast invite link',await A.js(contrast('.entry-invite a'))>=4.5);await A.go('/accounts/login/');for(const sel of ['.entry-line','.entry-alt','.entry-alt a','.password-toggle','h1'])check('contrast '+sel,await A.js(contrast(sel))>=4.5);
  await A.go('/accounts/signup/');check('contrast hint',await A.js(contrast('.hint'))>=4.5);
  // Invite naming.
  await A.go('/accounts/login/?next='+encodeURIComponent(M.invite));check('login names the inviting group',await A.js(text("You're invited to "+M.group)));
  check('sign-up link keeps the invite',await A.js(`document.querySelector('.entry-alt a').getAttribute('href').endsWith('?next='+${JSON.stringify(M.invite)})`));
+ await A.go(M.expired);check('expired invite shows the reason at once, signed out',await A.js(`location.pathname===${JSON.stringify(M.expired)}&&!!document.querySelector('.notice-bad[role=alert]')&&!document.querySelector('.site-header')&&!!document.querySelector('.entry-alt a[href="/accounts/login/"]')&&document.querySelector('h1').textContent.includes("doesn't work")`));await A.shot('entry-invite-expired-390');
  await A.go('/accounts/login/?next='+encodeURIComponent(M.expired));check('expired invite names nothing',await A.js(`!${text("You're invited")}`));
  // Show / Hide.
  await A.go('/accounts/signup/');
  check('toggle is shown by the script',await A.js(`!document.querySelector('[data-password-toggle]').hidden&&document.querySelectorAll('[data-password-toggle]').length===1`));
  await A.js(`document.querySelector('[name=username]').value='someone';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91';document.querySelector('[data-password-toggle]').focus()`);
  await A.click(`document.querySelector('[data-password-toggle]')`);
- check('show reveals both fields and keeps names',await A.js(`['password1','password2'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')&&document.querySelector('[data-password-toggle]').getAttribute('aria-pressed')==='true'&&document.querySelector('[data-password-toggle]').textContent==='Hide'&&document.activeElement.matches('[data-password-toggle]')`));
+ check('show reveals both fields and keeps names',await A.js(`['password1','password2'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')&&document.querySelector('[data-password-toggle]').getAttribute('aria-label')==='Hide password'&&!document.querySelector('[data-password-toggle]').hasAttribute('aria-pressed')&&document.querySelector('[data-password-toggle]').textContent==='Hide'&&document.activeElement.matches('[data-password-toggle]')`));
  await A.shot('entry-signup-shown-390');
  await A.js(`window.__types=null;document.querySelector('form.form-section').addEventListener('submit',e=>{window.__types=[...e.target.querySelectorAll('[name^=password]')].map(f=>f.type);e.preventDefault()})`);
  await A.click(`document.querySelector('form.form-section [type=submit]')`);
@@ -57,23 +58,39 @@ try {
  // Errors.
  await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='wrong-password'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
  check('wrong login: one notice, username kept, password empty',await A.js(`document.querySelectorAll('.notice-bad').length===1&&document.querySelector('[name=username]').value==='hana'&&document.querySelector('[name=password]').value===''`));
+ check('wrong login: plain words, forgot line, focus on Password',await A.js(`${text("That username and password don't match.")}&&${text('Forgot your password? There is no reset yet.')}&&document.activeElement.name==='password'&&document.querySelectorAll('[role=alert]').length===1&&document.querySelectorAll('[aria-invalid=true]').length===2`));
+ check('contrast forgot line',await A.js(contrast('.entry-forgot'))>=4.5);
  for(const width of [320,390]){await A.size(width);check('login error fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));await A.shot('entry-login-error-'+width);}
  await A.size(390);await A.go('/accounts/signup/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password1]').value='12345678';document.querySelector('[name=password2]').value='12345678'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
- check('refused sign-up names the rules under the fields',await A.js(`document.querySelector('#id_password1_error').textContent.includes('entirely numeric')&&!document.querySelector('#id_password2_error')&&${text('already exists')}&&document.querySelector('[name=username]').value==='hana'&&getComputedStyle(document.querySelector('[name=username]')).borderTopColor!==getComputedStyle(document.querySelector('[name=password1]')).color`));
+ check('refused sign-up: one alert and focus on the refused field',await A.js(`document.querySelectorAll('[role=alert]').length===1&&${text('Check the highlighted fields.')}&&document.activeElement.name==='username'`));
+ check('refused sign-up names the rules under the fields',await A.js(`document.querySelector('#id_password1_error').textContent.includes('Use more than digits.')&&!document.querySelector('#id_password2_error')&&${text('That name is taken. Try another.')}&&document.querySelector('[name=username]').value==='hana'&&getComputedStyle(document.querySelector('[name=username]')).borderTopColor!==getComputedStyle(document.querySelector('[name=password1]')).color`));
  for(const width of [320,390]){await A.size(width);check('sign-up error fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));await A.shot('entry-signup-error-'+width);}
  await A.size(390);
  // The whole flow from an invite link, signed out: link -> log in -> sign up -> join -> group.
+ // A newcomer: invite link -> sign up -> group, in two screens.
  const B=await page();await B.go(M.invite);
- check('invite link leads a signed-out person to log in',await B.js(`location.pathname==='/accounts/login/'&&${text("You're invited to "+M.group)}`));
- await B.click(`document.querySelector('.entry-alt a')`);
- check('then to sign up, still invited',await B.js(`location.pathname==='/accounts/signup/'&&${text("You're invited to "+M.group)}`));
- await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);await B.click(`document.querySelector('form.form-section [type=submit]')`);
- check('sign-up lands on the join page',await B.js(`location.pathname===${JSON.stringify(M.invite)}&&${text('Join '+M.group)}&&/\\d+ players?\\./.test(document.body.textContent)&&!!document.querySelector('.site-header')`));
- for(const width of [320,390,1280]){await B.size(width);check('join fits '+width,await B.js(`document.documentElement.scrollWidth<=${width}`));check('join 48px targets '+width,await B.js(targets));await B.shot('entry-join-'+width);}
- await B.size(320);await B.go(M.long);check('long group name wraps on the join page',await B.js(`document.documentElement.scrollWidth<=320`));await B.shot('entry-join-long-320');
- await B.size(390);await B.go('/join/not-a-token/');check('bad invite shows the error',await B.js(`!!document.querySelector('.notice-bad')`));await B.shot('entry-join-error-390');
- await B.go(M.invite);await B.click(`document.querySelector('form.form-section [type=submit]')`);
- check('join enters the group',await B.js(`location.pathname.startsWith('/g/')&&${text('You are in '+M.group)}`));
+ check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("You're invited to "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
+ check('sign up says who sees the name and that there is no reset',await B.js(`${text('Your friends see this name.')}&&${text('There is no password reset yet.')}`));
+ check('contrast password warning',await B.js(contrast('.hint-note strong'))>=4.5);
+ await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);
+ await B.js(`document.querySelector('form.form-section').addEventListener('submit',()=>setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},5))`);
+ await B.click(`document.querySelector('form.form-section [type=submit]')`);
+ check('sign-up lands in the group with a welcome',await B.js(`location.pathname.startsWith('/g/')&&${text('Welcome to '+M.group+". You're in.")}`));await B.shot('entry-welcome-390');
+ // An existing account: invite link -> sign up -> "Log in" -> the Join confirmation.
+ const D=await page();await D.go(M.invite);await D.click(`document.querySelector('.entry-invite a')`);
+ check('existing account: log in keeps the invite',await D.js(`location.pathname==='/accounts/login/'&&${text("You're invited to "+M.group)}`));
+ await D.js(`document.querySelector('[name=username]').value='visitor';document.querySelector('[name=password]').value='tablestakes-91'`);await D.click(`document.querySelector('form.form-section [type=submit]')`);
+ check('existing account is asked before joining',await D.js(`location.pathname===${JSON.stringify(M.invite)}&&${text('Join '+M.group)}&&/\\d+ players?\\./.test(document.body.textContent)&&${text('can join their games')}&&!!document.querySelector('.site-header')`));
+ for(const width of [320,390,1280]){await D.size(width);check('join fits '+width,await D.js(`document.documentElement.scrollWidth<=${width}`));check('join 48px targets '+width,await D.js(targets));await D.shot('entry-join-'+width);}
+ await D.size(320);await D.go(M.long);check('long group name wraps on the join page',await D.js(`document.documentElement.scrollWidth<=320`));await D.shot('entry-join-long-320');
+ await D.size(390);await D.go('/join/not-a-token/');check('bad invite shows the error',await D.js(`!!document.querySelector('.notice-bad[role=alert]')`));await D.shot('entry-join-error-390');
+ await D.go(M.invite);await D.click(`document.querySelector('form.form-section [type=submit]')`);
+ check('join enters the group',await D.js(`location.pathname.startsWith('/g/')&&${text('Welcome to '+M.group)}`));
+ // Skip link and busy label.
+ const E=await page();await E.go('/accounts/login/');await E.js(`document.querySelector('.skip-link').focus()`);
+ check('skip link is a 48px target when focused',await E.js(`(()=>{const r=document.querySelector('.skip-link').getBoundingClientRect();return r.height>=48&&r.left>=0})()`));
+ await E.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='x';document.querySelector('form.form-section').addEventListener('submit',e=>{e.preventDefault();setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},20)})`);await E.click(`document.querySelector('form.form-section [type=submit]')`);
+ check('busy label says Logging in',await E.js(`window.__busy==='Logging in…'`));
  // Without JavaScript: no Show button, native log in.
  const C=await page();await send('Emulation.setScriptExecutionDisabled',{value:true},C.s);await C.go('/accounts/login/');
  check('no JavaScript: no Show button, form intact',await C.js(`!document.querySelector('[data-password-toggle]').getClientRects().length&&document.querySelector('[name=password]').type==='password'`));await C.shot('entry-login-nojs-390');

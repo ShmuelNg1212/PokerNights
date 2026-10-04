@@ -6,15 +6,21 @@
 {% block content %}
 {% include "partials/entry_head.html" with line=True %}
 <h1>Log in</h1>
-{% if invited_to %}<p class="entry-invite">You're invited to <strong>{{ invited_to }}</strong>. Log in to join.</p>{% endif %}
+{% if invited_to %}<p class="entry-invite">You're invited to <strong>{{ invited_to }}</strong>. Log in, then confirm to join.</p>{% endif %}
 <form method="post" class="form-section stack">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
-  {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% endif %}
+  {% if form.non_field_errors %}
+  <div id="login-error">
+    <div class="notice notice-bad" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+    <p class="hint entry-forgot">Forgot your password? There is no reset yet. Tell your host, who can ask the site administrator to set a new one.</p>
+  </div>
+  {% endif %}
   {% include "partials/entry_field.html" with field=form.username %}
   {% include "partials/entry_field.html" with field=form.password toggle=True %}
-  <button type="submit" class="btn btn-primary btn-block">Log in</button>
+  <button type="submit" class="btn btn-primary btn-block" data-busy="Logging in…">Log in</button>
 </form>
-<p class="entry-alt">No account? <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign up</a></p>
+{% if can_sign_up %}<p class="entry-alt">No account? <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign up</a></p>
+{% else %}<p class="entry-alt entry-alt-plain">No account? Ask a host of your group for an invite link.</p>{% endif %}
 {% endblock %}
 {% block scripts %}<script src="{% static 'js/password.js' %}" defer></script>{% endblock %}

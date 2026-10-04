@@ -415,6 +415,24 @@ New session, Set settings and the preset form are laid out in titled groups. [Pl
 - **Errors.** Each field error sits under its field. The error text carries one id; the earlier wrapper repeated it.
 - **Measured in Chrome.** 69 checks at 320, 390 and 1280px on the three forms: equal left edge, right edge and height for every field, aligned pairs including when one is refused, 16px field text, keyboard order matching the visual order, and submission without JavaScript. The iPhone rendering of the date field is not measurable here; see `doc/wiki/footguns/ios_date_input.md`.
 
+### 2026-10-05 addendum — Entry flow after the critique
+
+This supersedes three points of the Entry pages addendum: Sign up now carries the description, the Show button has no pressed state, and field errors no longer each carry an alert role. [Plan](doc/plan/1791134687_entry_flow_critique_fixes.md).
+
+- **Invite link, signed out.** It opens Sign up. Under the heading: “You’re invited to **{group}**.” and, on the next line, “Already have an account? Log in”, before the first field. There is no alternate line under the button on an invited Sign up. The inline link keeps a 48px touch height without stretching the line.
+- **Arrival.** An account created from an invite lands on the group page with the success message “Welcome to {group}. You’re in.” The Join page uses the same sentence.
+- **Description.** Log in, Sign up and “needs an invite” show: “Keeps the books for your home poker game: buy-ins, cash-outs and who pays whom. It records the game. It never moves money.” It wraps to three lines on a 390px phone (42ch measure).
+- **Sign up help.** Username: “Your friends see this name. Letters and numbers, no spaces.” Password: the four rules in one sentence, then a second line with “There is no password reset yet.” in Bone at weight 600 and “Save it in your phone’s password manager.” Help text on entry pages is 14.4px.
+- **Refusals.** One error notice at the top of the form (“Check the highlighted field(s).” on Sign up; the login message on Log in). Refused fields have the Down border and their message beneath. Focus goes to the first refused field, or to Password after a refused login. Under a refused login: “Forgot your password? There is no reset yet. Tell your host, who can ask the site administrator to set a new one.”
+- **Log in without an invite**, where sign-up needs one: the alternate line reads “No account? Ask a host of your group for an invite link.” with no link.
+- **Invalid invite.** Heading “This invite link doesn’t work”, the reason in one error notice, then “Already have an account? Log in” as a quiet line, or Go to your groups when signed in.
+- **Show / Hide.** The text and label change (“Show password” / “Hide password”); there is no pressed state. Bone text marks the revealed state.
+- **Busy labels.** “Logging in…”, “Creating account…”, “Joining…”.
+- **Spacing.** The primary button sits 16px under the last field. From 900px wide and 1000px tall the column starts 12vh down.
+- **Skip link.** 48px high when focused.
+- **Known limits.** An invited Sign up is 848px tall at 390px wide, four pixels more than an 844px screen; the Create account button ends at 800px. A refused Sign up is taller and its button needs a scroll. Refused sign-ups return empty password fields by design.
+- **Measured.** 91 checks at 320, 390 and 1280px, including both invite paths end to end.
+
 ## Do's and Don'ts
 
 ### Do:

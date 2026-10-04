@@ -82,13 +82,12 @@ class InviteViewTests(TestCase):
         _, token = services.create_invite(self.host)
         url = reverse("invite_accept", args=[token])
         response = self.client.get(url)
-        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+        from urllib.parse import urlencode
+        self.assertRedirects(response, f"{reverse('signup')}?{urlencode({'next': url})}")
         response = self.client.post(
             reverse("signup"),
             {"username": "newbie", "password1": "tablestakes-91", "password2": "tablestakes-91", "next": url},
         )
-        self.assertRedirects(response, url)
-        response = self.client.post(url)
         self.assertRedirects(response, reverse("group", args=[self.group.pk]))
         self.assertTrue(Member.objects.filter(group=self.group, user__username="newbie").exists())
 

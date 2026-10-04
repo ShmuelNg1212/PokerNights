@@ -86,3 +86,5 @@ Since 2026-10-04 the shared login line in every script submits with `form.form-s
 For the settle status, seed a fresh temporary database with `seed.py`, `seed_end_set.py` and `seed_night.py`, delete `/private/tmp/pn-settled-chrome`, then run `settled.mjs` (24 checks): the Past sessions rows at 320, 390 and 1280 px, all three statuses, agreement between each row and its session page, and a row changing after the last paid mark and after undo.
 
 For the stakes forms, seed a fresh temporary database with `seed.py`, delete `/private/tmp/pn-form-chrome2`, then run `session_form.mjs` (69 checks): New session, Set settings and the preset form at 320, 390 and 1280 px, field edges and heights, pairs, a refused pair, locked settings, keyboard order and submission without JavaScript. It creates one session. Chrome does not reproduce the iPhone date control; that needs a real phone.
+
+Since 2026-10-05 `entry.mjs` has 91 checks and follows the new flow: a newcomer goes link → Sign up → group; the seeded account `visitor` goes link → Sign up → “Log in” → Join → group. `seed_entry.py` creates `visitor`.
