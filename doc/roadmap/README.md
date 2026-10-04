@@ -6,13 +6,13 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 |---|---|---|---|
 | 1. Game night | Buy-ins and rebuys, cash-outs with balance check, settle-up with paid marks | 1, 2, 3 | Done, 2026-10-03 |
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
-| 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Planned |
+| 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Partly built 2026-10-04: profit/loss, sessions and win rate by month or all time. Seasons, year filter, average, ROI and a ranking threshold remain |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
 | 5. Shared use | Deployment, password reset, claim links for roster players | — | Planned |
 
 ## Visual redesign pulled forward
 
-The Rack slices 1–4 are built: shared foundation, active set and action sheets, count-up, cash-out review, finalized and canceled sets, session settle-up and closing recap, home, group, accounts, invitations, supporting forms and log. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). [Slice 3 plan](../plan/1791053204_redesign_slice_3.md). [Slice 4 plan](../plan/1791084843_redesign_slice_4.md) records the final extension and input-retention fixes. Seating and statistics remain separate feature cycles.
+The Rack slices 1–4 are built: shared foundation, active set and action sheets, count-up, cash-out review, finalized and canceled sets, session settle-up and closing recap, home, group, accounts, invitations, supporting forms and log. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). [Slice 3 plan](../plan/1791053204_redesign_slice_3.md). [Slice 4 plan](../plan/1791084843_redesign_slice_4.md) records the final extension and input-retention fixes. Seating remains a separate feature cycle. The [UI evolution](../plan/1791098885_ui_evolution.md) added the Sessions / Stats / Group settings tabs, the branding SVGs and a first Stats view.
 
 ## What Stage 1 already prepares
 
@@ -24,6 +24,7 @@ The Rack slices 1–4 are built: shared foundation, active set and action sheets
 
 - **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` itself is unchanged; its owner can update it.
 - **2026-10-04, sessions with sets.** A session holds several sets. Settle-up is once per session. Results and playing time are stored per set.
+- **2026-10-04, stats.** A "session played" is a closed session, not a set; the win rate is profitable sessions over sessions played; profit is after rake; no minimum-session threshold yet.
 - **Consequence for Stage 3:** leaderboards must state whether a "session played" is a set or a session, and can use `PlayerResult.play_seconds` for hourly figures.
 - **Consequence for Stage 3:** leaderboards and statistics are per unit. A pesos board includes only pesos games. `PlayerResult.unit` supports this.
 - The "chip denominations" item under "Later" no longer applies to pesos games.
@@ -41,7 +42,7 @@ These used the plan's defaults in Stage 1. They can still change.
 | Seating | Stays in the roadmap as Stage 4 |
 | Whole-peso rounding | None. Exact centavos |
 | Win rate | Percentage of finalized sessions with profit; the same measure as "cash rate" |
-| Ranking threshold | 3 sessions, per group |
+| Ranking threshold | None in the built Stats view. 3 sessions per group stays the Stage 3 proposal |
 
 ## Possible follow-ups
 

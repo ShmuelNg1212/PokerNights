@@ -2,18 +2,17 @@
 {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
 <div class="table-layout">
   <aside class="table-left">
-    <section class="felt" data-unit="{{ unit }}" aria-label="Set overview">
-      <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge badge-live">{{ session.get_state_display }}</span></div>
+    <section class="felt{% if session.state != 'running' %} hero{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
+      <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge{% if session.state == 'running' %} badge-live{% endif %}">{{ session.get_state_display }}</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
       <div class="pot">
         <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div><div class="display-amount">{{ summary.in_play|display_amount:unit }}</div></div>
         <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
       </div>
-      <div class="money-split"><div class="split-track" aria-hidden="true"><span style="width:{% play_percent summary %}%"></span></div>
-        <div class="split-labels"><span>Total bought in (<span>{{ summary.buy_in_count }}</span> buy-in{{ summary.buy_in_count|pluralize }}) <b>{{ summary.total|amount:unit }}</b></span><span>Cashed out <b>{{ summary.cashed_out|amount:unit }}</b></span></div>
-      </div>
-
-      <dl class="set-totals">{% include "web/_rake_totals.html" %}</dl>
+      <dl class="set-totals">
+        <div><dt>Total bought in <span class="nowrap">({{ summary.buy_in_count }} buy-in{{ summary.buy_in_count|pluralize }})</span></dt><dd>{{ summary.total|amount:unit }}</dd></div>
+        <div><dt>Cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+        {% include "web/_rake_totals.html" %}</dl>
       <p class="felt-hint">{% include "web/_rake_rule.html" %}</p>
       {% if session.state == 'setup' %}<p class="felt-hint">Draft · players cannot see this set yet.</p>{% endif %}
     </section>

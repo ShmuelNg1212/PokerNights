@@ -72,9 +72,11 @@ class InviteViewTests(TestCase):
     def test_host_sees_the_link_once(self):
         self.client.force_login(self.host.user)
         self.client.post(reverse("invite_create", args=[self.group.pk]))
-        page = self.client.get(reverse("group", args=[self.group.pk]))
-        self.assertContains(page, "/join/")
+        # The link waits for the settings view; another tab does not use it up.
         self.assertNotContains(self.client.get(reverse("group", args=[self.group.pk])), "/join/")
+        page = self.client.get(reverse("group", args=[self.group.pk]), {"view": "settings"})
+        self.assertContains(page, "/join/")
+        self.assertNotContains(self.client.get(reverse("group", args=[self.group.pk]), {"view": "settings"}), "/join/")
 
     def test_new_user_signs_up_from_the_link_and_joins(self):
         _, token = services.create_invite(self.host)

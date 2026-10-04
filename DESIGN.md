@@ -13,8 +13,6 @@ colors:
   felt: "oklch(0.34 0.095 265)"
   felt-deep: "oklch(0.25 0.08 265)"
   felt-ink: "oklch(0.86 0.04 265)"
-  slate: "oklch(0.285 0.025 265)"
-  slate-ink: "oklch(0.86 0.025 265)"
   brass: "oklch(0.82 0.13 85)"
   up: "oklch(0.82 0.13 160)"
   down: "oklch(0.76 0.14 25)"
@@ -144,7 +142,7 @@ The palette combines warm dark supports with a cool indigo working field and pal
 
 - **Bone:** primary actions, strong figures and readable foregrounds.
 - **Indigo Felt / Deep Felt / Felt Ink:** the active-set field, its supporting palette and readable secondary labels.
-- **Slate / Slate Ink:** muted end-of-set felt and its readable labels; count-up, cash-out review and final overview share this quieter field.
+- **Neutral lead panel (Rail with Bone Dim labels):** every state that is not in play: draft and open sets, count-up, cash-out review, final results and the session overview. Indigo felt and its diamond texture mark only a running set.
 
 ### Secondary
 
@@ -195,7 +193,7 @@ The overview has a flexible amount column and a 116px supporting column, separat
 
 At 900px and above, the active-set layout becomes a 400px left column plus flexible player list, with a 28px gap and 28px page insets. The left column sticks below the header at 90px. The host action returns to the document flow and rebuy controls display their written label.
 
-Count-up, review and final pages inherit the 1180px table container and the 400px-plus-flexible two-column layout from 900px. On phones, count-up orders the slate overview, all inline player counts, then the balance check; the host dock remains fixed with visible next-step guidance and a 48px “More host controls” target. Count-up reserves 200px bottom clearance, increased to 370px when the host's count-total dock is present; count fields retain 90px top / 200px bottom scroll margins. The confirmed count total stays in the slate overview while the local preview sits before the dock's next action. At desktop both remain in the left overview/control column. Review and final pages reserve 48px at the bottom and keep actions in document flow. Below 360px each count button stacks at full width beneath its input. End-set and review containers, names and figures wrap anywhere to contain long unbroken names and large amounts.
+Count-up, review and final pages inherit the 1180px table container and the 400px-plus-flexible two-column layout from 900px. On phones, count-up orders the neutral overview, all inline player counts, then the balance check; the host dock remains fixed with visible next-step guidance and a 48px “More host controls” target. Count-up reserves 200px bottom clearance, increased to 370px when the host's count-total dock is present; count fields retain 90px top / 200px bottom scroll margins. The confirmed count total stays in the neutral overview while the local preview sits before the dock's next action. At desktop both remain in the left overview/control column. Review and final pages reserve 48px at the bottom and keep actions in document flow. Below 360px each count button stacks at full width beneath its input. End-set and review containers, names and figures wrap anywhere to contain long unbroken names and large amounts.
 
 The session page inherits the 1180px table container and remains one column on phones. From 900px it uses a 400px overview/action column and flexible detail column with a 28px gap. Its document order is task summary, closed-session transfers, aggregate results, sets and payment records. Actions stay in document flow with 48px bottom clearance; detail sections have 32px separation. Transfer identities occupy two flexible columns around a written direction, with 32px tokens; amount, status and actions wrap on the next line. Full names and result rows can wrap while the primary Still to pay value remains intact.
 
@@ -251,15 +249,15 @@ Compact outlined pills mark state. Live state uses bone and ink; warning and pos
 
 ### Player rows
 
-Names and metadata form a single 48px-minimum detail target. Amounts form a separate right-aligned column. Phone rebuy controls are circular with a plus icon and a labelled accessible action; desktop adds visible words. Cash-out state and departed-player state remain written.
+Names and metadata form a single 48px-minimum detail target. Amounts form a separate right-aligned column. Buy-in or Rebuy and Cash out are written buttons at every width: side by side under the name on phones, beside the amount from 900px. Cash-out state and departed-player state remain written.
 
 ### Start controls
 
-An open set places a checked native option immediately before Start the game. Its 48px-minimum label shows the current usual amount in the session’s unit and says it applies to players without a buy-in; adjacent help says existing buy-ins stay unchanged. Unchecking opts out for that start, and live updates retain the choice. The native form records missing opening buy-ins on accepted start before the timer begins. The control reuses the shared checkbox, focus and primary-action treatment.
+An open set places a checked native option immediately before Start the set. Its 48px-minimum label shows the current usual amount in the session’s unit and says it applies to players without a buy-in; adjacent help says existing buy-ins stay unchanged. Unchecking opts out for that start, and live updates retain the choice. The native form records missing opening buy-ins on accepted start before the timer begins. The control reuses the shared checkbox, focus and primary-action treatment.
 
 ### Count-up
 
-A quiet slate overview shows “N of M players ready or cashed out,” separate awaiting/ready/cashed-out counts, total bought in, recorded cash-outs and the stopped set timer. Only players with buy-ins contribute to N and M; earlier partial cash-outs alone do not complete a player. Inline rows pair player tokens and names with bought-in figures, written state and a labelled final-count input. Every host input and count button belongs to one shared form: a row button confirms every typed count, zero is valid and empty fields are skipped. Confirmed counts remain written above draft fields; no provisional net result appears. Players see read-only state. Corrections and exceptions remain in native details. Polling retains drafts and focus.
+A quiet neutral overview shows “N of M players ready or cashed out,” separate awaiting/ready/cashed-out counts, total bought in, recorded cash-outs and the stopped set timer. Only players with buy-ins contribute to N and M; earlier partial cash-outs alone do not complete a player. Inline rows pair player tokens and names with bought-in figures, written state and a labelled final-count input. Every host input and count button belongs to one shared form: a row button confirms every typed count, zero is valid and empty fields are skipped. Confirmed counts remain written above draft fields; no provisional net result appears. Players see read-only state. Corrections and exceptions remain in native details. Polling retains drafts and focus.
 
 The overview's “Confirmed counts” block compares remaining confirmed stacks plus accepted cash-outs against total bought in, with an exact accounted amount and written count coverage. A quiet rule separates it from the overview facts. The host dock repeats this compact equation; entering a draft changes its heading to “Preview · unsaved counts” and immediately updates its tabular figures. Accounted amounts use a supporting figure (18px), beneath a short heading (14px), rather than another display total. Both blocks inherit the shared palette and wrap long amounts; no new card, token or asset is introduced.
 
@@ -269,15 +267,15 @@ The dock opens review when confirmed counts are ready, offers finalization when 
 
 ### Cash-out review
 
-Slate totals separate “Total of this batch,” “Recorded cash-outs,” prospective “After this batch” and “Total bought in.” A fixed-layout table pairs initial tokens and wrapping names with right-aligned exact confirmed cash-out amounts. The player column occupies 56%; the batch total has a footer row. A drawn back arrow accompanies the written set link. Awaiting and already-cashed-out lists remain separate. Written guidance states that this action records cash-outs without finalizing or marking payment; stale reviews retain an error and fresh values.
+Neutral-panel totals separate “Total of this batch,” “Recorded cash-outs,” prospective “After this batch” and “Total bought in.” A fixed-layout table pairs initial tokens and wrapping names with right-aligned exact confirmed cash-out amounts. The player column occupies 56%; the batch total has a footer row. A drawn back arrow accompanies the written set link. Awaiting and already-cashed-out lists remain separate. Written guidance states that this action records cash-outs without finalizing or marking payment; stale reviews retain an error and fresh values.
 
 ### Final results
 
-The slate overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. Facts list buy-in count and total, cumulative cash-outs, any override and recorded time played. Snapshot values supply the results. Override disclosure remains written, and the session link explains where the next set or settle-up belongs. Set-level transfers and payment controls are absent.
+The neutral overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. Facts list buy-in count and total, cumulative cash-outs, any override and recorded time played. Snapshot values supply the results. Override disclosure remains written, and the session link explains where the next set or settle-up belongs. Set-level transfers and payment controls are absent.
 
 ### Session overview and settle-up
 
-The open-session indigo overview leads with the current set action and the viewer’s result so far when a standing exists; it explains that transfers follow closing. Close and next-set actions retain their service gates beside that task. A closed session uses slate, an intact Still to pay figure, written settlement status, amount-based progress and a separately labelled paid-transfer count. Remaining and paid sums use exact integer transfers; zero transfers show “Nobody owes anything” without a progress denominator.
+The open-session neutral overview leads with the current set action and the viewer’s result so far when a standing exists; it explains that transfers follow closing. Close and next-set actions retain their service gates beside that task. A closed session uses slate, an intact Still to pay figure, written settlement status, amount-based progress and a separately labelled paid-transfer count. Remaining and paid sums use exact integer transfers; zero transfers show “Nobody owes anything” without a progress denominator.
 
 Transfer rows pair payer and payee identity tokens with full names, “pays,” an exact amount and Paid / Not paid text. Paid includes its recorded time and “marked by the host.” Host Mark paid and Undo are native POST actions. The session identity order follows first appearance in aggregate standings and keys tokens by member; it need not match a set’s colour order. Payment records retain recorder and undone status, with struck text for reversed records.
 
@@ -291,7 +289,7 @@ The browser key includes session and signed-in viewer. Automatic opening happens
 
 ### Group and home navigation
 
-Full-width group rows pair written names with membership roles. An empty home explains creation or an invitation. The group’s current sessions reuse indigo with readable Felt Ink labels; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
+Full-width group rows pair written names with membership roles. An empty home explains creation or an invitation. The group’s current sessions are neutral rows; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
 
 The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Roster chip colour derives from member primary key within the ten-colour palette; collision handling uses roster peers. Set join order and session standing order retain their own token rules, so colour does not promise identity across those views. The one-time invite URL remains a labelled read-only field.
 
@@ -307,7 +305,7 @@ Home creation, table creation, roster addition and member rename retain non-sens
 
 The reading surface groups play periods, players, settings versions, buy-ins, cash-outs, balance overrides, frozen final results and audit events under written headings. Native section links jump to the principal categories; the page makes no single global chronology claim. Exact amounts remain tabular, actor/time/reason metadata stays visible, reversed entries remain struck with explanations and voided overrides retain their removal information. Final results carry a Final label, revision metadata, signs and direction icons. Payment records and who pays whom are linked to the session page.
 
-A canceled set uses the warm rail vocabulary, written Canceled state, recorded reason, roster and Full game log path. Its copy explains that retained money records remain in the log and that the set has no final result. No join, money or final-result action appears.
+A canceled set uses the warm rail vocabulary, written Canceled state, recorded reason, roster and Full set log path. Its copy explains that retained money records remain in the log and that the set has no final result. No join, money or final-result action appears.
 
 ### Sheets
 
@@ -317,7 +315,7 @@ Focused buy-in and player-detail tasks use a native modal dialog outside the pol
 
 This approved Operate extension inherits The Rack. Native set settings append labelled Off / Percentage / Flat amount controls, per-buy-in deduction help and local errors inside the existing task form. Accepted money disables the rule fields with a written reason. Buy-in help repeats the agreed rule without adding a client fee calculator.
 
-The active overview places Collected rake and Available to play below the gross/cash-out split in the existing definition-list treatment. Count-up and cash-out review reuse those facts on slate; the confirmed total and unsaved preview add accepted rake once to their equation. Final results retain gross buy-ins, playable value, frozen rake and signed after-rake results. Session overview and recap use existing fact rows and explanatory prose to distinguish those results from remaining payments; an all-negative rake-only result says No positive result after rake. The group page adds a quiet Group rake account rail after past sessions, with separate peso/chip totals and a native session/set breakdown disclosure. Settings versions, buy-in records and reversals retain rule and exact fee/playable provenance in the existing reading surface.
+The active overview places Collected rake and Available to play below the gross/cash-out split in the existing definition-list treatment. Count-up and cash-out review reuse those facts on the neutral panel; the confirmed total and unsaved preview add accepted rake once to their equation. Final results retain gross buy-ins, playable value, frozen rake and signed after-rake results. Session overview and recap use existing fact rows and explanatory prose to distinguish those results from remaining payments; an all-negative rake-only result says No positive result after rake. The group page adds a quiet Group rake account rail after past sessions, with separate peso/chip totals and a native session/set breakdown disclosure. Settings versions, buy-in records and reversals retain rule and exact fee/playable provenance in the existing reading surface.
 
 No shared token, CSS, motion, raster asset or dependency is introduced. The incumbent phone/desktop topology, Archivo hierarchy, exact unit formatting, focus and 48px actions are reused. DESIGN.md frontmatter and `.impeccable/design.json` are preserved. Pre-existing drift remains: the first active-set contract gives 76px phone totals / 27px clock and blinds, while the finish-reviewed build uses 64px / 22px (16px chips blinds); the sidecar narrative still describes the earlier slice-2 scope and predates the labelled local count preview. This extension does not repair those historical records.
 
@@ -326,6 +324,21 @@ No shared token, CSS, motion, raster asset or dependency is introduced. The incu
 New session and Game settings now share a native Rake per buy-in fieldset with Off, Flat amount and Percentage of buy-in radios. Off is selected on creation. The existing check-row treatment gives each written radio label a 48px minimum target and the radio a 22px control with the shared accent. The borderless fieldset uses a 16px top inset and 12px value-field gaps within the incumbent narrow task frame. Both flat and percentage text fields remain visible with decimal keyboard hints; adjacent help says only the chosen option applies. Only the selected value can refuse submission, and local error text retains the chosen radio and both typed values. No script or fee calculator is added.
 
 An empty set places Choose rake before buy-ins in the ordinary host-action stack before opening-buy-in and start controls. Accepted money disables the radios and both value fields; written help explicitly includes default opening buy-ins and gives the next-set recovery path. Other stakes and Save settings remain available. This bounded Operate extension reuses The Rack palette, Archivo hierarchy, focus, reduced-motion behavior and phone/desktop topology. CSS only extends the native-control treatment and fieldset spacing; frontmatter tokens and `.impeccable/design.json` remain unchanged. The historical token/sidecar drift recorded above remains unrepaired.
+
+### 2026-10-04 addendum — UI evolution
+
+The Rack identity is kept: warm near-black, bone, Archivo, hard button shadows, pill badges, chip tokens, condensed amounts, quick amounts and green winnings. [Plan](doc/plan/1791098885_ui_evolution.md).
+
+- **Tokens.** One `:root` block holds colours, a spacing scale (`--s-1` 4px to `--s-6` 32px), radii (`--r-bar`, `--r-field`, `--r-row`, `--r-btn`, `--radius`, `--r-sheet`, `--r-pill`), button shadows, the money width and the 48px target. Slate is removed.
+- **Felt and hero.** `.felt` alone is the indigo diamond field for a set in play. `.felt.hero` keeps its layout on Rail with a Rule border for every other state.
+- **Notices.** `.notice-info` is neutral for information and waiting; the default notice is a brass warning; `.notice-bad` is an error; `.notice-good` is success. A completed mismatch uses `.discrepancy`: a danger panel that leads with the signed amount at 2.5rem.
+- **Panel and empty state.** `.panel` is the neutral card. An empty state is a panel with a heading, one sentence and one action.
+- **Tabs and pills.** `.tabs` is a segmented control of ordinary links with `aria-current`; `.pills` are filter links. Both keep 48px targets and work without JavaScript.
+- **Row actions.** `.player-actions` holds labelled Buy-in/Rebuy and Cash out buttons. Cash out has its own sheet and native fallback.
+- **Transfers.** Each transfer is a panel: tokens and names, an arrow with the word “pays”, the amount at 1.75rem, a written state and a Mark paid or Undo button at least 124px wide. A fully paid session shows a green check and “Settled”.
+- **Stats.** Rows show rank, token, name, “N sessions · won N · N% win rate” and a signed amount with a direction icon. Definitions sit in a panel under the list.
+- **Branding.** The mark is a bone chip with six ink notches and a brass crescent on an ink disc, so it reads on near-black and on cream. `logo-horizontal.svg` adds the outlined Archivo wordmark in bone; `logo-mono.svg` is ink only; `app-icon.svg` centres the mark at 62% on a full square. No raster files.
+- **Measured.** 135 captures at 375, 768 and 1280px: no horizontal overflow, no link, button or field under 44px, and sampled text pairs from 7.33:1 upward. Token initials on the ten player colours were not measured.
 
 ## Do's and Don'ts
 

@@ -39,7 +39,7 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- Players: B signs up through the invite link; A and C are roster players without logins.
         host.post(reverse("invite_create", args=[group.pk]))
-        link = re.search(r"/join/[\w-]+/", host.get(reverse("group", args=[group.pk])).content.decode()).group(0)
+        link = re.search(r"/join/[\w-]+/", host.get(reverse("group", args=[group.pk]), {"view": "settings"}).content.decode()).group(0)
         player_b = sign_up("B")
         self.assertContains(player_b.post(link, follow=True), "Friday Game")
         host.post(reverse("member_add", args=[group.pk]), {"name": "A"})
@@ -139,7 +139,7 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- The log shows the whole night, and the group lists the game as past.
         log = player_b.get(reverse("session_log", args=[session.pk]))
-        for text in ("miscounted", "Finalized set 1: ₱2,500 bought in", "Marked paid", "B left the game"):
+        for text in ("miscounted", "Finalized set 1: ₱2,500 bought in", "Marked paid", "B left the set"):
             self.assertContains(log, text)
         self.assertContains(player_b.get(reverse("group", args=[group.pk])), "Past sessions")
 

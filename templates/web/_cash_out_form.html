@@ -3,9 +3,9 @@
   <input type="hidden" name="participant_id" value="{{ p.pk }}">
   <div class="form-row">
     <div class="grow"><input type="text" name="amount" data-keep="cash-out-{{ p.pk }}" inputmode="decimal" autocomplete="off" required placeholder="{% if unit == 'chips' %}Chips cashed out{% else %}Cash-out in pesos{% endif %}" aria-label="Cash-out amount for {{ p.member.display_name }}"></div>
-    <button type="submit" class="btn">Cash out</button>
+    <button type="submit" class="btn btn-primary">Cash out</button>
   </div>
   {% if session.state == 'running' and p.status == 'joined' %}
-  <label class="small muted"><input type="checkbox" name="left" value="1"> Leaving the game</label>
+  <label class="check"><input type="checkbox" name="left" value="1"><span class="grow">Leaving the set</span></label>
   {% endif %}
 </form>

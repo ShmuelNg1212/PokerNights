@@ -67,7 +67,7 @@ def unit_field():
 
 class PresetForm(StakesForm):
     name = forms.CharField(label="Preset name", max_length=60)
-    game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
+    game_type = forms.ChoiceField(label="Poker variant", choices=GameType.choices)
     unit = unit_field()
 
     field_order = ["name", "game_type", "unit"]
@@ -155,7 +155,7 @@ class SessionForm(RakeForm):
     table_id = forms.ChoiceField(label="Table")
     game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
     location = forms.CharField(label="Location", max_length=120, required=False)
-    game_type = forms.ChoiceField(label="Game", choices=GameType.choices)
+    game_type = forms.ChoiceField(label="Poker variant", choices=GameType.choices)
     unit = unit_field()
 
     field_order = ["table_id", "game_date", "location", "game_type", "unit"]

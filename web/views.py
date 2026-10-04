@@ -43,22 +43,62 @@ def visible_nights(me):
     return nights
 
 
+GROUP_VIEWS = ("sessions", "stats", "settings")
+
+
 def group(request, group_id):
+    """One group route with a view per tab; an unknown ``view`` shows the sessions."""
     me = member_for(request.user, group_id)
-    members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
-    rake_totals, rake_sets = ledger_queries.group_rake(me.group)
+    view = request.GET.get("view")
     context = {
         "me": me,
         "group": me.group,
+        "view": view if view in GROUP_VIEWS else "sessions",
+        "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
+    }
+    periods = settlement_queries.stat_periods(me.group)
+    # The Stats tab appears once a closed session gives it something to show.
+    context["has_stats"] = bool(periods)
+    if context["view"] == "settings":
+        context.update(group_settings_context(request, me))
+    elif context["view"] == "stats":
+        context.update(group_stats_context(request, me, periods))
+    else:
+        nights = [n for n in visible_nights(me) if n.shown_sets]
+        context["open_nights"] = [n for n in nights if not n.is_closed]
+        context["closed_nights"] = [n for n in nights if n.is_closed]
+    return render(request, "web/group.html", context)
+
+
+def group_stats_context(request, me, periods) -> dict:
+    """Profit or loss, sessions played and win rate for one unit and one period. Read-only."""
+    unit = request.GET.get("unit")
+    if unit not in periods:
+        unit = money.PHP if money.PHP in periods or not periods else next(iter(periods))
+    months = periods.get(unit, [])
+    month = next((m for m in months if m.strftime("%Y-%m") == request.GET.get("month")), None)
+    stats = settlement_queries.group_stats(me.group, unit, month) if months else []
+    return {
+        "stats": stats,
+        "stat_members": [line.member for line in stats],
+        "stat_unit": unit,
+        "stat_units": [u for u in (money.PHP, money.CHIPS) if u in periods],
+        "stat_month": month,
+        "stat_months": months,
+    }
+
+
+def group_settings_context(request, me) -> dict:
+    """Roster, invites, tables, presets and the rake account. Kept forms are taken only here, so they are not lost on another tab."""
+    group_id = me.group_id
+    members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
+    rake_totals, rake_sets = ledger_queries.group_rake(me.group)
+    context = {
         "members": members,
         "rake_totals": rake_totals,
         "rake_sets": rake_sets,
-        "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
-    nights = [n for n in visible_nights(me) if n.shown_sets]
-    context["open_nights"] = [n for n in nights if not n.is_closed]
-    context["closed_nights"] = [n for n in nights if n.is_closed]
     if me.is_host:
         context["add_form"] = take_form(request, f"{group_id}:add", NameForm, auto_id="add_%s")
         context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
@@ -69,7 +109,7 @@ def group(request, group_id):
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
         )
         context["new_invite_url"] = request.session.pop("new_invite_url", None)
-    return render(request, "web/group.html", context)
+    return context
 
 
 def session_context(session, me) -> dict:
@@ -104,6 +144,11 @@ def session_context(session, me) -> dict:
     for line in summary.lines:
         line.play_seconds = played.get(line.participant.pk)
         line.clock_running = line.participant.pk in running_ids
+        # The row offers "Cash out" only where the ledger would accept it mid-set.
+        line.can_cash_out_now = (
+            context["can_cash_out"] and session.state == GameSession.State.RUNNING
+            and line.has_money and not line.is_cashed_out
+        )
     context["set_seconds"] = clock.set_seconds(session)
     context["set_running"] = clock.is_running(session)
     if session.state == GameSession.State.FINALIZED:

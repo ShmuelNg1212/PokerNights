@@ -80,10 +80,10 @@ class TablePresetViewTests(TestCase):
             "name": "10/20", "game_type": "nlh", "small_blind": "10", "big_blind": "20",
             "min_buy_in": "500", "max_buy_in": "2,000", "default_buy_in": "1000",
         })
-        self.assertRedirects(response, reverse("group", args=[self.group.pk]))
+        self.assertRedirects(response, reverse("group", args=[self.group.pk]) + "?view=settings#presets")
         preset = SettingsPreset.objects.get()
         self.assertEqual((preset.max_buy_in, preset.small_blind), (200000, 1000))
-        page = self.client.get(reverse("group", args=[self.group.pk]))
+        page = self.client.get(reverse("group", args=[self.group.pk]), {"view": "settings"})
         self.assertContains(page, "buy-in ₱500–₱2,000 · usually ₱1,000")
         # Group rake shows both units even when this preset is pesos-only.
         self.assertNotContains(page, "usually 1,000 chips")

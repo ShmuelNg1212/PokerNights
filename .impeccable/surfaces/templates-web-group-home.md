@@ -40,3 +40,7 @@ DESIGN.md machine frontmatter, `.impeccable/design.json`, config, PRODUCT.md and
 The approved `doc/plan/1791093380_set_rake_and_group_pool.md` extends the existing Operate group surface. Group rake account follows past sessions in the session column, using the quiet section rail and right-aligned native amounts. It states that lifetime totals include sets in progress and exclude reversed buy-ins. Peso and chip totals remain separate, including zero for an unused unit; a native disclosure lists session/set links and each accepted rake total. The account is a group-owned tracking identity, absent from roster/player results and payment actions. Phone order and desktop management rail are inherited.
 
 This addendum preserves the incumbent Rack and machine-token records. Finish review: **ship** for the approved rake extension, `/private/tmp/pn-rake-finish-review.md`. Shared evidence and preserved historical drift are recorded in the rake addendum of `templates-web-end-set.md`; this is not a new whole-product audit.
+
+## 2026-10-04 addendum — UI evolution
+
+The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The group page is split into Sessions, Stats and Group settings views on the same route. Current sessions are neutral rows. The header carries the chip mark.

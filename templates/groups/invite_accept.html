@@ -8,7 +8,7 @@
 <p><a href="{% url 'home' %}">Go to your groups</a></p>
 {% else %}
 <h1>Join {{ invite.group.name }}</h1>
-<p class="muted">You will see this group's games and can join them.</p>
+<p class="muted">You will see this group's sessions and can join their sets.</p>
 <form method="post" class="form-section">
   {% csrf_token %}
   <button type="submit" class="btn btn-primary btn-block">Join group</button>

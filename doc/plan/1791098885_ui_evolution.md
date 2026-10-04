@@ -100,3 +100,19 @@ AGENTS.md requires study => plan, then stop for human approval. agentic-workflow
 3. **Stats tab.** The tab appears only when it has real content: it is added in step 7, not as a placeholder in step 3.
 
 Execution uses branch `feat/ui-evolution`, worktree `/private/tmp/pn-ui-evolution`. Baseline: 472 SQLite tests pass, ten PostgreSQL-only skips.
+
+2026-10-04 execution: seven commits on `feat/ui-evolution`, each after the full SQLite suite and `manage.py check`.
+
+1. `cdeaac7` tokens and shared components. 120 captures matched the baseline except running clocks.
+2. `9f833fa` four SVGs, header mark and favicon. The wordmark is Archivo converted to outlines with a throwaway fontTools environment outside the repository; nothing was added to `requirements.txt`.
+3. `cc9f5b9` Sessions and Group settings views on the group route. Management POSTs now redirect to `?view=settings#section`; seven tests that read roster, invite, preset or rake content from the group page now ask for the settings view.
+4. `61512b8` vocabulary and row actions. Service messages and audit summaries say “set”; only strings changed in `games/services.py` and `ledger/services.py`. “Pesos game” and “chips game” are kept as the unit names used in AGENTS.md.
+5. `9f15647` neutral non-play states, split bar removed, discrepancy panel. Two tests that pinned “>2<” and “0 of 0” were updated to the new presentation.
+6. `cf474b2` settle-up cards and written Settled state. Recap behavior untouched (amendment 1); `static/js/` has no changes in this cycle.
+7. `1d5655c` Stats view: `settlement.queries.group_stats()` and `stat_periods()`, 12 new tests. No minimum-session threshold (amendment 2). The tab shows once a closed session exists (amendment 3).
+
+2026-10-04 verification: 498 SQLite tests pass (ten PostgreSQL-only skips); all 498 pass on a temporary PostgreSQL 17 instance, now stopped. System and migration-drift checks pass. `git diff main` shows no change to models, migrations or URL patterns. Browser: 135 captures over 62 screen states at 375 and 768px plus seven at 1280px on a synthetic fixture database; no horizontal overflow; no link, button or field under 44px outside the skip link; sampled text pairs from 7.33:1; the indigo felt appears only on running sets. CSS is 38,227 bytes; JavaScript is unchanged at 20,105 bytes.
+
+Not verified: a physical phone, a screen reader, contrast of token initials on the ten player colours, and the no-JavaScript paths in a browser (the native forms are covered by server tests only). `.impeccable/design.json` lost its two slate colours; its component previews were not regenerated and one still shows a slate sample. No independent finish review was run in this cycle.
+
+2026-10-04: Documentation synced: DESIGN.md (frontmatter, prose, addendum), PRODUCT.md addendum, five surface addenda, wiki features and architecture, roadmap, TODO.

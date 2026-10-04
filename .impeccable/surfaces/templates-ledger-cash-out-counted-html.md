@@ -28,3 +28,7 @@ FINISH: Included in the first slice 2 fresh review (disposition fix). The drawn 
 The existing shared table container expands to 1180px. Review actions remain in document flow; phone bottom clearance is 48px. Names, explanations and exact amounts wrap anywhere. Written copy distinguishes confirming counts, recording cash-outs, finalizing and payment.
 
 Read the shipping template, totals helper, stylesheet, approved study/plan and incumbent system. Inspected `/private/tmp/pn-slice2-confirm-review/review-1280.png` and all 47 passing checks in `end-set.json`, including review overflow, drawn icon, prospective chips total and stale exact IDs. Phone review and other confirmation captures are in that directory. Test totals (384 each database) are parent execution evidence, not a documenter rerun. No further review or polish was performed.
+
+## 2026-10-04 addendum — UI evolution
+
+The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The overview is the neutral lead panel, not slate.

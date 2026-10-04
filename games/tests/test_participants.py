@@ -119,12 +119,12 @@ class JoinViewTests(TestCase):
 
     def test_join_button_and_double_tap(self):
         self.client.force_login(self.ben.user)
-        self.assertContains(self.client.get(reverse("session", args=[self.session.pk])), "Join this game")
+        self.assertContains(self.client.get(reverse("session", args=[self.session.pk])), "Join this set")
         for _ in range(2):
             self.client.post(reverse("participant_add", args=[self.session.pk]))
         self.assertEqual(Participant.objects.filter(session=self.session).count(), 1)
         page = self.client.get(reverse("session", args=[self.session.pk]))
-        self.assertNotContains(page, "Join this game")
+        self.assertNotContains(page, "Join this set")
         self.assertContains(page, "1 seat free")
 
     def test_full_table_message(self):

@@ -27,7 +27,7 @@ class LiveStateTests(TestCase):
         data = response.json()
         self.assertEqual(data["version"], seen + 2)
         self.assertIn("₱1,500", data["html"])  # total bought in
-        self.assertIn(">2<", data["html"])  # buy-in count
+        self.assertIn("(2 buy-ins)", data["html"])  # buy-in count
         self.assertEqual(self.client.get(self.url, {"v": data["version"]}).status_code, 204)
 
     def test_missing_or_stale_version_returns_the_full_state(self):

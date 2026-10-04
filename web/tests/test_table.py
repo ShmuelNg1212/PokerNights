@@ -68,3 +68,46 @@ class TablePageTests(TestCase):
         self.assertContains(page, 'form="counts-form"')
         self.assertContains(page, 'Confirm all counts')
         self.assertNotContains(page, 'Results of set')
+
+
+class RowActionTests(TestCase):
+    """Buy-in, Rebuy and Cash out are written on the row; none is hidden behind an icon or the details sheet."""
+
+    def setUp(self):
+        from groups.tests.helpers import make_group, add_player
+        from games.tests.helpers import make_session
+        import uuid
+        from games import services as games
+        from ledger import services as ledger
+        self.group, self.host = make_group()
+        self.player = add_player(self.group, "viewer")
+        self.session = make_session(self.host, state="open")
+        first, second = games.add_participants(self.session.pk, self.host, [self.host.pk, self.player.pk], uuid.uuid4())
+        self.first, self.second = first, second
+        ledger.record_buy_in(self.session.pk, self.host, first.pk, 100000, uuid.uuid4())
+        self.url = reverse("session", args=[self.session.pk])
+        self.client.force_login(self.host.user)
+
+    def test_open_set_labels_rebuy_and_buy_in_and_offers_no_cash_out(self):
+        page = self.client.get(self.url).content.decode()
+        self.assertIn(f'data-sheet-open="buy-{self.first.pk}" aria-label="Rebuy for', page)
+        self.assertIn(f'data-sheet-open="buy-{self.second.pk}" aria-label="Buy-in for', page)
+        self.assertNotIn("cash-opener", page)
+
+    def test_running_set_offers_cash_out_only_to_players_with_money(self):
+        from games import services as games
+        games.transition(self.session.pk, self.host, "start", opening_buy_ins=False)
+        page = self.client.get(self.url).content.decode()
+        self.assertIn(f'data-sheet-open="cash-{self.first.pk}"', page)
+        self.assertIn(f'data-sheet-source="cash-{self.first.pk}"', page)
+        self.assertNotIn(f'data-sheet-open="cash-{self.second.pk}"', page)
+        # One cash-out form per player: the details sheet no longer repeats it.
+        self.assertEqual(page.count(f'name="participant_id" value="{self.first.pk}"'), 2)
+
+    def test_player_sees_no_money_actions(self):
+        from games import services as games
+        games.transition(self.session.pk, self.host, "start", opening_buy_ins=False)
+        self.client.force_login(self.player.user)
+        page = self.client.get(self.url).content.decode()
+        self.assertNotIn("player-actions", page)
+        self.assertNotIn("cash-opener", page)

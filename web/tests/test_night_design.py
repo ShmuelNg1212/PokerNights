@@ -96,3 +96,27 @@ class NightDesignTests(TestCase):
         self.assertEqual([s.member.display_name for s in recap['winners']], ['A', 'B'])
         self.assertEqual([s.join_order for s in standings], [1, 2, 3])
         self.assertEqual([s.pk for s in standings], [s.member.pk for s in standings])
+
+    def test_settle_up_leads_with_who_pays_whom_and_a_written_settled_state(self):
+        self.close()
+        page = self.client.get(self.url).content.decode()
+        self.assertLess(page.index('Who pays whom'), page.index('Session results'))
+        self.assertIn('class="badge badge-warn">Not paid', page)
+        self.assertNotIn('settled-figure', page)
+        for transfer in queries.night_outcome(self.night).transfers:
+            services.mark_paid(self.night.pk, self.two.host, transfer.pk, uuid.uuid4())
+        page = self.client.get(self.url).content.decode()
+        self.assertIn('settled-figure', page)
+        self.assertIn('data-still-to-pay="0"', page)
+        self.assertIn('Nothing is left to pay.', page)
+        self.assertIn('value="30000" max="30000"', page)
+        self.assertNotIn('>Mark paid<', page)
+
+    def test_player_sees_transfers_without_payment_actions(self):
+        self.close()
+        from groups.tests.helpers import add_player
+        self.client.force_login(add_player(self.two.host.group, 'viewer').user)
+        page = self.client.get(self.url).content.decode()
+        self.assertIn('Who pays whom', page)
+        self.assertIn('Not paid', page)
+        self.assertNotIn('Mark paid', page)

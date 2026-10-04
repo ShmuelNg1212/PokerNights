@@ -45,7 +45,7 @@ class RakeWebTests(TestCase):
     def test_group_totals_include_live_and_reversals_and_isolate_units(self):
         configure(self.n, rake_mode='flat', rake_flat=2000)
         self.n.buy('A', 1000)
-        page = self.client.get(reverse('group', args=[self.n.group.pk]))
+        page = self.client.get(reverse('group', args=[self.n.group.pk]), {'view': 'settings'})
         self.assertContains(page, 'Group rake account')
         self.assertEqual(page.context['rake_totals'], {'php': 2000, 'chips': 0})
         self.assertContains(page, '0 chips')

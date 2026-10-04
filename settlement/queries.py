@@ -1,10 +1,14 @@
 """Read-only views of finalized sets and of a session's settle-up."""
 
+import datetime
 from dataclasses import dataclass, field
 
+from django.db.models import Sum
+
 from games import clock
+from games.models import GameNight, GameSession
 from groups.models import Member
-from ledger.models import Finalization
+from ledger.models import Finalization, PlayerResult
 
 from . import services
 from .models import Payment, SettlementPlan, Transfer
@@ -131,3 +135,66 @@ def night_recap(night, standings):
         "partial_time": bool(known) and len(known) != len(durations),
         "winners": [s for s in standings if s.net == best] if best > 0 else [],
     }
+
+
+@dataclass
+class PlayerStats:
+    """One player's record over closed sessions, in one unit."""
+
+    member: Member
+    net: int = 0
+    sessions: int = 0
+    wins: int = 0
+
+    @property
+    def pk(self):
+        return self.member.pk
+
+    @property
+    def win_percent(self) -> int:
+        """Whole percent of sessions that ended in profit, rounded down."""
+        return self.wins * 100 // self.sessions if self.sessions else 0
+
+
+def stat_results(group):
+    """Frozen results that count for statistics: current results of finalized sets in closed sessions."""
+    return PlayerResult.objects.filter(
+        group=group, is_current=True, finalization__is_current=True,
+        finalization__session__state=GameSession.State.FINALIZED,
+        finalization__session__night__status=GameNight.Status.CLOSED,
+    )
+
+
+def stat_periods(group) -> dict:
+    """``{unit: [first day of each month with a closed session, newest first]}``. Units never mix."""
+    found = {}
+    rows = stat_results(group).values_list("unit", "finalization__session__night__game_date").distinct()
+    for unit, game_date in rows:
+        found.setdefault(unit, set()).add(game_date.replace(day=1))
+    return {unit: sorted(months, reverse=True) for unit, months in found.items()}
+
+
+def group_stats(group, unit, month: datetime.date | None = None) -> list:
+    """Players ranked by profit or loss over closed sessions in one unit.
+
+    A player's sets are added up per session first, so a session counts once and is won
+    when its total is above zero. ``net`` is the frozen result after rake, not a
+    settle-up balance. ``month`` is any date in the wanted month of the session date.
+    """
+    rows = stat_results(group).filter(unit=unit)
+    if month is not None:
+        rows = rows.filter(
+            finalization__session__night__game_date__year=month.year,
+            finalization__session__night__game_date__month=month.month,
+        )
+    per_session = rows.values("member_id", "finalization__session__night_id").annotate(total=Sum("net"))
+    stats = {}
+    for row in per_session:
+        line = stats.setdefault(row["member_id"], PlayerStats(member=None))
+        line.net += row["total"]
+        line.sessions += 1
+        line.wins += row["total"] > 0
+    members = Member.objects.in_bulk(stats)
+    for member_id, line in stats.items():
+        line.member = members[member_id]
+    return sorted(stats.values(), key=lambda s: (-s.net, s.member.display_name.lower(), s.pk))

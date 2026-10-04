@@ -6,18 +6,24 @@
 <nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a><span class="badge">Session {{ night.get_status_display|lower }}</span></nav>
 <div class="night-layout">
   <div class="night-overview">
-    <section class="felt {% if night.is_closed %}felt-slate{% endif %}" data-unit="{{ unit }}">
+    <section class="felt hero" data-unit="{{ unit }}">
       <h1>{{ night.table.name }}</h1>
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
+      {% if outcome.status == 'settled' %}
+      <h2 class="pot-label">Still to pay</h2>
+      <div class="display-amount settled-figure plus" data-still-to-pay="{{ outcome.still_to_pay }}">{% icon 'check' %} Settled</div>
+      <p class="settle-status">{% if outcome.transfers %}Nothing is left to pay.{% else %}Nobody owes anything.{% endif %}</p>
+      {% else %}
       <h2 class="pot-label">Still to pay</h2>
       {% with figure=outcome.still_to_pay|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}" data-still-to-pay="{{ outcome.still_to_pay }}">{{ outcome.still_to_pay|display_amount:unit }}</div>{% endwith %}
-      <p class="settle-status"><span class="badge {% if outcome.status == 'settled' %}badge-good{% else %}badge-warn{% endif %}">{{ outcome.status_label }}</span></p>
+      <p class="settle-status"><span class="badge badge-warn">{{ outcome.status_label }}</span></p>
+      {% endif %}
       {% if outcome.transfers %}
       <progress class="payment-progress" value="{{ outcome.paid_amount }}" max="{{ outcome.total_to_pay }}" aria-label="Amount marked paid"></progress>
       <p class="felt-hint">{{ outcome.paid_amount|amount:unit }} of {{ outcome.total_to_pay|amount:unit }} marked paid</p>
       <p class="felt-hint">{{ outcome.paid_count }} of {{ outcome.transfers|length }} transfers paid</p>
-      {% else %}<p class="felt-hint">Nobody owes anything.</p>{% endif %}
+      {% endif %}
       {% else %}
       <h2>Session open</h2>
       <p class="felt-hint">Who pays whom is worked out when the host closes the session.</p>
@@ -64,10 +70,10 @@
     <section aria-labelledby="transfers-title">
       <h2 id="transfers-title">Who pays whom</h2>
       <p class="small muted">Transfers settle the session results. The app records payments; it does not move money.</p>
-      <ul class="list transfer-list">
+      <ul class="transfer-list">
         {% for t in outcome.transfers %}
-        <li class="transfer-row" data-transfer="{{ t.pk }}">
-          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span>{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong></span><span class="transfer-direction">pays</span><span>{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong></span></div>
+        <li class="transfer-row panel{% if t.paid %} is-paid{% endif %}" data-transfer="{{ t.pk }}">
+          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span>{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong></span><span class="transfer-direction">{% icon 'arrow-right' %}<span>pays</span></span><span>{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong></span></div>
           <div class="transfer-bottom"><span class="transfer-amount amount">{{ t.amount|amount:unit }}</span>
             <span class="small transfer-state">{% if t.paid %}<span class="badge badge-good">Paid</span><br>{{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</span>
             {% if me.is_host %}{% if t.paid %}
@@ -75,14 +81,14 @@
             {% else %}<form method="post" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
           </div>
         </li>
-        {% empty %}<li class="muted">Nobody owes anything.</li>{% endfor %}
+        {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
       </ul>
       <p class="muted small">This list nets every set of the session. It excludes rake already collected at buy-in and assumes no earlier player payments.</p>
     </section>
     {% endif %}
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
-      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe the game, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
+      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
       <ul class="list night-results">
         {% for row in outcome.standings %}
         <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>

@@ -47,5 +47,6 @@ class RosterTests(TestCase):
     def test_add_through_the_page(self):
         self.client.force_login(self.host.user)
         response = self.client.post(reverse("member_add", args=[self.group.pk]), {"name": "Tito Boy"})
-        self.assertRedirects(response, reverse("group", args=[self.group.pk]))
-        self.assertContains(self.client.get(reverse("group", args=[self.group.pk])), "Tito Boy")
+        self.assertRedirects(response, reverse("group", args=[self.group.pk]) + "?view=settings#players")
+        self.assertContains(self.client.get(reverse("group", args=[self.group.pk]), {"view": "settings"}), "Tito Boy")
+        self.assertNotContains(self.client.get(reverse("group", args=[self.group.pk])), "Tito Boy")

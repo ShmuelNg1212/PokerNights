@@ -52,3 +52,7 @@ Screens distinguish total bought in, collected rake, available to play and money
 New session and Game settings share native Off, Flat amount and Percentage of buy-in choices; new sessions default to Off. Both value fields stay visible, but only the selected rule's value validates. Off ignores both; flat requires a positive amount in the session's unit; percentage requires 0.01%–99.99% with up to two decimal places. Refused submissions retain the choice and typed values with local errors. The initial rule is recorded before opening buy-ins, and presets remain stakes-only.
 
 An empty set offers Choose rake before buy-ins beside the start controls. The next set inherits the current rule and can change it before accepting money. Settings explain that recorded buy-ins or cash-outs lock the rule, including default opening buy-ins created by Start the game, and direct the host to choose before starting the next set. Other permitted stake edits preserve the locked rule; a permitted unit change resets it to Off.
+
+## 2026-10-04 addendum — UI evolution
+
+The group page separates Sessions, Stats and Group settings. Screens use Session for the gathering and Set for one round; “Game settings” is now Set settings. Hosts see written Buy-in, Rebuy and Cash out actions on each row. Stats show profit or loss after rake, sessions played and win rate per unit, for all time or one month, from closed sessions only. The product has a chip-and-crescent mark. [Plan](doc/plan/1791098885_ui_evolution.md).

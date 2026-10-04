@@ -144,7 +144,7 @@ class UnitChoiceTests(TestCase):
         })
         preset = SettingsPreset.objects.get()
         self.assertEqual((preset.unit, preset.max_buy_in, preset.small_blind), ("chips", 2000, 10))
-        group_page = self.client.get(reverse("group", args=[self.group.pk]))
+        group_page = self.client.get(reverse("group", args=[self.group.pk]), {"view": "settings"})
         self.assertContains(group_page, "buy-in 500 chips–2,000 chips")
         form_page = self.client.get(reverse("session_create", args=[self.group.pk]), {"preset": preset.pk})
         self.assertContains(form_page, '<option value="chips" selected>Chips</option>', html=True)
