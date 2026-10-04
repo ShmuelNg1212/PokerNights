@@ -23,14 +23,11 @@ from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
 
+from .home import home_cards
+
 
 def home(request):
-    memberships = (
-        Member.objects.filter(user=request.user, status=Member.Status.ACTIVE)
-        .select_related("group")
-        .order_by("group__name")
-    )
-    return render(request, "web/home.html", {"memberships": memberships, "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
+    return render(request, "web/home.html", {"cards": home_cards(request.user), "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
 
 
 def visible_nights(me):

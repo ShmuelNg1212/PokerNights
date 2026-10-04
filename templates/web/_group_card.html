@@ -1,0 +1,61 @@
+{% load money_tags clock_tags table_tags %}
+<article class="group-home" aria-labelledby="group-{{ card.group.pk }}">
+  <header class="group-home-head">
+    <h2 id="group-{{ card.group.pk }}"><a href="{% url 'group' card.group.pk %}">{{ card.group.name }}</a></h2>
+    <span class="badge">{{ card.me.get_role_display }}</span>
+    <p class="token-row"><span class="token-stack" aria-hidden="true">{% for m in card.tokens %}{% member_token m card.members %}{% endfor %}</span><span class="muted small">{{ card.members|length }} player{{ card.members|length|pluralize }}</span></p>
+  </header>
+
+  {% if card.kind == 'play' %}
+  <section class="home-band felt" aria-label="Set in play">
+    <div class="row"><strong class="band-title grow">{{ card.night.table.name }} <small>Set {{ card.set.set_number }}</small></strong><span class="badge badge-live">In play</span></div>
+    <p class="band-facts">{{ card.at_table }} at the table · timer {% clock_value card.seconds True %}</p>
+    <a class="btn btn-primary btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>
+  </section>
+  {% elif card.kind == 'open' %}
+  <section class="home-band" aria-label="Open session">
+    <div class="row"><strong class="band-title grow">{{ card.night.table.name }}</strong><span class="badge">Set {{ card.set.set_number }} · {% if card.set.state == 'setup' %}Draft{% else %}{{ card.set.get_state_display }}{% endif %}</span></div>
+    <p class="band-facts">{{ card.night.game_date|date:"D, M j" }}{% if card.set.state == 'finalized' or card.set.state == 'canceled' %} · session still open{% endif %}</p>
+    <a class="btn {% if card.action_primary %}btn-primary{% endif %} btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>
+  </section>
+  {% else %}
+  <section class="home-band" aria-label="Sessions">
+    <strong class="band-title">No session in progress</strong>
+    <p class="band-facts">{% if card.last_night %}Last played {{ card.last_night.game_date|date:"D, M j" }}.{% elif card.me.is_host %}Nothing played yet.{% else %}A host starts the next one.{% endif %}</p>
+    {% if card.action_url %}<a class="btn btn-primary btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>{% endif %}
+  </section>
+  {% endif %}
+  {% if card.more_open %}<p class="small home-more"><a href="{% url 'group' card.group.pk %}">{{ card.more_open }} more open session{{ card.more_open|pluralize }}</a></p>{% endif %}
+
+  {% if card.dues %}
+  <section class="home-dues" aria-label="To settle">
+    <h3>To settle</h3>
+    <ul>
+      {% for due in card.dues %}
+      <li><a href="{% url 'night' due.night.pk %}"><span class="grow">{% if due.owes %}You owe <strong>{{ due.other.display_name }}</strong>{% else %}<strong>{{ due.other.display_name }}</strong> owes you{% endif %}<span class="muted small">{{ due.night.table.name }} · {{ due.night.game_date|date:"M j" }}</span></span><span class="amount {% if due.owes %}minus{% else %}plus{% endif %}">{{ due.amount|amount:due.unit }}</span></a></li>
+      {% endfor %}
+    </ul>
+    {% if card.more_dues %}<p class="small muted">And {{ card.more_dues }} more unpaid transfer{{ card.more_dues|pluralize }} in past sessions.</p>{% endif %}
+  </section>
+  {% endif %}
+
+  {% if card.records or card.last_night %}
+  <dl class="home-facts">
+    {% for unit, record in card.records %}
+    <div><dt>Your record{% if unit == 'chips' %} in chips{% endif %}<span class="muted small">{{ record.sessions }} session{{ record.sessions|pluralize }} · won {{ record.wins }}</span></dt>
+      <dd class="amount {{ record.net|sign_class }}">{% if record.net > 0 %}{% icon 'arrow-up-right' %}{% elif record.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ record.net|signed_amount:unit }}</dd></div>
+    {% endfor %}
+    {% if card.last_night %}
+    <div><dt><a href="{% url 'night' card.last_night.pk %}">Last session</a><span class="muted small">{{ card.last_night.table.name }} · {{ card.last_night.game_date|date:"M j, Y" }}</span></dt>
+      {% if card.last_net is None %}<dd class="muted small">You did not play</dd>
+      {% else %}<dd class="amount {{ card.last_net|sign_class }}">{% if card.last_net > 0 %}{% icon 'arrow-up-right' %}{% elif card.last_net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ card.last_net|signed_amount:card.last_night.unit }}</dd>{% endif %}</div>
+    {% endif %}
+  </dl>
+  {% endif %}
+
+  <nav class="home-links" aria-label="{{ card.group.name }}">
+    <a href="{% url 'group' card.group.pk %}">Sessions</a>
+    {% if card.has_stats %}<a href="{% url 'group' card.group.pk %}?view=stats">Stats</a>{% endif %}
+    <a href="{% url 'group' card.group.pk %}?view=settings">Group settings</a>
+  </nav>
+</article>

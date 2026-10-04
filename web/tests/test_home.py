@@ -147,3 +147,63 @@ class HomeFiguresTests(TestCase):
             build(club)
         with self.assertNumQueries(11):
             self.assertEqual(len(home_cards(user)), 4)
+
+
+class HomePageTests(TestCase):
+    def setUp(self):
+        self.club = Club()
+        self.user_a = make_user("anna")
+        Member.objects.filter(pk=self.club.member("A").pk).update(user=self.user_a)
+        self.url = reverse("home")
+
+    def test_set_in_play_is_one_tap_away_and_is_the_only_felt(self):
+        self.client.force_login(self.club.host.user)
+        quiet = self.client.get(self.url)
+        self.assertNotContains(quiet, "felt")
+        self.assertContains(quiet, "No session in progress")
+        self.assertContains(quiet, "New session", count=1)
+        live = make_session(self.club.host, table=self.club.table, state="running")
+        page = self.client.get(self.url)
+        self.assertContains(page, 'class="home-band felt"', count=1)
+        self.assertContains(page, f'href="{reverse("session", args=[live.pk])}">Open the table</a>')
+        self.assertContains(page, "data-running")
+        self.assertNotContains(page, "in play ·")  # no money figure on this page
+        self.assertNotContains(page, "New session")
+
+    def test_my_figures_are_mine_only(self):
+        one = self.club.session(OCT_1, {"A": (1000, 500), "B": (1000, 1500)})
+        self.client.force_login(self.user_a)
+        mine = self.client.get(self.url)
+        self.assertContains(mine, "You owe <strong>B</strong>")
+        self.assertContains(mine, "₱500")
+        self.assertContains(mine, "Your record")
+        self.assertContains(mine, "−₱500")
+        self.assertContains(mine, reverse("night", args=[one.night_id]))
+        self.assertContains(mine, "?view=stats")
+        self.assertNotContains(mine, "New session")  # a player gets no host action
+        self.client.force_login(self.club.host.user)
+        host = self.client.get(self.url)
+        self.assertNotContains(host, "To settle")
+        self.assertNotContains(host, "Your record")
+        self.assertContains(host, "You did not play")
+
+    def test_player_never_sees_a_draft(self):
+        make_session(self.club.host, table=self.club.table, state="setup")
+        self.client.force_login(self.user_a)
+        page = self.client.get(self.url)
+        self.assertContains(page, "No session in progress")
+        self.assertNotContains(page, "Draft")
+        self.client.force_login(self.club.host.user)
+        self.assertContains(self.client.get(self.url), "Set 1 · Draft")
+
+    def test_first_group_and_create_another(self):
+        self.client.force_login(make_user("newcomer"))
+        page = self.client.get(self.url)
+        self.assertContains(page, "Start your first group")
+        self.assertNotContains(page, "<details")
+        self.client.force_login(self.club.host.user)
+        page = self.client.get(self.url)
+        self.assertContains(page, '<details class="home-create" >')
+        refused = self.client.post(reverse("group_create"), {"name": "G" * 61}, follow=True)
+        self.assertContains(refused, '<details class="home-create" open>')
+        self.assertContains(refused, "G" * 61)
