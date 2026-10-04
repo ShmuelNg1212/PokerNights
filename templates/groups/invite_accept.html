@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Invite · PokerNights{% endblock %}
-{% block page_class %}form-page{% endblock %}
+{% block page_class %}entry-page{% endblock %}
 {% block content %}
+{% include "partials/entry_head.html" with compact=True %}
 {% if error %}
 <h1>Invite</h1>
 <div class="notice notice-bad">{{ error }}</div>
-<p><a href="{% url 'home' %}">Go to your groups</a></p>
+<p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
 {% else %}
 <h1>Join {{ invite.group.name }}</h1>
-<p class="muted">You will see this group's sessions and can join their sets.</p>
+<p class="entry-invite">{{ players }} player{{ players|pluralize }}. You will see this group's sessions and can join their sets.</p>
 <form method="post" class="form-section">
   {% csrf_token %}
   <button type="submit" class="btn btn-primary btn-block">Join group</button>
 </form>
+<p class="entry-alt"><a href="{% url 'home' %}">Not now</a></p>
 {% endif %}
 {% endblock %}

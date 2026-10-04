@@ -379,6 +379,20 @@ Management of a session or group is quiet and sits last on its page. [Plan](doc/
 - Long group names wrap anywhere on form pages and in the archived list. No token, colour, asset or motion is added.
 - **Measured.** 85 checks at 320, 390 and 1280px: no horizontal overflow against the requested width, every button, link-button, summary and field at least 48px, visible focus on the danger link, and native submission without JavaScript.
 
+### 2026-10-04 addendum — Entry pages
+
+Log in, Sign up, “Sign-up needs an invite” and Join group share one front-door frame. This replaces the earlier description of login and signup under “Account and supporting forms”. [Plan](doc/plan/1791115804_entry_pages.md).
+
+- **Frame.** One centred column, 440px of content, at every width; no panel and no second column on desktop. Signed out, the site header is left out and the page carries the lockup. Join group is seen signed in, so the header stays and the lockup is the 48px mark alone.
+- **Lockup.** The mark at 72px, “PokerNights” at 2rem, weight 800, width 88%, then on Log in and “needs an invite” one muted line: “Keeps the books for your home poker game: buy-ins, cash-outs and who pays whom.” Sign up omits the line so the empty form fits a 390 × 844 phone.
+- **Heading.** The task as a centred 1.375rem heading: Log in, Create your account, Join {group}, Sign-up needs an invite. Nothing sits above it but the lockup.
+- **Invite sentence.** Under the heading, for a usable invite only: “You’re invited to **{group}**.” Join group shows the player count instead.
+- **Form.** Left-aligned labels, full-width fields, a full-width bone primary button, then one muted line with the alternate path as a 48px link.
+- **Show / Hide.** A text button inside the right edge of the first password field, 68 × 48px, muted, bone when pressed, with `aria-pressed`. On Sign up it reveals both password fields. It exists only when JavaScript runs, and fields return to hidden on submit.
+- **Help and errors.** Sign up help is one short line per field. A refused login shows one error notice above the fields. A refused sign-up shows each error under its field with the Down border; a broken password rule appears under Password and a mismatch under Repeat password. The username stays and passwords return empty.
+- No colour, token, font, asset or motion is added.
+- **Measured.** 81 checks at 320, 390 and 1280px: no horizontal overflow against the requested width with a 60-character unbroken group name, every control at least 48px, new text pairs at 4.5:1 or more, keyboard order username → password → Show → submit → alternate link with the 3px focus ring, and the whole invite flow without a refused step.
+
 ## Do's and Don'ts
 
 ### Do:

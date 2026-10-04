@@ -14,3 +14,17 @@ def allowed(request, next_path: str) -> bool:
     if not settings.SIGNUP_REQUIRES_INVITE:
         return True
     return any(check(request, next_path) for check in CHECKS)
+
+
+# Functions that name who invited a newcomer, registered like CHECKS. Each takes the
+# request and the path the person came from, and returns a name or None.
+INVITERS = []
+
+
+def invited_to(request, next_path: str):
+    """The name of the group whose usable invite led here, or None."""
+    for name_of in INVITERS:
+        name = name_of(request, next_path)
+        if name:
+            return name
+    return None

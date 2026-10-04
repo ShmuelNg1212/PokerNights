@@ -9,6 +9,7 @@ from .errors import RuleError
 from .http import attempt, attempt_bound, group_settings, keep_form
 from .forms import GroupForm, NameForm
 from .access import require_host
+from .models import Member
 
 
 @require_POST
@@ -63,7 +64,8 @@ def accept_invite(request, token):
             messages.success(request, f"You are in {invite.group.name}.")
             return redirect("group", group_id=invite.group_id)
         return redirect("home")
-    return render(request, "groups/invite_accept.html", {"invite": invite})
+    players = Member.objects.filter(group=invite.group, status=Member.Status.ACTIVE).count()
+    return render(request, "groups/invite_accept.html", {"invite": invite, "players": players})
 
 
 @require_POST

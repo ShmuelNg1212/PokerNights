@@ -6,6 +6,8 @@ Short active items. The detail is in the linked documents.
 
 PokerNights is live at https://pokernights-five.vercel.app ([plan](doc/plan/1791104210_vercel_deployment.md), [deployment page](doc/wiki/deployment.md)). A push to `main` is a release.
 
+The entry pages revamp is done ([plan](doc/plan/1791115804_entry_pages.md)): Log in, Sign up, the invite pages share a branded front door, name the inviting group and have a Show password button. No migration. Not pushed yet.
+
 Archive and delete are done ([plan](doc/plan/1791114191_archive_and_delete_groups_and_sessions.md)): hosts archive, restore and delete sessions and groups; anything with money can be archived only. Two migrations. Not pushed yet.
 
 The collapsible host dock is done ([plan](doc/plan/1791111069_collapsible_host_dock.md)): on a phone the host's bottom menu folds to one bar and the choice is remembered. Not pushed yet.
@@ -37,6 +39,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
 
 - [ ] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. Say when to push; this release runs two migrations.
 - [ ] `SPEC.md` does not mention archiving or deleting. Add it if the spec should match the app.

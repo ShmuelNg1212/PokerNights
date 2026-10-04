@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -15,6 +16,15 @@ def safe_next(request, default="home"):
     return default
 
 
+class Login(auth_views.LoginView):
+    """Django's login, with the name of the inviting group when the person came from an invite link."""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["invited_to"] = signup_gate.invited_to(self.request, safe_next(self.request, ""))
+        return context
+
+
 @login_not_required
 def signup(request):
     if request.user.is_authenticated:
@@ -26,4 +36,6 @@ def signup(request):
         user = form.save()
         login(request, user)
         return redirect(safe_next(request))
-    return render(request, "accounts/signup.html", {"form": form, "next": safe_next(request, "")})
+    target = safe_next(request, "")
+    context = {"form": form, "next": target, "invited_to": signup_gate.invited_to(request, target)}
+    return render(request, "accounts/signup.html", context)

@@ -12,7 +12,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header">
+  {% block header %}<header class="site-header">
     <a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>
     {% if user.is_authenticated %}
     <form method="post" action="{% url 'logout' %}" class="inline">
@@ -21,7 +21,7 @@
       <button type="submit" class="btn btn-quiet btn-small">Log out</button>
     </form>
     {% endif %}
-  </header>
+  </header>{% endblock %}
   <main id="main" class="page {% block page_class %}{% endblock %}">
     {% if messages %}
     <ul class="messages" role="status">
