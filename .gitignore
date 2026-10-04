@@ -28,3 +28,14 @@ htmlcov/
 # Design review captures and temporary build evidence
 .impeccable/review/
 .impeccable/mocks/
+
+# Keys, certificates, database dumps and logs never belong in the repository
+*.pem
+*.key
+*.p12
+*.dump
+*.sql
+*.log
+
+# Local agent and tool settings
+.claude/
