@@ -29,7 +29,7 @@
       {% if me.is_host and line.status != 'cashed_out' %}
       {# These fields belong to the one counts form below, so one tap sends every typed count. #}
       <div class="form-row count-entry">
-        <div class="grow"><label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"></div>
+        <div class="grow"><label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"><span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span></div>
         <button type="submit" form="counts-form" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
       </div>
       {% endif %}

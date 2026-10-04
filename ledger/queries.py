@@ -238,3 +238,61 @@ def balance(session_or_summary) -> Balance:
         raw_difference=found.cashed_out - found.total,
         difference=found.cashed_out + found.adjustment - found.total,
     )
+
+
+@dataclass
+class CountTotal:
+    """Remaining confirmed stacks plus accepted cash-outs, before overrides."""
+
+    summary: Summary
+
+    @property
+    def remaining(self) -> int:
+        return sum(line.count.amount for line in self.summary.ready_lines)
+
+    @property
+    def accounted(self) -> int:
+        return self.remaining + self.summary.cashed_out
+
+    @property
+    def missing(self) -> int:
+        return len(self.summary.awaiting_lines)
+
+    @property
+    def stray(self) -> bool:
+        return any(line.has_cash_out and not line.has_money for line in self.summary.lines)
+
+    @property
+    def has_overrides(self) -> bool:
+        return any(line.adjustments for line in self.summary.lines)
+
+    @property
+    def difference(self) -> int:
+        return self.accounted - self.summary.total
+
+    @property
+    def complete(self) -> bool:
+        return bool(self.summary.money_lines) and not self.missing and not self.stray
+
+    @property
+    def matches(self) -> bool:
+        return self.complete and self.difference == 0
+
+    @property
+    def status_text(self) -> str:
+        if not self.summary.money_lines:
+            return "No buy-ins recorded."
+        if self.stray:
+            return "Cash-out without a buy-in. Check the records."
+        if self.matches:
+            return "All counts match buy-ins."
+        if self.difference:
+            amount = money.format_amount(abs(self.difference), self.summary.session.unit)
+            suffix = "extra" if self.difference > 0 else "still to account for" if self.missing else "missing"
+            return f"{amount} {suffix}."
+        return "Total matches so far; finish counting."
+
+
+def count_total(session_or_summary) -> CountTotal:
+    found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
+    return CountTotal(found)

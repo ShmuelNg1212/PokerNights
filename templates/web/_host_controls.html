@@ -20,6 +20,7 @@
     <button class="btn btn-primary btn-block next-action" name="action" value="end">End play and count up</button>
   </form>
   {% elif session.state == 'reconciliation' %}
+  {% include "web/_count_total.html" with preview=True %}
   {% if summary.ready_lines %}
   <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}">Cash out counted players ({{ summary.ready_lines|length }})</a>
   {% elif balance.ok %}

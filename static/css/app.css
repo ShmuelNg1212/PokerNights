@@ -483,3 +483,16 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 @media (max-width:899px) {
   .table-page:has([name="opening_buy_ins"]) { padding-bottom: 340px; }
 }
+
+/* Count totals use the existing dock so the preview stays beside the next action. */
+.count-total { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.count-total h3 { margin: 0 0 4px; font-size: .875rem; }
+.count-total p { margin: 3px 0; }
+.count-total strong, .count-equation { font-variant-numeric: tabular-nums; }
+.count-preview { margin-top: 0; padding-top: 0; border-top: 0; }
+.count-accounted strong { font-size: 1.125rem; }
+.count-verdict { color: var(--text); }
+@media (max-width: 899px) {
+  .table-page:has([data-count-preview]) { padding-bottom: 370px; }
+  .count-preview { overflow-wrap: anywhere; }
+}

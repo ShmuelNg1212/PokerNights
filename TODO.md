@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+- [ ] Live counted total: approved and in progress ([plan](doc/plan/1791089905_live_counted_total.md)).
+
 Default opening buy-ins are done ([plan](doc/plan/1791088166_default_opening_buy_ins.md)). Start the game adds the usual amount for joined players without an accepted buy-in; uncheck to opt out.
 
 Visual redesign slice 4 is done ([plan](doc/plan/1791084843_redesign_slice_4.md)). The Rack redesign is complete for current screens.

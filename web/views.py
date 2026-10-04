@@ -84,6 +84,7 @@ def session_context(session, me) -> dict:
         "summary": summary,
         "participants": participants,
         "count_complete": len(summary.ready_lines) + len(summary.cashed_out_lines),
+        "count_total": ledger_queries.count_total(summary) if session.state == GameSession.State.RECONCILIATION else None,
         "my_participant": next((p for p in participants if p.member_id == me.pk), None),
         "my_line": next((line for line in summary.lines if line.participant.member_id == me.pk), None),
         "can_buy_in": me.is_host and session.state in ledger.BUY_IN_STATES,

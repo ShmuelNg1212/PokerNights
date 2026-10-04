@@ -1,12 +1,12 @@
 # Live counted total
 
-Status: **awaiting-approval**. Date: 2026-10-04.
+Status: **in-progress**. Date: 2026-10-04.
 
 Source: [study](../study/1791089661_live_counted_total.md), committed as `fe89e53`. Main implementation baseline: `6ccad9a`. Canonical sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 410 SQLite tests pass, with three PostgreSQL-only skips.
 
 ## OPEN QUESTIONS
 
-No blocking technical question. Approval confirms the proposed local-preview behavior, preservation of partial cash-outs, and an allowance of up to 4,000 new JS bytes with a cumulative added-JS ceiling of 12,000 bytes. The completed redesign's 8,000-byte ceiling has only 87 bytes left; this feature cannot fit that ceiling. No implementation is authorized yet.
+No blocking technical question. Approval confirms the proposed local-preview behavior, preservation of partial cash-outs, and an allowance of up to 4,000 new JS bytes with a cumulative added-JS ceiling of 12,000 bytes. The completed redesign's 8,000-byte ceiling has only 87 bytes left; this feature cannot fit that ceiling. Human approved “proceed” on 2026-10-04. Execution, rendezvous and documentation sync are authorized.
 
 ## Goal and acceptance criteria
 
@@ -30,8 +30,8 @@ Help the host check all remaining stacks against total buy-ins before cashing ou
 
 ## Task board and commits
 
-- [ ] Record human approval, recheck current main, then create `feat/live-counted-total` in an isolated worktree. Link the active plan from TODO during execution.
-- [ ] **`feat(web): add a live counted total`**: implement the query, templates, integer preview and post-restoration integration. Completion: AC1–AC6 demonstrated with focused automated checks and real browser flows on synthetic data.
+- [x] Record human approval, recheck current main, then create `feat/live-counted-total` in an isolated worktree. Link the active plan from TODO during execution.
+- [x] **`feat(web): add a live counted total`**: implement the query, templates, integer preview and post-restoration integration. Completion: AC1–AC6 demonstrated with focused automated checks and real browser flows on synthetic data.
 - [ ] Verify AC7: full SQLite and PostgreSQL suites, relevant existing count-up/live/dock regressions, scoped screenshots and required finish review. Resolve material findings within this feature.
 - [ ] **`docs: document live counted total`**: sync the affected wiki, built design/surface notes, TODO and plan evidence. Completion: docs explain confirmed totals versus preview, missing counts, partial cash-outs and override boundary.
 - [ ] Rendezvous: merge verified work into local main, check the running app and mark the plan done. No push or deployment.
@@ -56,3 +56,15 @@ Sync wiki features/architecture and journal/index where affected. Update DESIGN.
 ## Progress
 
 2026-10-04: study complete; plan prepared for approval. No external blocker. Implementation has not started.
+
+## Execution evidence
+
+2026-10-04: AC1–AC6 implemented and verified. Added 13 query/view tests. Full suites: 423 tests pass on SQLite (14.879 s; three PostgreSQL-only skips) and PostgreSQL 17 (22.565 s; all 423). Migration drift check reports no changes. The original test failure was a test-only assumption about CashOutBatch's return type; corrected before the passing full runs.
+
+All 35 dedicated counter browser checks pass after the final polling fix. Exact centavos, large chips, native units, saved fallback, draft replacement, blank/zero, incomplete match, invalid/out-of-range syntax, partial cash-outs, native confirmation/review/cash-out, no-JS baseline, player privacy, overrides and no-money behavior are covered. Two hosts verify that deferred snapshots calculate after draft restoration, changed saved counts appear when a draft clears, and refused defaults survive another later poll. Page restoration and 320px invalid preview checks pass. Evidence: `/private/tmp/pn-counter-confirm/counts.json`; initial 32-check captures/review: `/private/tmp/pn-counter-review`.
+
+The required finish reviewer opened all three captures (390/1280 pesos, 390 chips), returned ship with five contract sections, and requested no material fixes. One detector run found advisory-only standalone-template black and existing type-ramp findings; rendered counter inherits Rack. The documenter recorded the built extension in DESIGN.md and the existing end-set surface addendum; token values, frontmatter and sidecar stay unchanged.
+
+The live redraw now emits its event after fields/details are restored. Nonblank count drafts are retained even when they equal defaultValue, because a refused native POST renders unsaved text as defaults. This fixes a verified polling edge case. No money write, gate, endpoint or migration is added. Unsupported browser draft syntax (for example scientific notation) is unavailable in the preview; existing backend parsing remains authoritative.
+
+Budgets: counts.js 3,467 bytes plus 60 bytes in live.js = 3,527 new JS bytes; cumulative added JS 11,440 bytes, within approved 12,000. CSS 32,942 bytes; font unchanged at 103,912 bytes. No new asset/dependency/motion. Physical-phone verification is unavailable.

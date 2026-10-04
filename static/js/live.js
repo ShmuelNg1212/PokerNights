@@ -41,7 +41,7 @@
     var typed = {};
     region.querySelectorAll("input[data-keep], textarea[data-keep]").forEach(function (el) {
       var box = el.type === "checkbox";
-      if ((box ? el.checked !== el.defaultChecked : el.value !== el.defaultValue)) typed[el.dataset.keep] = box ? el.checked : el.value;
+      if ((el.hasAttribute("data-count-input") && el.value.trim()) || (box ? el.checked !== el.defaultChecked : el.value !== el.defaultValue)) typed[el.dataset.keep] = box ? el.checked : el.value;
     });
     return typed;
   }
@@ -58,7 +58,6 @@
     var typed = typedValues();
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     region.innerHTML = snapshot.html;
-    region.dispatchEvent(new Event("live:updated", {bubbles: true}));
     restore(typed);
     version = String(snapshot.version);
     region.dataset.version = version;
@@ -66,6 +65,7 @@
       var el = region.querySelector('details[data-key="' + key + '"]');
       if (el) el.open = true;
     });
+    region.dispatchEvent(new Event("live:updated", {bubbles: true}));
   }
 
   function schedule() {

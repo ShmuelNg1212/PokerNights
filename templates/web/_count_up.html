@@ -11,6 +11,7 @@
         <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
         <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
       </dl>
+      {% include "web/_count_total.html" %}
     </section>
     <div class="end-balance">{% include "web/_balance.html" %}</div>
     {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
