@@ -165,3 +165,5 @@ Acceptance:
 Not verified: a physical phone, a screen reader, a chat app's in-app browser, and sign-up with the invite gate on in a browser (covered by Django tests only).
 
 Documentation synced: DESIGN.md, PRODUCT.md, wiki features and deployment, browser README, TODO.
+
+2026-10-05 rendezvous: merged into local main as `a340985 feat: merge the entry flow fixes from the critique`. Main SQLite: 612 pass, ten PostgreSQL-only skips. No migration. The temporary server and PostgreSQL are stopped. Not pushed.
