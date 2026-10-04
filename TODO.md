@@ -6,6 +6,8 @@ Short active items. The detail is in the linked documents.
 
 PokerNights is live at https://pokernights-five.vercel.app ([plan](doc/plan/1791104210_vercel_deployment.md), [deployment page](doc/wiki/deployment.md)). A push to `main` is a release.
 
+The collapsible host dock is done ([plan](doc/plan/1791111069_collapsible_host_dock.md)): on a phone the host's bottom menu folds to one bar and the choice is remembered. Not pushed yet.
+
 Your groups home is done ([plan](doc/plan/1791102439_your_groups_home.md)): each group reports its state, next action, what you owe or are owed, your record and last result.
 
 UI evolution is done ([plan](doc/plan/1791098885_ui_evolution.md)): shared tokens, SVG branding, Sessions / Stats / Group settings tabs, Session and Set wording, written row actions, neutral non-play states, clearer discrepancy and settle-up, and first player stats.
@@ -26,12 +28,15 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Next (each needs its own study and plan)
 
+- [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
 - [ ] Stage 2: roster management, history list, optional banker, payments before finalization, reopen a finalized game. See the [roadmap](doc/roadmap/README.md).
 - [ ] Stage 3: leaderboard and stats.
 - [ ] Stage 4: seating.
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Say when to push it to production.
 
 - [ ] Create your superuser against production (command in the [deployment page](doc/wiki/deployment.md)), then add the first host in `/admin/` → Users and play a game on the live site from a phone.
 
