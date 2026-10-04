@@ -64,7 +64,8 @@ p { margin: 0.5rem 0; }
   padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface);
   position: sticky; top: 0; z-index: 5;
 }
-.brand { font-weight: 700; color: var(--text); text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--tap); min-width: var(--tap); font-weight: 800; font-stretch: 88%; font-size: 1.125rem; color: var(--text); text-decoration: none; }
+.brand img { flex: none; }
 .who { color: var(--muted); margin-right: 8px; font-size: 0.9rem; }
 
 .page { max-width: 560px; margin: 0 auto; padding: 16px 16px 96px; }
@@ -488,7 +489,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 @media(max-width:359px) { .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
 
 /* Reviewed remaining-screen links keep a full action target. */
-.site-header .brand { display:inline-flex; align-items:center; min-height:var(--tap); min-width:var(--tap); }
 .group-page .list a, .form-page a, .log-page p a,
 .table-page:has(.canceled-set) > .center a { display:inline-flex; align-items:center; min-height:var(--tap); min-width:var(--tap); text-underline-offset:4px; }
 .group-page .list a { overflow-wrap:anywhere; }

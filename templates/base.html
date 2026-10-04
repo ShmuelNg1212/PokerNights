@@ -6,13 +6,14 @@
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#191511">
   <title>{% block title %}PokerNights{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'branding/logo-mark.svg' %}">
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="{% url 'home' %}">PokerNights</a>
+    <a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>
     {% if user.is_authenticated %}
     <form method="post" action="{% url 'logout' %}" class="inline">
       {% csrf_token %}
