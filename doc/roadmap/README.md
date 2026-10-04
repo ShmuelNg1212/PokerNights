@@ -8,11 +8,11 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Planned |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
-| 5. Shared use | Deployment, password reset, claim links for roster players; remaining design slices | — | Planned |
+| 5. Shared use | Deployment, password reset, claim links for roster players | — | Planned |
 
 ## Visual redesign pulled forward
 
-The Rack slices 1–3 are built: shared foundation, active set and action sheets, count-up, cash-out review, finalized sets, session settle-up and closing recap. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). [Slice 3 plan](../plan/1791053204_redesign_slice_3.md). Group/home/forms/log recomposition is slice 4 and needs its own study, plan and approval. Seating and statistics remain separate feature cycles.
+The Rack slices 1–4 are built: shared foundation, active set and action sheets, count-up, cash-out review, finalized and canceled sets, session settle-up and closing recap, home, group, accounts, invitations, supporting forms and log. [Parent plan](../plan/1791046015_visual_redesign.md); [slice 2 plan](../plan/1791050738_redesign_slice_2.md). [Slice 3 plan](../plan/1791053204_redesign_slice_3.md). [Slice 4 plan](../plan/1791084843_redesign_slice_4.md) records the final extension and input-retention fixes. Seating and statistics remain separate feature cycles.
 
 ## What Stage 1 already prepares
 

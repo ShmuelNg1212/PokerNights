@@ -127,7 +127,7 @@ components:
 
 The Rack turns the bank into a legible working surface: warm near-black rails, indigo felt, bone controls and brass attention. Compressed Archivo figures provide a strong numeric hierarchy; circular initial tokens and small chip edges help the host find a player during a short glance.
 
-The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, the active set and its sheets, the end-of-set flow (count-up, batch cash-out review and frozen final results), and the session page with settle-up and closing recap. Deferred screens inherit shared controls and tokens but retain their existing composition; their layout is not an approved Rack pattern. The approved HTML/CSS study and the approved slice 2 and slice 3 plans supply the visual authority. The build ships no raster imagery.
+The system is dark, compact and tactile, suited to a dim room and one-handed use. This record captures the built shared foundation, active set and sheets, end-of-set flow, session settle-up and closing recap, group and home navigation, account and supporting forms, readable set log and canceled set. The approved HTML/CSS study and slice 2–4 plans supply the visual authority. The final extension uses ordinary task lists and management rails for operation, and quieter record sections for reading. The build ships no raster imagery.
 
 **Key Characteristics:**
 - Warm dark rails and indigo felt.
@@ -198,6 +198,10 @@ At 900px and above, the active-set layout becomes a 400px left column plus flexi
 Count-up, review and final pages inherit the 1180px table container and the 400px-plus-flexible two-column layout from 900px. On phones, count-up orders the slate overview, all inline player counts, then the balance check; the host dock remains fixed with visible next-step guidance and a 48px “More host controls” target. Count-up reserves 200px bottom clearance and count fields use 90px top / 200px bottom scroll margins. Review and final pages reserve 48px at the bottom and keep actions in document flow. Below 360px each count button stacks at full width beneath its input. End-set and review containers, names and figures wrap anywhere to contain long unbroken names and large amounts.
 
 The session page inherits the 1180px table container and remains one column on phones. From 900px it uses a 400px overview/action column and flexible detail column with a 28px gap. Its document order is task summary, closed-session transfers, aggregate results, sets and payment records. Actions stay in document flow with 48px bottom clearance; detail sections have 32px separation. Transfer identities occupy two flexible columns around a written direction, with 32px tokens; amount, status and actions wrap on the next line. Full names and result rows can wrap while the primary Still to pay value remains intact.
+
+Home navigation uses a 760px container and 76px-minimum group links with role labels; creation follows the list. Group pages lead with sessions on phones, with the host’s New session above the current-session list. Past sessions precede tables, presets, roster and invites. From 900px, the group container expands to 1180px and uses flexible session/management columns in a 1.25:1 ratio, a 48px gap and a management rail with 28px left inset. These actions stay in document flow.
+
+Account, invitation and supporting forms use a 600px container with 28px top inset; explanatory prose is bounded at 65ch. The log uses an 850px container, wrapping section links with 48px targets, 16px vertical record padding and 96px heading scroll clearance. Names and explanations wrap while record amounts retain their full formatted value.
 
 Sheets are at most 440px wide and 85dvh tall, scrolling internally. They sit against the phone's bottom edge and become centred at desktop. Quick amounts occupy four equal columns with an 8px gap. Shared form stacks and field gaps use the spacing values in frontmatter; there is no additional invented spacing scale.
 
@@ -277,6 +281,24 @@ A closed session offers “View session recap” and inline facts when dialog en
 
 The browser key includes session and signed-in viewer. Automatic opening happens once per key and is consumed before opening; storage refusal leaves manual access. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the manual trigger. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
 
+### Group and home navigation
+
+Full-width group rows pair written names with membership roles. An empty home explains creation or an invitation. The group’s current sessions reuse indigo with readable Felt Ink labels; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
+
+The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Roster chip colour derives from member primary key within the ten-colour palette; collision handling uses roster peers. Set join order and session standing order retain their own token rules, so colour does not promise identity across those views. The one-time invite URL remains a labelled read-only field.
+
+### Account and supporting forms
+
+A narrow task frame uses an explicit heading, return or alternate-entry path, labelled fields, attached help and local error text. Field errors use the negative boundary; form errors remain at the form. Login and signup preserve username and the safe next destination while refused passwords remain blank. Invitations offer the join task or a written failure with a group return path. Session, preset and settings forms retain bound editable values and exact unit guidance; the native player picker preserves eligible refused selections and existing search enhancement.
+
+Home creation, table creation, roster addition and member rename retain non-sensitive declared fields and their errors for one redirect, scoped to the destination form and group/member. The destination consumes the draft once, re-resolves membership and opens the failing disclosure. These are server-session drafts, not browser autosave. Inline forms have distinct field IDs. Shared fields associate help and errors with their control, and refused input never produces a success state.
+
+### Set log and canceled set
+
+The reading surface groups play periods, players, settings versions, buy-ins, cash-outs, balance overrides, frozen final results and audit events under written headings. Native section links jump to the principal categories; the page makes no single global chronology claim. Exact amounts remain tabular, actor/time/reason metadata stays visible, reversed entries remain struck with explanations and voided overrides retain their removal information. Final results carry a Final label, revision metadata, signs and direction icons. Payment records and who pays whom are linked to the session page.
+
+A canceled set uses the warm rail vocabulary, written Canceled state, recorded reason, roster and Full game log path. Its copy explains that retained money records remain in the log and that the set has no final result. No join, money or final-result action appears.
+
 ### Sheets
 
 Focused buy-in and player-detail tasks use a native modal dialog outside the polling region. The close control, Escape and outside click close it; keyboard focus stays within the dialog and returns to the opener. Typed values persist during updates; refused submissions reopen the matching form with the exact values and an error. Native details and forms provide the fallback when sheets are unavailable.
@@ -295,5 +317,4 @@ Focused buy-in and player-detail tasks use a native modal dialog outside the pol
 
 - **Don't** add casino imagery or shipping raster decorations.
 - **Don't** animate money through intermediate values or show success before server acceptance.
-- **Don't** treat deferred screen compositions as approved Rack patterns.
 - **Don't** use colour alone to identify a player or communicate wins, losses or updates.
