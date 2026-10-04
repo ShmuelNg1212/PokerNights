@@ -479,3 +479,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .table-page:has(.canceled-set) > .center a { display:inline-flex; align-items:center; min-height:48px; min-width:48px; text-underline-offset:4px; }
 .group-page .list a { overflow-wrap:anywhere; }
 .form-page a { max-width:100%; overflow-wrap:anywhere; }
+
+@media (max-width:899px) {
+  .table-page:has([name="opening_buy_ins"]) { padding-bottom: 340px; }
+}

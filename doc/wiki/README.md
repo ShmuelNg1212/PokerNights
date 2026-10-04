@@ -46,3 +46,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Visual redesign slice 2 | [study](../study/1791050655_redesign_slice_2.md) | [plan](../plan/1791050738_redesign_slice_2.md) | Done, 2026-10-04 |
 | Visual redesign slice 3 | [study](../study/1791053103_redesign_slice_3.md) | [plan](../plan/1791053204_redesign_slice_3.md) | Done, 2026-10-04 |
 | Visual redesign slice 4 | [study](../study/1791084725_redesign_slice_4.md) | [plan](../plan/1791084843_redesign_slice_4.md) | Done, 2026-10-04 |
+| Default opening buy-ins | [study](../study/1791088066_default_opening_buy_ins.md) | [plan](../plan/1791088166_default_opening_buy_ins.md) | Done, 2026-10-04 |

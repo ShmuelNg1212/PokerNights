@@ -189,7 +189,7 @@ The timer and blinds use 70% width, weight 800 and line height 1.2. On phones th
 
 ## Layout
 
-Shared pages are centred in a 560px container with a 16px inset. The active-set page extends to 1180px. Phone composition stays in one column: felt overview, compact player list and an opaque bottom host dock. Bottom clearance is 128px; the dock accounts for the safe area and can scroll when expanded.
+Shared pages are centred in a 560px container with a 16px inset. The active-set page extends to 1180px. Phone composition stays in one column: felt overview, compact player list and an opaque bottom host dock. Bottom clearance is 128px; the dock accounts for the safe area and can scroll when expanded. An open set with the opening-buy-in option reserves 340px below 900px so the enlarged dock clears the player list.
 
 The overview has a flexible amount column and a 116px supporting column, separated by 8px. Player rows align a 44px identity token, flexible name, right-aligned amount and action. Below 360px, the token becomes 36px and the row gap becomes 6px.
 
@@ -252,6 +252,10 @@ Compact outlined pills mark state. Live state uses bone and ink; warning and pos
 ### Player rows
 
 Names and metadata form a single 48px-minimum detail target. Amounts form a separate right-aligned column. Phone rebuy controls are circular with a plus icon and a labelled accessible action; desktop adds visible words. Cash-out state and departed-player state remain written.
+
+### Start controls
+
+An open set places a checked native option immediately before Start the game. Its 48px-minimum label shows the current usual amount in the session’s unit and says it applies to players without a buy-in; adjacent help says existing buy-ins stay unchanged. Unchecking opts out for that start, and live updates retain the choice. The native form records missing opening buy-ins on accepted start before the timer begins. The control reuses the shared checkbox, focus and primary-action treatment.
 
 ### Count-up
 

@@ -28,7 +28,7 @@ class Night:
         order = ["open", "running", "reconciliation"]
         actions = ["start", "end"]
         for action in actions[order.index(self.session.state):order.index(state)]:
-            self.session = games.transition(self.session.pk, self.host, action)
+            self.session = games.transition(self.session.pk, self.host, action, opening_buy_ins=False)
 
     def add_login_player(self, name):
         member = add_player(self.group, name)

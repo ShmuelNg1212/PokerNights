@@ -19,7 +19,7 @@ class NextSetTests(TestCase):
         for name in ("Ana", "Ben", "Carlo", "Dani"):
             member = groups.add_roster_player(self.host, name)
             self.people[name] = services.add_participant(self.first.pk, self.host, member.pk)
-        services.transition(self.first.pk, self.host, "start")
+        services.transition(self.first.pk, self.host, "start", opening_buy_ins=False)
 
     def end(self):
         return services.transition(self.first.pk, self.host, "end")

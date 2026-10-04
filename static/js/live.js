@@ -40,7 +40,8 @@
   function typedValues() {
     var typed = {};
     region.querySelectorAll("input[data-keep], textarea[data-keep]").forEach(function (el) {
-      if (el.value !== el.defaultValue) typed[el.dataset.keep] = el.value;
+      var box = el.type === "checkbox";
+      if ((box ? el.checked !== el.defaultChecked : el.value !== el.defaultValue)) typed[el.dataset.keep] = box ? el.checked : el.value;
     });
     return typed;
   }
@@ -48,7 +49,7 @@
   function restore(typed) {
     Object.keys(typed).forEach(function (key) {
       var el = region.querySelector('[data-keep="' + key + '"]');
-      if (el) el.value = typed[key];
+      if (el) el[el.type === "checkbox" ? "checked" : "value"] = typed[key];
     });
   }
 

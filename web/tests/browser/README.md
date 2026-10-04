@@ -52,3 +52,14 @@ node web/tests/browser/remaining_actions.mjs
 `night.mjs` checks the session overview, settlement, paid/Undo, frozen results, recap and native fallback. `remaining.mjs` captures home, group, accounts, invitation recovery, supporting forms, picker, canceled set and log. It checks 48 px action links, first-viewport session access, bound errors and native roster actions. `remaining_supplement.mjs` captures the one-time invite URL, invitation acceptance, reversed large-money final log and override log. `remaining_actions.mjs` exercises account/group/table creation, pesos and chips presets, new session, settings refusal and save, rename refusal and save, and native picker refusal and success.
 
 The default run reports 20 Rack, 13 accessibility, 47 end-set, 53 night, 95 remaining, 10 supplement and 12 action checks (250 total). For the complete run, seed all four files before starting, then run all seven browser scripts in the order above and in the first examples. Fixtures are consumed: reset to a fresh database for a repeat. The remaining scripts read synthetic IDs from `/private/tmp/pn-slice4-manifest.json`; night checks use `/private/tmp/pn-slice3-manifest.json`. `PN_EMPTY_ACCOUNT` can select a fresh synthetic account for an empty-home recapture when an earlier invitation run has consumed `unattached`.
+
+
+For default opening buy-ins, seed after `seed.py`, `seed_end_set.py` and `seed_night.py` on a fresh temporary database:
+
+```sh
+DEBUG=True DATABASE_URL=sqlite:////private/tmp/pn-rack-check.sqlite3 .venv/bin/python manage.py shell < web/tests/browser/seed_opening.py
+node web/tests/browser/opening.mjs
+node web/tests/browser/opening_drafts.mjs
+```
+
+`opening.mjs` checks the default and exact amount, phone/desktop fit, native start, mixed existing buy-ins, exact retry, log, a new set, opt-out and chips (16 checks). `opening_drafts.mjs` checks that another host’s write and live redraw preserve the unchecked option and that native submission then records no extra opening buy-ins (3 checks). Run sequentially; each consumes separate synthetic fixtures named in `/private/tmp/pn-opening-manifest.json`. Reset the temporary database for a repeat.

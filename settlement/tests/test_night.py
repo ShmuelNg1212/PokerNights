@@ -30,7 +30,7 @@ class TwoSets:
         services.finalize(self.first.pk, self.host)
         self.second = games.start_next_set(self.first.night_id, self.host)
         self.players2 = {p.member.display_name: p for p in Participant.objects.filter(session=self.second)}
-        games.transition(self.second.pk, self.host, "start")
+        games.transition(self.second.pk, self.host, "start", opening_buy_ins=False)
         if finalize_second:
             self.finish_second()
 

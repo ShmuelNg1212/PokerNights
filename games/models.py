@@ -174,6 +174,7 @@ class GameSession(models.Model):
     version = models.BigIntegerField(default=0)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
+    start_request_id = models.UUIDField(null=True, blank=True, unique=True)
     started_at = models.DateTimeField(null=True, blank=True)
     # When play of this set last ended. Empty while it runs. Counting and
     # cash-outs happen after this moment and add no playing time.

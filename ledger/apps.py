@@ -10,9 +10,11 @@ class LedgerConfig(AppConfig):
         from games import clock
 
         from .services import (
-            back_in_play, guard_participant_exit, is_cashed_out, session_has_money, void_counts_on_resume,
+            opening_buy_ins, back_in_play, guard_participant_exit, is_cashed_out, session_has_money, void_counts_on_resume,
         )
 
+        if opening_buy_ins not in games.START_HOOKS:
+            games.START_HOOKS.append(opening_buy_ins)
         if guard_participant_exit not in games.PARTICIPANT_EXIT_GUARDS:
             games.PARTICIPANT_EXIT_GUARDS.append(guard_participant_exit)
         if session_has_money not in games.SESSION_MONEY_CHECKS:

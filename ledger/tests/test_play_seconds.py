@@ -56,7 +56,7 @@ class PlaySecondsTests(TestCase):
         settlement.finalize(night.session.pk, night.host)
         with at(240):
             second = games.start_next_set(night.session.night_id, night.host)
-            games.transition(second.pk, night.host, "start")
+            games.transition(second.pk, night.host, "start", opening_buy_ins=False)
         a = second.participants.get()
         import uuid
         from ledger import services as ledger

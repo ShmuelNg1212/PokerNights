@@ -1,6 +1,7 @@
 """The only code allowed to change tables, presets, sessions and participants."""
 
 import datetime
+import uuid
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -217,6 +218,8 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
     return version
 
 
+START_HOOKS = []  # hook(session, actor, request_id), before the first clock starts.
+
 # Called when a set resumes play, inside the transaction: ``hook(session, actor)``.
 RESUME_HOOKS = []
 
@@ -244,12 +247,21 @@ ACTION_LABELS = {
 
 
 @transaction.atomic
-def transition(session_id, actor: Member, action: str, reason: str = "") -> GameSession:
-    """Move the session through its lifecycle. Finalization is a separate service."""
+def transition(session_id, actor: Member, action: str, reason: str = "", *,
+               request_id=None, opening_buy_ins=True) -> GameSession:
+    """Move the set through its lifecycle; first start includes optional opening buy-ins.
+
+    The start request is persisted even with no players. Replaying it never
+    reapplies money or timer effects. Finalization is a separate service.
+    """
     require_host(actor)
     if action not in TRANSITIONS:
         raise RuleError("Unknown action.")
     session = lock_session(session_id, actor.group_id)
+    if action == "start":
+        request_id = uuid.UUID(str(request_id)) if request_id is not None else uuid.uuid4()
+        if session.start_request_id == request_id:
+            return session
     allowed_from, target = TRANSITIONS[action]
     if session.state not in allowed_from:
         raise RuleError(f"This game is {session.get_state_display().lower()}, so that action is not available.")
@@ -264,6 +276,11 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")
         session.cancel_reason = reason[:255]
+    if action == "start":
+        if opening_buy_ins:
+            for hook in START_HOOKS:
+                hook(session, actor, request_id)
+        session.start_request_id = request_id
     now = timezone.now()
     if action == "start":
         session.started_at = session.started_at or now
@@ -278,7 +295,7 @@ def transition(session_id, actor: Member, action: str, reason: str = "") -> Game
         clock.stop(session, now)
         session.ended_at = now
     session.state = target
-    session.save(update_fields=["state", "started_at", "ended_at", "cancel_reason"])
+    session.save(update_fields=["state", "started_at", "ended_at", "cancel_reason", "start_request_id"])
     audit.record(
         f"session.{action}", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=ACTION_LABELS[action], reason=reason,
