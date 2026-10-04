@@ -4,7 +4,7 @@
 {% else %}
 <section class="table-players" aria-label="Players at the table">
   <div class="section-heading"><h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
-    {% if can_manage_players and addable_members %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
+    {% if can_manage_players %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
   </div>
   <ul class="player-list">
     {% if can_join and not my_participant %}<li class="join-row">

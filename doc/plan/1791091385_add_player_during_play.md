@@ -1,12 +1,12 @@
 # Add a player during play
 
-Status: **awaiting-approval**. Date: 2026-10-04.
+Status: **in-progress**. Date: 2026-10-04.
 
 Source: [study](../study/1791091289_add_player_during_play.md), commit `7973c50`. Main implementation baseline: `e133a1a`. Canonical sources: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and current wiki. Baseline: 423 SQLite tests pass, with three PostgreSQL-only skips.
 
 ## OPEN QUESTIONS
 
-The app already supports adding existing roster members while running. This plan proposes the missing new-name path and keeps Add players visible even when everyone on the roster is seated. The optional clarification has not received an answer. Approval of this plan confirms that the host should be able to create a roster player and join them to the current set in one action. Buy-in remains a separate action; no automatic late buy-in is proposed.
+The app already supports adding existing roster members while running. This plan proposes the missing new-name path and keeps Add players visible even when everyone on the roster is seated. The human approved this completed plan with “proceed” on 2026-10-04, confirming that the host should be able to create a roster player and join them to the current set in one action. Buy-in remains a separate action; no automatic late buy-in is proposed.
 
 ## Goal and acceptance criteria
 
@@ -29,8 +29,8 @@ Add a late arrival from the ongoing set without returning to group management.
 
 ## Ordered task board
 
-- [ ] Record approval, confirm current main and create isolated branch/worktree `feat/add-player-during-play`. Link the active plan from TODO during execution.
-- [ ] **`feat(games): add new players from an ongoing set`**: implement the atomic operation, explicit form action, error preservation and visible entry point with directly related tests. Completion: AC1–AC5 demonstrated with exact record/timer/audit assertions and synthetic browser flows.
+- [x] Record approval, confirm current main and create isolated branch/worktree `feat/add-player-during-play`. Link the active plan from TODO during execution.
+- [x] **`feat(games): add new players from an ongoing set`**: implement the atomic operation, explicit form action, error preservation and visible entry point with directly related tests. Completion: AC1–AC5 demonstrated with exact record/timer/audit assertions and synthetic browser flows.
 - [ ] Verify AC6 and address material in-scope findings: full SQLite/PostgreSQL, shared roster picker regressions, opening/default-late-buy-in boundary, native forms and required finish review.
 - [ ] **`docs: document adding players during play`**: sync affected wiki/features/architecture, PRODUCT capability wording if needed, built design/surface notes, TODO and plan evidence. Completion: docs explain roster persistence, late timer start and separate buy-in.
 - [ ] Rendezvous: merge verified work into local main, check the running app and record completion. No push or deployment.
@@ -55,4 +55,16 @@ Update current wiki features/architecture and journal/index; add a footgun only 
 
 ## Progress
 
-2026-10-04: study and plan completed. Existing roster additions during running play are confirmed in code. New-name interpretation is proposed for approval. Implementation has not started.
+2026-10-04: study and plan completed. Existing roster additions during running play are confirmed in code. New-name interpretation is proposed for approval. Human approved “proceed” on 2026-10-04. Execution, rendezvous and doc sync are authorized.
+
+## Execution details
+
+The operation reuses the existing ParticipantBatch request key with an independent UUID for the new-name form. Group writers never acquire set locks; the new path uses set then group. Existing participant addition owns timers/audits/version. No model, migration, CSS, JS or dependency is added.
+
+The finish reviewer requested one correction: duplicate-name guidance must distinguish a player already seated from an eligible roster member. The service now directs seated duplicates back to the set and eligible duplicates to roster selection. Two extra tests cover the distinction. This refines the approved recovery behavior without changing identity or join rules.
+
+Verification: 21 added tests bring the suite to 444. SQLite passes in 15.348 s (six PostgreSQL-only races skipped); PostgreSQL 17 passes all 444 in 23.792 s. New races cover the same request, the last seat versus an existing roster addition, and two sets creating a case-insensitive duplicate. Rollback, audit/version/timer, normalized/invalid names, host/group gates and retries after end are asserted. `makemigrations --check --dry-run` reports no drift.
+
+All 21 dedicated native browser checks pass on fresh synthetic data: visible Add players with exhausted roster, phone/desktop overflow, no-JS creation, separate money/timer, second-host polling arrival, saved roster identity, seated duplicate recovery, full/ended rejection, chips manual buy-in, existing roster selection, permissions and 48px labelled form. Evidence `/private/tmp/pn-late-review/late-player.json`. Two initial harness selector errors were corrected (wrong total key and a submit selector matching logout; the named action control also shadows form.action, so the harness reads the attribute). These did not change production behavior. A native fieldset border was removed by reusing the incumbent picker-fields class; no CSS was added.
+
+Budgets remain CSS 32,942 bytes, cumulative added JS 11,440 bytes and font 103,912 bytes. No new JS, style rules, dependencies or assets. Physical-device verification is unavailable.

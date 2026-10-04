@@ -11,9 +11,25 @@
 
 <p id="pick-capacity"><strong>{{ seats_free }}</strong> of {{ session.seat_count }} seat{{ session.seat_count|pluralize }} {{ seats_free|pluralize:"is,are" }} free.</p>
 
+{% if not can_add %}<p class="notice notice-bad">This set is {{ session.get_state_display }}. Players cannot be added now. Return to the set to continue.</p>
+{% elif seats_free == 0 %}<p class="notice notice-warn">The table is full. A seat must be free before another player can join.</p>{% endif %}
+<section aria-label="Add a new player">
+  <h2>Add a new player</h2>
+  <p class="small muted">Save this name to the group roster and add them to this set. Record their buy-in separately.</p>
+  <form method="post" class="form-section stack" data-once>
+    {% csrf_token %}
+    <input type="hidden" name="request_id" value="{{ new_request_id }}">
+    <input type="hidden" name="action" value="new">
+    <fieldset class="picker-fields stack" {% if not can_add or seats_free == 0 %}disabled{% endif %}>
+      {% include "partials/form_fields.html" with form=new_form %}
+      <button type="submit" class="btn btn-primary btn-block">Add new player</button>
+    </fieldset>
+  </form>
+</section>
+<h2>Choose from the roster</h2>
 {% if eligible_count == 0 %}
 <p class="muted">Every player of this group is already at the table.</p>
-{% else %}
+{% elif can_add %}
 <form method="post" class="form-section stack" data-pick data-free="{{ seats_free }}">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
@@ -42,7 +58,7 @@
   <div class="sticky-actions stack">
     <p class="small" data-pick-summary aria-live="polite">{% if selected_count %}{{ selected_count }} selected.{% else %}No player selected.{% endif %}</p>
     <p class="notice notice-bad" data-pick-warning role="alert" hidden></p>
-    <button type="submit" class="btn btn-primary btn-block" data-pick-submit>Add selected players</button>
+    <button type="submit" class="btn btn-primary btn-block" data-pick-submit {% if seats_free == 0 %}disabled{% endif %}>Add selected players</button>
   </div>
 </form>
 {% endif %}

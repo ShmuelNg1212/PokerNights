@@ -7,6 +7,7 @@ import uuid
 from django.contrib import messages
 
 from groups.errors import RuleError
+from groups.forms import NameForm
 from groups.http import attempt, request_id_from, attempt_bound, keep_form
 from groups.models import Member
 
@@ -113,13 +114,22 @@ def participants_add(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
     selected, error = set(), ""
+    creating = request.method == "POST" and request.POST.get("action") == "new"
+    new_form = NameForm(request.POST if creating else None, auto_id="new_player_%s")
+    new_form.fields["name"].label = "Player name"
     if request.method == "POST":
         ids = request.POST.getlist("member_id")
         try:
-            added = services.add_participants(session.pk, actor, ids, request_id_from(request))
+            if creating:
+                if not new_form.is_valid():
+                    raise RuleError("Check the player name. Nothing was added.")
+                added = services.add_new_player(session.pk, actor, new_form.cleaned_data["name"], request_id_from(request))
+            else:
+                added = services.add_participants(session.pk, actor, ids, request_id_from(request))
         except RuleError as refused:
-            # Nothing was added. Show the picker again with the selection kept for review.
             error = str(refused)
+            if creating and not new_form.errors:
+                new_form.add_error("name", error)
             selected = {int(value) for value in ids if value.isdecimal()}
         else:
             names = ", ".join(p.member.display_name for p in added)
@@ -127,7 +137,8 @@ def participants_add(request, session_id):
             messages.success(request, f"Added {count} player{'' if count == 1 else 's'}: {names}.")
             return redirect("session", session_id=session.pk)
         session.refresh_from_db()
-    if session.state not in services.HOST_ADD_STATES:
+    can_add = session.state in services.HOST_ADD_STATES
+    if not can_add and not creating:
         messages.error(request, "Players cannot be added at this stage of the game.")
         return redirect("session", session_id=session.pk)
 
@@ -148,6 +159,9 @@ def participants_add(request, session_id):
         "error": error,
         "seats_free": session.seat_count - seated,
         "selected_count": sum(1 for row in rows if row["checked"]),
+        "new_form": new_form,
+        "new_request_id": uuid.uuid4(),
+        "can_add": can_add,
         "eligible_count": sum(1 for row in rows if not row["at_table"]),
         "request_id": uuid.uuid4(),
     }

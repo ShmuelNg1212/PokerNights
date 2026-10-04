@@ -10,7 +10,7 @@ from audit import services as audit
 from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
-from groups.services import clean_name
+from groups.services import clean_name, add_roster_player
 
 from . import clock
 from .models import (
@@ -415,6 +415,32 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
 def _names(members) -> str:
     names = [member.display_name for member in members]
     return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+@transaction.atomic
+def add_new_player(session_id, actor: Member, name: str, request_id) -> list:
+    """Create a roster identity and join it atomically, with the normal batch retry key."""
+    require_host(actor)
+    session = lock_session(session_id, actor.group_id)
+    repeated = ParticipantBatch.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return list(repeated.participants.select_related("member").order_by("join_order"))
+    if session.state not in HOST_ADD_STATES:
+        raise RuleError("Players cannot be added at this stage of the game.")
+    if _seats_taken(session) >= session.seat_count:
+        raise RuleError(f"The table is full ({session.seat_count} seats). Nothing was added.")
+    try:
+        member = add_roster_player(actor, name)
+    except RuleError as error:
+        if "already in this group" in str(error):
+            seated = Participant.objects.filter(
+                session=session, status=Participant.Status.JOINED,
+                member__status=Member.Status.ACTIVE, member__display_name__iexact=clean_name(name),
+            ).exists()
+            recovery = "They are already at the table. Return to the set." if seated else "Choose that player from the roster instead."
+            raise RuleError(f"{error} {recovery}") from None
+        raise
+    return add_participants(session.pk, actor, [member.pk], request_id)
 
 
 @transaction.atomic
