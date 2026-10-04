@@ -149,6 +149,8 @@ AUTH_PASSWORD_VALIDATORS = [
 if "test" in sys.argv:
     # Tests create many users; the production hasher is deliberately slow.
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    # Tests choose the sign-up rule themselves, also when they run in a Vercel build.
+    SIGNUP_REQUIRES_INVITE = False
 
 
 # Internationalization

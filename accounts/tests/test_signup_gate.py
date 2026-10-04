@@ -63,6 +63,7 @@ class InviteOnlySignupTests(TestCase):
         self.assertContains(self.client.get(login_url), f"{self.url}?next=")
 
 
+@override_settings(SIGNUP_REQUIRES_INVITE=False)
 class OpenSignupTests(TestCase):
     def test_sign_up_stays_open_when_the_setting_is_off(self):
         self.assertContains(self.client.get(reverse("signup")), "Create account")
