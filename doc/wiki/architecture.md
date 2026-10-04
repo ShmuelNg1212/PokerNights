@@ -9,13 +9,13 @@ One Django 6.1 project with server-rendered templates, one stylesheet and small 
 | `config` | Settings from the environment, root URLs, `/healthz`, database options per engine | `settings.py`, `deploy.py` |
 | `accounts` | Custom `User`, sign-up, login, logout. `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py` |
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
-| `groups` | `GameGroup`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
+| `groups` | `GameGroup`, `GroupRakeAccount`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
 | `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, the lifecycle, the clock | `services.py`, `access.py`, `forms.py` |
-| `ledger` | `BuyIn`, `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
+| `ledger` | `BuyIn`, `RakeEntry`, `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()` for a set, `close_night()` for a session, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
 | `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. It never writes | `views.py` |
 
-Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` depends only on `accounts`. Two exceptions are deliberate:
+Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` depends only on `accounts`. These integration boundaries are deliberate:
 
 - `ledger/money.py` and `settlement/algorithm.py` are pure modules with no project imports. `games` imports `ledger.money` to parse and format amounts.
 - `games.services.START_HOOKS` runs ledger-owned opening-buy-in creation while the set is open, under its lock and transaction, before clock creation. Each joined participant without an unreversed buy-in receives the current default through `ledger.services.record_buy_in()`. Child UUIDs derive from the start request and participant ID. `GameSession.start_request_id` is nullable and unique; successful same-request retries return without repeating records or timers, including empty starts. Existing sets remain null without backfill. The native start option defaults checked, supports opt-out and retains its state through live redraws.
@@ -76,7 +76,7 @@ AuditEvent (group_id, session_id as plain integers)
 
 ## End of a set: counts and batch
 
-`ledger.queries.count_total()` derives remaining confirmed stacks plus accepted cash-outs from the existing summary. It excludes final-cashed-out players from remaining stacks and reports count coverage, stray cash-outs and the raw difference from buy-ins. It neither stores a total nor changes Balance/finalization. The shared `_count_total.html` renders a confirmed baseline and host dock preview. `counts.js` uses BigInt to replace saved amounts with valid drafts, parse ordinary native amount syntax and format exact values. Invalid or unsupported input makes the preview unavailable. No write or extra request occurs.
+`ledger.queries.count_total()` derives remaining confirmed stacks plus accepted cash-outs and collected rake from the existing summary. It excludes final-cashed-out players from remaining stacks and reports count coverage, stray cash-outs and the raw difference from buy-ins. It neither stores a total nor changes Balance/finalization. The shared `_count_total.html` renders a confirmed baseline and host dock preview. `counts.js` uses BigInt to replace saved amounts with valid drafts, parse ordinary native amount syntax and format exact values. Invalid or unsupported input makes the preview unavailable. No write or extra request occurs.
 
 
 - `FinalCount`: a host's confirmation of a player's final amount, in the session's unit. Append-only, with a `version` per participant; `is_current` marks the one in force. Zero is a count. No row means "not counted".
@@ -110,7 +110,9 @@ AuditEvent (group_id, session_id as plain integers)
 |---|---|
 | Total bought in | Sum of the amounts of accepted buy-ins |
 | Total cashed out | Sum of the amounts of accepted cash-outs |
-| Still in play | Total bought in − total cashed out (shown while the game is open or running) |
+| Collected rake | Accepted buy-ins’ linked fees; reversals excluded |
+| Available to play | Gross buy-ins − collected rake |
+| Still in play | Available to play − total cashed out (shown while the game is open or running) |
 | Rebuys | Accepted buy-ins after a player's first |
 
 ## Session lifecycle
@@ -135,7 +137,7 @@ setup, open, running, reconciliation ──cancel──▶ canceled   (refused w
 
 ## Balance check and override
 
-`ledger.queries.balance()` compares the total cashed out with the total bought in, in the game's unit.
+`ledger.queries.balance()` compares cash-outs plus collected rake with gross buy-ins, in the game's unit. Overrides cover the remaining discrepancy. Count preview adds remaining stacks, earlier cash-outs and recorded rake, excluding overrides.
 
 - Finalization is refused while a player with a buy-in has no cash-out record. A player who lost everything needs a cash-out of 0.
 - A difference is shown as an amount with its direction ("₱50 too much" or "₱50 is missing") and likely causes.
@@ -147,14 +149,27 @@ setup, open, running, reconciliation ──cancel──▶ canceled   (refused w
 
 1. The balance check must pass.
 2. Each player's result is cash-outs plus any override, minus buy-ins. No conversion or rounding takes place.
-3. It asserts that cash-outs plus overrides equal buy-ins and that results sum to zero. A failure raises `LedgerInvariantError` and rolls back.
-4. It writes `Finalization` and one `PlayerResult` per player with a buy-in.
-5. It calculates transfers and asserts that they clear each balance.
-6. It writes `SettlementPlan` and `Transfer` rows, sets the state, and records an audit event.
+3. It asserts that cash-outs plus overrides plus rake equal gross buy-ins, and that player results plus rake sum to zero. A failure raises `LedgerInvariantError` and rolls back.
+4. It writes `Finalization.total_rake` and each `PlayerResult.rake_total` with the other frozen facts.
+5. It marks the set finalized, increments its version and records an audit event. It writes no transfers. Session closure handles those.
 
-Database check constraints repeat the main invariants: `total_buy_in = total_cash_out` on `Finalization`; `net = cash_out − buy_in_total` and `cash_out = cashed_out + adjustment` on `PlayerResult`.
+Database check constraints repeat the main invariants: `total_buy_in = total_cash_out + total_rake` on `Finalization`; `net = cash_out − buy_in_total` and `cash_out = cashed_out + adjustment` on `PlayerResult`.
+
+## Set rake and group account
+
+Each group has one `GroupRakeAccount`, created by group services or the metadata migration. It is not a Member or settlement party and has no mutable money counter. `ledger.queries.group_rake()` derives accepted lifetime totals and a per-session/set breakdown. Web composes this on the membership-protected group page. Pesos and chips stay separate; live and finalized sets contribute, payment marks do not.
+
+`SettingsVersion` holds `rake_mode` (Off, Percentage, Flat), integer `rake_basis_points` and `rake_flat`. Host settings use a per-set unique request ID; accepted retries return their version before state refusal. Explicit settings submissions create audited versions, even when values are unchanged, to persist the request identity. Stakes-only service calls without a request retain their prior no-op behavior.
+
+Percentage accepts two decimals (0.01%–99.99%); 5% is 500 basis points. Each fee is `gross * basis_points // 10000`, rounded down per entry. Flat is a positive native amount. Off normalizes both parameters to zero. Rake must leave a positive playable amount. Gross buy-in limits and default amounts remain gross. The rule is locked while accepted buy-ins or cash-outs exist; unchanged-rule stakes edits remain allowed. Next sets inherit the rule. A permitted unit change resets it to Off. Presets remain stakes-only.
+
+`record_buy_in()` validates the fee before any timer/money/audit write, then writes BuyIn and one immutable linked RakeEntry in the same locked transaction. Opening, rebuy and late-player paths all use it. The linked unique buy-in request prevents duplicate fees. Entry facts include amount, unit and rule provenance; zero fees are explicit for new Off/rounded-zero buy-ins. Historical buy-ins without entries mean zero fee. Reversing a buy-in excludes its fee without deleting either row; the log retains its recorded unit. There is no independent fee edit or historical charge backfill.
+
+The migration adds zero snapshot defaults and changes only finalization conservation. Existing money, results, transfers and payments retain their exact original values. Once rake records exist, preserve the schema and use forward fixes; an old conservation rule cannot represent those records safely.
 
 ## Settle-up
+
+`settlement.services.session_standings()` keeps actual after-rake results. `settlement_balances()` separately sums `net + rake_total` in first-join order for closure. These remaining balances sum to zero because rake was already collected at each buy-in. Closure passes them to the unchanged algorithm and verifies exact clearance. No transfer or payment targets the group rake account. For two ₱1,000 buy-ins at 5% and ₱950 cash-outs, results are −₱50 each, group rake is ₱100, and no further transfer is owed.
 
 `settlement/algorithm.py`:
 

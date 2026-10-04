@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from games.models import GameSession, Participant
 
 from . import money
-from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount
+from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount, RakeEntry
 
 
 @dataclass
@@ -39,6 +39,14 @@ class PlayerLine:
     @property
     def buy_in_total(self) -> int:
         return sum(b.amount for b in self.buy_ins)
+
+    @property
+    def rake_total(self) -> int:
+        return sum(b.rake_amount for b in self.buy_ins)
+
+    @property
+    def playable_total(self) -> int:
+        return self.buy_in_total - self.rake_total
 
     @property
     def has_money(self) -> bool:
@@ -98,13 +106,21 @@ class Summary:
         return sum(line.buy_in_total for line in self.lines)
 
     @property
+    def rake(self) -> int:
+        return sum(line.rake_total for line in self.lines)
+
+    @property
+    def playable(self) -> int:
+        return self.total - self.rake
+
+    @property
     def cashed_out(self) -> int:
         return sum(line.cashed_out for line in self.lines)
 
     @property
     def in_play(self) -> int:
         """Bought in and not yet cashed out."""
-        return self.total - self.cashed_out
+        return self.playable - self.cashed_out
 
     @property
     def adjustment(self) -> int:
@@ -138,7 +154,7 @@ def summary(session: GameSession) -> Summary:
         p.pk: PlayerLine(p)
         for p in Participant.objects.filter(session=session).select_related("member").order_by("join_order")
     }
-    for buy_in in BuyIn.objects.filter(session=session).select_related("reversal", "recorded_by"):
+    for buy_in in BuyIn.objects.filter(session=session).select_related("reversal", "recorded_by", "rake_entry"):
         line = lines[buy_in.participant_id]
         if hasattr(buy_in, "reversal"):
             line.reversed_buy_ins.append(buy_in)
@@ -218,12 +234,12 @@ class Balance:
             )
         if self.difference > 0:
             return (
-                f"{self.difference_text} too much: more was cashed out than was bought in. "
+                f"{self.difference_text} too much: cash-outs plus rake exceed buy-ins. "
                 "Look for a buy-in that was not recorded, or a cash-out that is too high."
             )
         if self.difference < 0:
             return (
-                f"{self.difference_text} is missing: less was cashed out than was bought in. "
+                f"{self.difference_text} is missing: cash-outs plus rake are below buy-ins. "
                 "Look for a player who was not cashed out in full, a buy-in recorded twice, or a cash-out that is too low."
             )
         return ""
@@ -235,8 +251,8 @@ def balance(session_or_summary) -> Balance:
         summary=found,
         missing_cash_outs=[line for line in found.lines if line.has_money and not line.is_cashed_out],
         stray_cash_outs=[line for line in found.lines if line.has_cash_out and not line.has_money],
-        raw_difference=found.cashed_out - found.total,
-        difference=found.cashed_out + found.adjustment - found.total,
+        raw_difference=found.cashed_out + found.rake - found.total,
+        difference=found.cashed_out + found.adjustment + found.rake - found.total,
     )
 
 
@@ -252,7 +268,7 @@ class CountTotal:
 
     @property
     def accounted(self) -> int:
-        return self.remaining + self.summary.cashed_out
+        return self.remaining + self.summary.cashed_out + self.summary.rake
 
     @property
     def missing(self) -> int:
@@ -296,3 +312,17 @@ class CountTotal:
 def count_total(session_or_summary) -> CountTotal:
     found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
     return CountTotal(found)
+
+
+def group_rake(group):
+    """Accepted fees in native units, with a reconciling per-set breakdown."""
+    from django.db.models import Sum
+    rows = list(RakeEntry.objects.filter(account__group=group, buy_in__reversal__isnull=True)
+                .values("unit", "buy_in__session_id", "buy_in__session__set_number",
+                        "buy_in__session__night_id", "buy_in__session__game_date",
+                        "buy_in__session__table__name")
+                .annotate(total=Sum("amount")).order_by("-buy_in__session__game_date", "-buy_in__session_id"))
+    totals = {"php": 0, "chips": 0}
+    for row in rows:
+        totals[row["unit"]] += row["total"]
+    return totals, rows

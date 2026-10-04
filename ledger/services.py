@@ -20,7 +20,7 @@ from groups.models import Member
 from . import money, queries
 from .models import (
     BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization,
-    PlayerResult,
+    PlayerResult, RakeEntry,
 )
 
 State = GameSession.State
@@ -93,6 +93,10 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
             f"A buy-in must be between {money.format_amount(current.min_buy_in, session.unit)} "
             f"and {money.format_amount(current.max_buy_in, session.unit)}."
         )
+    rake = (amount * current.rake_basis_points // 10000 if current.rake_mode == "percent"
+            else current.rake_flat if current.rake_mode == "flat" else 0)
+    if not 0 <= rake < amount:
+        raise RuleError("Rake must leave a positive amount in play. Increase the buy-in or change rake before recording money.")
     _back_in_play(participant, actor)
     if session.state == State.RUNNING:
         games.clock.open_interval(participant, timezone.now())
@@ -100,10 +104,12 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
         session=session, participant=participant, settings_version=current, amount=amount,
         request_id=request_id, recorded_by=actor.user,
     )
+    RakeEntry.objects.create(buy_in=buy_in, account=session.group.rake_account, amount=rake,
+                             unit=session.unit, **current.rake())
     audit.record(
         "buy_in.recorded", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
         summary=f"{participant.member.display_name} bought in for {money.format_amount(amount, session.unit)}",
-        data={"amount": amount, "unit": session.unit},
+        data={"amount": amount, "unit": session.unit, "rake": rake, "playable": amount - rake},
     )
     games.touch(session)
     return buy_in
@@ -461,7 +467,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     """Freeze each player's result. Call inside a transaction, with the session locked.
 
     Refuses unless the balance check passes. A result is cash-outs plus any
-    override, minus buy-ins. Results always sum to zero.
+    override, minus gross buy-ins. Player results plus collected rake sum to zero.
     """
     found = queries.balance(session)
     if not found.ok:
@@ -470,7 +476,8 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     total_buy_in = found.summary.total
     total_cash_out = sum(line.cash_out_final for line in lines)
     nets = [line.cash_out_final - line.buy_in_total for line in lines]
-    if total_cash_out != total_buy_in or sum(nets) != 0:
+    total_rake = found.summary.rake
+    if total_cash_out + total_rake != total_buy_in or sum(nets) + total_rake != 0:
         raise LedgerInvariantError(
             f"Session {session.pk}: cash-outs {total_cash_out} do not equal buy-ins {total_buy_in}."
         )
@@ -483,10 +490,11 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
         revision=previous.revision + 1 if previous else 1,
         unit=session.unit,
         total_buy_in=total_buy_in,
+        total_rake=total_rake,
         total_cash_out=total_cash_out,
         raw_difference=found.raw_difference,
         settings_snapshot=[
-            {"number": version.number, **version.stakes()} for version in session.settings_versions.order_by("number")
+            {"number": version.number, **version.stakes(), **version.rake()} for version in session.settings_versions.order_by("number")
         ],
         finalized_by=actor.user,
     )
@@ -501,6 +509,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
             game_date=session.game_date,
             unit=session.unit,
             buy_in_total=line.buy_in_total,
+            rake_total=line.rake_total,
             buy_in_count=line.buy_in_count,
             cashed_out=line.cashed_out,
             adjustment=line.adjustment,

@@ -36,6 +36,15 @@
 </ul>
 {% endif %}
 
+<h2>Group rake account</h2>
+<section class="section-rail" aria-label="Accumulated rake">
+  <p class="small muted">Lifetime collected rake across every session and set, including sets in progress. Reversed buy-ins are excluded.</p>
+  <dl class="set-totals"><div><dt>Pesos collected</dt><dd>{{ rake_totals.php|amount:'php' }}</dd></div><div><dt>Chips collected</dt><dd>{{ rake_totals.chips|amount:'chips' }}</dd></div></dl>
+  <details><summary>Rake by session and set</summary><ul class="list">
+    {% for row in rake_sets %}<li class="row"><span class="grow"><a href="{% url 'session' row.buy_in__session_id %}">{{ row.buy_in__session__table__name }} · {{ row.buy_in__session__game_date|date:"M j, Y" }} · Session {{ row.buy_in__session__night_id }} · Set {{ row.buy_in__session__set_number }}</a></span><span class="amount">{{ row.total|amount:row.unit }}</span></li>
+    {% empty %}<li class="muted">No rake collected yet. Configure it in a set's settings before recording buy-ins.</li>{% endfor %}
+  </ul></details>
+</section>
 </div><aside class="group-management" aria-label="Group management"><h2>Tables</h2>
 <div class="section-rail">
   {% if tables %}

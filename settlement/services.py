@@ -48,7 +48,7 @@ def finalize(session_id, actor: Member) -> Finalization:
 def session_results(night: GameNight) -> list:
     """Each member's result over the finalized sets of a session, in the order they first joined it.
 
-    Returns ``[(member_id, net, sets_played)]``. The nets sum to zero, because each set does.
+    Returns ``[(member_id, net, sets_played)]``. Nets are after rake; add collected rake for settlement balances.
     """
     return [(member_id, net, played) for member_id, net, played, _ in session_standings(night)]
 
@@ -70,6 +70,17 @@ def session_standings(night: GameNight) -> list:
         if play_seconds is not None:
             seconds[member_id] = seconds.get(member_id, 0) + play_seconds
     return [(member_id, net, played[member_id], seconds.get(member_id)) for member_id, net in totals.items()]
+
+
+def settlement_balances(night):
+    """Remaining player balances: add back the fee already collected at buy-in."""
+    totals = {}
+    rows = PlayerResult.objects.filter(is_current=True, finalization__session__night=night).order_by(
+        "finalization__session__set_number", "participant__join_order"
+    ).values_list("member_id", "net", "rake_total")
+    for member_id, net, rake in rows:
+        totals[member_id] = totals.get(member_id, 0) + net + rake
+    return list(totals.items())
 
 
 @transaction.atomic
@@ -94,7 +105,7 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
     if not any(s.state == State.FINALIZED for s in sets):
         raise RuleError("No set of this session is finalized, so there is nothing to settle.")
 
-    parties = [(member_id, net) for member_id, net, _ in session_results(night)]
+    parties = settlement_balances(night)
     if sum(net for _, net in parties) != 0:
         raise ledger.LedgerInvariantError(f"Session {night.pk}: the results of its sets do not sum to zero.")
     transfers = algorithm.settle(parties)

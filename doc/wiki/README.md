@@ -6,7 +6,7 @@ Living documentation. It describes the project **as it exists now**. For decisio
 
 **PokerNights** is a web app for home poker cash games. Each game counts in Philippine pesos or, as an option, in chips with no peso value. A host runs a session of one or more sets. In each set the host records buy-ins and rebuys, ends play, confirms final counts, cashes players out and checks that the books balance. Each set has its own timer. When the session is closed, the app lists who pays whom over all sets with the minimum number of transfers. Players follow the game live on their phones. The app records who owes what. It does not move money.
 
-Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs from `SPEC.md` step 2 in one point, by a later decision of the owner: cash-outs are typed as amounts, and the app has no chip-to-cash conversion. The app runs locally. It is not deployed.
+Stage 1 ("game night", `SPEC.md` build steps 1 to 3) is complete. It differs from `SPEC.md` step 2 in one point, by a later decision of the owner: cash-outs are typed as amounts, and the app has no chip-to-cash conversion. The app also supports optional per-set rake, deducted from every buy-in and already collected separately; balance checks include it and settle-up does not charge it again. Each group has separate lifetime peso/chip rake totals. This later owner-approved requirement extends SPEC.md’s optional-rake deferral and its no-rake conservation formulas. SPEC.md remains human-owned. The app runs locally. It is not deployed.
 
 The Rack redesign covers all current screens: active sets, count-up, review, finalized and canceled sets, session settle-up and recap, home, groups, accounts, invitations, supporting forms and the set log. [DESIGN.md](../../DESIGN.md) records the built system.
 
@@ -32,6 +32,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [template_cache_during_browser_checks.md](footguns/template_cache_during_browser_checks.md) | A verification server without autoreload can keep old compiled templates |
 | [mobile_browser_overflow_checks.md](footguns/mobile_browser_overflow_checks.md) | Mobile layout viewport width can grow with overflowing content; compare with the requested width |
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
+| [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
 
 ## Journal
 
@@ -48,4 +49,5 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Visual redesign slice 4 | [study](../study/1791084725_redesign_slice_4.md) | [plan](../plan/1791084843_redesign_slice_4.md) | Done, 2026-10-04 |
 | Add a player during play | [study](../study/1791091289_add_player_during_play.md) | [plan](../plan/1791091385_add_player_during_play.md) | Done, 2026-10-04 |
 | Live counted total | [study](../study/1791089661_live_counted_total.md) | [plan](../plan/1791089905_live_counted_total.md) | Done, 2026-10-04 |
+| Set rake and group pool | [study](../study/1791093189_set_rake_and_group_pool.md) | [plan](../plan/1791093380_set_rake_and_group_pool.md) | Done, 2026-10-04 |
 | Default opening buy-ins | [study](../study/1791088066_default_opening_buy_ins.md) | [plan](../plan/1791088166_default_opening_buy_ins.md) | Done, 2026-10-04 |

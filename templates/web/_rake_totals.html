@@ -1,0 +1,3 @@
+{% load money_tags %}
+<div><dt>Collected rake</dt><dd>{{ summary.rake|amount:unit }}</dd></div>
+<div><dt>Available to play</dt><dd>{{ summary.playable|amount:unit }}</dd></div>

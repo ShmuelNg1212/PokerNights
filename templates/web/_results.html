@@ -1,6 +1,7 @@
 {% load money_tags clock_tags table_tags %}
 <section class="final-results" aria-label="Final results">
   <div class="section-heading"><h2>Results of set {{ session.set_number }} <span class="badge">Final</span></h2></div>
+  {% if outcome.finalization.total_rake %}<p class="small muted">Results include rake already collected. Settle-up will not charge it again.</p>{% endif %}
   <ul class="player-list">
     {% for r in outcome.results %}
     <li class="result-row">
@@ -10,6 +11,7 @@
         <span class="result-amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:unit }}</span>
       </div>
       <dl class="result-facts">
+        {% if r.rake_total %}<div><dt>Rake already collected</dt><dd>{{ r.rake_total|amount:unit }}</dd></div>{% endif %}
         <div><dt>Bought in ({{ r.buy_in_count }})</dt><dd>{{ r.buy_in_total|amount:unit }}</dd></div>
         <div><dt>Cashed out</dt><dd>{{ r.cashed_out|amount:unit }}</dd></div>
         {% if r.adjustment %}<div><dt>Host override</dt><dd>{{ r.adjustment|signed_amount:unit }}</dd></div>{% endif %}
@@ -19,5 +21,5 @@
     </li>
     {% endfor %}
   </ul>
-  {% if outcome.finalization.raw_difference %}<p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>{% else %}<p class="books-balanced">The books balance. Total cashed out equals total bought in.</p>{% endif %}
+  {% if outcome.finalization.raw_difference %}<p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>{% else %}<p class="books-balanced">The books balance. {% if outcome.finalization.total_rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}</p>{% endif %}
 </section>

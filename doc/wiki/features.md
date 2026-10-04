@@ -44,7 +44,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 
 1. **End play.** The set's timer and every player's time stop at one moment.
 2. **Confirm final counts.** The host types what each player has left, for as many players as are counted, then confirms. Each "Confirm count" button and "Confirm all counts" confirm every typed count at once. 0 is a valid count. An empty field is skipped and stays "Awaiting count"; it is never treated as zero. If one value is refused, nothing is saved and the typed values stay in their fields.
-The live stack counter adds remaining counts to accepted cash-outs and compares the sum with buy-ins. The host preview updates while typing; a valid draft replaces a saved count. A blank field uses its saved count, or stays uncounted if none exists. Zero is valid. Missing players and invalid entries prevent a complete match. Final-cashed-out players contribute only through cash-outs, so their saved counts are not added twice. Overrides stay outside this raw stack check. Unsaved totals are labelled Preview; confirmation and cash-out remain separate. Players and JavaScript-free views see confirmed totals only.
+The live stack counter adds remaining counts, accepted cash-outs and collected rake, then compares the sum with gross buy-ins. The host preview updates while typing; a valid draft replaces a saved count. A blank field uses its saved count, or stays uncounted if none exists. Zero is valid. Missing players and invalid entries prevent a complete match. Final-cashed-out players contribute only through cash-outs, so their saved counts are not added twice. Overrides stay outside this raw stack check. Unsaved totals are labelled Preview; confirmation and cash-out remain separate. Players and JavaScript-free views see confirmed totals only.
 
 3. **Statuses.** Each player is "Awaiting count", "Ready to cash out" or "Cashed out".
 4. **Cash out counted players (N).** The host reviews the counted players, each amount and the total, then confirms once. All of them are cashed out, or none. Players still to count stay pending; the host runs the action again later.
@@ -62,7 +62,7 @@ The individual cash-out still exists: tap the player name to open Details during
 4. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s `+` and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
 5. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
 6. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
-7. **Balance check.** After play ends, the screen compares the total cashed out with the total bought in. A difference is shown as an amount, with its direction and likely causes.
+7. **Balance check.** After play ends, the screen compares cash-outs plus collected rake with gross buy-ins. A difference is shown as an amount, with its direction and likely causes.
 8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
 9. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
 10. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
@@ -71,10 +71,20 @@ The individual cash-out still exists: tap the player name to open Details during
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
 
+## Rake
+
+Before recording money, a host opens More host controls → Change settings and chooses Off (default), Percentage or Flat amount. Percentage accepts 0.01%–99.99%, with at most two decimals. It rounds down separately per buy-in to a centavo or whole chip. Flat rake uses the set's unit. The amount entered for a buy-in is gross: ₱1,000 at 5% gives ₱950 in play and ₱50 collected rake. The fee must leave a positive playable amount.
+
+Every buy-in and rebuy uses the rule, including default opening buy-ins and manually recorded late-player buy-ins. Rake stays locked while accepted buy-ins or cash-outs exist. Reversing all accepted money allows reconfiguration. Ordinary stakes edits keep the rule; next sets inherit it. A permitted unit change resets it to Off. Presets do not configure rake.
+
+The set shows gross bought in, collected rake and available to play. Counts/cash-outs plus rake must match gross buy-ins; rake does not replace a missing player's cash-out. Final results include the fee as a loss. Settle-up excludes this already-collected fee, so it is never charged twice and the rake account receives no transfer.
+
+Every group page shows its lifetime collected rake across all sessions and sets, including games in progress. Peso and chip totals stay separate. Expand the session/set breakdown to see where each total came from. Reversing a buy-in excludes its fee; payment marks and Undo do not change rake totals. Historical records start at zero rake.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.
-- The transfer list assumes that no money changed hands before finalization. A payment during the game cannot be recorded yet.
+- The transfer list excludes rake already collected at buy-in. It assumes no earlier player payments. A player payment during the game cannot be recorded yet.
 - A finalized set and a closed session cannot be reopened. Check the cash-outs before finalizing.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - The session page does not refresh by itself; the set page does.

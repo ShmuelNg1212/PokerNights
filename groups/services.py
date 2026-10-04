@@ -13,7 +13,7 @@ from audit import services as audit
 
 from .access import require_host
 from .errors import RuleError
-from .models import GameGroup, Invite, Member
+from .models import GameGroup, GroupRakeAccount, Invite, Member
 
 NAME_MAX = 60
 INVITE_DAYS = 7
@@ -57,6 +57,7 @@ def _lock_group(group_id) -> GameGroup:
 def create_group(user, name: str) -> Member:
     """Create a group. Its creator is the first host."""
     group = GameGroup.objects.create(name=clean_name(name, "Group name"), created_by=user)
+    GroupRakeAccount.objects.create(group=group)
     member = Member.objects.create(
         group=group, user=user, display_name=user.get_username()[:NAME_MAX], role=Member.Role.HOST
     )

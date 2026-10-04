@@ -210,9 +210,19 @@ class GameSession(models.Model):
         return self.state in self.LIVE_STATES
 
 
+class RakeMode(models.TextChoices):
+    OFF = "off", "Off"
+    PERCENT = "percent", "Percentage"
+    FLAT = "flat", "Flat amount"
+
+
 class SettingsVersion(StakesFields):
     """The stakes of a session from one moment on. Never updated: a change adds a version."""
 
+    rake_mode = models.CharField(max_length=8, choices=RakeMode.choices, default=RakeMode.OFF)
+    rake_basis_points = models.PositiveIntegerField(default=0)
+    rake_flat = models.BigIntegerField(default=0)
+    request_id = models.UUIDField(null=True, blank=True)
     session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="settings_versions")
     number = models.PositiveIntegerField()
     preset = models.ForeignKey(SettingsPreset, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
@@ -224,10 +234,24 @@ class SettingsVersion(StakesFields):
         constraints = [
             models.UniqueConstraint(fields=["session", "number"], name="settings_version_number_unique"),
             *StakesFields.stakes_constraints("settings"),
+            models.UniqueConstraint(fields=["session", "request_id"], name="settings_request_once"),
+            models.CheckConstraint(condition=(
+                Q(rake_mode="off", rake_basis_points=0, rake_flat=0)
+                | Q(rake_mode="percent", rake_basis_points__gte=1, rake_basis_points__lte=9999, rake_flat=0)
+                | Q(rake_mode="flat", rake_basis_points=0, rake_flat__gt=0)
+            ), name="settings_rake_valid"),
         ]
 
     def __str__(self):
         return f"Settings v{self.number} of session {self.session_id}"
+
+    @property
+    def rake_percentage(self):
+        whole, fraction = divmod(self.rake_basis_points, 100)
+        return str(whole) + (("." + f"{fraction:02d}").rstrip("0") if fraction else "")
+
+    def rake(self):
+        return {name: getattr(self, name) for name in ("rake_mode", "rake_basis_points", "rake_flat")}
 
 
 class Participant(models.Model):

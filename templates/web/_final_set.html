@@ -9,7 +9,8 @@
       <div class="final-amount {{ my_result.net|sign_class }}">{% include "web/_result_icon.html" with net=my_result.net %} {{ my_result.net|signed_amount:unit }}</div>
       <p class="small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cashed_out|amount:unit }}{% if my_result.adjustment %} · override {{ my_result.adjustment|signed_amount:unit }}{% endif %}</p>
       {% else %}<p class="final-title">The set is finalized.</p><p class="small">Results are frozen. Settle up at the end of the session.</p>{% endif %}
-      <dl class="set-totals"><div><dt>Total bought in</dt><dd>{{ outcome.finalization.total_buy_in|amount:unit }}</dd></div><div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div></dl>
+      {% if outcome.finalization.total_rake %}<p class="small">Results include already-collected rake.</p>{% endif %}
+      <dl class="set-totals"><div><dt>Total bought in</dt><dd>{{ outcome.finalization.total_buy_in|amount:unit }}</dd></div><div><dt>Available to play</dt><dd>{{ outcome.finalization.total_cash_out|amount:unit }}</dd></div><div><dt>Collected rake</dt><dd>{{ outcome.finalization.total_rake|amount:unit }}</dd></div><div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div></dl>
     </section>
     <div class="session-next stack">
       {% if night.is_closed %}<p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>{% else %}<p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>{% endif %}

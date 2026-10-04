@@ -13,6 +13,8 @@
         <div class="split-labels"><span>Total bought in (<span>{{ summary.buy_in_count }}</span> buy-in{{ summary.buy_in_count|pluralize }}) <b>{{ summary.total|amount:unit }}</b></span><span>Cashed out <b>{{ summary.cashed_out|amount:unit }}</b></span></div>
       </div>
 
+      <dl class="set-totals">{% include "web/_rake_totals.html" %}</dl>
+      <p class="felt-hint">{% include "web/_rake_rule.html" %}</p>
       {% if session.state == 'setup' %}<p class="felt-hint">Draft · players cannot see this set yet.</p>{% endif %}
     </section>
     {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}

@@ -42,3 +42,11 @@ Compared PRODUCT.md, incumbent DESIGN.md and sidecar against the approved plan, 
 No accounting services, models, routes, permissions, amount formats or dependencies are changed by documentation. Incumbent machine tokens are unchanged, so `.impeccable/design.json` is preserved. Its pre-existing freshness warning is not a token repair request. PRODUCT.md and prior surface briefs are preserved. Slice 4 remains deferred.
 
 Pre-existing drift, preserved: the slice 1 contract states 76px phone total / 27px phone clock and blinds; incumbent DESIGN.md and finish-reviewed build use 64px / 22px (16px chips blinds). This extension does not repair or reopen that contract.
+
+## 2026-10-04 addendum — per-buy-in rake
+
+The approved `doc/plan/1791093380_set_rake_and_group_pool.md` extends the existing Operate settlement surface. The overview adds Collected rake across sets and, for an affected player, distinguishes the signed after-rake result from their remaining settle-up balance. Who pays whom excludes rake already collected at buy-in; the group account never appears as a transfer party. Existing payment and Undo actions retain their meaning.
+
+The recap adds Rake already collected using the incumbent fact treatment. Top results describe after-rake standings: an all-zero result may say Everyone broke even; a rake-only loss says No positive result after rake. The native inline fallback and shared sheet remain. The supplied equal-loss capture shows two −₱50 results with ₱100 rake and ₱0 still to pay. This extends historical result-copy scope without changing layout, sheet behavior or motion.
+
+This addendum preserves the incumbent Rack and machine-token records. Finish review: **ship** for the approved rake extension, `/private/tmp/pn-rake-finish-review.md`. Shared evidence and preserved historical drift are recorded in the rake addendum of `templates-web-end-set.md`; this is not a new whole-product audit.

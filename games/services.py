@@ -14,7 +14,7 @@ from groups.services import clean_name, add_roster_player
 
 from . import clock
 from .models import (
-    GameNight, GameSession, GameType, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
+    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
 )
 
 
@@ -31,6 +31,24 @@ def validated_stakes(data: dict) -> dict:
     if not stakes["min_buy_in"] <= stakes["default_buy_in"] <= stakes["max_buy_in"]:
         raise RuleError("The usual buy-in must be between the minimum and the maximum buy-in.")
     return stakes
+
+
+def validated_rake(data):
+    mode = data.get("rake_mode", RakeMode.OFF)
+    rate, flat = data.get("rake_basis_points", 0), data.get("rake_flat", 0)
+    if mode == RakeMode.OFF:
+        rate = flat = 0
+    elif mode == RakeMode.PERCENT:
+        if type(rate) is not int or not 1 <= rate <= 9999:
+            raise RuleError("Rake percentage must be between 0.01% and 99.99%.")
+        flat = 0
+    elif mode == RakeMode.FLAT:
+        if type(flat) is not int or not 0 < flat <= 9223372036854775807:
+            raise RuleError("Flat rake must be a positive amount in the game's unit.")
+        rate = 0
+    else:
+        raise RuleError("Select Off, Percentage or Flat amount for rake.")
+    return {"rake_mode": mode, "rake_basis_points": rate, "rake_flat": flat}
 
 
 def _unit(value) -> str:
@@ -180,18 +198,29 @@ def create_session(actor: Member, data: dict) -> GameSession:
 
 
 @transaction.atomic
-def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
+def update_settings(session_id, actor: Member, data: dict, *, request_id=None) -> SettingsVersion:
     """Add a settings version, and change the unit if the game has no money in it yet.
 
     Buy-ins already recorded keep their amounts.
     """
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
+    explicit_request = request_id is not None
+    request_id = uuid.UUID(str(request_id)) if explicit_request else uuid.uuid4()
+    repeated = SettingsVersion.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
     if session.state not in (State.SETUP, State.OPEN, State.RUNNING):
         raise RuleError("Settings cannot change after play has ended.")
     stakes = validated_stakes(data)
     unit = _unit(data.get("unit") or session.unit)
     previous = current_settings(session)
+    unit_changed = unit != session.unit
+    rake = validated_rake(data) if "rake_mode" in data else previous.rake()
+    if unit != session.unit:
+        rake = validated_rake({})
+    if rake != previous.rake() and has_money(session):
+        raise RuleError("Buy-ins or cash-outs are recorded, so rake cannot change. Reverse them first.")
     if unit != session.unit:
         # Amounts already recorded would change meaning, so the unit is fixed once money is in.
         if has_money(session):
@@ -205,14 +234,14 @@ def update_settings(session_id, actor: Member, data: dict) -> SettingsVersion:
             "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
             summary=f"Changed the unit to {Unit(unit).label}",
         )
-    elif previous.stakes() == stakes:
+    if not explicit_request and previous.stakes() == stakes and previous.rake() == rake and not unit_changed:
         return previous
     version = SettingsVersion.objects.create(
-        session=session, number=previous.number + 1, created_by=actor.user, **stakes
+        session=session, number=previous.number + 1, created_by=actor.user, request_id=request_id, **stakes, **rake
     )
     audit.record(
         "session.settings_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=version,
-        summary=f"Changed settings (version {version.number})", data=stakes,
+        summary=f"Changed settings (version {version.number})", data={**stakes, **rake},
     )
     touch(session)
     return version
@@ -334,7 +363,8 @@ def start_next_set(night_id, actor: Member) -> GameSession:
         seat_count=previous.seat_count, state=State.OPEN, created_by=actor.user,
     )
     SettingsVersion.objects.create(
-        session=new, number=1, created_by=actor.user, **current_settings(previous).stakes()
+        session=new, number=1, created_by=actor.user, **current_settings(previous).stakes(),
+        **current_settings(previous).rake()
     )
     carried = previous.participants.filter(status=Participant.Status.JOINED).order_by("join_order")
     for order, old in enumerate(carried, start=1):

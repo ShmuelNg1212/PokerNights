@@ -3,13 +3,14 @@
 <section class="balance-panel stack">
   <div class="row"><span class="grow">Total bought in</span><span class="amount">{{ summary.total|amount:unit }}</span></div>
   <div class="row"><span class="grow">Total cashed out</span><span class="amount">{{ summary.cashed_out|amount:unit }}</span></div>
+  {% if summary.rake %}<div class="row"><span class="grow">Collected rake</span><span class="amount">{{ summary.rake|amount:unit }}</span></div>{% endif %}
   {% if summary.adjustment %}
   <div class="row"><span class="grow">Host override</span><span class="amount">{{ summary.adjustment|signed_amount:unit }}</span></div>
   {% endif %}
   {% if balance.ok %}
   <div class="books-balanced" data-balance="{{ session.pk }}">
     {% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
-    {% else %}The books balance. Total cashed out equals total bought in.{% endif %}
+    {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}
   </div>
   {% else %}
   {# Red is for a real discrepancy. Players still to be cashed out are normal progress. #}
@@ -30,7 +31,7 @@
     <details data-key="override">
       <summary class="small">Cannot find the error? Finalize with an override</summary>
       <form method="post" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
-        <p class="small muted">Results must sum to zero, so someone absorbs the {{ balance.difference_text }}. This is recorded in the game log.</p>
+        <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the game log.</p>
         <div class="field">
           <label for="absorber">Who absorbs the difference?</label>
           <select id="absorber" name="absorber">

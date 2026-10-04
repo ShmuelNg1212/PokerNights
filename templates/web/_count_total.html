@@ -1,7 +1,7 @@
 {% load money_tags %}
-<section class="count-total{% if preview %} count-preview{% endif %}" aria-label="{% if preview %}Count preview{% else %}Confirmed count total{% endif %}"{% if preview %} data-count-preview data-unit="{{ unit }}" data-bought="{{ summary.total }}" data-cash="{{ summary.cashed_out }}" data-players="{{ summary.money_lines|length }}" data-stray="{{ count_total.stray|yesno:'1,0' }}"{% endif %}>
+<section class="count-total{% if preview %} count-preview{% endif %}" aria-label="{% if preview %}Count preview{% else %}Confirmed count total{% endif %}"{% if preview %} data-count-preview data-unit="{{ unit }}" data-bought="{{ summary.total }}" data-cash="{{ summary.cashed_out }}" data-rake="{{ summary.rake }}" data-players="{{ summary.money_lines|length }}" data-stray="{{ count_total.stray|yesno:'1,0' }}"{% endif %}>
   <h3 data-count-label>Confirmed counts</h3>
-  <p class="count-equation small"><span data-count-remaining>{{ count_total.remaining|amount:unit }}</span> counted + {{ summary.cashed_out|amount:unit }} cashed out</p>
+  <p class="count-equation small"><span data-count-remaining>{{ count_total.remaining|amount:unit }}</span> counted + {{ summary.cashed_out|amount:unit }} cashed out{% if summary.rake %} + {{ summary.rake|amount:unit }} rake{% endif %}</p>
   <p class="count-accounted"><strong data-count-accounted>{{ count_total.accounted|amount:unit }}</strong> <span class="small muted">of {{ summary.total|amount:unit }} bought in</span></p>
   <p class="count-verdict small" role="status" aria-atomic="true"><span data-count-status>{{ count_total.status_text }}</span> <span data-count-coverage>{{ count_total.missing }} still to count.</span></p>
   {% if count_total.has_overrides %}<p class="small muted">Overrides are excluded from this stack check.</p>{% endif %}

@@ -31,7 +31,7 @@
 <ul class="list log-records">
   {% for v in settings_versions %}
   <li>Version {{ v.number }} · {{ v.created_at|date:"M j, H:i" }} · {{ v.created_by.username }}<br>
-    <span class="muted">Blinds {{ v.small_blind|amount:session.unit }}/{{ v.big_blind|amount:session.unit }} · buy-in {{ v.min_buy_in|amount:session.unit }}–{{ v.max_buy_in|amount:session.unit }} · usually {{ v.default_buy_in|amount:session.unit }}</span></li>
+    <span class="muted">Blinds {{ v.small_blind|amount:session.unit }}/{{ v.big_blind|amount:session.unit }} · buy-in {{ v.min_buy_in|amount:session.unit }}–{{ v.max_buy_in|amount:session.unit }} · usually {{ v.default_buy_in|amount:session.unit }} · {% include "web/_rake_rule.html" with settings=v unit=session.unit %}</span></li>
   {% endfor %}
 </ul>
 
@@ -39,7 +39,8 @@
 <ul class="list log-records">
   {% for b in buy_ins %}
   <li>
-    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:session.unit }}</span></div>
+    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:b.recorded_unit }}</span></div>
+    <p class="small muted">Rake {{ b.rake_amount|amount:b.recorded_unit }} · in play {{ b.playable_amount|amount:b.recorded_unit }}{% if b.reversal %} · rake also reversed{% endif %}</p>
     <span class="muted">Recorded by {{ b.recorded_by.username }}{% if b.reversal %} · reversed by {{ b.reversal.recorded_by.username }} at {{ b.reversal.created_at|date:"H:i" }}: {{ b.reversal.reason }}{% endif %}</span>
   </li>
   {% empty %}<li class="muted">No buy-ins.</li>
@@ -73,7 +74,7 @@
   {% for r in outcome.results %}
   <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:session.unit }}</span></li>
   {% endfor %}
-  <li class="row"><span class="grow muted">Total bought in = total cashed out</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:session.unit }}</span></li>
+  <li class="row"><span class="grow muted">Total bought in = cash-outs + {{ outcome.finalization.total_rake|amount:session.unit }} rake</span><span class="amount">{{ outcome.finalization.total_buy_in|amount:session.unit }}</span></li>
 </ul>
 
 {% endif %}

@@ -23,10 +23,12 @@
       <p class="felt-hint">Who pays whom is worked out when the host closes the session.</p>
       {% if latest_set %}<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
       {% endif %}
+      <dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>
       {% if my_standing %}
       <div class="night-mine">
         <h2 class="stat-label">Your result in this session{% if not night.is_closed %} so far{% endif %}</h2>
         <div class="night-result {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</div>
+        {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
         {% if night.is_closed %}
         {% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}
         {% else %}<p class="felt-hint">Not final. Over finalized sets; session still open.</p>{% endif %}
@@ -75,12 +77,12 @@
         </li>
         {% empty %}<li class="muted">Nobody owes anything.</li>{% endfor %}
       </ul>
-      <p class="muted small">This list nets every set of the session. It assumes that no money changed hands before the session was closed.</p>
+      <p class="muted small">This list nets every set of the session. It excludes rake already collected at buy-in and assumes no earlier player payments.</p>
     </section>
     {% endif %}
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
-      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe the game, not payments.</p>
+      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe the game, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
       <ul class="list night-results">
         {% for row in outcome.standings %}
         <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>
@@ -102,7 +104,8 @@
       <div class="sheet-content recap-lines">
         <div><h3>Recorded play time</h3><p>{% if recap.play_seconds is not None %}{{ recap.play_seconds|duration }}{% if recap.partial_time %} <span class="small muted">· partial; some sets have no recorded time</span>{% endif %}{% else %}Not recorded{% endif %}</p></div>
         <div><h3>Total bought in across finalized sets</h3><p class="amount">{{ recap.total_buy_in|amount:unit }}</p></div>
-        <div><h3>Top session result</h3><p>{% for winner in recap.winners %}{{ winner.member.display_name }} <span class="amount plus">{{ winner.net|signed_amount:unit }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}Everyone broke even.{% endfor %}</p></div>
+        {% if recap.total_rake %}<div><h3>Rake already collected</h3><p class="amount">{{ recap.total_rake|amount:unit }}</p></div>{% endif %}
+        <div><h3>Top session result</h3><p>{% for winner in recap.winners %}{{ winner.member.display_name }} <span class="amount plus">{{ winner.net|signed_amount:unit }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}{% if recap.all_even %}Everyone broke even.{% else %}No positive result after rake.{% endif %}{% endfor %}</p></div>
         {% if my_standing %}<div><h3>Your session result</h3><p class="amount {{ my_standing.net|sign_class }}">{{ my_standing.net|signed_amount:unit }}</p></div>{% endif %}
       </div>
     </section>

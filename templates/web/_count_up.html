@@ -9,6 +9,7 @@
       <dl class="set-totals">
         <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
         <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+        {% include "web/_rake_totals.html" %}
         <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
       </dl>
       {% include "web/_count_total.html" %}
