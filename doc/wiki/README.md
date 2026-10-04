@@ -53,4 +53,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Live counted total | [study](../study/1791089661_live_counted_total.md) | [plan](../plan/1791089905_live_counted_total.md) | Done, 2026-10-04 |
 | Set rake and group pool | [study](../study/1791093189_set_rake_and_group_pool.md) | [plan](../plan/1791093380_set_rake_and_group_pool.md) | Done, 2026-10-04 |
 | Default opening buy-ins | [study](../study/1791088066_default_opening_buy_ins.md) | [plan](../plan/1791088166_default_opening_buy_ins.md) | Done, 2026-10-04 |
-| Rake setup controls | [study](../study/1791096071_rake_controls.md) | [plan](../plan/1791096125_rake_controls.md) | Verification passed; local rendezvous pending, 2026-10-04 |
+| Rake setup controls | [study](../study/1791096071_rake_controls.md) | [plan](../plan/1791096125_rake_controls.md) | Done, 2026-10-04 |

@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Rake controls are implemented; local rendezvous pending ([plan](doc/plan/1791096125_rake_controls.md)): explicit choices at creation and active-value validation.
+Rake controls are done ([plan](doc/plan/1791096125_rake_controls.md)): explicit choices at creation and active-value validation.
 
 Set rake and group pool is done ([plan](doc/plan/1791093380_set_rake_and_group_pool.md)). Configure percentage or flat rake before the first buy-in; balances include collected rake and group totals keep units separate.
 

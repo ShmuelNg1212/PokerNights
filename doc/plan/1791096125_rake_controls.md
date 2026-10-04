@@ -1,6 +1,6 @@
 # Usable rake choices before buy-ins
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [study](../study/1791096071_rake_controls.md), commit `16d367a`. Implementation baseline: main `7011a71`. Sources of truth: AGENTS.md, SPEC.md (read-only), PRODUCT.md, DESIGN.md, current wiki and the approved set-rake plan. Baseline: 465 SQLite tests pass with ten PostgreSQL-only skips.
 
@@ -30,7 +30,7 @@ Extend `create_session` to pass validated rake to the first SettingsVersion. Abs
 - [x] Record explicit approval in this plan, recheck main and create `fix/rake-controls` in an isolated worktree. Link TODO to the active plan. Reproduce the two failures as maintained regression tests.
 - [x] **`fix(games): make rake choices usable before buy-ins`**: implement shared active-only parsing, initial service configuration, native rake section, pre-start discovery and lock explanation. Apply Impeccable as a bounded extension of Rack for the form changes; follow its applicable finish-review and documenter requirements. Completion: AC1–AC5 pass automated and browser verification; saved money and accounting behavior remain unchanged.
 - [x] **`docs: document rake setup controls`**: sync affected PRODUCT/DESIGN narrative and surface notes as needed, wiki feature/setup guidance, the confirmed default-opening lock footgun, TODO and plan evidence. Preserve SPEC and historical studies. Completion: documentation matches the verified forms and lifecycle.
-- [ ] Rendezvous: run required checks, finish review, merge into local main, and confirm the existing development server serves the updated forms. Mark done only after merge and doc sync. No push or deployment.
+- [x] Rendezvous: run required checks, finish review, merge into local main, and confirm the existing development server serves the updated forms. Mark done only after merge and doc sync. No push or deployment.
 
 ## Verification
 
@@ -59,3 +59,5 @@ The branch contains a form/service fix and documentation. Roll back code by reve
 2026-10-04: Implementation committed as `fcb2dbf fix(games): make rake choices usable before buy-ins`. Documenter is syncing the bounded Rack extension; local merge follows doc completion.
 
 2026-10-04: Documentation sync complete. PRODUCT/DESIGN prose and two surface addenda describe the native controls; machine frontmatter and design.json are preserved. Wiki feature/architecture/setup/index and the opening-buy-in lock footgun are current. Documentation-commit SQLite: 472 pass in 15.693s, ten PostgreSQL-only skips. Local rendezvous pending.
+
+2026-10-04 rendezvous: merged into local main as `e233ce8 fix: merge usable rake controls`. Main SQLite: 472 pass in 15.873s, ten PostgreSQL-only skips. All 472 PostgreSQL checks passed on the final implementation. Browser 25/25; independent finish review **ship**; required documenter completed the ordinary extension and verified machine frontmatter/sidecar preservation. Existing localhost:8000 server answers health and login; no migration is required. The temporary fixture server and verification PostgreSQL instance are stopped. AC1–AC6 are complete. No push or deployment.
