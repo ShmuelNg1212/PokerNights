@@ -110,3 +110,5 @@ Changes from the plan:
 **Not verified: the Date field on an iPhone.** No browser here reproduces it. AC2 is open until the human looks. Also not verified: a screen reader.
 
 AC1 and AC3 to AC6 are met. Documentation synced: DESIGN.md, wiki features, the new footgun page, browser README, TODO.
+
+2026-10-04 release: the human declined a preview, so the change was released directly. Pushed `main` at `77c0fbd` (previous production commit `e5a7ed2`). The live stylesheet carries the shared field box and the date rules. The human is asked to check the Date field on their iPhone; AC2 stays open until they confirm.
