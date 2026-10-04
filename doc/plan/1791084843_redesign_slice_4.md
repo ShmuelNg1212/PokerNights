@@ -59,10 +59,10 @@ After approval, record the human answer and mark in-progress. Use an isolated `f
 
 ## Task board
 
-- [ ] **1. Build remaining compositions and error retention.** Read Impeccable craft-floor immediately before UI edits. Implement the scope as one coherent working change. Reuse existing CSS patterns and native controls. Keep business rule validation in services. Add focused behavior tests for lost-input repair, scoped failure rendering and the malformed title regression; avoid tests that only mirror CSS classes.
+- [x] **1. Build remaining compositions and error retention.** Read Impeccable craft-floor immediately before UI edits. Implement the scope as one coherent working change. Reuse existing CSS patterns and native controls. Keep business rule validation in services. Add focused behavior tests for lost-input repair, scoped failure rendering and the malformed title regression; avoid tests that only mirror CSS classes.
   - Commit: `feat(web): recompose the group, forms and log screens`.
   - Done when AC1–AC8 have a working implementation and relevant behavior tests pass.
-- [ ] **2. Verify and finish.** Run both database suites. Add a dependency-free browser harness/fixtures for the remaining routes and rerun the existing Rack, accessibility, end-set and night checks. Complete the bounded visual review below. Record criterion evidence, exact budgets and limitations here.
+- [x] **2. Verify and finish.** Run both database suites. Add a dependency-free browser harness/fixtures for the remaining routes and rerun the existing Rack, accessibility, end-set and night checks. Complete the bounded visual review below. Record criterion evidence, exact budgets and limitations here.
   - Commit: `test(web): verify remaining Rack screens`.
   - Done when AC1–AC10 have recorded results and the required finish handoff is resolved or the human explicitly accepts a remaining finding.
 - [ ] **3. Rendezvous and sync docs.** Use the required documenter after the final correction, then update affected living docs. Merge to main, run the suite there, restart the development server if needed and verify it serves the merged CSS/pages.
@@ -92,3 +92,29 @@ Implementation choice: inline errors use one-redirect, form/group-scoped session
 | Date | Entry |
 |---|---|
 | 2026-10-04 | Source study completed and committed. SQLite baseline: 390 tests pass in 13.293 s. This plan awaits approval; no implementation started |
+
+
+## Verification results
+
+Build commit: `17304c4`. Five new focused Django behavior tests cover scoped one-use drafts, invalid group name, duplicate roster/rename, invalid table seats, host and membership gates, and the malformed title. All **395 tests pass on SQLite** (latest 13.784 s) and **PostgreSQL 17** (final 20.271 s).
+
+| Criteria | Evidence |
+|---|---|
+| AC1–AC2 | Phone group capture and first-viewport assertion show New session above current links. Host/player/empty group and all 14 remaining surfaces load at 390 and 1,280 px; no form in document title |
+| AC3 | Inline table and roster refusals retain name/seats and open their disclosure. Duplicate rename retains the value. Native creation and corrected submissions succeed through existing services |
+| AC4 | Refused settings retain invalid blinds locally, then save correctly. Presets work in pesos/chips. Picker capacity refusal retains selected players; native submission succeeds. Login/signup keep username and safe next, with blank passwords |
+| AC5 | Read log preserves categories, actor/time/reason, struck reversed rows, signed frozen results and session payment link. Large final/reversed buy-in and override screenshots verified. Existing log tests cover reversed cash-outs and void metadata |
+| AC6 | Group/log/login at 320, all remaining surfaces at 390/1,280, invitation URL and long final/override logs at 320/390/1,280 fit requested width. Accepted individual ₱999,999,999.99 and total ₱1,999,999,999.98 remain exact |
+| AC7 | Native roster/group/table/picker actions pass. Keyboard focus, described field help/errors and previous accessibility checks pass. Main action anchors/brand are at least 48 px across 14 surfaces at both widths. Existing contrast pairs remain above limits: body 15.62:1, muted 8.28:1, felt 7.8:1, controls at least 3.13:1 |
+| AC8–AC9 | Canceled reason/roster/log are shown with no final result or money action. All previous 133 browser checks pass; 117 new checks pass (95 remaining, 10 supplement, 12 actions), **250 total** |
+| AC10 | CSS **32,201 bytes**; cumulative added redesign JavaScript **7,771 bytes**; Archivo **103,912 bytes**. No dependency or new runtime asset request |
+
+Evidence files: temporary screenshots/results in `/private/tmp/pn4-review`; regression results in `/private/tmp/pn4-regression`. The committed browser harness reproduces the checks against synthetic temporary data. No development data was changed.
+
+Bounded visual finish: 45 valid captures were opened in the initial batch. The fresh reviewer returned two fixes: put New session ahead of the long current list and enlarge ordinary action links to 48 px. Both were applied in one batch. All 45 same-path confirmation captures were opened and valid. The same reviewer scored both **resolved**, with **ship** disposition. No second detector or independent polish hunt was run. The single detector's literal-black advisory came from an unrendered template without the stylesheet; rendered captures use the approved warm palette.
+
+Limits: no physical phone was tested. Reversed cash-out and voided override appearance were inspected in source and existing behavior tests rather than dedicated screenshots. The final reviewer verdict scores its two fixes; it does not claim a second complete audit.
+
+| Date | Entry |
+|---|---|
+| 2026-10-04 | Human approved “proceed”; built remaining compositions and scoped inline error retention. SQLite and PostgreSQL suites passed. All 250 browser checks passed; bounded finish review resolved both fixes. Documentation sync and main rendezvous follow |
