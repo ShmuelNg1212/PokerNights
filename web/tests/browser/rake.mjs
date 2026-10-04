@@ -24,7 +24,7 @@ try {
 if (!process.env.PN_RAKE_CONTINUE) {
 await A.go(`/s/${ids.percent}/settings/`);await capture('rake-settings');
 await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);
-await A.js(`document.querySelector('[name=rake_mode]').value='percent';document.querySelector('[name=rake_percentage]').value='5.001';document.querySelector('form.form-section').noValidate=true`);await A.click(`document.querySelector('form.form-section button')`);
+await A.js(`document.querySelector('[name=rake_mode][value=percent]').checked=true;document.querySelector('[name=rake_percentage]').value='5.001';document.querySelector('form.form-section').noValidate=true`);await A.click(`document.querySelector('form.form-section button')`);
 check('native invalid precision keeps input and error',await A.js(`document.querySelector('[name=rake_percentage]').value==='5.001'&&document.querySelector('[role=alert]')!==null`));await A.shot('rake-error-1280');
 await A.js(`document.querySelector('[name=rake_percentage]').value='5'`);await A.click(`document.querySelector('form.form-section button')`);
 check('native percentage settings saved',await A.js(`location.pathname==='/s/${ids.percent}/'&&document.body.textContent.includes('5% rake deducted')`));
@@ -53,7 +53,7 @@ await A.click(`document.querySelector('form.batch-review button')`);check('rake-
 check('frozen result includes collected fee',await A.js(`document.body.textContent.includes('Results include rake already collected')&&document.body.textContent.includes('−₱50')`));
 const nightPath=await A.js(`document.querySelector('.session-next a').getAttribute('href')`);await A.go(nightPath);
 await A.click(`document.querySelector('form[action$="/close/"] button')`);check('equal rake losses owe no further transfer',await A.js(`document.body.textContent.includes('Nobody owes anything')&&document.body.textContent.includes('No positive result after rake')&&!document.body.textContent.includes('Everyone broke even')`));await capture('rake-night');
-await A.go(`/s/${ids.flat}/settings/`);await A.js(`document.querySelector('[name=rake_mode]').value='flat';document.querySelector('[name=rake_flat]').value='20'`);await A.click(`document.querySelector('form.form-section button')`);await A.click(`document.querySelector('.next-action')`);
+await A.go(`/s/${ids.flat}/settings/`);await A.js(`document.querySelector('[name=rake_mode][value=flat]').checked=true;document.querySelector('[name=rake_flat]').value='20'`);await A.click(`document.querySelector('form.form-section button')`);await A.click(`document.querySelector('.next-action')`);
 check('native flat chips start',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value==='1960'&&document.body.textContent.includes('20 chips rake deducted')`));await capture('rake-flat');
 await A.go(`/s/${ids.off}/`);check('Off default visible',await A.js(`document.body.textContent.includes('Rake is Off')`));await A.click(`document.querySelector('.next-action')`);check('Off opening preserves gross playable',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value==='200000'`));
 await A.go(`/g/${ids.group}/`);await A.js(`document.querySelector('[aria-label="Accumulated rake"] details').open=true`);check('group lifetime includes live finalized and separate units',await A.js(`document.querySelector('[aria-label="Accumulated rake"]').textContent.includes('₱300')&&document.querySelector('[aria-label="Accumulated rake"]').textContent.includes('40 chips')`));await capture('rake-group');

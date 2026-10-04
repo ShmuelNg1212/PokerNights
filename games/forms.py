@@ -73,35 +73,45 @@ class PresetForm(StakesForm):
     field_order = ["name", "game_type", "unit"]
 
 
-class SettingsForm(StakesForm):
-    """Settings of an existing game. The unit is locked once the game has money in it."""
+class RakeForm(StakesForm):
+    """Shared rake inputs; only the chosen rule validates its value."""
 
     unit = unit_field()
-    rake_mode = forms.ChoiceField(label="Rake per buy-in", choices=RakeMode.choices, required=False,
-                                 help_text="Deducted from every buy-in and rebuy; collected separately from the chips in play.")
-    rake_percentage = forms.DecimalField(label="Rake percentage (%)", min_value=Decimal("0.01"), max_value=Decimal("99.99"),
-                                         decimal_places=2, max_digits=4, required=False,
-                                         help_text="For Percentage. Rounded down separately for each buy-in.")
-    rake_flat = forms.CharField(label="Flat rake amount", required=False,
-                               widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
-                               help_text="For Flat amount. Use this game's unit.")
+    rake_mode = forms.ChoiceField(
+        label="Rake per buy-in", choices=[(RakeMode.OFF, "Off"), (RakeMode.FLAT, "Flat amount"),
+                                          (RakeMode.PERCENT, "Percentage of buy-in")],
+        widget=forms.RadioSelect, initial=RakeMode.OFF, required=False,
+        help_text="Deducted from each buy-in and rebuy. Only the chosen option applies.",
+    )
+    rake_percentage = forms.CharField(
+        label="Percentage (%)", required=False,
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+        help_text="For Percentage: 0.01%–99.99%, up to two decimal places. Rounded down per buy-in.",
+    )
+    rake_flat = forms.CharField(
+        label="Flat amount per buy-in", required=False,
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+        help_text="For Flat amount: enter pesos for a pesos game, or whole chips for a chips game.",
+    )
+
+    @property
+    def general_fields(self):
+        return [field for field in self if field.name not in ("rake_mode", "rake_percentage", "rake_flat")]
+
+    @property
+    def rake_value_fields(self):
+        return [self["rake_flat"], self["rake_percentage"]]
 
     field_order = ["unit"]
 
-    def __init__(self, *args, unit_locked=False, **kwargs):
+    def __init__(self, *args, **kwargs):
         initial = dict(kwargs.get("initial") or {})
         rate = initial.pop("rake_basis_points", 0)
         initial["rake_percentage"] = Decimal(rate) / 100 if rate else None
-        initial["rake_flat"] = money.plain_amount(initial.get("rake_flat", 0), kwargs.get("unit", money.PHP))
+        initial["rake_flat"] = money.plain_amount(initial.get("rake_flat", 0), initial.get("unit", kwargs.get("unit", money.PHP)))
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
         self.fields["unit"].initial = self.unit
-        if unit_locked:
-            self.fields["unit"].disabled = True
-            self.fields["unit"].help_text = "Buy-ins are recorded, so the unit cannot change."
-            for name in ("rake_mode", "rake_percentage", "rake_flat"):
-                self.fields[name].disabled = True
-            self.fields["rake_mode"].help_text = "Rake is locked while accepted buy-ins or cash-outs exist."
 
     def clean(self):
         cleaned = super().clean()
@@ -109,11 +119,13 @@ class SettingsForm(StakesForm):
         cleaned["rake_mode"] = mode
         cleaned["rake_basis_points"] = 0
         if mode == RakeMode.PERCENT:
-            rate = cleaned.get("rake_percentage")
-            if rate is None and "rake_percentage" not in self.errors:
-                self.add_error("rake_percentage", "Enter a percentage between 0.01% and 99.99%.")
-            elif rate is not None:
+            validator = forms.DecimalField(min_value=Decimal("0.01"), max_value=Decimal("99.99"),
+                                           decimal_places=2, max_digits=4)
+            try:
+                rate = validator.clean(cleaned.get("rake_percentage"))
                 cleaned["rake_basis_points"] = int(rate * 100)
+            except forms.ValidationError as error:
+                self.add_error("rake_percentage", error)
         flat = cleaned.get("rake_flat", "")
         cleaned["rake_flat"] = 0
         if mode == RakeMode.FLAT:
@@ -126,7 +138,20 @@ class SettingsForm(StakesForm):
         return cleaned
 
 
-class SessionForm(StakesForm):
+class SettingsForm(RakeForm):
+    """Existing set settings; accepted money locks the unit and rake rule."""
+
+    def __init__(self, *args, unit_locked=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if unit_locked:
+            self.fields["unit"].disabled = True
+            self.fields["unit"].help_text = "Buy-ins are recorded, so the unit cannot change."
+            for name in ("rake_mode", "rake_percentage", "rake_flat"):
+                self.fields[name].disabled = True
+            self.fields["rake_mode"].help_text = "Rake is locked because buy-ins or cash-outs are recorded. Default opening buy-ins also lock the rule. Choose rake before starting the next set."
+
+
+class SessionForm(RakeForm):
     table_id = forms.ChoiceField(label="Table")
     game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
     location = forms.CharField(label="Location", max_length=120, required=False)

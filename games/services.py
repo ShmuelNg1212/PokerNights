@@ -185,10 +185,11 @@ def create_session(actor: Member, data: dict) -> GameSession:
         "unit": _unit(data.get("unit")),
         "created_by": actor.user,
     }
+    settings = {**validated_stakes(data), **validated_rake(data)}
     night = GameNight.objects.create(**shared)
     session = GameSession.objects.create(night=night, set_number=1, seat_count=table.seat_count, **shared)
     SettingsVersion.objects.create(
-        session=session, number=1, preset=preset, created_by=actor.user, **validated_stakes(data)
+        session=session, number=1, preset=preset, created_by=actor.user, **settings
     )
     audit.record(
         "session.created", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,

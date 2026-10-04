@@ -1,6 +1,9 @@
 {% load money_tags %}
 <div class="host-controls stack">
   <h2 class="host-controls-heading">Host controls</h2>
+  {% if can_configure_rake %}
+  <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Choose rake before buy-ins</a>
+  {% endif %}
   {% if session.state == 'setup' %}
   <p class="muted small">This game is a draft. Players cannot see it yet.</p>
   <form method="post" action="{% url 'session_transition' session.pk %}" class="host-action">{% csrf_token %}

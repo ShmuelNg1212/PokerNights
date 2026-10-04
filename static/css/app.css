@@ -99,8 +99,11 @@ details > summary { cursor: pointer; min-height: var(--tap); display: flex; alig
 
 /* Checkbox rows: the whole row is the label, so it is one large touch target */
 [hidden] { display: none !important; }
-input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
 .check { display: flex; align-items: center; gap: 12px; min-height: var(--tap); margin: 0; font-weight: 400; cursor: pointer; }
+.rake-settings { border: 0; padding: 0; margin: 16px 0 0; min-width: 0; }
+.rake-settings legend { font-weight: 600; }
+.rake-settings .field { margin-top: 12px; }
 .check.is-disabled { color: var(--muted); cursor: default; }
 .check .grow { overflow-wrap: anywhere; }
 .sticky-actions { position: sticky; bottom: 0; background: var(--surface); padding: 12px 0; border-top: 1px solid var(--rule); }
