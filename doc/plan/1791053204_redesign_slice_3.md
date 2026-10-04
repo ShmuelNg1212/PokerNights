@@ -1,7 +1,7 @@
 # Plan: redesign slice 3
 
 - Date: 2026-10-04 (Asia/Manila), Unix timestamp `1791053204`.
-- Status: **in-progress**.
+- Status: **done**.
 - Study: [slice 3 revalidation](../study/1791053103_redesign_slice_3.md), committed as `4ca6763`.
 - Parent: [visual redesign, task 9](1791046015_visual_redesign.md).
 - Sources: SPEC.md, AGENTS.md, PRODUCT.md, DESIGN.md, wiki and the original redesign study. No doc/canonical directory is present.
@@ -68,7 +68,7 @@ Rollback: revert slice 3's implementation commits to the working slice 2 session
 - [x] **2. Verify flows and resolve the bounded finish review.** Add meaningful tests for unequal-transfer sums, frozen-result separation, recap snapshots/time/ties and role visibility. Extend synthetic browser fixtures and checks for real paid/undo/close/next-set flows, once-only recap, keyboard, storage refusal, reduced motion and no-JavaScript behavior. Run all Django tests on SQLite and PostgreSQL and check for unintended migrations. Run the existing active-table and end-set browser regressions, especially shared sheets/drafts/polling.
   - Commit: `test(web): verify session settle-up and recap` (include directly related fixes).
   - Done when: AC1–AC9 have evidence and the required finish disposition is resolved.
-- [ ] **3. Rendezvous and sync docs.** Have the required Impeccable documenter compare the finished build with the incumbent system. Update the session surface brief and built-pattern documentation within its write boundary. Update affected wiki pages/index, parent task 9 and TODO. Merge locally to main, verify the merged result, restart the development server and check health and served assets. Mark this plan done only after required work completes.
+- [x] **3. Rendezvous and sync docs.** Have the required Impeccable documenter compare the finished build with the incumbent system. Update the session surface brief and built-pattern documentation within its write boundary. Update affected wiki pages/index, parent task 9 and TODO. Merge locally to main, verify the merged result, restart the development server and check health and served assets. Mark this plan done only after required work completes.
   - Commit: `docs: sync redesigned session settle-up`.
   - Done when: main contains the verified slice, docs describe actual behavior, the server works and slice 4 remains pending.
 
@@ -106,4 +106,15 @@ Existing browser harness regressions are 20 active-table action checks, 13 acces
 | AC4 | Snapshot/time/cancellation/tie/break-even tests; host/player and tie recap captures |
 | AC5–AC7 | 53 session browser checks including once-only, storage refusal, modal focus, motion and native actions |
 | AC8–AC9 | Width/48px/focus checks, confirmed exact large amount, old contrast/regression checks and measured assets |
-| AC10 | Verification complete; documentation and local rendezvous remain in task 3 |
+| AC10 | All required checks, bounded review, documentation, merge and server verification complete |
+
+
+## Rendezvous complete
+
+- Local main merge: `ffe4237`. Implementation `4374197`, verification/fix `ea4a326`, documentation `abeac49`. The first automatic merge review timed out; its permitted single retry succeeded. No push or deployment.
+- Main: all 390 tests pass on SQLite (14.195 s) and PostgreSQL (20.807 s). No migrations. The served stylesheet matches the merged file and `/healthz` returns `ok`.
+- Required documenter merged built session/recap patterns into DESIGN.md and created the night surface brief. Existing machine tokens, sidecar and PRODUCT.md were preserved. Wiki, roadmap, parent task 9 and TODO match the built slice. Pre-existing slice 1 brief and sidecar freshness warnings remain outside scope.
+- Development server restarted at `http://127.0.0.1:8000`. Temporary browser server stopped. Synthetic fixtures remain only in temporary databases. The development database was not seeded or changed for verification.
+- Slice 4 remains pending and requires its own study, plan and approval.
+
+User check: open a finished session, close it, dismiss and manually reopen the recap. Mark a transfer paid, then Undo. Still to pay changes by the exact amount; Session results remain fixed and the undone payment remains in Payment records.
