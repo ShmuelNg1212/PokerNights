@@ -1,0 +1,129 @@
+{% load money_tags table_tags %}
+<div class="group-settings">
+<section id="players" aria-labelledby="players-heading">
+<h2 id="players-heading">Players</h2>
+<div class="panel">
+<ul class="list">
+  {% for m in members %}
+  <li>
+    <div class="row">
+      <span class="roster-person grow">{% member_token m members %}<span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span></span>
+      {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
+      {% if not m.has_login %}<span class="badge">No login</span>{% endif %}
+    </div>
+    {% if me.is_host and m.pk != me.pk %}
+    <details {% if m.rename_form.errors %}open{% endif %}>
+      <summary class="small">Manage {{ m.display_name }}</summary>
+      <div class="stack">
+        <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="form-row">
+          {% csrf_token %}
+          <div class="grow">{% include "partials/form_fields.html" with form=m.rename_form %}</div>
+          <button type="submit" class="btn btn-small">Rename</button>
+        </form>
+        {% if m.has_login %}
+        <form method="post" action="{% url 'member_role' group.pk m.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="role" value="{% if m.is_host %}player{% else %}host{% endif %}">
+          <button type="submit" class="btn btn-small">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
+        </form>
+        {% endif %}
+        <form method="post" action="{% url 'member_remove' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-small btn-danger">Remove from group</button>
+        </form>
+      </div>
+    </details>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% if me.is_host %}
+<details {% if add_form.errors %}open{% endif %}><summary>Add a player without a login</summary>
+<form method="post" action="{% url 'member_add' group.pk %}" class="stack">{% csrf_token %}
+{% include "partials/form_fields.html" with form=add_form %}<button type="submit" class="btn btn-block">Add to roster</button></form></details>
+{% endif %}
+</div>
+</section>
+
+{% if me.is_host %}
+<section id="invites" aria-labelledby="invites-heading">
+<h2 id="invites-heading">Invite players</h2>
+<div class="panel stack">
+  {% if new_invite_url %}
+  <div class="notice notice-good">
+    <p>Send this link to your players. It is shown only once.</p>
+    <input type="text" readonly value="{{ new_invite_url }}" aria-label="Invite link" onfocus="this.select()">
+  </div>
+  {% endif %}
+  <form method="post" action="{% url 'invite_create' group.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-block">Create invite link</button>
+  </form>
+  {% if invites %}
+  <ul class="list">
+    {% for invite in invites %}
+    <li class="row">
+      <span class="grow small muted">Expires {{ invite.expires_at|date:"M j, H:i" }} · used {{ invite.use_count }} of {{ invite.max_uses }}</span>
+      <form method="post" action="{% url 'invite_revoke' group.pk invite.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-small btn-danger">Revoke</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted small">No invite link is active.</p>{% endif %}
+</div>
+</section>
+{% endif %}
+
+<section id="tables" aria-labelledby="tables-heading">
+<h2 id="tables-heading">Tables</h2>
+<div class="panel">
+  {% if tables %}
+  <ul class="list">
+    {% for table in tables %}
+    <li class="row"><span class="grow">{{ table.name }}</span><span class="muted small">{{ table.seat_count }} seats{% if table.default_preset %} · {{ table.default_preset.name }}{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No tables yet. {% if me.is_host %}A session needs one.{% else %}A host adds them.{% endif %}</p>{% endif %}
+  {% if me.is_host %}
+  <details {% if table_form.errors or not tables %}open{% endif %}><summary>Add a table</summary>
+    <form method="post" action="{% url 'table_create' group.pk %}" class="stack">{% csrf_token %}
+    {% include "partials/form_fields.html" with form=table_form %}<button type="submit" class="btn btn-block">Add table</button></form>
+  </details>
+  {% endif %}
+</div>
+</section>
+
+<section id="presets" aria-labelledby="presets-heading">
+<h2 id="presets-heading">Presets</h2>
+<div class="panel">
+  {% if presets %}
+  <ul class="list">
+    {% for preset in presets %}
+    <li>
+      <div class="row">
+        <span class="grow">{% if me.is_host %}<a href="{% url 'preset_edit' group.pk preset.pk %}">{{ preset.name }}</a>{% else %}{{ preset.name }}{% endif %}</span>
+        <span class="badge">{{ preset.get_game_type_display }}</span>{% if preset.unit == 'chips' %}<span class="badge">Chips</span>{% endif %}
+      </div>
+      <div class="muted small">Blinds {{ preset.small_blind|amount:preset.unit }}/{{ preset.big_blind|amount:preset.unit }} · buy-in {{ preset.min_buy_in|amount:preset.unit }}–{{ preset.max_buy_in|amount:preset.unit }} · usually {{ preset.default_buy_in|amount:preset.unit }}</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No presets yet. A preset saves the stakes so a new set is quick to start.</p>{% endif %}
+  {% if me.is_host %}<p><a class="btn btn-block" href="{% url 'preset_create' group.pk %}">New preset</a></p>{% endif %}
+</div>
+</section>
+
+<section id="rake" aria-labelledby="rake-heading">
+<h2 id="rake-heading">Group rake account</h2>
+<div class="panel" aria-label="Accumulated rake">
+  <p class="small muted">Lifetime collected rake across every session and set, including sets in progress. Reversed buy-ins are excluded.</p>
+  <dl class="set-totals"><div><dt>Pesos collected</dt><dd>{{ rake_totals.php|amount:'php' }}</dd></div><div><dt>Chips collected</dt><dd>{{ rake_totals.chips|amount:'chips' }}</dd></div></dl>
+  <details><summary>Rake by session and set</summary><ul class="list">
+    {% for row in rake_sets %}<li class="row"><span class="grow"><a href="{% url 'session' row.buy_in__session_id %}">{{ row.buy_in__session__table__name }} · {{ row.buy_in__session__game_date|date:"M j, Y" }} · Session {{ row.buy_in__session__night_id }} · Set {{ row.buy_in__session__set_number }}</a></span><span class="amount">{{ row.total|amount:row.unit }}</span></li>
+    {% empty %}<li class="muted">No rake collected yet. Choose a rake in a set's settings before the first buy-in.</li>{% endfor %}
+  </ul></details>
+</div>
+</section>
+</div>

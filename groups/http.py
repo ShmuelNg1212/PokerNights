@@ -3,8 +3,15 @@
 import uuid
 
 from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse
 
 from .errors import RuleError
+
+
+def group_settings(group_id, section=""):
+    """Back to the group's settings view, at the section that was just used."""
+    return redirect(reverse("group", args=[group_id]) + "?view=settings" + (f"#{section}" if section else ""))
 
 
 def attempt(request, action, *args, success="", **kwargs):

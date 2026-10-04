@@ -448,7 +448,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .form-section { padding:20px 0; margin:20px 0; border-top:1px solid var(--rule); }
 .form-section h2 { margin-top:0; }
 .empty-state { padding:24px 0; }
-.empty-state h2 { margin-top:0; }
+.empty-state h2, .empty-state h3 { margin-top:0; }
+.panel.empty-state { padding:var(--s-5) var(--s-4); }
 .form-page { max-width:600px; padding-top:28px; }
 .form-page h1 { font-size:1.75rem; font-weight:800; }
 .form-page > p { max-width:65ch; }
@@ -457,19 +458,30 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .form-page .form-section { border-top:0; }
 .picker-fields { border:0; margin:0; padding:0; min-width:0; }
 .section-rail { margin:12px 0; padding:12px 0; border-bottom:1px solid var(--rule); }
-.current-sessions { background:var(--felt); color:var(--felt-ink); border:0; border-radius:var(--radius); padding:16px; }
-.current-sessions .muted { color:var(--felt-ink); }
-.current-sessions .badge { color:var(--felt-ink); border-color:var(--felt-ink); white-space:normal; }
-.current-sessions .badge-live { color:var(--ink); }
-.group-sessions, .group-management { min-width:0; }
-.group-sessions > h2:first-child, .group-management > h2:first-child { margin-top:0; }
+/* Group tabs: Sessions is the default view; settings hold the roster, invites, tables, presets and rake. */
+.tabs { display:flex; gap:var(--s-1); padding:var(--s-1); margin:0 0 var(--s-5); background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-btn); }
+.tabs a { flex:1; display:flex; align-items:center; justify-content:center; min-height:var(--tap); padding:0 var(--s-3); border-radius:11px; color:var(--muted); font-weight:600; text-align:center; text-decoration:none; }
+.tabs a:hover { color:var(--text); }
+.tabs a[aria-current] { background:var(--surface-2); color:var(--text); box-shadow:var(--shadow-btn); }
+.group-sessions, .group-settings > section { min-width:0; }
+.group-sessions + .group-sessions { margin-top:var(--s-6); }
+.group-settings > section { scroll-margin-top:80px; }
+.group-settings summary { overflow-wrap:anywhere; min-width:0; }
+.group-settings summary.small { color:var(--muted); }
+.group-settings .set-totals { border-top:0; }
+.group-settings .set-totals dt { color:var(--muted); }
+.session-list { list-style:none; margin:0; padding:0; }
+.session-list li + li { border-top:1px solid var(--rule); }
+.session-link { display:flex; align-items:center; justify-content:space-between; gap:var(--s-3); flex-wrap:wrap; min-height:64px; padding:var(--s-3) 0; text-decoration:none; overflow-wrap:anywhere; }
+.session-link strong, .session-link .small { display:block; }
+.session-link:hover strong { color:var(--brass); }
+.session-link .badge { white-space:normal; }
 .group-page .grow { flex-basis:160px; overflow-wrap:anywhere; }
 .group-page input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
 .roster-person .chip { flex:none; }
-.group-management { margin-top:32px; }
-.group-management .form-row { flex-wrap:wrap; }
-.group-management .form-row > .grow { flex-basis:100%; }
+.group-settings .form-row { flex-wrap:wrap; }
+.group-settings .form-row > .grow { flex-basis:100%; }
 .log-page { max-width:850px; }
 .log-page h1, .log-page p, .log-records li { overflow-wrap:anywhere; }
 .log-page h2 { scroll-margin-top:96px; }
@@ -482,9 +494,11 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .log-nav a { display:flex; min-height:var(--tap); align-items:center; text-underline-offset:4px; }
 .canceled-set h2 { color:var(--bone-dim); }
 @media(min-width:900px) {
- .group-page { max-width:1180px; }
- .group-layout { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:48px; }
- .group-management { margin-top:0; padding-left:28px; border-left:1px solid var(--rule); }
+ .group-page:has(.group-settings) { max-width:1180px; }
+ .group-page .tabs { max-width:728px; }
+ .group-settings { columns:2; column-gap:48px; }
+ .group-settings > section { break-inside:avoid; }
+ .group-settings > section:first-child h2 { margin-top:0; }
 }
 @media(max-width:359px) { .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
 

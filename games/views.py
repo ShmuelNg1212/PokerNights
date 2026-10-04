@@ -8,7 +8,7 @@ from django.contrib import messages
 
 from groups.errors import RuleError
 from groups.forms import NameForm
-from groups.http import attempt, request_id_from, attempt_bound, keep_form
+from groups.http import attempt, request_id_from, attempt_bound, group_settings, keep_form
 from groups.models import Member
 
 from . import services
@@ -26,7 +26,7 @@ def create_table(request, group_id):
             form.cleaned_data["name"], form.cleaned_data["seat_count"],
             form.cleaned_data["default_preset"] or None, success="Table added.") is None:
         keep_form(request, f"{group_id}:table", form)
-    return redirect("group", group_id=group_id)
+    return group_settings(group_id, "tables")
 
 
 def preset_form(request, group_id, preset_id=None):
@@ -41,7 +41,7 @@ def preset_form(request, group_id, preset_id=None):
     if request.method == "POST" and form.is_valid():
         saved = attempt_bound(request, form, services.save_preset, actor, form.cleaned_data, preset_id=preset_id, success="Preset saved.")
         if saved is not None:
-            return redirect("group", group_id=group_id)
+            return group_settings(group_id, "presets")
     return render(request, "games/preset_form.html", {"form": form, "group": actor.group, "preset": preset})
 
 
