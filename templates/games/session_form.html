@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}New session · {{ group.name }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'group' group.pk %}">← {{ group.name }}</a></p>
+<p class="small"><a href="{% url 'group' group.pk %}">{{ group.name }}</a></p>
 <h1>New session</h1>
 {% if presets %}
-<form method="get" class="card form-row">
+<form method="get" class="form-section form-row">
   <div class="grow">
     <label for="preset">Start from a preset</label>
     <select id="preset" name="preset">
@@ -14,7 +15,7 @@
   <button type="submit" class="btn">Use</button>
 </form>
 {% endif %}
-<form method="post" class="card stack">
+<form method="post" class="form-section stack">
   {% csrf_token %}
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
   <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>

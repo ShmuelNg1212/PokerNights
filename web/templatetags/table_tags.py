@@ -31,6 +31,13 @@ def player_token(participant, participants):
     return format_html('<span class="chip k{}" aria-hidden="true">{}</span>', colour, initial)
 
 @register.simple_tag
+def member_token(member, members):
+    from types import SimpleNamespace
+    peers = [SimpleNamespace(member=m, join_order=m.pk, pk=m.pk) for m in members]
+    return player_token(next(p for p in peers if p.pk == member.pk), peers)
+
+
+@register.simple_tag
 def buy_in_stack(count):
     edges = '<i></i>' * min(count, 5)
     extra = f'<span>+{count - 5}</span>' if count > 5 else ''

@@ -6,13 +6,17 @@ from django.views.decorators.http import require_POST
 from . import services
 from .access import member_for
 from .errors import RuleError
-from .http import attempt
+from .http import attempt, attempt_bound, keep_form
+from .forms import GroupForm, NameForm
+from .access import require_host
 
 
 @require_POST
 def create_group(request):
-    member = attempt(request, services.create_group, request.user, request.POST.get("name", ""))
+    form = GroupForm(request.POST)
+    member = attempt_bound(request, form, services.create_group, request.user, form.cleaned_data["name"]) if form.is_valid() else None
     if member is None:
+        keep_form(request, "home:create", form)
         return redirect("home")
     return redirect("group", group_id=member.group_id)
 
@@ -65,15 +69,20 @@ def accept_invite(request, token):
 @require_POST
 def add_roster_player(request, group_id):
     actor = member_for(request.user, group_id)
-    attempt(
-        request, services.add_roster_player, actor, request.POST.get("name", ""), request.POST.get("contact", ""),
-        success="Player added.",
-    )
+    require_host(actor)
+    form = NameForm(request.POST, prefix=None)
+    if not form.is_valid() or attempt_bound(request, form, services.add_roster_player, actor,
+            form.cleaned_data["name"], request.POST.get("contact", ""), success="Player added.") is None:
+        keep_form(request, f"{group_id}:add", form)
     return redirect("group", group_id=group_id)
 
 
 @require_POST
 def rename_member(request, group_id, member_id):
     actor = member_for(request.user, group_id)
-    attempt(request, services.rename_member, actor, member_id, request.POST.get("name", ""), success="Player renamed.")
+    require_host(actor)
+    form = NameForm(request.POST)
+    if not form.is_valid() or attempt_bound(request, form, services.rename_member, actor, member_id,
+            form.cleaned_data["name"], success="Player renamed.") is None:
+        keep_form(request, f"{group_id}:rename:{member_id}", form)
     return redirect("group", group_id=group_id)

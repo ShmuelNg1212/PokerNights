@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Settings · {{ session }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'session' session.pk %}">← Back to the game</a></p>
+<p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Game settings</h1>
 <p class="muted">Type each amount in the game's unit. Buy-ins already recorded keep their amounts.</p>
-<form method="post" class="card stack">
+<form method="post" class="form-section stack">
   {% csrf_token %}
   {% include "partials/form_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Save settings</button>

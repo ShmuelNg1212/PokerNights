@@ -1,12 +1,12 @@
 # Redesign slice 4: group, home, account, forms and log
 
-Status: **awaiting-approval**. Date: 2026-10-04.
+Status: **in-progress**. Date: 2026-10-04.
 
 Source: [slice 4 study](../study/1791084725_redesign_slice_4.md). Parent: [visual redesign task 10](1791046015_visual_redesign.md). Sources of truth: AGENTS.md, SPEC.md, PRODUCT.md, DESIGN.md and the wiki. Main was clean at `cd0d6e7`; study commit `efc5f16`. Baseline: 390 tests pass on SQLite.
 
 ## OPEN QUESTIONS
 
-None blocking. This plan proposes input-retention repairs for the existing inline forms and the remaining canceled-set composition. They are part of the scope for approval. Approval has not been given for this cycle.
+None blocking. This plan proposes input-retention repairs for the existing inline forms and the remaining canceled-set composition. They are part of the scope for approval. Approved by the human with “proceed” on 2026-10-04. Implementation, verification, rendezvous and documentation sync are authorized.
 
 ## Goal and direction contract
 
@@ -85,7 +85,9 @@ DESIGN.md: add built group, home, account/form and log patterns; remove deferred
 
 ## Blockers and progress
 
-No blocker. Required approval is pending.
+No blocker. Approved with “proceed”.
+
+Implementation choice: inline errors use one-redirect, form/group-scoped session drafts rather than importing web page composition into groups or games. Only declared non-sensitive fields and validation errors are stored; the destination re-resolves membership, consumes the draft once and opens the failed disclosure. This preserves dependency direction and successful redirects.
 
 | Date | Entry |
 |---|---|

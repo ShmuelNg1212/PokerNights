@@ -1,49 +1,17 @@
 {% extends "base.html" %}
-{% load money_tags %}
-{% block title %}{{ group.name }} · PokerNights
-{% if me.is_host %}
-<form method="post" action="{% url 'member_add' group.pk %}" class="card stack">
-  {% csrf_token %}
-  <div class="field">
-    <label for="roster-name">Add a player without a login</label>
-    <input id="roster-name" type="text" name="name" maxlength="60" required placeholder="Name">
-  </div>
-  <button type="submit" class="btn btn-block">Add to roster</button>
-</form>
-
-<h2>Invite players</h2>
-<div class="card stack">
-  {% if new_invite_url %}
-  <div class="notice notice-good">
-    <p>Send this link to your players. It is shown only once.</p>
-    <input type="text" readonly value="{{ new_invite_url }}" aria-label="Invite link" onfocus="this.select()">
-  </div>
-  {% endif %}
-  <form method="post" action="{% url 'invite_create' group.pk %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-block">Create invite link</button>
-  </form>
-  {% if invites %}
-  <ul class="list">
-    {% for invite in invites %}
-    <li class="row">
-      <span class="grow small muted">Expires {{ invite.expires_at|date:"M j, H:i" }} · used {{ invite.use_count }} of {{ invite.max_uses }}</span>
-      <form method="post" action="{% url 'invite_revoke' group.pk invite.pk %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-small btn-danger">Revoke</button>
-      </form>
-    </li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-</div>
-{% endif %}
-{% endblock %}
+{% load money_tags table_tags %}
+{% block title %}{{ group.name }} · PokerNights{% endblock %}
+{% block page_class %}hub-page group-page{% endblock %}
 {% block content %}
-<h1>{{ group.name }}</h1>
+<p class="table-bar"><a href="{% url 'home' %}">{% icon 'arrow-left' %} Your groups</a></p><header class="page-heading"><h1>{{ group.name }}</h1><span class="badge">{{ me.get_role_display }}</span></header>
+<div class="group-layout"><div class="group-sessions">
 
 <h2>Sessions</h2>
-<div class="card">
+<div class="section-rail current-sessions">
+  {% if me.is_host %}
+    {% if tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>
+    {% else %}<p class="muted small">Add a table below to create a session.</p>{% endif %}
+  {% endif %}
   {% if open_nights %}
   <ul class="list">
     {% for n in open_nights %}
@@ -54,14 +22,11 @@
     {% endfor %}
   </ul>
   {% else %}<p class="muted">No session is planned or in progress.</p>{% endif %}
-  {% if me.is_host %}
-    {% if tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>
-    {% else %}<p class="muted small">Add a table below to create a session.</p>{% endif %}
-  {% endif %}
+
 </div>
 {% if closed_nights %}
 <h2>Past sessions</h2>
-<ul class="list card">
+<ul class="list section-rail">
   {% for n in closed_nights %}
   <li class="row">
     <a class="grow" href="{% url 'night' n.pk %}">{{ n.table.name }} · {{ n.game_date|date:"M j, Y" }}</a>
@@ -71,8 +36,8 @@
 </ul>
 {% endif %}
 
-<h2>Tables</h2>
-<div class="card">
+</div><aside class="group-management" aria-label="Group management"><h2>Tables</h2>
+<div class="section-rail">
   {% if tables %}
   <ul class="list">
     {% for table in tables %}
@@ -81,23 +46,15 @@
   </ul>
   {% else %}<p class="muted">No tables yet.</p>{% endif %}
   {% if me.is_host %}
-  <details>
-    <summary>Add a table</summary>
-    <form method="post" action="{% url 'table_create' group.pk %}" class="stack">
-      {% csrf_token %}
-      <div class="field"><label for="table-name">Table name</label><input id="table-name" type="text" name="name" maxlength="60" required></div>
-      <div class="field"><label for="table-seats">Seats</label><input id="table-seats" type="number" name="seat_count" min="2" max="12" value="9" inputmode="numeric" required></div>
-      <div class="field"><label for="table-preset">Usual preset</label>
-        <select id="table-preset" name="default_preset"><option value="">None</option>{% for preset in presets %}<option value="{{ preset.pk }}">{{ preset.name }}</option>{% endfor %}</select>
-      </div>
-      <button type="submit" class="btn btn-block">Add table</button>
-    </form>
+  <details {% if table_form.errors %}open{% endif %}><summary>Add a table</summary>
+    <form method="post" action="{% url 'table_create' group.pk %}" class="stack">{% csrf_token %}
+    {% include "partials/form_fields.html" with form=table_form %}<button type="submit" class="btn btn-block">Add table</button></form>
   </details>
   {% endif %}
 </div>
 
 <h2>Presets</h2>
-<div class="card">
+<div class="section-rail">
   {% if presets %}
   <ul class="list">
     {% for preset in presets %}
@@ -115,21 +72,21 @@
 </div>
 
 <h2>Players</h2>
-<ul class="list card">
+<ul class="list section-rail">
   {% for m in members %}
   <li>
     <div class="row">
-      <span class="grow">{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>
+      <span class="roster-person grow">{% member_token m members %}<span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span></span>
       {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
       {% if not m.has_login %}<span class="badge">No login</span>{% endif %}
     </div>
     {% if me.is_host and m.pk != me.pk %}
-    <details>
+    <details {% if m.rename_form.errors %}open{% endif %}>
       <summary class="small">Manage</summary>
       <div class="stack">
         <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="form-row">
           {% csrf_token %}
-          <div class="grow"><input type="text" name="name" value="{{ m.display_name }}" maxlength="60" required aria-label="Name"></div>
+          <div class="grow">{% include "partials/form_fields.html" with form=m.rename_form %}</div>
           <button type="submit" class="btn btn-small">Rename</button>
         </form>
         {% if m.has_login %}
@@ -151,17 +108,12 @@
 </ul>
 
 {% if me.is_host %}
-<form method="post" action="{% url 'member_add' group.pk %}" class="card stack">
-  {% csrf_token %}
-  <div class="field">
-    <label for="roster-name">Add a player without a login</label>
-    <input id="roster-name" type="text" name="name" maxlength="60" required placeholder="Name">
-  </div>
-  <button type="submit" class="btn btn-block">Add to roster</button>
-</form>
+<details class="form-section" {% if add_form.errors %}open{% endif %}><summary>Add a player without a login</summary>
+<form method="post" action="{% url 'member_add' group.pk %}" class="stack">{% csrf_token %}
+{% include "partials/form_fields.html" with form=add_form %}<button type="submit" class="btn btn-block">Add to roster</button></form></details>
 
 <h2>Invite players</h2>
-<div class="card stack">
+<div class="section-rail stack">
   {% if new_invite_url %}
   <div class="notice notice-good">
     <p>Send this link to your players. It is shown only once.</p>
@@ -187,4 +139,5 @@
   {% endif %}
 </div>
 {% endif %}
+</aside></div>
 {% endblock %}

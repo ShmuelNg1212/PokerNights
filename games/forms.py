@@ -13,6 +13,16 @@ def amount_field(label, help_text=""):
     )
 
 
+class TableForm(forms.Form):
+    name = forms.CharField(label="Table name", max_length=60)
+    seat_count = forms.IntegerField(label="Seats", min_value=2, max_value=12, initial=9)
+    default_preset = forms.ChoiceField(label="Usual preset", required=False)
+
+    def __init__(self, *args, presets=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["default_preset"].choices = [("", "None")] + [(p.pk, p.name) for p in presets]
+
+
 class StakesForm(forms.Form):
     """Blinds and buy-in limits, typed in the game's unit. Cleaned values are integer amounts."""
 

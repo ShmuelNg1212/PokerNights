@@ -419,3 +419,63 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-page .display-amount { white-space: nowrap; overflow-wrap: normal; }
 .night-page .display-amount.amount-compact { font-size: 2rem; }
 .night-page .display-amount.amount-long { font-size: 1.5rem; }
+
+/* Remaining Rack surfaces: task lists, management rails and readable records. */
+.hub-page { max-width:760px; }
+.page-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin:12px 0 24px; }
+.page-heading h1 { font-size:2rem; font-weight:800; overflow-wrap:anywhere; margin:0; }
+.page-heading p { flex-basis:100%; margin:0; }
+.hub-list { list-style:none; padding:0; margin:0; }
+.hub-list li + li { border-top:1px solid var(--rule); }
+.hub-link { display:flex; min-height:76px; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; text-decoration:none; }
+.hub-link strong { font-size:1.25rem; overflow-wrap:anywhere; min-width:0; }
+.hub-link:hover { color:var(--brass); }
+.form-section { padding:20px 0; margin:20px 0; border-top:1px solid var(--rule); }
+.form-section h2 { margin-top:0; }
+.empty-state { padding:24px 0; }
+.empty-state h2 { margin-top:0; }
+.form-page { max-width:600px; padding-top:28px; }
+.form-page h1 { font-size:1.75rem; font-weight:800; }
+.form-page > p { max-width:65ch; }
+.field:has(.errors) input, .field:has(.errors) select { border-color:var(--down); }
+.field input, .field textarea { caret-color:var(--brass); }
+.form-page .form-section { border-top:0; }
+.picker-fields { border:0; margin:0; padding:0; min-width:0; }
+.section-rail { margin:12px 0; padding:12px 0; border-bottom:1px solid var(--rule); }
+.current-sessions { background:var(--felt); color:var(--felt-ink); border:0; border-radius:16px; padding:16px; }
+.current-sessions .muted { color:var(--felt-ink); }
+.current-sessions .badge { color:var(--felt-ink); border-color:var(--felt-ink); white-space:normal; }
+.current-sessions .badge-live { color:var(--ink); }
+.group-sessions, .group-management { min-width:0; }
+.group-sessions > h2:first-child, .group-management > h2:first-child { margin-top:0; }
+.group-page .grow { flex-basis:160px; overflow-wrap:anywhere; }
+.group-page input[readonly] { font-size:.875rem; }
+.roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
+.roster-person .chip { flex:none; }
+.group-management { margin-top:32px; }
+.group-management .form-row { flex-wrap:wrap; }
+.group-management .form-row > .grow { flex-basis:100%; }
+.log-page { max-width:850px; }
+.log-page h1, .log-page p, .log-records li { overflow-wrap:anywhere; }
+.log-page h2 { scroll-margin-top:96px; }
+.log-records { border-top:1px solid var(--line); }
+.log-records li { padding:16px 0; }
+.log-records .row { align-items:flex-start; }
+.log-records .grow { flex-basis:180px; }
+.log-records .amount, .log-records .num { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.log-nav { display:flex; flex-wrap:wrap; gap:4px 16px; margin:24px 0; border-bottom:1px solid var(--rule); }
+.log-nav a { display:flex; min-height:48px; align-items:center; text-underline-offset:4px; }
+.canceled-set h2 { color:var(--bone-dim); }
+@media(min-width:900px) {
+ .group-page { max-width:1180px; }
+ .group-layout { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:48px; }
+ .group-management { margin-top:0; padding-left:28px; border-left:1px solid var(--rule); }
+}
+@media(max-width:359px) { .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
+
+/* Reviewed remaining-screen links keep a full action target. */
+.site-header .brand { display:inline-flex; align-items:center; min-height:48px; min-width:48px; }
+.group-page .list a, .form-page a, .log-page p a,
+.table-page:has(.canceled-set) > .center a { display:inline-flex; align-items:center; min-height:48px; min-width:48px; text-underline-offset:4px; }
+.group-page .list a { overflow-wrap:anywhere; }
+.form-page a { max-width:100%; overflow-wrap:anywhere; }
