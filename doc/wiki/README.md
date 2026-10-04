@@ -34,6 +34,8 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 | [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
 
+| [opening_buy_ins_lock_rake.md](footguns/opening_buy_ins_lock_rake.md) | Configure rake before default opening buy-ins lock the rule |
+
 ## Journal
 
 | Request | Study | Plan | Status |
@@ -51,3 +53,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Live counted total | [study](../study/1791089661_live_counted_total.md) | [plan](../plan/1791089905_live_counted_total.md) | Done, 2026-10-04 |
 | Set rake and group pool | [study](../study/1791093189_set_rake_and_group_pool.md) | [plan](../plan/1791093380_set_rake_and_group_pool.md) | Done, 2026-10-04 |
 | Default opening buy-ins | [study](../study/1791088066_default_opening_buy_ins.md) | [plan](../plan/1791088166_default_opening_buy_ins.md) | Done, 2026-10-04 |
+| Rake setup controls | [study](../study/1791096071_rake_controls.md) | [plan](../plan/1791096125_rake_controls.md) | Verification passed; local rendezvous pending, 2026-10-04 |

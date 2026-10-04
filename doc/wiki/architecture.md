@@ -159,6 +159,8 @@ Database check constraints repeat the main invariants: `total_buy_in = total_cas
 
 Each group has one `GroupRakeAccount`, created by group services or the metadata migration. It is not a Member or settlement party and has no mutable money counter. `ledger.queries.group_rake()` derives accepted lifetime totals and a per-session/set breakdown. Web composes this on the membership-protected group page. Pesos and chips stay separate; live and finalized sets contribute, payment marks do not.
 
+`SessionForm` and `SettingsForm` share native rake choices and active-only value parsing. Session creation validates stakes and rake before writing and stores the rule in its first settings version. Inactive text inputs have no browser number constraints.
+
 `SettingsVersion` holds `rake_mode` (Off, Percentage, Flat), integer `rake_basis_points` and `rake_flat`. Host settings use a per-set unique request ID; accepted retries return their version before state refusal. Explicit settings submissions create audited versions, even when values are unchanged, to persist the request identity. Stakes-only service calls without a request retain their prior no-op behavior.
 
 Percentage accepts two decimals (0.01%–99.99%); 5% is 500 basis points. Each fee is `gross * basis_points // 10000`, rounded down per entry. Flat is a positive native amount. Off normalizes both parameters to zero. Rake must leave a positive playable amount. Gross buy-in limits and default amounts remain gross. The rule is locked while accepted buy-ins or cash-outs exist; unchanged-rule stakes edits remain allowed. Next sets inherit the rule. A permitted unit change resets it to Off. Presets remain stakes-only.

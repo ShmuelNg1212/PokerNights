@@ -60,7 +60,7 @@ DATABASE_URL=postgres://$USER@127.0.0.1:5432/pokernights .venv/bin/python manage
 
 The concurrency tests are in `web/tests/test_concurrency.py`. They must pass on PostgreSQL before a release. See [footguns/sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md).
 
-Both engines passed on 2026-10-04.
+Both engines passed on 2026-10-04: 472 tests on PostgreSQL; 472 on SQLite with ten PostgreSQL-only skips. Rake controls add seven regression tests.
 
 End-of-set browser fixtures and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.
 
