@@ -152,3 +152,5 @@ Known gap: a write on a finished set in a group that is being archived at the sa
 AC1 to AC9 are met.
 
 Documentation synced: wiki features and architecture, PRODUCT.md, DESIGN.md, roadmap decisions, browser README, TODO.
+
+2026-10-04 rendezvous: merged into local main as `c92fb55 feat: merge archive and delete for sessions and groups`. Main SQLite: 569 pass, ten PostgreSQL-only skips. Two migrations (`games.0012`, `groups.0004`), both additive and nullable. The temporary server and PostgreSQL are stopped. Not pushed: a push to `main` is a production release and runs the migrations.
