@@ -1,6 +1,6 @@
 # Your groups page revamp: plan
 
-Status: awaiting approval. Date: 2026-10-04, Asia/Manila. Study: [Your groups page revamp](../study/1791102379_your_groups_home.md).
+Status: approved 2026-10-04. Date: 2026-10-04, Asia/Manila. Study: [Your groups page revamp](../study/1791102379_your_groups_home.md).
 
 ## Outcome
 
@@ -81,3 +81,5 @@ Not in this cycle: live polling on the home page, a cross-group feed, charts, gr
 ## Progress and blockers
 
 2026-10-04: Study and plan complete. Discovery answers recorded in the study. Implementation awaits approval of this plan and the three decisions above.
+
+2026-10-04: Human approved this plan with “approved” and answered the three decisions: leave money still in play off the card; show “you owe / owes you”; keep this page for one-group members. Execution uses branch `feat/group-home`, worktree `/private/tmp/pn-home`.
