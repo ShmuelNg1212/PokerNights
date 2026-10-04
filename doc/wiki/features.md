@@ -87,6 +87,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
+- The dock slides open and closed (320 ms and 200 ms); reduced motion switches at once.
+- The options under “More host controls” are all full-width buttons, including Cancel this set and Or add one player.
 - There is no toggle from 900 px, without JavaScript, or for players.
 - Code: `templates/web/_host_controls.html`, `static/js/dock.js`, the last block of `static/css/app.css`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
 

@@ -124,3 +124,12 @@ Acceptance criteria: all met, with one qualification. "All existing browser chec
 Documentation synced: DESIGN.md addendum, wiki features, browser README, TODO.
 
 2026-10-04 rendezvous: merged into local main as `ea164a1 feat(ui): merge the collapsible host dock`. Main SQLite: 522 pass, ten PostgreSQL-only skips. No migration. The temporary server and PostgreSQL are stopped. Not pushed: a push to `main` is a production release and waits for the human.
+
+## Addendum, 2026-10-04: motion and button-styled options
+
+The human tried the dock locally and asked for two changes: animate the collapsible menu, and make the options under “More host controls” look like the other buttons. This reverses the plan's “Motion: None” and its exclusion of animation. It was built on the human's direct request without a separate study.
+
+- **Slide.** `dock.js` animates the dock height with the Web Animations API: 320ms ease-out to open, 200ms ease-in to close (the sheet timings). The class `dock-closing` on `<html>` keeps the content rendered until a closing slide ends. A tap during a slide cancels it. The chevron turns with a 180ms CSS transition. Reduced motion skips the slide; the global rule already removes the transition.
+- **Options.** The “Cancel this set” and “Or add one player” summaries carry `btn btn-quiet btn-block`. Options are spaced 8px apart; an open one takes the Rail 2 fill. “More host controls” itself stays a quiet text disclosure. The same markup shows on desktop.
+- **Verification.** 523 tests pass on SQLite (ten PostgreSQL-only skips); PostgreSQL was not rerun because only a template, CSS and a script changed. `dock.mjs` passes 145 of 145 on a fresh temporary database, with new checks for the slide in both directions, three rapid taps, reduced motion, and the size, border and spacing of the options. Captures of the open disclosure were inspected at 390px.
+- **Not verified:** how the slide feels on a real phone, and a screen reader.

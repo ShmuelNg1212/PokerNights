@@ -71,6 +71,11 @@ class TablePageTests(TestCase):
             self.assertContains(page, text, count=1)
             self.assertContains(page, 'js/dock.js')
 
+    def test_more_host_controls_options_are_buttons(self):
+        page = self.client.get(self.url)
+        self.assertContains(page, '<summary class="btn btn-quiet btn-block">Cancel this set</summary>')
+        self.assertContains(page, '<summary class="btn btn-quiet btn-block">Or add one player</summary>')
+
     def test_host_dock_toggle_on_a_draft(self):
         from games import services as games
         night = Night(state='open')
