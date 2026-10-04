@@ -44,7 +44,7 @@ def validated_rake(data):
         flat = 0
     elif mode == RakeMode.FLAT:
         if type(flat) is not int or not 0 < flat <= 9223372036854775807:
-            raise RuleError("Flat rake must be a positive amount in the game's unit.")
+            raise RuleError("Flat rake must be a positive amount in the session's unit.")
         rate = 0
     else:
         raise RuleError("Select Off, Percentage or Flat amount for rake.")
@@ -60,7 +60,7 @@ def _unit(value) -> str:
 
 def _game_type(value) -> str:
     if value not in GameType.values:
-        raise RuleError("Unknown game type.")
+        raise RuleError("Unknown poker variant.")
     return value
 
 
@@ -136,7 +136,7 @@ def lock_session(session_id, group_id) -> GameSession:
         GameSession.objects.select_for_update().select_related("table", "night").filter(pk=session_id, group_id=group_id).first()
     )
     if session is None:
-        raise RuleError("That game is not in this group.")
+        raise RuleError("That set is not in this group.")
     return session
 
 
@@ -163,7 +163,7 @@ def current_settings(session: GameSession) -> SettingsVersion:
 def _clean_date(value) -> datetime.date:
     if isinstance(value, datetime.date):
         return value
-    raise RuleError("Enter the date of the game.")
+    raise RuleError("Enter the date of the session.")
 
 
 @transaction.atomic
@@ -267,12 +267,12 @@ TRANSITIONS = {
 }
 
 ACTION_LABELS = {
-    "open": "Opened the game for joining",
-    "close": "Closed the game (back to setup)",
+    "open": "Opened the set for joining",
+    "close": "Closed the set (back to setup)",
     "start": "Started play",
     "end": "Ended play; counting up",
     "resume": "Resumed play",
-    "cancel": "Canceled the game",
+    "cancel": "Canceled the set",
 }
 
 
@@ -294,15 +294,15 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
             return session
     allowed_from, target = TRANSITIONS[action]
     if session.state not in allowed_from:
-        raise RuleError(f"This game is {session.get_state_display().lower()}, so that action is not available.")
+        raise RuleError(f"This set is {session.get_state_display().lower()}, so that action is not available.")
     reason = (reason or "").strip()
     if action == "resume" and session.night.sets.filter(set_number__gt=session.set_number).exists():
         raise RuleError("A later set of this session has started, so this set cannot resume play.")
     if action == "close" and session.participants.filter(status=Participant.Status.JOINED).exists():
-        raise RuleError("Players have joined. Remove them first, or cancel the game.")
+        raise RuleError("Players have joined. Remove them first, or cancel the set.")
     if action == "cancel":
         if has_money(session):
-            raise RuleError("Buy-ins are recorded. Reverse them first, or finish and finalize the game.")
+            raise RuleError("Buy-ins are recorded. Reverse them first, or finish and finalize the set.")
         if session.state != State.SETUP and not reason:
             raise RuleError("Give a reason for canceling.")
         session.cancel_reason = reason[:255]
@@ -414,7 +414,7 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         require_host(actor)
     allowed = HOST_ADD_STATES if actor.is_host else JOINABLE_STATES
     if session.state not in allowed:
-        raise RuleError("This game is not open for joining.")
+        raise RuleError("This set is not open for joining.")
     member = Member.objects.filter(group_id=session.group_id, pk=member_id, status=Member.Status.ACTIVE).first()
     if member is None:
         raise RuleError("That player is not in this group.")
@@ -422,7 +422,7 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
     if participant is not None and participant.status == Participant.Status.JOINED:
         return participant
     if participant is not None and participant.status == Participant.Status.LEFT and not actor.is_host:
-        raise RuleError("You left this game. Ask a host to add you again.")
+        raise RuleError("You left this set. Ask a host to add you again.")
     if _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")
     if participant is None:
@@ -457,7 +457,7 @@ def add_new_player(session_id, actor: Member, name: str, request_id) -> list:
     if repeated is not None:
         return list(repeated.participants.select_related("member").order_by("join_order"))
     if session.state not in HOST_ADD_STATES:
-        raise RuleError("Players cannot be added at this stage of the game.")
+        raise RuleError("Players cannot be added at this stage of the set.")
     if _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats). Nothing was added.")
     try:
@@ -489,7 +489,7 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
     if repeated is not None:
         return list(repeated.participants.select_related("member").order_by("join_order"))
     if session.state not in HOST_ADD_STATES:
-        raise RuleError("Players cannot be added at this stage of the game.")
+        raise RuleError("Players cannot be added at this stage of the set.")
 
     wanted = []
     for member_id in member_ids:
@@ -552,7 +552,7 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
 def _participant(session, participant_id) -> Participant:
     participant = Participant.objects.select_related("member").filter(session=session, pk=participant_id).first()
     if participant is None:
-        raise RuleError("That player is not in this game.")
+        raise RuleError("That player is not in this set.")
     return participant
 
 
@@ -575,7 +575,7 @@ def withdraw_participant(session_id, actor: Member, participant_id) -> Participa
     clock.close_interval(participant, timezone.now())
     audit.record(
         "participant.withdrawn", actor=actor.user, group_id=session.group_id, session_id=session.pk,
-        target=participant, summary=f"{participant.member.display_name} was taken out of the game",
+        target=participant, summary=f"{participant.member.display_name} was taken out of the set",
     )
     touch(session)
     return participant
@@ -587,13 +587,13 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
     if session.state not in (State.RUNNING, State.RECONCILIATION):
-        raise RuleError("Players can be marked as left only during the game.")
+        raise RuleError("Players can be marked as left only while the set is in play.")
     participant = _participant(session, participant_id)
     wanted = Participant.Status.LEFT if left else Participant.Status.JOINED
     if participant.status == wanted:
         return participant
     if participant.status == Participant.Status.WITHDRAWN:
-        raise RuleError("That player is not in this game.")
+        raise RuleError("That player is not in this set.")
     if not left and _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")
     now = timezone.now()
@@ -610,7 +610,7 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
     audit.record(
         "participant.left" if left else "participant.returned", actor=actor.user, group_id=session.group_id,
         session_id=session.pk, target=participant,
-        summary=f"{participant.member.display_name} {'left the game' if left else 'returned to the table'}",
+        summary=f"{participant.member.display_name} {'left the set' if left else 'returned to the table'}",
     )
     touch(session)
     return participant

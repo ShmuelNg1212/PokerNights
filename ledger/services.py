@@ -32,14 +32,14 @@ CASH_OUT_STATES = (State.RUNNING, State.RECONCILIATION)
 def _participant(session, participant_id) -> Participant:
     participant = Participant.objects.select_related("member").filter(session=session, pk=participant_id).first()
     if participant is None:
-        raise RuleError("That player is not in this game.")
+        raise RuleError("That player is not in this set.")
     return participant
 
 
 def _clean_reason(reason) -> str:
     reason = " ".join((reason or "").split())[:255]
     if not reason:
-        raise RuleError("Give a reason. It stays in the game log.")
+        raise RuleError("Give a reason. It stays in the set log.")
     return reason
 
 
@@ -81,7 +81,7 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
     if repeated is not None:
         return repeated
     if session.state not in BUY_IN_STATES:
-        raise RuleError("Buy-ins can be recorded only while the game is open or running.")
+        raise RuleError("Buy-ins can be recorded only while the set is open or running.")
     participant = _participant(session, participant_id)
     if participant.status != Participant.Status.JOINED:
         raise RuleError(f"{participant.member.display_name} is not at the table.")
@@ -122,12 +122,12 @@ def reverse_buy_in(session_id, actor: Member, buy_in_id, reason: str) -> BuyInRe
     session = games.lock_session(session_id, actor.group_id)
     buy_in = BuyIn.objects.select_related("participant__member").filter(session=session, pk=buy_in_id).first()
     if buy_in is None:
-        raise RuleError("That buy-in is not in this game.")
+        raise RuleError("That buy-in is not in this set.")
     existing = BuyInReversal.objects.filter(buy_in=buy_in).first()
     if existing is not None:
         return existing
     if session.state not in REVERSAL_STATES:
-        raise RuleError("This game is closed. Its records cannot change.")
+        raise RuleError("This set is closed. Its records cannot change.")
     reversal = BuyInReversal.objects.create(buy_in=buy_in, reason=_clean_reason(reason), recorded_by=actor.user)
     audit.record(
         "buy_in.reversed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=buy_in,
@@ -147,7 +147,7 @@ def record_cash_out(session_id, actor: Member, participant_id, amount: int, requ
     if repeated is not None:
         return repeated
     if session.state not in CASH_OUT_STATES:
-        raise RuleError("Cash-outs can be recorded only during the game or while counting up.")
+        raise RuleError("Cash-outs can be recorded only while the set is in play or counting up.")
     participant = _participant(session, participant_id)
     if not _is_amount(amount) or amount < 0:
         raise RuleError("Enter the cash-out amount, 0 or more.")
@@ -182,12 +182,12 @@ def reverse_cash_out(session_id, actor: Member, cash_out_id, reason: str) -> Cas
     session = games.lock_session(session_id, actor.group_id)
     cash_out = CashOut.objects.select_related("participant__member").filter(session=session, pk=cash_out_id).first()
     if cash_out is None:
-        raise RuleError("That cash-out is not in this game.")
+        raise RuleError("That cash-out is not in this set.")
     existing = CashOutReversal.objects.filter(cash_out=cash_out).first()
     if existing is not None:
         return existing
     if session.state not in CASH_OUT_STATES:
-        raise RuleError("This game is closed. Its records cannot change.")
+        raise RuleError("This set is closed. Its records cannot change.")
     reversal = CashOutReversal.objects.create(cash_out=cash_out, reason=_clean_reason(reason), recorded_by=actor.user)
     if cash_out.final_count_id:
         # The count behind this cash-out is void too: the player is "awaiting count" again.
@@ -411,12 +411,12 @@ def record_override(session_id, actor: Member, note: str, mode: str, participant
         raise RuleError("The books balance. No override is needed.")
     note = " ".join((note or "").split())[:255]
     if not note:
-        raise RuleError("Write a note that explains the override. It stays in the game log.")
+        raise RuleError("Write a note that explains the override. It stays in the set log.")
     players = found.summary.money_lines
     if mode == BalanceAdjustment.Mode.PLAYER:
         line = next((line for line in players if str(line.participant.pk) == str(participant_id)), None)
         if line is None:
-            raise RuleError("Select a player of this game who has a buy-in.")
+            raise RuleError("Select a player of this set who has a buy-in.")
         shares = [(line.participant, -found.difference)]
     elif mode == BalanceAdjustment.Mode.EQUAL:
         parts = money.split_equal(-found.difference, len(players))
@@ -534,7 +534,7 @@ def guard_participant_exit(participant: Participant) -> None:
     has_cash_out = CashOut.objects.filter(participant=participant, reversal__isnull=True).exists()
     if has_cash_out or BuyIn.objects.filter(participant=participant, reversal__isnull=True).exists():
         raise RuleError(
-            f"{participant.member.display_name} has buy-ins in this game. Record a cash-out, or reverse the buy-ins first."
+            f"{participant.member.display_name} has buy-ins in this set. Record a cash-out, or reverse the buy-ins first."
         )
 
 

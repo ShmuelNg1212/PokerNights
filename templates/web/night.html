@@ -82,7 +82,7 @@
     {% endif %}
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
-      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe the game, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
+      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
       <ul class="list night-results">
         {% for row in outcome.standings %}
         <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>

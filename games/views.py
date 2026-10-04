@@ -139,7 +139,7 @@ def participants_add(request, session_id):
         session.refresh_from_db()
     can_add = session.state in services.HOST_ADD_STATES
     if not can_add and not creating:
-        messages.error(request, "Players cannot be added at this stage of the game.")
+        messages.error(request, "Players cannot be added at this stage of the set.")
         return redirect("session", session_id=session.pk)
 
     status = dict(Participant.objects.filter(session=session).values_list("member_id", "status"))

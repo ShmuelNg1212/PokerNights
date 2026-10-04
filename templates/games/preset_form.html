@@ -4,7 +4,7 @@
 {% block content %}
 <p class="small"><a href="{% url 'group' group.pk %}?view=settings#presets">{{ group.name }} settings</a></p>
 <h1>{% if preset %}Edit preset{% else %}New preset{% endif %}</h1>
-<p class="muted">A preset saves the stakes for fast setup. A game copies it, so a later edit changes no game.</p>
+<p class="muted">A preset saves the stakes for fast setup. A set copies it, so a later edit changes no existing set.</p>
 <form method="post" class="form-section stack">
   {% csrf_token %}
   <p class="muted small">Type each amount in the unit you select: pesos, or chips for a chips game.</p>

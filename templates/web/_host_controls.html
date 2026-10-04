@@ -5,7 +5,7 @@
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Choose rake before buy-ins</a>
   {% endif %}
   {% if session.state == 'setup' %}
-  <p class="muted small">This game is a draft. Players cannot see it yet.</p>
+  <p class="muted small">This set is a draft. Players cannot see it yet.</p>
   <form method="post" action="{% url 'session_transition' session.pk %}" class="host-action">{% csrf_token %}
     <button class="btn btn-primary btn-block next-action" name="action" value="open">Open for players</button>
   </form>
@@ -13,7 +13,7 @@
   <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}{% request_id_field %}
     <label class="check" for="opening-buy-ins"><input id="opening-buy-ins" type="checkbox" name="opening_buy_ins" checked data-keep="opening-buy-ins" aria-describedby="opening-buy-ins-help"><span class="grow">Add usual buy-in ({{ settings.default_buy_in|amount:unit }}) for players without a buy-in</span></label>
     <p id="opening-buy-ins-help" class="small muted">Existing buy-ins stay unchanged. {% include "web/_rake_rule.html" %}</p>
-    <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the game</button>
+    <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the set</button>
   </form>
   <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
     <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
@@ -41,14 +41,14 @@
     <form method="post" action="{% url 'session_transition' session.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button></form>
   {% endif %}
   {% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
-  <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Change settings</a>
+  <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Set settings</a>
   {% endif %}
   {% if session.is_live or session.state == 'setup' %}
   <details data-key="cancel">
-    <summary class="small">Cancel this game</summary>
+    <summary class="small">Cancel this set</summary>
     <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}
       <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" data-keep="cancel-reason" maxlength="255"></div>
-      <button class="btn btn-danger btn-block" name="action" value="cancel">Cancel the game</button>
+      <button class="btn btn-danger btn-block" name="action" value="cancel">Cancel the set</button>
     </form>
   </details>
   {% endif %}

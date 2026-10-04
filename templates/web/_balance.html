@@ -31,7 +31,7 @@
     <details data-key="override">
       <summary class="small">Cannot find the error? Finalize with an override</summary>
       <form method="post" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
-        <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the game log.</p>
+        <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
         <div class="field">
           <label for="absorber">Who absorbs the difference?</label>
           <select id="absorber" name="absorber">

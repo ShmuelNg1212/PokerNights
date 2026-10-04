@@ -3,8 +3,8 @@
 {% block page_class %}form-page{% endblock %}
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
-<h1>Game settings</h1>
-<p class="muted">Configure rake before the first buy-in. Type each amount in the game's unit. Buy-ins already recorded keep their amounts.</p>
+<h1>Set settings</h1>
+<p class="muted">Configure rake before the first buy-in. Type each amount in the session's unit. Buy-ins already recorded keep their amounts.</p>
 <form method="post" class="form-section stack">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">

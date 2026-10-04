@@ -121,6 +121,11 @@ def session_context(session, me) -> dict:
     for line in summary.lines:
         line.play_seconds = played.get(line.participant.pk)
         line.clock_running = line.participant.pk in running_ids
+        # The row offers "Cash out" only where the ledger would accept it mid-set.
+        line.can_cash_out_now = (
+            context["can_cash_out"] and session.state == GameSession.State.RUNNING
+            and line.has_money and not line.is_cashed_out
+        )
     context["set_seconds"] = clock.set_seconds(session)
     context["set_running"] = clock.is_running(session)
     if session.state == GameSession.State.FINALIZED:

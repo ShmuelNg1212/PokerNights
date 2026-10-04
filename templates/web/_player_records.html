@@ -44,7 +44,7 @@
         {% endif %}
         {% if not line.has_money %}{% if can_manage_players or p.member_id == me.pk and can_join %}
         <form method="post" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
-          <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this game{% else %}Remove from game{% endif %}</button>
+          <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this set{% else %}Remove from set{% endif %}</button>
         </form>
         {% endif %}{% endif %}
       </details>
