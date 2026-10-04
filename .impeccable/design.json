@@ -367,34 +367,6 @@
           "oklch(0.840 0.03000 85.000)",
           "oklch(0.950 0.03000 85.000)"
         ]
-      },
-      "slate": {
-        "role": "primary",
-        "displayName": "Slate",
-        "tonalRamp": [
-          "oklch(0.150 0.025 265)",
-          "oklch(0.260 0.025 265)",
-          "oklch(0.380 0.025 265)",
-          "oklch(0.490 0.025 265)",
-          "oklch(0.610 0.025 265)",
-          "oklch(0.720 0.025 265)",
-          "oklch(0.840 0.025 265)",
-          "oklch(0.950 0.025 265)"
-        ]
-      },
-      "slate-ink": {
-        "role": "primary",
-        "displayName": "Slate Ink",
-        "tonalRamp": [
-          "oklch(0.150 0.025 265)",
-          "oklch(0.260 0.025 265)",
-          "oklch(0.380 0.025 265)",
-          "oklch(0.490 0.025 265)",
-          "oklch(0.610 0.025 265)",
-          "oklch(0.720 0.025 265)",
-          "oklch(0.840 0.025 265)",
-          "oklch(0.950 0.025 265)"
-        ]
       }
     },
     "typographyMeta": {

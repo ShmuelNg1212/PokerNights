@@ -50,3 +50,7 @@ The approved `doc/plan/1791093380_set_rake_and_group_pool.md` extends the existi
 The recap adds Rake already collected using the incumbent fact treatment. Top results describe after-rake standings: an all-zero result may say Everyone broke even; a rake-only loss says No positive result after rake. The native inline fallback and shared sheet remain. The supplied equal-loss capture shows two −₱50 results with ₱100 rake and ₱0 still to pay. This extends historical result-copy scope without changing layout, sheet behavior or motion.
 
 This addendum preserves the incumbent Rack and machine-token records. Finish review: **ship** for the approved rake extension, `/private/tmp/pn-rake-finish-review.md`. Shared evidence and preserved historical drift are recorded in the rake addendum of `templates-web-end-set.md`; this is not a new whole-product audit.
+
+## 2026-10-04 addendum — UI evolution
+
+The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The overview is neutral in both open and closed sessions. Transfers are cards; a fully paid session says Settled. The closing recap is unchanged.
