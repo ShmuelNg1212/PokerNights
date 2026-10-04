@@ -1,6 +1,6 @@
 # Deployment (Vercel)
 
-PokerNights runs on Vercel's free Hobby plan with a free Neon Postgres database, both in Singapore. Production address: **not released yet** (see the [plan](../plan/1791104210_vercel_deployment.md)); this line is updated at the first release.
+PokerNights runs on Vercel's free Hobby plan with a free Neon Postgres database, both in Singapore. Production address: **https://pokernights-five.vercel.app** (released 2026-10-04; [plan](../plan/1791104210_vercel_deployment.md)).
 
 ## What runs where
 
@@ -13,7 +13,7 @@ PokerNights runs on Vercel's free Hobby plan with a free Neon Postgres database,
 
 - **Vercel project:** `pokernights` in `shmuelng8310-5097s-projects`. The local link is in `.vercel/` (gitignored).
 - **Configuration files:** [`vercel.json`](../../vercel.json) and [`.vercelignore`](../../.vercelignore).
-- **Git:** once the project is connected to GitHub `ShmuelNg1212/PokerNights`, every push deploys: `main` to production, any other branch to a private preview.
+- **Git:** the project is connected to GitHub `ShmuelNg1212/PokerNights`, so every push deploys: `main` to production, any other branch to a private preview.
 
 ## Environment variables (Vercel → Settings → Environment Variables)
 
