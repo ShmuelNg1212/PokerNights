@@ -318,6 +318,7 @@ def group_rake(group):
     """Accepted fees in native units, with a reconciling per-set breakdown."""
     from django.db.models import Sum
     rows = list(RakeEntry.objects.filter(account__group=group, buy_in__reversal__isnull=True)
+                .filter(buy_in__session__night__archived_at__isnull=True)
                 .values("unit", "buy_in__session_id", "buy_in__session__set_number",
                         "buy_in__session__night_id", "buy_in__session__game_date",
                         "buy_in__session__table__name")
@@ -326,3 +327,12 @@ def group_rake(group):
     for row in rows:
         totals[row["unit"]] += row["total"]
     return totals, rows
+
+
+def night_has_records(night) -> bool:
+    """True when any ledger row exists under the session's sets, reversed and voided rows included."""
+    from .models import CashOutBatch, Finalization
+    return any(
+        model.objects.filter(session__night=night).exists()
+        for model in (BuyIn, FinalCount, CashOut, CashOutBatch, BalanceAdjustment, Finalization)
+    )

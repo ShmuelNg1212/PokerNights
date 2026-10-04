@@ -3,6 +3,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("g/<int:group_id>/archive/", views.group_archive, name="group_archive"),
+    path("g/<int:group_id>/restore/", views.group_restore, name="group_restore"),
+    path("g/<int:group_id>/delete/", views.group_delete, name="group_delete"),
     path("g/<int:group_id>/tables/new/", views.create_table, name="table_create"),
     path("g/<int:group_id>/presets/new/", views.preset_form, name="preset_create"),
     path("g/<int:group_id>/presets/<int:preset_id>/", views.preset_form, name="preset_edit"),

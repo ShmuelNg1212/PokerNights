@@ -92,6 +92,16 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - There is no toggle from 900 px, without JavaScript, or for players.
 - Code: `templates/web/_host_controls.html`, `static/js/dock.js`, the last block of `static/css/app.css`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
 
+## Archive and delete sessions and groups
+
+- **Archive a session.** A host opens “Manage this session” on the session page and confirms. Allowed when no set is a draft, open, in play or counting up. The confirmation lists transfers that are not marked paid.
+- **An archived session** leaves the Sessions list and Your groups, and its results leave the stats, player records, “To settle” and the group rake total. Its pages stay readable by link with an “Archived” notice. No write is accepted. Hosts find it under “Archived sessions” at the bottom of the Sessions tab and restore it from its page; everything returns as it was.
+- **Delete a session.** Offered only when no money record exists under it (a reversed buy-in is still a record) and no set is unfinished. It removes the session and its sets for good.
+- **Archive a group.** Group settings → “Manage this group”. Refused while any set is unfinished. The group leaves Your groups for every member, every page of the group returns 404 and its invite links are refused. Hosts restore it from “Archived groups” on Your groups.
+- **Delete a group.** Only when no session of the group holds a money record. The host types the group name. It removes the group, memberships, tables, presets, invites and empty sessions. User accounts stay.
+- Money records are never removed by any of these. Each action writes an audit event; the events of a deleted session or group stay.
+- Not possible: archiving or deleting a single set, purging an archived group, deleting a user account.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

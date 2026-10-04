@@ -367,6 +367,18 @@ Below 900px a host can fold the host dock to one bar and open it again. [Plan](d
 - **Unchanged.** From 900px there is no toggle and a stored choice has no effect. Without JavaScript there is no toggle and the dock is expanded. Players have no dock. No token, colour or asset is added; the chevron is Lucide `chevron-down`.
 - **Measured.** 145 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
 
+### 2026-10-04 addendum — Archive and delete
+
+Management of a session or group is quiet and sits last on its page. [Plan](doc/plan/1791114191_archive_and_delete_groups_and_sessions.md).
+
+- **Manage this session** is a native disclosure with a muted summary under a Line rule, at the end of the session overview. It holds one sentence per action, a neutral Archive session button and, where allowed, a danger Delete session button. When an action is unavailable the sentence says why and no button appears.
+- **Manage this group** is the last panel of Group settings, with Archive group and a danger Delete group.
+- **Confirmation pages** use the 560px form page: back link, a question as the heading, the name, a short list of consequences, then one primary or danger button and a quiet “Keep” button. The session archive page adds a panel of unpaid transfers with tabular amounts. The group delete page has one labelled field for the typed name, with the name shown as help text; a refused name stays in the field beside its error.
+- **Archived notice.** An info notice at the top of an archived session and its set pages: who archived it and when, and for a host a bone Restore session button. The badge reads Archived. The pages show no other action and no host dock.
+- **Archived lists.** “Archived sessions (N)” at the end of the Sessions tab and “Archived groups (N)” at the end of Your groups are closed disclosures under a Line rule, hosts only. Session rows reuse the session-link row with an Archived badge. Group rows have a Restore button and a small Delete this group link.
+- Long group names wrap anywhere on form pages and in the archived list. No token, colour, asset or motion is added.
+- **Measured.** 85 checks at 320, 390 and 1280px: no horizontal overflow against the requested width, every button, link-button, summary and field at least 48px, visible focus on the danger link, and native submission without JavaScript.
+
 ## Do's and Don'ts
 
 ### Do:

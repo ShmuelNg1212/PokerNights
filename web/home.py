@@ -70,7 +70,8 @@ class Card:
 
 def home_cards(user) -> list:
     memberships = list(
-        Member.objects.filter(user=user, status=Member.Status.ACTIVE).select_related("group").order_by("group__name")
+        Member.objects.filter(user=user, status=Member.Status.ACTIVE, group__archived_at__isnull=True)
+        .select_related("group").order_by("group__name")
     )
     if not memberships:
         return []
@@ -82,7 +83,7 @@ def home_cards(user) -> list:
 
     with_table = set(Table.objects.filter(group_id__in=group_ids, archived_at__isnull=True).values_list("group_id", flat=True))
     open_nights = (
-        GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN)
+        GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN, archived_at__isnull=True)
         .select_related("table").prefetch_related("sets").order_by("-game_date", "-pk")
     )
     by_group = {}
@@ -123,7 +124,7 @@ def home_cards(user) -> list:
             card.more_dues += 1
 
     last = Subquery(
-        GameNight.objects.filter(group_id=OuterRef("group_id"), status=GameNight.Status.CLOSED)
+        GameNight.objects.filter(group_id=OuterRef("group_id"), status=GameNight.Status.CLOSED, archived_at__isnull=True)
         .order_by("-game_date", "-pk").values("pk")[:1]
     )
     last_nights = list(
@@ -165,3 +166,11 @@ def _choose_status(card, nights, has_table) -> None:
     else:
         card.action_label, card.action_url = "Go to the session", reverse("night", args=[card.night.pk])
         card.action_primary = card.me.is_host
+
+
+def archived_groups(user) -> list:
+    """The viewer's host memberships in archived groups: only a host can restore one."""
+    return list(
+        Member.objects.filter(user=user, status=Member.Status.ACTIVE, role=Member.Role.HOST, group__archived_at__isnull=False)
+        .select_related("group", "group__archived_by").order_by("group__name")
+    )

@@ -335,3 +335,67 @@ class ConcurrentRakeTests(TransactionTestCase):
                         lambda: self.n.buy('A', 1000))
         self.assertEqual(kinds(outcomes), ['ok', 'ok'], outcomes)
         self.assertEqual(ledger_queries.group_rake(self.n.group)[0]['php'], 5000)
+
+
+class ConcurrentArchiveTests(TransactionTestCase):
+    def closed(self):
+        night = worked_example()
+        settlement.finalize(night.session.pk, night.host)
+        settlement.close_night(night.session.night_id, night.host)
+        return night
+
+    def test_two_hosts_archive_at_once(self):
+        from audit.models import AuditEvent
+        night = self.closed()
+        outcomes = race(*[lambda: games.archive_night(night.session.night_id, night.host)] * 2)
+        self.assertEqual(kinds(outcomes), ["ok", "ok"], outcomes)
+        self.assertEqual(AuditEvent.objects.filter(action="night.archived").count(), 1)
+
+    def test_archive_races_with_a_paid_mark(self):
+        night = self.closed()
+        night_id = night.session.night_id
+        transfer = Transfer.objects.order_by("position").first()
+        outcomes = race(
+            lambda: settlement.mark_paid(night_id, night.host, transfer.pk, uuid.uuid4()),
+            lambda: games.archive_night(night_id, night.host),
+        )
+        self.assertEqual(outcomes[1][0], "ok", outcomes)
+        # Either the payment landed before the archive, or it was refused. Never a write after it.
+        self.assertIn(outcomes[0][0], ("ok", "refused"), outcomes)
+        self.assertEqual(Payment.objects.count(), 1 if outcomes[0][0] == "ok" else 0)
+
+    def test_delete_races_with_a_new_set(self):
+        from games.models import GameNight, GameSession
+        night = Night("A")
+        games.transition(night.session.pk, night.host, "cancel", "nobody came")
+        night_id = night.session.night_id
+        outcomes = race(
+            lambda: games.start_next_set(night_id, night.host),
+            lambda: games.delete_night(night_id, night.host),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        # Either the session is gone with every set, or the new set kept it alive.
+        if GameNight.objects.filter(pk=night_id).exists():
+            self.assertEqual(GameSession.objects.filter(night_id=night_id).count(), 2)
+        else:
+            self.assertEqual(GameSession.objects.filter(night_id=night_id).count(), 0)
+
+
+class ConcurrentGroupArchiveTests(TransactionTestCase):
+    def test_archive_races_with_a_new_session(self):
+        from games.models import GameNight
+        from games.tests.helpers import make_session, make_table
+        from groups import services as groups
+        from groups.models import GameGroup
+        from groups.tests.helpers import make_group
+        group, host = make_group()
+        table = make_table(host)
+        outcomes = race(
+            lambda: make_session(host, table=table),
+            lambda: groups.archive_group(host),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        # Exactly one wins: an archived group never gains a session, and a group with a draft set is not archived.
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        archived = GameGroup.objects.get(pk=group.pk).is_archived
+        self.assertEqual(GameNight.objects.filter(group=group).count(), 0 if archived else 1)

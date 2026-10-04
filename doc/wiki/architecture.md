@@ -178,6 +178,20 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 - `balances(nets, payments)`: what each party is still owed. A payer is owed more by the amount paid; a payee less. With no payments, the balance equals the result. Stage 1 passes no payments, because none can be recorded before finalization.
 - `settle(parties)`: splits the parties into the largest number of groups that each sum to zero (dynamic programming over subsets), then settles each group with one transfer fewer than its size. The result is the minimum number of transfers; the proof is in the module docstring. Ties follow join order, so the output is deterministic. Above 16 parties (more than a table seats) it falls back to one group and the plan is marked `proven_minimal = False`.
 
+## Archive and delete
+
+`GameNight` and `GameGroup` carry `archived_at` and `archived_by`. Nothing else marks an archive.
+
+- **Session services** are in `games/services.py`: `archive_night`, `restore_night`, `delete_night`. They lock the session row with `lock_night(..., allow_archived=True)`, write an audit event and bump the version of every set.
+- **One gate for writes.** `lock_night` and `lock_session` raise `RuleError` for an archived session. `lock_session` joins the session row, so its `select_for_update` locks that row too and an archive waits for a write in progress. No write service needs its own check.
+- **Money check without imports.** `games.NIGHT_RECORD_CHECKS` holds one check from `ledger` and one from `settlement`, registered in each app's `ready()`, like `SESSION_MONEY_CHECKS`. Any ledger row, plan or payment makes a session undeletable. The database also refuses through `PROTECT`.
+- **Totals.** Archived sessions are filtered in `settlement.queries.counted_results` and `unpaid_transfers`, `ledger.queries.group_rake`, `web.views.visible_nights` and `web.home.home_cards`.
+- **Pages of an archived session** render with `games.access.read_only(member)`, a copy of the membership with the player role, so no host control appears. The session page gets the real role only for Restore.
+- **Group services.** `groups.services.archive_group` and `restore_group`; `lock_group` refuses an archived group and is called by `create_session` and `create_invite`. `groups.ARCHIVE_GUARDS` lets `games` refuse while a set is unfinished. `games.services.delete_group` deletes in the order the `PROTECT` links require: sets, sessions, tables, the rake account, then the group.
+- **Access.** `groups.access.member_for` returns 404 for an archived group. Only the restore and delete views pass `archived=True`.
+- **Known gap.** A write on a finished set that was started just before the group was archived can still land, because set writes do not lock the group row. It is visible after restore and breaks no money rule.
+- **Request ids.** These actions carry none; a repeat is a no-op, as for `close_night`.
+
 ## Live updates
 
 - `static/js/live.js` polls `GET /s/<id>/state/?v=<version>` each 4 seconds while the tab is visible.

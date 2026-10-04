@@ -4,6 +4,7 @@
 {% block page_class %}table-page{% endblock %}
 {% block content %}
 <nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %} Session: {{ session.table.name }}</a><span id="live-status" class="live-status" aria-live="polite"></span></nav>
+{% if session.night.is_archived %}<div class="notice notice-info archived-notice"><p><strong>This session is archived.</strong> Nothing in this set can change. <a href="{% url 'night' session.night_id %}">Go to the session</a>{% if real_host %} to restore it{% endif %}.</p></div>{% endif %}
 <div id="live" data-version="{{ session.version }}" data-url="{% url 'session_state' session.pk %}">
   {% include "web/_session_live.html" %}
 </div>

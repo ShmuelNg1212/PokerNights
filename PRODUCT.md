@@ -60,3 +60,7 @@ The group page separates Sessions, Stats and Group settings. Screens use Session
 ## 2026-10-04 addendum — Your groups home
 
 The first page after sign-in reports each group's state: whether a set is in play, the one action the viewer is needed for, what they owe or are owed, their record and their last result. A set in play is one tap from here. Money still in play is left off this page because it does not refresh by itself. A one-group member still lands here. [Plan](doc/plan/1791102439_your_groups_home.md).
+
+## 2026-10-04 addendum — Archive and delete
+
+Hosts can clear away a session or a group. Archiving hides it and takes a session out of the stats, records, “To settle” and the rake total; a host can restore it. Deleting is permanent and is offered only where no money was ever recorded. Money records are never removed. Any host of the group may do this; a group delete asks for the typed group name.
