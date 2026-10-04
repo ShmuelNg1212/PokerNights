@@ -36,7 +36,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Say when to push it to production.
+- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons. Say when to push it to production.
 
 - [ ] Create your superuser against production (command in the [deployment page](doc/wiki/deployment.md)), then add the first host in `/admin/` → Users and play a game on the live site from a phone.
 

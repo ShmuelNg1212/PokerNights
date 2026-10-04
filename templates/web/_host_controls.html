@@ -46,7 +46,7 @@
   {% endif %}
   {% if session.is_live or session.state == 'setup' %}
   <details data-key="cancel">
-    <summary class="small">Cancel this set</summary>
+    <summary class="btn btn-quiet btn-block">Cancel this set</summary>
     <form method="post" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}
       <div class="field"><label for="cancel-reason">Reason</label><input id="cancel-reason" type="text" name="reason" data-keep="cancel-reason" maxlength="255"></div>
       <button class="btn btn-danger btn-block" name="action" value="cancel">Cancel the set</button>
@@ -54,7 +54,7 @@
   </details>
   {% endif %}
 {% if can_manage_players and addable_members %}
-  <details data-key="add-one"><summary class="small">Or add one player</summary>
+  <details data-key="add-one"><summary class="btn btn-quiet btn-block">Or add one player</summary>
     <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
       <div class="grow"><label for="add-player">Player</label><select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select></div><button class="btn" type="submit">Add</button>
     </form>

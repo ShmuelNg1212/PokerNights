@@ -362,9 +362,10 @@ Below 900px a host can fold the host dock to one bar and open it again. [Plan](d
 - **No action while collapsed.** The primary action, its options and its guidance appear together only when the dock is expanded.
 - **State.** The choice is the class `dock-collapsed` on `<html>`, mirrored in `localStorage` as `rack-dock`. It applies to every set and state on that browser, starts expanded, and survives live updates, reloads and state changes. Refused storage keeps the toggle working for the page view.
 - **Clearance.** With JavaScript, the set page reserves the measured dock height plus 16px (`--dock-h`, kept current by a `ResizeObserver`), in either state and with “More host controls” open. This replaces the fixed 128/200/340px phone clearances, which remain as the no-JavaScript values. Count fields use the same value for their bottom scroll margin.
-- **No motion.** The dock changes size at once; the chevron turns without a transition.
+- **Motion.** The dock slides between its two heights: 320ms with the ease-out curve when opening, 200ms with the ease-in curve when closing, the same timings as sheets. While closing, the content stays rendered and leaves with the edge. The chevron turns in 180ms. Reduced motion changes the size and the chevron at once. A tap during a slide cancels it and starts the new one.
+- **More host controls.** Every option under the disclosure is a full-width 48px button with 8px between them: Set settings, Resume play, and the Cancel this set and Or add one player disclosures, whose summaries are quiet buttons. An open one takes the Rail 2 fill and its form follows directly below.
 - **Unchanged.** From 900px there is no toggle and a stored choice has no effect. Without JavaScript there is no toggle and the dock is expanded. Players have no dock. No token, colour or asset is added; the chevron is Lucide `chevron-down`.
-- **Measured.** 137 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
+- **Measured.** 145 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
 
 ## Do's and Don'ts
 

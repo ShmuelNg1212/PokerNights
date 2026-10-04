@@ -65,6 +65,23 @@ try {
  check('live update arrived',await A.js(`document.getElementById('live').dataset.version`)!==before);
  check('collapsed survives live update',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&!${toggle}.hidden&&${shown}.length===1`));
  check('toggle keeps focus across live update',await A.js(`document.activeElement===${toggle}`));
+ // Motion: the dock slides between heights; closing keeps the content until the slide ends.
+ await A.go('/s/3/');await A.js(`document.activeElement.blur()`);
+ check('expanding animates the dock height',await A.js(`(()=>{${toggle}.click();const d=${dock};return d.getAnimations().length===1&&${shown}.length>1&&d.getBoundingClientRect().height<120})()`));await sleep(600);
+ check('expanded at rest',await A.js(`${dock}.getAnimations().length===0&&${dock}.style.overflow===''&&${dock}.getBoundingClientRect().height>120`));
+ check('collapsing keeps content while sliding',await A.js(`(()=>{${toggle}.click();const d=${dock};return d.getAnimations().length===1&&document.documentElement.classList.contains('dock-closing')&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='false'})()`));await sleep(600);
+ check('collapsed at rest',await A.js(`${dock}.getAnimations().length===0&&!document.documentElement.classList.contains('dock-closing')&&${shown}.length===1`));
+ check('quick double tap ends expanded',await A.js(`(()=>{${toggle}.click();${toggle}.click();${toggle}.click();return true})()`)&&(await sleep(600),await A.js(`${dock}.getAnimations().length===0&&!document.documentElement.classList.contains('dock-closing')&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='true'`)));
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
+ check('reduced motion: no slide, immediate state',await A.js(`(()=>{${toggle}.click();return ${dock}.getAnimations().length===0&&${shown}.length===1&&getComputedStyle(${toggle}.querySelector('.icon')).transitionDuration==='0s'})()`));
+ await send('Emulation.setEmulatedMedia',{features:[]},A.s);
+ // Options under More host controls are buttons.
+ await A.click(toggle);await A.click(`document.querySelector('.host-more > summary')`);
+ check('more-controls options are 48px bordered buttons',await A.js(`(()=>{const items=[...document.querySelectorAll('.host-more > a.btn, .host-more > details > summary')];return items.length>=2&&items.every(el=>{const r=el.getBoundingClientRect(),c=getComputedStyle(el);return r.height>=48&&c.borderTopWidth==='1px'&&r.width>=${390-40}})})()`));
+ check('options are spaced apart',await A.js(`(()=>{const items=[...document.querySelector('.host-more').children].filter(el=>el.tagName!=='SUMMARY'&&el.getClientRects().length);return items.every((el,i)=>!i||el.getBoundingClientRect().top-items[i-1].getBoundingClientRect().bottom>=8)})()`));
+ await A.shot('dock-more-controls-390');
+ await A.click(`[...document.querySelectorAll('.host-more details > summary')][0]`);await A.shot('dock-more-cancel-open-390');
+ await A.click(`[...document.querySelectorAll('.host-more details > summary')][0]`);await A.click(`document.querySelector('.host-more > summary')`);await A.click(toggle);
  // Collapsed choice carries across states: open set → start → end play.
  await A.go(`/s/${M.default.set}/`);
  check('open set collapsed, next step named',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: Start the set')`));
