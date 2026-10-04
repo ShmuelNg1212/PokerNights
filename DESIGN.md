@@ -404,6 +404,17 @@ A closed session states its settle status wherever it is listed. [Plan](doc/plan
 - No token, colour or asset is added.
 - **Measured.** 24 checks at 320, 390 and 1280px: no overflow with ₱199,999,999.98 still to pay, rows at least 48px, badge and count text at 4.5:1 or more, and each row matching its session page.
 
+### 2026-10-04 addendum — Stakes forms and the shared field box
+
+New session, Set settings and the preset form are laid out in titled groups. [Plan](doc/plan/1791121411_session_form.md).
+
+- **One field box, every form.** Text fields, the date field and dropdowns share full width, 48px height, a 12px text inset, 16px text and left-aligned values. Native appearance is switched off so an iPhone draws them the same way. Dropdowns carry the app's chevron (Lucide, Bone dim, 20px) 12px from the right edge. Radios, checkboxes and legends start on the field edge. Disabled controls fade to 60%.
+- **Groups.** “When and where” (Table, Date, Location), “Game” (Poker variant, Unit), “Stakes” (blinds, buy-in limits, usual buy-in), “Rake per buy-in”. Each has a 17px title at weight 650 and, after the first, a Rule hairline above with 24px before and 16px after it. Set settings has Game, Stakes and Rake; the preset form has its name field, Game and Stakes.
+- **Pairs.** Small blind | Big blind and Minimum | Maximum buy-in sit in two equal columns with a 12px gap from 360px; below that they stack. Poker variant | Unit pair from 480px, so a dropdown value is never cut off on a phone. Inputs of a pair share one top edge; help and errors sit under their own input.
+- **Rake** keeps its approved behaviour: three native choices and both value fields visible.
+- **Errors.** Each field error sits under its field. The error text carries one id; the earlier wrapper repeated it.
+- **Measured in Chrome.** 69 checks at 320, 390 and 1280px on the three forms: equal left edge, right edge and height for every field, aligned pairs including when one is refused, 16px field text, keyboard order matching the visual order, and submission without JavaScript. The iPhone rendering of the date field is not measurable here; see `doc/wiki/footguns/ios_date_input.md`.
+
 ## Do's and Don'ts
 
 ### Do:

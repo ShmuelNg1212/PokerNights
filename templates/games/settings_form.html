@@ -4,11 +4,13 @@
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Set settings</h1>
-<p class="muted">Configure rake before the first buy-in. Type each amount in the session's unit. Buy-ins already recorded keep their amounts.</p>
-<form method="post" class="form-section stack">
+<p class="muted">Configure rake before the first buy-in. Buy-ins already recorded keep their amounts.</p>
+<form method="post" class="form-section form-groups">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
-  {% include "partials/form_fields.html" with fields=form.general_fields %}
+  {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  {% include "games/_game_fields.html" with first=True %}
+  {% include "games/_stakes_fields.html" %}
   {% include "games/_rake_fields.html" %}
   <button type="submit" class="btn btn-primary btn-block">Save settings</button>
 </form>

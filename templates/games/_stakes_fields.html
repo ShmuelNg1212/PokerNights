@@ -1,0 +1,13 @@
+<section class="form-group" aria-labelledby="group-stakes">
+  <h2 class="group-title" id="group-stakes">Stakes</h2>
+  <p class="hint">Type each amount in pesos, or in chips for a chips game.</p>
+  <div class="field-pair">
+    {% include "partials/field.html" with field=form.small_blind %}
+    {% include "partials/field.html" with field=form.big_blind %}
+  </div>
+  <div class="field-pair">
+    {% include "partials/field.html" with field=form.min_buy_in %}
+    {% include "partials/field.html" with field=form.max_buy_in %}
+  </div>
+  {% include "partials/field.html" with field=form.default_buy_in %}
+</section>

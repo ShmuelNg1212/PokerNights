@@ -1,5 +1,6 @@
+<div class="form-group">
 <fieldset class="rake-settings" aria-describedby="id_rake_mode_helptext{% if form.rake_mode.errors %} id_rake_mode_error{% endif %}">
-  <legend>Rake per buy-in</legend>
+  <legend class="group-title">Rake per buy-in</legend>
   <p id="id_rake_mode_helptext" class="hint">{{ form.rake_mode.help_text }}</p>
   {% for radio in form.rake_mode %}
   <label class="check{% if form.rake_mode.field.disabled %} is-disabled{% endif %}" for="{{ radio.id_for_label }}">{{ radio.tag }}<span class="grow">{{ radio.choice_label }}</span></label>
@@ -7,3 +8,4 @@
   {% if form.rake_mode.errors %}<div id="id_rake_mode_error" class="errors" role="alert">{{ form.rake_mode.errors }}</div>{% endif %}
   {% include "partials/form_fields.html" with fields=form.rake_value_fields only_fields=True %}
 </fieldset>
+</div>
