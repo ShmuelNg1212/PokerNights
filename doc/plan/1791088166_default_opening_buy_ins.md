@@ -1,6 +1,6 @@
 # Default opening buy-ins
 
-Status: **in-progress**. Date: 2026-10-04.
+Status: **done**. Date: 2026-10-04.
 
 Source: [study](../study/1791088066_default_opening_buy_ins.md). Canonical sources: AGENTS.md, SPEC.md, PRODUCT.md and wiki architecture/features. Main was clean at `67ee032`; study commit `d2b6317`. Baseline: 395 SQLite tests pass.
 
@@ -45,7 +45,7 @@ After approval, record the answer and create `feat/default-opening-buy-ins` from
 - [x] **1. Implement and verify the start behavior.** Add marker/migration, lifecycle hook and ledger logic, native option and focused tests. Update intentional money-free test fixtures with explicit opt-out rather than weakening assertions. Inspect existing browser fixtures before any start to avoid silently doubling manually recorded opening amounts.
   - Commit: `feat(ledger): add default buy-ins when starting a set`.
   - Done when AC1–AC7 pass and evidence is recorded below.
-- [ ] **2. Rendezvous and sync docs.** Update wiki architecture/features/index, TODO and relevant built control documentation after verification. Follow any applicable bounded Impeccable finish/documentation requirements for the control extension. Merge to main, apply the additive migration locally, run tests on main and verify the running server serves the new native start form.
+- [x] **2. Rendezvous and sync docs.** Update wiki architecture/features/index, TODO and relevant built control documentation after verification. Follow any applicable bounded Impeccable finish/documentation requirements for the control extension. Merge to main, apply the additive migration locally, run tests on main and verify the running server serves the new native start form.
   - Commit: `docs: sync default opening buy-ins`.
   - Done when main contains verified behavior, the server answers and this plan is marked done.
 
@@ -79,3 +79,10 @@ The additive migration succeeded on an online SQLite backup of the six existing 
 The bounded finish reviewer returned **ship**, with five contract sections and no material fix. All three required captures were opened and valid (390/1280 pesos, 390 chips). The single detector advisory was literal black from the standalone unstyled template; rendered controls match the warm Rack palette. Documenter updated built behavior prose and the existing active-set surface addendum; machine tokens and sidecar stay unchanged. No independent polish hunt or second detector.
 
 Budgets: CSS **32,302 bytes**, cumulative added redesign JS **7,913 bytes**, font **103,912 bytes**. The 142-byte checkbox-retention extension fits the existing 8,000-byte bound. No new script/module, asset, dependency or motion. Physical-phone testing is unavailable.
+
+
+## Rendezvous
+
+Completed 2026-10-04. Implementation `ea01792`; synced docs `c1d1511`; merged into local main. The additive migration applied successfully to the development database. All six existing sets retain null start markers and receive no backfilled buy-ins. All 410 tests pass on main (14.113 s; three PostgreSQL-only races skipped here, all passed on PostgreSQL earlier).
+
+The server at http://127.0.0.1:8000 answers health and serves main’s exact 32,302-byte CSS and 4,177-byte live script. The existing open set was read through a temporary active-host login session: HTTP 200 with the checked opening option and data-keep markup. That temporary login session was removed; no game record was changed for server verification. Temporary verification server and PostgreSQL are stopped; the main development server remains running. No push or deployment.
