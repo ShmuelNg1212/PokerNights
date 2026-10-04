@@ -126,6 +126,11 @@ class GameNight(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(null=True, blank=True)
+    # An archived session is off the lists and out of the totals until a host restores it.
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
 
     class Meta:
         ordering = ["-game_date", "-id"]
@@ -140,6 +145,10 @@ class GameNight(models.Model):
     @property
     def is_closed(self):
         return self.status == self.Status.CLOSED
+
+    @property
+    def is_archived(self):
+        return self.archived_at is not None
 
 
 class GameSession(models.Model):

@@ -9,6 +9,7 @@ class LedgerConfig(AppConfig):
 
         from games import clock
 
+        from .queries import night_has_records
         from .services import (
             opening_buy_ins, back_in_play, guard_participant_exit, is_cashed_out, session_has_money, void_counts_on_resume,
         )
@@ -19,6 +20,8 @@ class LedgerConfig(AppConfig):
             games.PARTICIPANT_EXIT_GUARDS.append(guard_participant_exit)
         if session_has_money not in games.SESSION_MONEY_CHECKS:
             games.SESSION_MONEY_CHECKS.append(session_has_money)
+        if night_has_records not in games.NIGHT_RECORD_CHECKS:
+            games.NIGHT_RECORD_CHECKS.append(night_has_records)
         if void_counts_on_resume not in games.RESUME_HOOKS:
             games.RESUME_HOOKS.append(void_counts_on_resume)
         if back_in_play not in games.RETURN_HOOKS:

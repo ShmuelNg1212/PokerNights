@@ -14,7 +14,7 @@ from audit.models import AuditEvent
 
 from games import clock
 from games import services as games
-from games.access import night_for, session_for
+from games.access import night_for, read_only, session_for
 from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
 from groups.models import Invite, Member
 from ledger import money
@@ -30,9 +30,10 @@ def home(request):
     return render(request, "web/home.html", {"cards": home_cards(request.user), "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
 
 
-def visible_nights(me):
+def visible_nights(me, archived=False):
     """The group's sessions with the sets that this member can see (drafts are for hosts only)."""
     nights = GameNight.objects.filter(group=me.group).select_related("table").prefetch_related("sets")
+    nights = nights.filter(archived_at__isnull=not archived)
     for night in nights:
         sets = sorted(night.sets.all(), key=lambda s: s.set_number)
         night.shown_sets = [s for s in sets if me.is_host or s.state != GameSession.State.SETUP]
@@ -64,6 +65,7 @@ def group(request, group_id):
         nights = [n for n in visible_nights(me) if n.shown_sets]
         context["open_nights"] = [n for n in nights if not n.is_closed]
         context["closed_nights"] = [n for n in nights if n.is_closed]
+        context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
 
 
@@ -164,9 +166,15 @@ def session_context(session, me) -> dict:
     return context
 
 
+def shown_as(me, night):
+    """The member as the pages should treat them: nobody acts as a host on an archived session."""
+    return read_only(me) if night.is_archived else me
+
+
 def session(request, session_id):
     session, me = session_for(request.user, session_id)
-    context = session_context(session, me)
+    context = session_context(session, shown_as(me, session.night))
+    context["real_host"] = me.is_host
     # Counts that were typed but refused are shown again, once.
     drafts = request.session.get("count_drafts", {})
     typed = drafts.pop(str(session.pk), None)
@@ -182,7 +190,7 @@ def session_state(request, session_id):
     session, me = session_for(request.user, session_id)
     if request.GET.get("v") == str(session.version):
         return HttpResponse(status=204)
-    html = render_to_string("web/_session_live.html", session_context(session, me), request=request)
+    html = render_to_string("web/_session_live.html", session_context(session, shown_as(me, session.night)), request=request)
     return JsonResponse({"version": session.version, "html": html})
 
 
@@ -214,8 +222,9 @@ def session_log(request, session_id):
 
 def night(request, night_id):
     """The session page: its sets, in order."""
-    night, me = night_for(request.user, night_id)
-    sets = [s for s in night.sets.order_by("set_number") if me.is_host or s.state != GameSession.State.SETUP]
+    night, host = night_for(request.user, night_id)
+    me = shown_as(host, night)
+    sets = [s for s in night.sets.order_by("set_number") if host.is_host or s.state != GameSession.State.SETUP]
     for one in sets:
         one.play_seconds = clock.set_seconds(one)
         one.clock_running = clock.is_running(one)
@@ -239,6 +248,11 @@ def night(request, night_id):
         "can_close": me.is_host and not night.is_closed and not unfinished
         and any(s.state == State.FINALIZED for s in all_sets),
     })
-    if night.is_closed:
+    if night.is_closed and not night.is_archived:
         context["recap"] = settlement_queries.night_recap(night, outcome.standings)
+    if host.is_host:
+        context["manage"] = {
+            "unfinished": [s for s in all_sets if s.state in games.UNFINISHED_STATES],
+            "has_records": games.night_has_records(night),
+        }
     return render(request, "web/night.html", context)

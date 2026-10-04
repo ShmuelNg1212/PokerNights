@@ -1,10 +1,21 @@
 """Session lookups that enforce group membership."""
 
+import copy
+
 from django.http import Http404
 
 from groups.access import member_for
 
+from groups.models import Member
+
 from .models import GameNight, GameSession
+
+
+def read_only(member):
+    """A copy that renders as a player: the pages of an archived session offer no host action."""
+    shown = copy.copy(member)
+    shown.role = Member.Role.PLAYER
+    return shown
 
 
 def session_for(user, session_id) -> tuple[GameSession, object]:

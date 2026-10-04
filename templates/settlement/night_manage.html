@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} session · {{ night }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'night' night.pk %}">Back to the session</a></p>
+<h1>{% if mode == 'delete' %}Delete this session?{% else %}Archive this session?{% endif %}</h1>
+<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
+{% if unfinished %}
+<div class="notice notice-info">Finish or cancel every set first. Not done: {% for s in unfinished %}set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</div>
+{% elif mode == 'delete' and has_records %}
+<div class="notice notice-info">Money was recorded in this session, so it cannot be deleted. Money records are never removed. You can archive it instead.</div>
+<p><a class="btn btn-block" href="{% url 'night_archive' night.pk %}">Archive instead</a></p>
+{% elif mode == 'delete' %}
+<p class="muted">This removes the session and its sets for good. It holds no money record. It cannot be undone.</p>
+<form method="post" class="form-section stack" data-once>{% csrf_token %}
+  <button type="submit" class="btn btn-danger btn-block">Delete the session</button>
+</form>
+{% else %}
+<ul class="muted manage-effects">
+  <li>The session leaves the Sessions list and the Your groups page.</li>
+  <li>Its results leave the stats, each player's record and the group rake total.</li>
+  <li>Nothing is removed. A host can restore it from Archived sessions, and everything returns as it was.</li>
+</ul>
+{% if unpaid %}
+<section class="panel stack" aria-labelledby="unpaid-title">
+  <h2 id="unpaid-title">{{ unpaid|length }} transfer{{ unpaid|length|pluralize }} not marked paid</h2>
+  <ul class="list">{% for t in unpaid %}<li class="row"><span class="grow"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong></span><span class="amount">{{ t.amount|amount:unit }}</span></li>{% endfor %}</ul>
+  <p class="small muted">While the session is archived, these no longer appear under “To settle” for either player.</p>
+</section>
+{% endif %}
+<form method="post" class="form-section stack" data-once>{% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-block">{% if unpaid %}Archive with unpaid transfers{% else %}Archive the session{% endif %}</button>
+</form>
+{% endif %}
+<p><a class="btn btn-quiet btn-block" href="{% url 'night' night.pk %}">Keep the session</a></p>
+{% endblock %}

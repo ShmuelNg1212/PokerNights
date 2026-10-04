@@ -626,3 +626,12 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .host-more details > summary.btn { color: var(--text); list-style: none; }
 .host-more details > summary.btn::-webkit-details-marker { display: none; }
 .host-more details[open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
+/* Archive and delete: a notice on an archived session and quiet management sections. */
+.archived-notice { margin: var(--s-3) 0; }
+.archived-notice p { margin: 0 0 var(--s-3); }
+.archived-notice p:last-child { margin-bottom: 0; }
+.night-manage, .archived-sessions { margin-top: var(--s-5); padding-top: var(--s-2); border-top: 1px solid var(--line); }
+.night-manage > summary, .archived-sessions > summary { color: var(--muted); }
+.night-manage .stack { padding-bottom: var(--s-4); }
+.manage-effects { padding-left: 18px; }
+.manage-effects li { margin: var(--s-1) 0; }

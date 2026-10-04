@@ -162,6 +162,7 @@ def counted_results():
         is_current=True, finalization__is_current=True,
         finalization__session__state=GameSession.State.FINALIZED,
         finalization__session__night__status=GameNight.Status.CLOSED,
+        finalization__session__night__archived_at__isnull=True,
     )
 
 
@@ -228,6 +229,7 @@ def unpaid_transfers(member_ids) -> list:
     paid = Payment.objects.filter(active=True, transfer__isnull=False).values("transfer_id")
     return list(
         Transfer.objects.filter(Q(payer_id__in=member_ids) | Q(payee_id__in=member_ids))
+        .filter(plan__night__archived_at__isnull=True)
         .exclude(pk__in=paid)
         .select_related("payer", "payee", "plan__night__table")
         .order_by("plan__night__game_date", "plan__night_id", "position")
@@ -240,3 +242,14 @@ def session_nets(night_ids, member_ids) -> dict:
         is_current=True, member_id__in=member_ids, finalization__session__night_id__in=night_ids,
     ).values("member_id", "finalization__session__night_id").annotate(total=Sum("net"))
     return {(row["finalization__session__night_id"], row["member_id"]): row["total"] for row in rows}
+
+
+def night_has_records(night) -> bool:
+    """True when the session has a settle-up plan or a payment record."""
+    return SettlementPlan.objects.filter(night=night).exists() or Payment.objects.filter(night=night).exists()
+
+
+def unpaid_in(night) -> list:
+    """The transfers of this session that nobody has marked paid."""
+    paid = Payment.objects.filter(active=True, transfer__isnull=False).values("transfer_id")
+    return list(Transfer.objects.filter(plan__night=night).exclude(pk__in=paid).select_related("payer", "payee").order_by("position"))

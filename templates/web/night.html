@@ -3,7 +3,13 @@
 {% block title %}Session · {{ night }}{% endblock %}
 {% block page_class %}table-page night-page{% endblock %}
 {% block content %}
-<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a><span class="badge">Session {{ night.get_status_display|lower }}</span></nav>
+<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a><span class="badge">{% if night.is_archived %}Archived{% else %}Session {{ night.get_status_display|lower }}{% endif %}</span></nav>
+{% if night.is_archived %}
+<div class="notice notice-info archived-notice">
+  <p><strong>This session is archived.</strong> Archived {{ night.archived_at|date:"M j, Y" }}{% if night.archived_by %} by {{ night.archived_by.username }}{% endif %}. It is off the lists and out of the totals, and nothing in it can change.</p>
+  {% if manage %}<form method="post" action="{% url 'night_restore' night.pk %}" data-once>{% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Restore session</button></form>{% endif %}
+</div>
+{% endif %}
 <div class="night-layout">
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
@@ -63,6 +69,27 @@
     {% endif %}
     {% if recap %}
     <button type="button" class="btn btn-quiet btn-block recap-opener" data-sheet-open="recap">View session recap</button>
+    {% endif %}
+    {% if manage %}
+    <details class="night-manage" id="manage">
+      <summary>Manage this session</summary>
+      <div class="stack">
+      {% if night.is_archived %}
+        <p class="small muted">Restore the session to change it or to archive it again later.</p>
+      {% elif manage.unfinished %}
+        <p class="small muted">To archive or delete, finish or cancel every set first. Not done: {% for s in manage.unfinished %}set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+      {% else %}
+        <p class="small muted">Archiving hides the session and takes it out of the totals. It can be restored.</p>
+        <a class="btn btn-block" href="{% url 'night_archive' night.pk %}">Archive session</a>
+      {% endif %}
+      {% if manage.has_records %}
+        <p class="small muted">Money was recorded here, so the session cannot be deleted.</p>
+      {% elif not manage.unfinished %}
+        <p class="small muted">No money was recorded here, so the session can be deleted for good.</p>
+        <a class="btn btn-danger btn-block" href="{% url 'night_delete' night.pk %}">Delete session</a>
+      {% endif %}
+      </div>
+    </details>
     {% endif %}
   </div>
   <div class="night-detail">

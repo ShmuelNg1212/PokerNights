@@ -82,7 +82,7 @@ def home_cards(user) -> list:
 
     with_table = set(Table.objects.filter(group_id__in=group_ids, archived_at__isnull=True).values_list("group_id", flat=True))
     open_nights = (
-        GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN)
+        GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN, archived_at__isnull=True)
         .select_related("table").prefetch_related("sets").order_by("-game_date", "-pk")
     )
     by_group = {}
@@ -123,7 +123,7 @@ def home_cards(user) -> list:
             card.more_dues += 1
 
     last = Subquery(
-        GameNight.objects.filter(group_id=OuterRef("group_id"), status=GameNight.Status.CLOSED)
+        GameNight.objects.filter(group_id=OuterRef("group_id"), status=GameNight.Status.CLOSED, archived_at__isnull=True)
         .order_by("-game_date", "-pk").values("pk")[:1]
     )
     last_nights = list(

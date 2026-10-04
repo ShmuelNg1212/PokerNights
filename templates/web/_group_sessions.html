@@ -34,3 +34,17 @@
 </ul>
 </section>
 {% endif %}
+{% if archived_nights %}
+<details class="group-sessions archived-sessions" id="archived">
+<summary>Archived sessions ({{ archived_nights|length }})</summary>
+<p class="small muted">Off the lists and out of the totals. Open one to restore it.</p>
+<ul class="session-list">
+  {% for n in archived_nights %}
+  <li><a class="session-link" href="{% url 'night' n.pk %}">
+    <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"M j, Y" }}</span></span>
+    <span class="badge">Archived</span>
+  </a></li>
+  {% endfor %}
+</ul>
+</details>
+{% endif %}

@@ -4,6 +4,7 @@ import datetime
 import uuid
 
 from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.utils import timezone
 
 from audit import services as audit
@@ -122,11 +123,16 @@ def create_table(actor: Member, name: str, seat_count, default_preset_id=None) -
 State = GameSession.State
 
 
-def lock_night(night_id, group_id) -> GameNight:
-    """The session row, locked for the rest of the transaction."""
+ARCHIVED = "This session is archived. Restore it before changing anything."
+
+
+def lock_night(night_id, group_id, *, allow_archived=False) -> GameNight:
+    """The session row, locked for the rest of the transaction. An archived session takes no write."""
     night = GameNight.objects.select_for_update().select_related("table").filter(pk=night_id, group_id=group_id).first()
     if night is None:
         raise RuleError("That session is not in this group.")
+    if night.is_archived and not allow_archived:
+        raise RuleError(ARCHIVED)
     return night
 
 
@@ -137,6 +143,9 @@ def lock_session(session_id, group_id) -> GameSession:
     )
     if session is None:
         raise RuleError("That set is not in this group.")
+    # The join locks the session row too, so archiving waits for this write or this write sees it.
+    if session.night.is_archived:
+        raise RuleError(ARCHIVED)
     return session
 
 
@@ -335,6 +344,92 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
 
 
 IN_PLAY_STATES = (State.SETUP, State.OPEN, State.RUNNING)
+
+# --- Archive and delete a session -------------------------------------------
+
+UNFINISHED_STATES = (State.SETUP, State.OPEN, State.RUNNING, State.RECONCILIATION)
+
+# Checks that tell whether a session holds a money record of any kind, reversed ones
+# included. The apps that hold the money register them; see SESSION_MONEY_CHECKS.
+NIGHT_RECORD_CHECKS = []
+
+
+def night_has_records(night: GameNight) -> bool:
+    """True when any money record exists under the session. Such a session is never deleted."""
+    return any(check(night) for check in NIGHT_RECORD_CHECKS)
+
+
+def unfinished_sets(night: GameNight) -> list:
+    return list(night.sets.filter(state__in=UNFINISHED_STATES).order_by("set_number"))
+
+
+def _refuse_unfinished(night, verb) -> None:
+    unfinished = unfinished_sets(night)
+    if unfinished:
+        names = ", ".join(f"set {s.set_number} ({s.get_state_display().lower()})" for s in unfinished)
+        raise RuleError(f"Finish or cancel every set before you {verb} the session. Not done: {names}.")
+
+
+def _bump_sets(night) -> None:
+    # Open set pages poll their set's version: bump it so they show the change.
+    GameSession.objects.filter(night=night).update(version=F("version") + 1)
+
+
+@transaction.atomic
+def archive_night(night_id, actor: Member) -> GameNight:
+    """Take a session off the lists and out of the totals. Nothing is removed; a host can restore it."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id, allow_archived=True)
+    if night.is_archived:
+        return night  # a repeated tap
+    _refuse_unfinished(night, "archive")
+    night.archived_at, night.archived_by = timezone.now(), actor.user
+    night.save(update_fields=["archived_at", "archived_by"])
+    audit.record("night.archived", actor=actor.user, group_id=night.group_id, target=night,
+                 session_id=_last_set_id(night), summary=f"Archived the session {night}")
+    _bump_sets(night)
+    return night
+
+
+@transaction.atomic
+def restore_night(night_id, actor: Member) -> GameNight:
+    """Put an archived session back as it was."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id, allow_archived=True)
+    if not night.is_archived:
+        return night  # a repeated tap
+    night.archived_at = night.archived_by = None
+    night.save(update_fields=["archived_at", "archived_by"])
+    audit.record("night.restored", actor=actor.user, group_id=night.group_id, target=night,
+                 session_id=_last_set_id(night), summary=f"Restored the session {night}")
+    _bump_sets(night)
+    return night
+
+
+@transaction.atomic
+def delete_night(night_id, actor: Member) -> None:
+    """Remove a session that never held money, with its sets. The audit log keeps what happened."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id, allow_archived=True)
+    _refuse_unfinished(night, "delete")
+    if night_has_records(night):
+        raise RuleError("Money was recorded in this session, so it cannot be deleted. Archive it instead.")
+    _delete_night(night, actor)
+
+
+def _delete_night(night, actor) -> None:
+    sets = list(night.sets.order_by("set_number"))
+    audit.record(
+        "night.deleted", actor=actor.user, group_id=night.group_id, target=night,
+        session_id=sets[-1].pk if sets else None, summary=f"Deleted the session {night}"[:255],
+        data={"table": night.table.name, "game_date": night.game_date.isoformat(), "sets": len(sets)},
+    )
+    GameSession.objects.filter(night=night).delete()
+    night.delete()
+
+
+def _last_set_id(night):
+    return night.sets.order_by("-set_number").values_list("pk", flat=True).first()
 
 
 @transaction.atomic
