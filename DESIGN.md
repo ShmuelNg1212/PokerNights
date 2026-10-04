@@ -393,6 +393,17 @@ Log in, Sign up, “Sign-up needs an invite” and Join group share one front-do
 - No colour, token, font, asset or motion is added.
 - **Measured.** 81 checks at 320, 390 and 1280px: no horizontal overflow against the requested width with a 60-character unbroken group name, every control at least 48px, new text pairs at 4.5:1 or more, keyboard order username → password → Show → submit → alternate link with the 3px focus ring, and the whole invite flow without a refused step.
 
+### 2026-10-04 addendum — Settle status
+
+A closed session states its settle status wherever it is listed. [Plan](doc/plan/1791120060_session_settled_indicator.md).
+
+- **Badge.** One pill in words: “Settled” in Up with a 14px check, or “Partly settled” / “Unsettled” in Brass. It never relies on colour alone. One partial renders it for the list and the session top bar.
+- **Past sessions row.** Table name, then a muted line “date · N sets”, with “· ₱2,650 still to pay” added while money is owed. The status badge sits at the right in place of the former set-count badge.
+- **Heading.** “Past sessions” gains a muted, non-wrapping “N not settled” while any are outstanding.
+- **Session top bar.** A closed session shows the status badge in place of “Session closed”. Open sessions read “Session open”; archived ones “Archived”.
+- No token, colour or asset is added.
+- **Measured.** 24 checks at 320, 390 and 1280px: no overflow with ₱199,999,999.98 still to pay, rows at least 48px, badge and count text at 4.5:1 or more, and each row matching its session page.
+
 ## Do's and Don'ts
 
 ### Do:

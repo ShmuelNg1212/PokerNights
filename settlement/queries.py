@@ -52,6 +52,64 @@ class Standing:
         return self.member.pk
 
 
+SETTLE_LABELS = {"settled": "Settled", "partly": "Partly settled", "unsettled": "Unsettled"}
+
+
+def settle_status(transfers: int, paid: int) -> str:
+    """``settled``, ``partly`` or ``unsettled``, from how many transfers are marked paid.
+
+    The one rule for the session page and for lists. A plan without transfers is settled.
+    """
+    if paid >= transfers:
+        return "settled"
+    return "partly" if paid else "unsettled"
+
+
+@dataclass
+class SettleState:
+    """The settle-up status of one closed session. Derived from the paid marks; never stored."""
+
+    transfers: int = 0
+    paid: int = 0
+    total_to_pay: int = 0
+    paid_amount: int = 0
+
+    @property
+    def status(self) -> str:
+        return settle_status(self.transfers, self.paid)
+
+    @property
+    def label(self) -> str:
+        return SETTLE_LABELS[self.status]
+
+    @property
+    def still_to_pay(self) -> int:
+        return self.total_to_pay - self.paid_amount
+
+
+def settle_states(night_ids) -> dict:
+    """``{night_id: SettleState}`` for these sessions, in two queries however many there are.
+
+    Paid transfers are counted from active payments in a query of their own: a transfer
+    that was paid, undone and paid again has several payment rows and still counts once.
+    """
+    from django.db.models import Count
+
+    night_ids = list(night_ids)
+    if not night_ids:
+        return {}
+    states = {night_id: SettleState() for night_id in night_ids}
+    transfers = Transfer.objects.filter(plan__night_id__in=night_ids)
+    for row in transfers.values("plan__night_id").annotate(count=Count("pk"), total=Sum("amount")):
+        state = states[row["plan__night_id"]]
+        state.transfers, state.total_to_pay = row["count"], row["total"]
+    paid = Payment.objects.filter(active=True, transfer__isnull=False).values("transfer_id")
+    for row in transfers.filter(pk__in=paid).values("plan__night_id").annotate(count=Count("pk"), total=Sum("amount")):
+        state = states[row["plan__night_id"]]
+        state.paid, state.paid_amount = row["count"], row["total"]
+    return states
+
+
 @dataclass
 class NightOutcome:
     """A session's results over its sets, and its transfers once it is closed."""
@@ -80,13 +138,11 @@ class NightOutcome:
     @property
     def status(self) -> str:
         """``settled``, ``partly`` or ``unsettled``. Derived from the paid marks; never stored."""
-        if self.paid_count == len(self.transfers):
-            return "settled"
-        return "partly" if self.paid_count else "unsettled"
+        return settle_status(len(self.transfers), self.paid_count)
 
     @property
     def status_label(self) -> str:
-        return {"settled": "Settled", "partly": "Partly settled", "unsettled": "Unsettled"}[self.status]
+        return SETTLE_LABELS[self.status]
 
     def standing_for(self, member_id):
         return next((s for s in self.standings if s.member.pk == member_id), None)

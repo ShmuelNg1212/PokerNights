@@ -3,7 +3,7 @@
 {% block title %}Session · {{ night }}{% endblock %}
 {% block page_class %}table-page night-page{% endblock %}
 {% block content %}
-<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a><span class="badge">{% if night.is_archived %}Archived{% else %}Session {{ night.get_status_display|lower }}{% endif %}</span></nav>
+<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% else %}<span class="badge">Session {{ night.get_status_display|lower }}</span>{% endif %}</nav>
 {% if night.is_archived %}
 <div class="notice notice-info archived-notice">
   <p><strong>This session is archived.</strong> Archived {{ night.archived_at|date:"M j, Y" }}{% if night.archived_by %} by {{ night.archived_by.username }}{% endif %}. It is off the lists and out of the totals, and nothing in it can change.</p>

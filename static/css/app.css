@@ -659,3 +659,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .password-wrap input { padding-right: 76px; }
 .password-toggle { position: absolute; top: 0; right: 0; min-width: 68px; height: 100%; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-field); background: transparent; color: var(--muted); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
 .password-toggle:hover, .password-toggle[aria-pressed=true] { color: var(--text); }
+
+/* Settle status: the badge says it in words; settled also carries a check. */
+.badge .icon { width: .875rem; height: .875rem; margin-right: 4px; vertical-align: -2px; stroke-width: 3; }
+.heading-count { margin-left: var(--s-2); font-weight: 500; white-space: nowrap; }
