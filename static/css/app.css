@@ -551,3 +551,56 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .table-page:has([data-count-preview]) { padding-bottom: 370px; }
   .count-preview { overflow-wrap: anywhere; }
 }
+
+/* Your groups: each group reports its state. The felt band appears only for a set in play. */
+.home-page .page-heading { margin-bottom: var(--s-4); }
+.group-home { min-width: 0; padding: var(--s-5) 0 var(--s-4); border-top: 1px solid var(--line); }
+.group-home:first-child { border-top: 0; padding-top: 0; }
+.group-home-head { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: var(--s-1) var(--s-3); }
+.group-home-head h2 { margin: 0; font-size: 1.75rem; line-height: 1.15; font-weight: 800; font-stretch: 88%; overflow-wrap: anywhere; }
+.group-home-head h2 a { display: inline-flex; align-items: center; min-height: var(--tap); text-decoration: none; }
+.group-home-head h2 a:hover { color: var(--brass); }
+.token-row { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s-3); margin: 0; }
+.token-stack { display: flex; padding-left: 8px; }
+.token-stack .chip { width: 36px; height: 36px; margin-left: -8px; font-size: .75rem; box-shadow: 0 0 0 3px var(--ground); }
+.home-band { margin: var(--s-4) 0 0; padding: var(--s-4); border-radius: var(--r-sheet); }
+.home-band:not(.felt) { border: 1px solid var(--rule); background: var(--rail); }
+.band-title { display: block; font-size: 1.375rem; line-height: 1.2; font-weight: 800; font-stretch: 88%; overflow-wrap: anywhere; }
+.band-title small { color: var(--felt-ink); font-size: .9375rem; white-space: nowrap; }
+.band-facts { margin: var(--s-1) 0 var(--s-4); color: var(--muted); font-size: .9375rem; }
+.home-band.felt .band-facts { color: var(--felt-ink); }
+.band-facts:last-child { margin-bottom: 0; }
+.home-more { margin: var(--s-2) 0 0; }
+.home-more a { display: inline-flex; align-items: center; min-height: var(--tap); }
+.home-dues { margin-top: var(--s-5); }
+.home-dues h3, .home-facts dt a { font-size: 1rem; font-weight: 650; }
+.home-dues h3 { margin: 0; color: var(--brass); }
+.home-facts dt a { padding-block: 16px; }
+.home-dues ul { list-style: none; margin: 0; padding: 0; }
+.home-dues li + li { border-top: 1px solid var(--rule); }
+.home-dues a { display: flex; align-items: center; gap: var(--s-3); min-height: 56px; padding: var(--s-2) 0; text-decoration: none; overflow-wrap: anywhere; }
+.home-dues a:hover strong { text-decoration: underline; text-underline-offset: .2em; }
+.home-dues .small, .home-facts dt .small { display: block; font-weight: 500; }
+.home-dues .amount, .home-facts .amount { flex: none; display: inline-flex; align-items: center; gap: var(--s-1); font-size: 1.375rem; font-weight: 750; font-stretch: 85%; white-space: nowrap; }
+.home-facts .amount .icon { width: 1rem; height: 1rem; }
+.home-facts { margin: var(--s-4) 0 0; border-top: 1px solid var(--rule); }
+.home-dues + .home-facts { margin-top: 0; }
+.home-facts > div { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 56px; padding: var(--s-2) 0; border-bottom: 1px solid var(--rule); }
+.home-facts dt { min-width: 0; font-weight: 650; overflow-wrap: anywhere; }
+.home-facts dd { margin: 0; text-align: right; }
+.home-links { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); margin-top: var(--s-1); }
+.home-links a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--muted); font-size: .9375rem; text-underline-offset: 4px; }
+.home-links a:hover { color: var(--text); }
+.home-create { margin-top: var(--s-5); padding-top: var(--s-2); border-top: 1px solid var(--line); }
+.home-create > summary { color: var(--muted); }
+.home-create form { padding-bottom: var(--s-4); }
+.home-first { max-width: 440px; margin: var(--s-6) auto 0; }
+.home-first h1 { margin: var(--s-4) 0 var(--s-2); font-size: 2rem; font-weight: 800; }
+.home-first form { margin: var(--s-5) 0; }
+@media (min-width: 900px) {
+  .home-page:not(.home-many) { max-width: 560px; }
+  .home-many { max-width: 1180px; }
+  .home-many .home-groups { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0 48px; align-items: start; }
+  .home-many .group-home:nth-child(2) { border-top: 0; padding-top: 0; }
+  .home-many .home-create { max-width: 560px; }
+}

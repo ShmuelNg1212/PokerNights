@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Your groups home is done ([plan](doc/plan/1791102439_your_groups_home.md)): each group reports its state, next action, what you owe or are owed, your record and last result.
+
 UI evolution is done ([plan](doc/plan/1791098885_ui_evolution.md)): shared tokens, SVG branding, Sessions / Stats / Group settings tabs, Session and Set wording, written row actions, neutral non-play states, clearer discrepancy and settle-up, and first player stats.
 
 Rake controls are done ([plan](doc/plan/1791096125_rake_controls.md)): explicit choices at creation and active-value validation.
@@ -28,6 +30,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] Try the new Your groups page as a host and as a player: with a set in play, with a set counting up, after closing a session with unpaid transfers, and with no session. Check “To settle” against the session page.
 
 - [ ] Try the evolved UI: on a group open Sessions, Stats and Group settings. On a running set use the Rebuy and Cash out buttons on a row. End play with a wrong cash-out and read the discrepancy panel. Close a session, mark every transfer paid and check it says Settled. Check Stats for all time and one month.
 

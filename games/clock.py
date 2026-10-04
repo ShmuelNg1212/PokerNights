@@ -53,6 +53,17 @@ def set_seconds(session, now=None):
     return _total(rows, now or timezone.now()) if rows else None
 
 
+def seconds_by_set(session_ids, now=None) -> dict:
+    """``{session_id: seconds}`` for the sets that have timed play, in one query."""
+    now = now or timezone.now()
+    rows = {}
+    for session_id, started, ended in PlayPeriod.objects.filter(session_id__in=session_ids).values_list(
+        "session_id", "started_at", "ended_at"
+    ):
+        rows.setdefault(session_id, []).append((started, ended))
+    return {session_id: _total(periods, now) for session_id, periods in rows.items()}
+
+
 def is_running(session) -> bool:
     return PlayPeriod.objects.filter(session=session, ended_at__isnull=True).exists()
 

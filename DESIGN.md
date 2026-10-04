@@ -289,7 +289,7 @@ The browser key includes session and signed-in viewer. Automatic opening happens
 
 ### Group and home navigation
 
-Full-width group rows pair written names with membership roles. An empty home explains creation or an invitation. The group’s current sessions are neutral rows; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
+Home shows one block per group that reports its state (see the home addendum below). A newcomer gets a focused first-group screen with the mark, the create form and a line about invite links. The group’s current sessions are neutral rows; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
 
 The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Roster chip colour derives from member primary key within the ten-colour palette; collision handling uses roster peers. Set join order and session standing order retain their own token rules, so colour does not promise identity across those views. The one-time invite URL remains a labelled read-only field.
 
@@ -339,6 +339,19 @@ The Rack identity is kept: warm near-black, bone, Archivo, hard button shadows, 
 - **Stats.** Rows show rank, token, name, “N sessions · won N · N% win rate” and a signed amount with a direction icon. Definitions sit in a panel under the list.
 - **Branding.** The mark is a bone chip with six ink notches and a brass crescent on an ink disc, so it reads on near-black and on cream. `logo-horizontal.svg` adds the outlined Archivo wordmark in bone; `logo-mono.svg` is ink only; `app-icon.svg` centres the mark at 62% on a full square. No raster files.
 - **Measured.** 135 captures at 375, 768 and 1280px: no horizontal overflow, no link, button or field under 44px, and sampled text pairs from 7.33:1 upward. Token initials on the ten player colours were not measured.
+
+### 2026-10-04 addendum — Your groups home
+
+Each group on the home page is an unboxed block separated by a Line rule, not a card. [Plan](doc/plan/1791102439_your_groups_home.md).
+
+- **Head.** Group name at 1.75rem, weight 800, width 88%, linking to the group; the role badge; up to six overlapping 36px tokens ringed in Ground, with the player count in words.
+- **Status band.** The one surface in the block, radius 26px. A set in play uses `.felt` with an In play badge, “N at the table · timer”, and a bone Open the table button. Every other state uses Rail with a Rule border. The band holds the single action for the viewer; a player in a quiet group gets none. Money still in play is never shown here.
+- **To settle.** A brass heading over ruled rows that link to the session: “You owe **Name**” with the amount in Down, “**Name** owes you” in Up. At most three rows, then a count of the rest. Shown only to the person concerned.
+- **Facts.** Ruled rows for Your record (per unit, with sessions and wins) and Last session, with signed amounts and direction icons.
+- **Links.** Sessions, Stats and Group settings as quiet 48px text links.
+- **Create a group** is a closed disclosure under the groups and opens when its form has an error.
+- From 900px, two or more groups use two columns; one group keeps a 560px frame.
+- **Measured.** 16 captures over four viewers at 320, 375, 768 and 1280px: no horizontal overflow, no target under 48px, new text pairs from 7.58:1, felt present only with a set in play.
 
 ## Do's and Don'ts
 

@@ -44,3 +44,7 @@ This addendum preserves the incumbent Rack and machine-token records. Finish rev
 ## 2026-10-04 addendum — UI evolution
 
 The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The group page is split into Sessions, Stats and Group settings views on the same route. Current sessions are neutral rows. The header carries the chip mark.
+
+## 2026-10-04 addendum — Your groups home
+
+The approved `doc/plan/1791102439_your_groups_home.md` rebuilds `templates/web/home.html` inside the Rack. Mode: Operate. THESIS: one block per group, and the block says what is true right now; the page is loud only when a set is in play. Built with `web/home.py` (batched read-only queries) and `templates/web/_group_card.html`. The felt band is used only for a set in play. No money still in play, no other member's balance, no added JavaScript.

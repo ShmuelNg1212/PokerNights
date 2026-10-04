@@ -56,3 +56,7 @@ An empty set offers Choose rake before buy-ins beside the start controls. The ne
 ## 2026-10-04 addendum — UI evolution
 
 The group page separates Sessions, Stats and Group settings. Screens use Session for the gathering and Set for one round; “Game settings” is now Set settings. Hosts see written Buy-in, Rebuy and Cash out actions on each row. Stats show profit or loss after rake, sessions played and win rate per unit, for all time or one month, from closed sessions only. The product has a chip-and-crescent mark. [Plan](doc/plan/1791098885_ui_evolution.md).
+
+## 2026-10-04 addendum — Your groups home
+
+The first page after sign-in reports each group's state: whether a set is in play, the one action the viewer is needed for, what they owe or are owed, their record and their last result. A set in play is one tap from here. Money still in play is left off this page because it does not refresh by itself. A one-group member still lands here. [Plan](doc/plan/1791102439_your_groups_home.md).

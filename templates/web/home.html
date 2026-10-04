@@ -1,8 +1,21 @@
 {% extends "base.html" %}
-{% block page_class %}hub-page{% endblock %}
+{% load static %}
+{% block page_class %}hub-page home-page{% if cards|length > 1 %} home-many{% endif %}{% endblock %}
 {% block content %}
-<header class="page-heading"><h1>Your groups</h1><p class="muted">Choose the people you play with.</p></header>
-{% if memberships %}<ul class="hub-list">{% for m in memberships %}<li><a class="hub-link" href="{% url 'group' m.group_id %}"><strong>{{ m.group.name }}</strong><span class="badge">{{ m.get_role_display }}</span></a></li>{% endfor %}</ul>
-{% else %}<div class="empty-state"><h2>A place for your game</h2><p>Create a group, or open an invite link from a host.</p></div>{% endif %}
-<section class="form-section"><h2>Create a group</h2><form method="post" action="{% url 'group_create' %}" class="stack">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-primary btn-block" type="submit">Create group</button></form></section>
+{% if cards %}
+<header class="page-heading"><h1>Your groups</h1></header>
+<div class="home-groups">{% for card in cards %}{% include "web/_group_card.html" %}{% endfor %}</div>
+<details class="home-create" {% if form.errors %}open{% endif %}><summary>Create another group</summary>
+  <form method="post" action="{% url 'group_create' %}" class="stack">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-block" type="submit">Create group</button></form>
+</details>
+{% else %}
+<section class="home-first">
+  <img src="{% static 'branding/logo-mark.svg' %}" alt="" width="72" height="72">
+  <h1>Start your first group</h1>
+  <p class="muted">A group is the people you play with. It keeps your sessions, players and results together.</p>
+  <form method="post" action="{% url 'group_create' %}" class="stack">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-primary btn-block" type="submit">Create group</button></form>
+  <p class="muted small">Joining a friend's game instead? Open the invite link a host sent you.</p>
+</section>
+{% endif %}
 {% endblock %}
+{% block scripts %}{% if cards %}<script src="{% static 'js/clock.js' %}" defer></script>{% endif %}{% endblock %}
