@@ -53,7 +53,7 @@ Player result after rake = cash-outs + override − gross buy-ins. Player remain
 
 - [x] Record approval, recheck current main and create isolated branch/worktree `feat/set-rake`. Link TODO to this plan. Approval covers this multi-commit accounting change, its required verification, local merge and docs.
 - [x] **`feat(ledger): record per-buy-in rake and group accounts`**: group identity, set rule/version/request tracking, entry model, atomic recording/reversal and compatible migrations. Completion: exact integer fees and accepted pool aggregates verified; default-Off app remains workable at this commit boundary. Do not expose an enabled fee through forms until balance/finalization support is integrated.
-- [ ] **`feat(settlement): account for collected rake in balances and results`**: rake-aware read models, constraints/snapshots, overrides, separate transfer balances and zero-double-charge closure. Completion: rake-enabled sets finalize and sessions settle with exact conservation; old snapshots/transfers remain unchanged.
+- [x] **`feat(settlement): account for collected rake in balances and results`**: rake-aware read models, constraints/snapshots, overrides, separate transfer balances and zero-double-charge closure. Completion: rake-enabled sets finalize and sessions settle with exact conservation; old snapshots/transfers remain unchanged.
 - [ ] **`feat(web): show rake rules and accumulated pools`**: expose host configuration and all affected facts, group lifetime breakdown and recap distinctions. Completion: native end-to-end percentage/flat/Off flows, live preview, group totals and membership gates meet AC1–AC9. Apply Impeccable as a bounded Operate extension during this UI task; inherit Rack, use batched captures and required finish-review/documenter roles.
 - [ ] **`docs: document rake accounting and group pools`**: sync PRODUCT/DESIGN as needed, wiki architecture/features/setup/journal, confirmed footguns, relevant surface addenda, TODO and plan evidence. Keep SPEC.md and studies immutable.
 - [ ] Rendezvous: merge only after required checks pass; verify main and the running app, apply compatible migrations and record exact evidence. No push or deployment.
@@ -80,3 +80,5 @@ Use additive defaults and staged constraints so existing development data migrat
 2026-10-04: study and completed plan prepared. Deducted funding, group-owned entity and already-collected tracking are confirmed. No external blocker. Proposed precision/rounding/configuration rules and this implementation scope await approval.
 
 2026-10-04: Approved by the human (“approved”). Worktree `/private/tmp/pn-set-rake`, branch `feat/set-rake`. Ledger/configuration step verified: 452 SQLite tests pass (six PostgreSQL-only skips).
+
+2026-10-04: Balance/result/settlement step verified: 456 SQLite tests pass (six PostgreSQL-only skips). Equal after-rake losses create zero transfers; mixed Off/rake sets and payment Undo preserve rake totals.

@@ -229,7 +229,8 @@ class Finalization(models.Model):
     is_current = models.BooleanField(default=True)
     unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
     total_buy_in = models.BigIntegerField()
-    # Cash-outs plus any host override. Always equal to total_buy_in.
+    total_rake = models.BigIntegerField(default=0)
+    # Cash-outs plus any host override. With rake, equals total_buy_in.
     total_cash_out = models.BigIntegerField()
     # Cash-outs minus buy-ins before any host override. Zero when the books balanced.
     raw_difference = models.BigIntegerField(default=0)
@@ -242,7 +243,8 @@ class Finalization(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["session", "revision"], name="finalization_revision_unique"),
             models.UniqueConstraint(fields=["session"], condition=Q(is_current=True), name="finalization_one_current"),
-            models.CheckConstraint(condition=Q(total_buy_in=F("total_cash_out")), name="finalization_money_conserved"),
+            models.CheckConstraint(condition=Q(total_buy_in=F("total_cash_out") + F("total_rake")), name="finalization_money_conserved"),
+            models.CheckConstraint(condition=Q(total_rake__gte=0), name="finalization_rake_not_negative"),
         ]
 
     def __str__(self):
@@ -262,6 +264,7 @@ class PlayerResult(models.Model):
     group = models.ForeignKey(GameGroup, on_delete=models.PROTECT, related_name="+")
     game_date = models.DateField()
     unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
+    rake_total = models.BigIntegerField(default=0)
     buy_in_total = models.BigIntegerField()
     buy_in_count = models.PositiveIntegerField()
     cashed_out = models.BigIntegerField()  # what the player's cash-outs add up to
@@ -276,6 +279,7 @@ class PlayerResult(models.Model):
     class Meta:
         ordering = ["finalization", "participant__join_order"]
         constraints = [
+            models.CheckConstraint(condition=Q(rake_total__gte=0, rake_total__lte=F("buy_in_total")), name="result_rake_valid"),
             models.UniqueConstraint(fields=["finalization", "participant"], name="result_once_per_finalization"),
             models.UniqueConstraint(fields=["participant"], condition=Q(is_current=True), name="result_one_current"),
             models.CheckConstraint(

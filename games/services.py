@@ -215,6 +215,7 @@ def update_settings(session_id, actor: Member, data: dict, *, request_id=None) -
     stakes = validated_stakes(data)
     unit = _unit(data.get("unit") or session.unit)
     previous = current_settings(session)
+    unit_changed = unit != session.unit
     rake = validated_rake(data) if "rake_mode" in data else previous.rake()
     if unit != session.unit:
         rake = validated_rake({})
@@ -233,7 +234,7 @@ def update_settings(session_id, actor: Member, data: dict, *, request_id=None) -
             "session.unit_changed", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
             summary=f"Changed the unit to {Unit(unit).label}",
         )
-    if not explicit_request and previous.stakes() == stakes and previous.rake() == rake and unit == session.unit:
+    if not explicit_request and previous.stakes() == stakes and previous.rake() == rake and not unit_changed:
         return previous
     version = SettingsVersion.objects.create(
         session=session, number=previous.number + 1, created_by=actor.user, request_id=request_id, **stakes, **rake

@@ -41,6 +41,14 @@ class PlayerLine:
         return sum(b.amount for b in self.buy_ins)
 
     @property
+    def rake_total(self) -> int:
+        return sum(b.rake_amount for b in self.buy_ins)
+
+    @property
+    def playable_total(self) -> int:
+        return self.buy_in_total - self.rake_total
+
+    @property
     def has_money(self) -> bool:
         return bool(self.buy_ins)
 
@@ -98,13 +106,21 @@ class Summary:
         return sum(line.buy_in_total for line in self.lines)
 
     @property
+    def rake(self) -> int:
+        return sum(line.rake_total for line in self.lines)
+
+    @property
+    def playable(self) -> int:
+        return self.total - self.rake
+
+    @property
     def cashed_out(self) -> int:
         return sum(line.cashed_out for line in self.lines)
 
     @property
     def in_play(self) -> int:
         """Bought in and not yet cashed out."""
-        return self.total - self.cashed_out
+        return self.playable - self.cashed_out
 
     @property
     def adjustment(self) -> int:
@@ -218,12 +234,12 @@ class Balance:
             )
         if self.difference > 0:
             return (
-                f"{self.difference_text} too much: more was cashed out than was bought in. "
+                f"{self.difference_text} too much: cash-outs plus rake exceed buy-ins. "
                 "Look for a buy-in that was not recorded, or a cash-out that is too high."
             )
         if self.difference < 0:
             return (
-                f"{self.difference_text} is missing: less was cashed out than was bought in. "
+                f"{self.difference_text} is missing: cash-outs plus rake are below buy-ins. "
                 "Look for a player who was not cashed out in full, a buy-in recorded twice, or a cash-out that is too low."
             )
         return ""
@@ -235,8 +251,8 @@ def balance(session_or_summary) -> Balance:
         summary=found,
         missing_cash_outs=[line for line in found.lines if line.has_money and not line.is_cashed_out],
         stray_cash_outs=[line for line in found.lines if line.has_cash_out and not line.has_money],
-        raw_difference=found.cashed_out - found.total,
-        difference=found.cashed_out + found.adjustment - found.total,
+        raw_difference=found.cashed_out + found.rake - found.total,
+        difference=found.cashed_out + found.adjustment + found.rake - found.total,
     )
 
 
@@ -252,7 +268,7 @@ class CountTotal:
 
     @property
     def accounted(self) -> int:
-        return self.remaining + self.summary.cashed_out
+        return self.remaining + self.summary.cashed_out + self.summary.rake
 
     @property
     def missing(self) -> int:

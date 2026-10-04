@@ -467,7 +467,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     """Freeze each player's result. Call inside a transaction, with the session locked.
 
     Refuses unless the balance check passes. A result is cash-outs plus any
-    override, minus buy-ins. Results always sum to zero.
+    override, minus gross buy-ins. Player results plus collected rake sum to zero.
     """
     found = queries.balance(session)
     if not found.ok:
@@ -476,7 +476,8 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
     total_buy_in = found.summary.total
     total_cash_out = sum(line.cash_out_final for line in lines)
     nets = [line.cash_out_final - line.buy_in_total for line in lines]
-    if total_cash_out != total_buy_in or sum(nets) != 0:
+    total_rake = found.summary.rake
+    if total_cash_out + total_rake != total_buy_in or sum(nets) + total_rake != 0:
         raise LedgerInvariantError(
             f"Session {session.pk}: cash-outs {total_cash_out} do not equal buy-ins {total_buy_in}."
         )
@@ -489,10 +490,11 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
         revision=previous.revision + 1 if previous else 1,
         unit=session.unit,
         total_buy_in=total_buy_in,
+        total_rake=total_rake,
         total_cash_out=total_cash_out,
         raw_difference=found.raw_difference,
         settings_snapshot=[
-            {"number": version.number, **version.stakes()} for version in session.settings_versions.order_by("number")
+            {"number": version.number, **version.stakes(), **version.rake()} for version in session.settings_versions.order_by("number")
         ],
         finalized_by=actor.user,
     )
@@ -507,6 +509,7 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
             game_date=session.game_date,
             unit=session.unit,
             buy_in_total=line.buy_in_total,
+            rake_total=line.rake_total,
             buy_in_count=line.buy_in_count,
             cashed_out=line.cashed_out,
             adjustment=line.adjustment,

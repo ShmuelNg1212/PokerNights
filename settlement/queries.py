@@ -37,6 +37,11 @@ class Standing:
     sets_played: int
     play_seconds: object = None
     join_order: int = 0
+    rake_total: int = 0
+
+    @property
+    def settlement_balance(self):
+        return self.net + self.rake_total
 
     @property
     def pk(self):
@@ -90,8 +95,10 @@ def night_outcome(night) -> NightOutcome:
     rows = services.session_standings(night)
     members = Member.objects.in_bulk([row[0] for row in rows])
     found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
+    balances = dict(services.settlement_balances(night))
     for order, standing in enumerate(found.standings, 1):
         standing.join_order = order
+        standing.rake_total = balances[standing.pk] - standing.net
     identities = {s.member.pk: s for s in found.standings}
     found.plan = SettlementPlan.objects.filter(night=night).first()
     if found.plan is not None:
@@ -118,6 +125,8 @@ def night_recap(night, standings):
     best = max((s.net for s in standings), default=0)
     return {
         "total_buy_in": sum(f.total_buy_in for f in finals),
+        "total_rake": sum(f.total_rake for f in finals),
+        "all_even": all(s.net == 0 for s in standings),
         "play_seconds": sum(known) if known else None,
         "partial_time": bool(known) and len(known) != len(durations),
         "winners": [s for s in standings if s.net == best] if best > 0 else [],
