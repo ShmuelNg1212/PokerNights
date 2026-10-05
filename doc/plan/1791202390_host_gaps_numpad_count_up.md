@@ -1,6 +1,6 @@
 # Host control gaps, an in-app numpad, and the count-up to finalize flow: plan
 
-Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); all five stages built and verified; documentation synced; phone acceptance and release pending. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
+Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); all five stages built, verified and merged locally as `0dc4c37`; documentation synced; phone acceptance and release pending. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
 
 ## Outcome
 
@@ -194,3 +194,6 @@ Phone acceptance remains open: AC4–AC6 require the human's iPhone, including S
 Final confirmation, 2026-10-05: the completed tree passes 677 tests on SQLite (ten PostgreSQL-only skips), the build-style run, and all 677 on PostgreSQL 17. After the scroll fix, count-flow passes 89/89 and script lifetime passes 22/22 again. The nine selected browser suites pass 628 checks in total. The additional fallback and wording/layout probes pass 7/7 and 6/6. `git diff --check` is clean.
 
 AC1–AC3 are met for the listed current checks; older scripts already recorded as stale remain outside this cycle. AC4–AC6 remain open for the iPhone. The coordinator completed verification and doc sync, including the original three unfinished files, the repeat critique, browser README and scroll footgun. Local rendezvous uses `main` at `f044805`, an ancestor of the tested branch. There is no migration, push or deployment in this cycle. Release requires an instruction from the human.
+
+
+Local rendezvous complete, 2026-10-05: final fix/documentation commit `8d5465e`; merge to local `main` as `0dc4c37`, without conflicts. The merge tree equals the tested branch tree. Temporary verification servers and the isolated PostgreSQL cluster are stopped; the pre-existing server on 8765 was preserved. Not pushed or deployed. Phone acceptance and release remain pending.
