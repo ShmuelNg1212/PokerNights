@@ -46,6 +46,8 @@ try {
  check('rebuy: opened sections stayed open',await A.js(`document.querySelector('.host-more').open&&document.querySelector('.host-more details[data-key=cancel]').open`));
  const r1=A.reqs(mark);console.log('  requests for a rebuy:',r1.length,r1.join(' | '));
  check('rebuy: one POST, no document request',r1.filter(r=>r.startsWith('POST')).length===1&&A.reqs(mark,'Document').length===0&&r1.length<=3);
+ // One trip: the POST is answered with the page (config/inplace.py). Polls of the set's state and cached static files are not part of the action.
+ check('rebuy: the POST is the only request to the server, the page is not fetched again',r1.filter(r=>!r.includes('/state/')&&!r.includes('/static/')).join()==='POST /s/3/buyins/add/');
  check('rebuy: no script error',A.errors(mark)===0);
  await A.shot('inplace-rebuy-390');
  // --- A second rebuy carries a fresh request id and is recorded again.

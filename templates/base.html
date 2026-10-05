@@ -1,5 +1,5 @@
 {% load static %}<!doctype html>
-<html lang="en"{% if service_worker %} data-sw="on"{% endif %}{% if numpad %} data-numpad="on"{% endif %}>
+<html lang="en"{% if service_worker %} data-sw="on"{% endif %}{% if numpad %} data-numpad="on"{% endif %}{% if answer_in_place %} data-in-place="on"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

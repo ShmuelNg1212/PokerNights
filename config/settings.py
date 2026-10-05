@@ -80,6 +80,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "config.prefetch.PrefetchLeavesOneTimeState",
+    "config.inplace.AnswerInPlace",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -180,6 +181,8 @@ STATIC_VERSION = static_version(os.environ)
 SERVICE_WORKER = env.bool("SERVICE_WORKER", default=True)
 # Turn off to return every number field to the phone's own keyboard (see static/js/numpad.js).
 NUMPAD = env.bool("NUMPAD", default=True)
+# Turn off to answer every in-place action with a redirect again, two trips instead of one (see config/inplace.py).
+ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

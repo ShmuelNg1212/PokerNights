@@ -58,5 +58,5 @@ def offline(request):
 
 
 def flags(request):
-    """Template context: whether pages register the service worker and offer the in-app numpad."""
-    return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD}
+    """Template context: the service worker, the in-app numpad, and one-trip answers to in-place actions."""
+    return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD, "answer_in_place": settings.ANSWER_IN_PLACE}

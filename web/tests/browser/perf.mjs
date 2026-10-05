@@ -53,6 +53,8 @@ try {
  // 6. Turned off again.
  await go('/?perf=0');
  check('turned off: no readout and nothing stored',await js(`!document.querySelector('.perf-readout')&&sessionStorage.getItem('pn-perf')===null`));
- check('no script errors',events.filter(e=>e.method==='Runtime.exceptionThrown').length===0);
+ const thrown=events.filter(e=>e.method==='Runtime.exceptionThrown').map(e=>(e.params.exceptionDetails.exception||{}).description||e.params.exceptionDetails.text);
+ if(thrown.length)console.log('  script errors:',JSON.stringify(thrown).slice(0,900));
+ check('no script errors',thrown.length===0);
 } finally { await send('Browser.close').catch(()=>{});ws.close();chrome.kill(); }
 const failed=results.filter(r=>!r.ok);console.log(`${results.length-failed.length}/${results.length} checks passed`);process.exit(failed.length?1:0);

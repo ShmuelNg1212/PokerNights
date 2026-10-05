@@ -170,6 +170,15 @@
 
   document.addEventListener("turbo:submit-start", function (event) { sent = event.target; });
 
+  // One trip instead of two (config/inplace.py). A form sent in the background says which page
+  // it was sent from; a view that redirects back to that page is then answered with the page
+  // itself. Without the mark on <html> (ANSWER_IN_PLACE=False) nothing is asked for.
+  document.addEventListener("turbo:before-fetch-request", function (event) {
+    if (root.dataset.inPlace !== "on" || !event.target || event.target.tagName !== "FORM") return;
+    if (String(event.detail.fetchOptions.method).toUpperCase() !== "POST") return;
+    event.detail.fetchOptions.headers["X-Answer-In-Place"] = window.location.pathname + window.location.search;
+  });
+
   // An update makes the page match the server. Two things must survive it, as they do
   // across a live poll: text typed in a field that was not part of the form just sent,
   // and a disclosure the person opened.
@@ -221,7 +230,19 @@
   // is loaded the ordinary way, so every script starts clean.
   document.addEventListener("turbo:before-fetch-response", function (event) {
     var response = event.detail.fetchResponse;
-    if (!sent || !response) return;
+    if (!response) return;
+    // The page itself came back in answer to the form. Turbo expects a redirect here, so its own
+    // handling is stopped (which also finishes the submission) and the page is handed to it as a
+    // visit that needs no request: the same in-place update a redirect back would have led to.
+    var page = response.succeeded && !response.redirected && response.response.headers.get("X-In-Place-Location");
+    if (page) {
+      event.preventDefault();
+      response.responseHTML.then(function (html) {
+        Turbo.visit(page, { action: "replace", response: { statusCode: 200, responseHTML: html, redirected: false } });
+      });
+      return;
+    }
+    if (!sent) return;
     var samePage = new URL(response.location).pathname === window.location.pathname;
     if (response.succeeded && samePage) return;
     event.preventDefault();
