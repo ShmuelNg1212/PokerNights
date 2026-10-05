@@ -17,14 +17,14 @@ class GroupViewTests(TestCase):
         for query in ({}, {"view": "nonsense"}):
             page = self.client.get(self.url, query)
             self.assertEqual(page.context["view"], "sessions")
-            self.assertContains(page, 'aria-current="page">Sessions</a>')
+            self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Sessions</a>')
             self.assertNotContains(page, "Invite players")
             self.assertNotContains(page, "Group rake account")
 
     def test_settings_holds_management_and_no_session_list(self):
         make_session(self.host, state="open")
         page = self.client.get(self.url, {"view": "settings"})
-        self.assertContains(page, 'aria-current="page">Group settings</a>')
+        self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Group settings</a>')
         for heading in ("Players", "Invite players", "Tables", "Presets", "Group rake account"):
             self.assertContains(page, f">{heading}</h2>")
         self.assertNotContains(page, "Current sessions")

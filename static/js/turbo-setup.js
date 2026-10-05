@@ -77,19 +77,6 @@
     if (was && now && words(was) && (words(now).indexOf(words(was)) === 0 || words(was).indexOf(words(now)) === 0)) carry(was, now, "title");
     if ((a === 2 && b === 3) || (a === 3 && b === 2)) chips(from, to);
   }
-  // The markers stay until the movement has ended, then leave nothing behind.
-  function arrived() {
-    if (!root.dataset.go && !carried.length) return;
-    var mine = change, done = function () { if (mine === change) settle(); };
-    requestAnimationFrame(function () { requestAnimationFrame(function () {
-      var moving = document.getAnimations().filter(function (motion) {
-        return motion.effect && motion.effect.pseudoElement && motion.effect.pseudoElement.indexOf("::view-transition") === 0;
-      });
-      Promise.allSettled(moving.map(function (motion) { return motion.finished; })).then(done);
-    }); });
-    setTimeout(done, 800);
-  }
-
   // --- Screen changes. A swapped page stops the scripts of the page that is leaving and
   // starts them for the one that arrives (see page.js). An in-place update of the same page
   // ("morph") restarts nothing.
@@ -103,20 +90,23 @@
     if (morph) { if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true })); }
     else direct(event.detail.newBody);
     var leave = function () { if (!morph) window.pokerPage.stop(); };
-    if (!document.startViewTransition || still.matches) { leave(); return; }
+    if (!document.startViewTransition || still.matches) { leave(); settle(); return; }
     event.preventDefault();
     var shown = new Promise(function (done) { drawn = done; setTimeout(done, 2000); });
+    // The markers stay until the browser reports the whole change finished. Its layers are on
+    // screen until then, and a marker removed sooner restarts the old screen's fade: a flash of
+    // the previous screen.
+    var mine = change, ended = function () { moving = Math.max(0, moving - 1); if (mine === change) settle(); };
     try {
       var transition = document.startViewTransition(function () { leave(); event.detail.resume(); return shown; });
       moving += 1;
       transition.finished.then(ended, ended);
-    } catch (_) { leave(); event.detail.resume(); }
+    } catch (_) { leave(); event.detail.resume(); settle(); }
   });
   // Nothing waits for a movement. While one runs, the browser may give a tap to the page itself
   // and report nothing under the finger, so the control is found by its place on the screen and
   // the tap is passed on. Where more than one control is there (a bar over a list), it is left alone.
   var moving = 0;
-  function ended() { moving = Math.max(0, moving - 1); }
   function controlAt(x, y) {
     var sheet = document.querySelector("dialog[open]");
     var found = Array.from((sheet || document).querySelectorAll("a[href], button:not(:disabled), summary, label, input:not([type=hidden]), select")).filter(function (el) {
@@ -135,7 +125,6 @@
     if (drawn) { drawn(); drawn = null; }
     if (event.detail.renderMethod === "morph") return;
     window.pokerPage.start();
-    arrived();
     // A real page load is announced by the browser and starts at the top. A swap is silent,
     // so say the new title once and put focus at the start of the content.
     var announcer = document.getElementById("route-announcer");

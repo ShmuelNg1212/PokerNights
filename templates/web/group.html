@@ -6,9 +6,9 @@
 {% block content %}
 <p class="table-bar"><a href="{% url 'home' %}">{% icon 'arrow-left' %} Your groups</a></p><header class="page-heading"><h1 data-carry="title">{{ group.name }}</h1><span class="badge">{{ me.get_role_display }}</span></header>
 <nav class="tabs" aria-label="{{ group.name }}">
-  <a href="{% url 'group' group.pk %}" {% if view == 'sessions' %}aria-current="page"{% endif %}>Sessions</a>
-  {% if has_stats %}<a href="{% url 'group' group.pk %}?view=stats" {% if view == 'stats' %}aria-current="page"{% endif %}>Stats</a>{% endif %}
-  <a href="{% url 'group' group.pk %}?view=settings" {% if view == 'settings' %}aria-current="page"{% endif %}>Group settings</a>
+  <a href="{% url 'group' group.pk %}" {% if view == 'sessions' %}aria-current="page"{% endif %}>{% if view == 'sessions' %}<span class="tab-marker" aria-hidden="true"></span>{% endif %}Sessions</a>
+  {% if has_stats %}<a href="{% url 'group' group.pk %}?view=stats" {% if view == 'stats' %}aria-current="page"{% endif %}>{% if view == 'stats' %}<span class="tab-marker" aria-hidden="true"></span>{% endif %}Stats</a>{% endif %}
+  <a href="{% url 'group' group.pk %}?view=settings" {% if view == 'settings' %}aria-current="page"{% endif %}>{% if view == 'settings' %}<span class="tab-marker" aria-hidden="true"></span>{% endif %}Group settings</a>
 </nav>
 {% if view == 'settings' %}{% include "web/_group_settings.html" %}{% elif view == 'stats' %}{% include "web/_group_stats.html" %}{% else %}{% include "web/_group_sessions.html" %}{% endif %}
 {% endblock %}

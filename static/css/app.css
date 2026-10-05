@@ -473,7 +473,10 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .tabs { display:flex; gap:var(--s-1); padding:var(--s-1); margin:0 0 var(--s-5); background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-btn); }
 .tabs a { flex:1; display:flex; align-items:center; justify-content:center; min-height:var(--tap); padding:0 var(--s-3); border-radius:11px; color:var(--muted); font-weight:600; text-align:center; text-decoration:none; }
 .tabs a:hover { color:var(--text); }
-.tabs a[aria-current] { background:var(--surface-2); color:var(--text); box-shadow:var(--shadow-btn); }
+.tabs a { position:relative; z-index:0; }
+.tabs a[aria-current] { color:var(--text); }
+/* The marker is its own element under the word, so a tab change can slide it without moving the word. */
+.tab-marker { position:absolute; inset:0; z-index:-1; border-radius:inherit; background:var(--surface-2); box-shadow:var(--shadow-btn); }
 .group-sessions, .group-settings > section { min-width:0; }
 .group-sessions + .group-sessions { margin-top:var(--s-6); }
 .group-settings > section { scroll-margin-top:80px; }
@@ -784,11 +787,17 @@ legend { padding: 0; }
   html:is([data-go=back], [data-go=prev])::view-transition-new(root) { animation: screen-in-left 220ms var(--ease-out) both; }
   /* A carried name keeps its own size at each end; the two fade through each other as the box moves. */
   ::view-transition-old(title), ::view-transition-new(title) { width: 100%; height: 100%; object-fit: none; object-position: left top; }
-  /* A group's tabs: the heading and the tab bar stay, the marker slides to the chosen tab, the content shifts. */
+  /* A group's tabs: the heading and the tab bar stay, the marker slides under the words to the chosen tab, the
+     words stay where they are, the content shifts. */
   html:is([data-go=next], [data-go=prev]) .group-page > .table-bar { view-transition-name: page-bar; }
   html:is([data-go=next], [data-go=prev]) .group-page > .page-heading { view-transition-name: page-heading; }
   html:is([data-go=next], [data-go=prev]) .tabs { view-transition-name: tabs; }
-  html:is([data-go=next], [data-go=prev]) .tabs a[aria-current] { view-transition-name: tab-current; }
+  html:is([data-go=next], [data-go=prev]) .tab-marker { view-transition-name: tab-current; }
+  html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(1) { view-transition-name: tab-1; }
+  html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(2) { view-transition-name: tab-2; }
+  html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(3) { view-transition-name: tab-3; }
+  ::view-transition-group(tab-current) { z-index: 1; }
+  ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3) { z-index: 2; }
 }
 @keyframes screen-out-left { to { opacity: 0; transform: translateX(-24px); } }
 @keyframes screen-in-right { from { opacity: 0; transform: translateX(24px); } }

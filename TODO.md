@@ -51,7 +51,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] **Password reset.** The repeat critique still rates account recovery P1. A host-issued reset link (hosts already issue invite links) is the candidate; it needs a token model and a migration.
 - [ ] Entry pages: make the invitation the subject (group name as the heading, compact mark), shorten the password help, and give a new player a first step on the group page. From the repeat critique.
 
-- [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
+- [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
 - [ ] Stage 2: roster management, history list, optional banker, payments before finalization, reopen a finalized game. See the [roadmap](doc/roadmap/README.md).
 - [ ] Stage 3: leaderboard and stats.
 - [ ] Stage 4: seating.
