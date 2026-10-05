@@ -170,6 +170,27 @@ class HomePageTests(TestCase):
         self.assertNotContains(page, "in play ·")  # no money figure on this page
         self.assertNotContains(page, "New session")
 
+    def test_each_card_has_one_settings_button_and_its_name_opens_the_group(self):
+        group = self.club.group
+        for user in (self.club.host.user, self.user_a):
+            self.client.force_login(user)
+            html = self.client.get(self.url).content.decode()
+            settings = reverse("group", args=[group.pk]) + "?view=settings"
+            self.assertEqual(html.count(f'href="{settings}"'), 1)
+            self.assertIn(f'<a class="btn btn-round btn-quiet group-gear" href="{settings}" aria-label="Group settings for {group.name}">', html)
+            self.assertRegex(html, rf'<h2 id="group-{group.pk}"><a href="{reverse("group", args=[group.pk])}">')
+            self.assertNotIn("home-links", html)
+
+    def test_players_beyond_the_chips_are_a_number_and_the_count_is_still_read_out(self):
+        for n in range(8):
+            groups.add_roster_player(self.club.host, f"Extra {n}")
+        self.client.force_login(self.club.host.user)
+        html = self.client.get(self.url).content.decode()
+        total = len(card_for(self.club.host.user, self.club.group).members)
+        self.assertEqual(html.count('class="chip k'), 6)
+        self.assertIn(f'<span class="chip-more" aria-hidden="true">+{total - 6}</span>', html)
+        self.assertIn(f'<span class="visually-hidden">{total} players</span>', html)
+
     def test_my_figures_are_mine_only(self):
         one = self.club.session(OCT_1, {"A": (1000, 500), "B": (1000, 1500)})
         self.client.force_login(self.user_a)
@@ -179,13 +200,14 @@ class HomePageTests(TestCase):
         self.assertContains(mine, "Your record")
         self.assertContains(mine, "−₱500")
         self.assertContains(mine, reverse("night", args=[one.night_id]))
-        self.assertContains(mine, "?view=stats")
+        self.assertNotContains(mine, "?view=stats")  # the card has one settings button, no Sessions or Stats links
         self.assertNotContains(mine, "New session")  # a player gets no host action
         self.client.force_login(self.club.host.user)
         host = self.client.get(self.url)
         self.assertNotContains(host, "To settle")
         self.assertNotContains(host, "Your record")
-        self.assertContains(host, "You did not play")
+        self.assertContains(host, "Did not play")
+        self.assertNotContains(host, "You did not play")
 
     def test_player_never_sees_a_draft(self):
         make_session(self.club.host, table=self.club.table, state="setup")

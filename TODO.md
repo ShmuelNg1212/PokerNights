@@ -6,6 +6,8 @@ Short active items. The detail is in the linked documents.
 
 App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) was released on 2026-10-05 as `1106548`. Stage 3 ([motion between screens](doc/plan/1791194279_motion_between_screens.md)) was released on 2026-10-05 as `648cca8`. Stage 4 needs its own plan.
 
+The Your groups redesign is done ([plan](doc/plan/1791200012_your_groups_redesign.md)): each group is a card with one settings button, and the viewer's figures are large. No migration. Not pushed.
+
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
 The stakes forms revamp is done ([plan](doc/plan/1791121411_session_form.md)): one field box for every form, and New session, Set settings and presets in titled groups with pairs. No migration.
@@ -43,6 +45,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 ## Next (each needs its own study and plan)
 
 - [ ] After the next release, on your phone: press a few buttons, open and close a buy-in sheet (also close it while it is still rising), and open the host menu. Say what feels wrong: too bouncy, too slow, too much ([plan](doc/plan/1791186717_motion_overhaul.md)).
+- [ ] After the Your groups redesign is released: open Your groups on your phone. Say whether it now reads as finished, whether the gear is where you expect it, and whether any of the removed wording is missed (the player count, the table name beside a due or a last session) ([plan](doc/plan/1791200012_your_groups_redesign.md)).
 - [ ] Stage 3 is live. On your phone: tap Your groups → a group → a session → a set and back with the on-screen links, then with the Back gesture; tap through a group's three tabs; open a set from a closed session's results. Say whether the direction tells you where you went, whether the carried name and chips read as one thing moving, and whether anything plays twice or feels slow ([plan](doc/plan/1791194279_motion_between_screens.md)).
 - [ ] Stage 2 is live. On your phone with a second device on the same set: add a player, record a rebuy and a cash-out with Left from the other device, end play, confirm counts and balance the books. Say whether the movement helps you see what changed or gets in the way ([plan](doc/plan/1791188269_motion_live_set_page.md)).
 

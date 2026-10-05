@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block screen %} data-depth="0"{% endblock %}
-{% load static %}
+{% load static table_tags %}
 {% block page_class %}hub-page home-page{% if cards|length > 1 %} home-many{% endif %}{% endblock %}
 {% block content %}
 {% if cards %}
 <header class="page-heading"><h1>Your groups</h1></header>
 <div class="home-groups">{% for card in cards %}{% include "web/_group_card.html" %}{% endfor %}</div>
-<details class="home-create" {% if form.errors %}open{% endif %}><summary>Create another group</summary>
+<details class="home-create" {% if form.errors %}open{% endif %}><summary class="btn btn-block">{% icon 'plus' %} New group</summary>
   <form method="post" action="{% url 'group_create' %}" class="stack">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-block" type="submit">Create group</button></form>
 </details>
 {% else %}

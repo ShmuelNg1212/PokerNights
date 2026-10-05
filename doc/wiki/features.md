@@ -234,6 +234,8 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
 - Create a group is a closed section under the groups. A person with no group gets a first-group screen.
 
+- **Since 2026-10-05 each group is a card** with one settings button (a gear, top right) in place of the Sessions, Stats and Group settings links; the name still opens the group. The card shows who, now and you in that order; the viewer's record and last result are large figures side by side; "New group" is a button after the last card. Template `templates/web/_group_card.html`; check `web/tests/browser/home.mjs` with `seed_home.py`. Details in DESIGN.md.
+
 ## Group page, stats and branding (UI evolution)
 
 - The group page has tabs on the one group address: **Sessions** (default), **Stats** and **Group settings** (`?view=stats`, `?view=settings`). An unknown `view` shows Sessions.

@@ -1,6 +1,6 @@
 # Your groups: one settings button and a new layout: plan
 
-Status: awaiting approval. Date: 2026-10-05, Asia/Manila. Study: [Your groups: one settings button and a new layout](../study/1791200012_your_groups_redesign.md).
+Status: approved and built on 2026-10-05; not pushed. Date: 2026-10-05, Asia/Manila. Study: [Your groups: one settings button and a new layout](../study/1791200012_your_groups_redesign.md).
 
 ## Outcome
 
@@ -72,3 +72,24 @@ Revert the commits. No migration and no data change.
 ## Progress and blockers
 
 2026-10-05: Study and plan complete. The human answered three questions before the plan (button target, scope, what bothers them); they are recorded in the study. Waiting for approval.
+
+2026-10-05: approved by the human ("approved, i like your suggestions. utilize ui design and motion skills if needed"). Built on `home-redesign`. Tests were written first and seen to fail.
+
+Changes from the plan:
+
+1. **The three zones run edge to edge inside the card**; the band is no longer a rounded panel of its own. A panel inside a card read as a box in a box.
+2. **More wording went than decision 3 listed,** because the first build still had as much small text as before. Beside a due, and beside "Last session", only the date remains; the table's name is gone from both (the row and the label still link to that session). The line under the last result is gone. "Your record in chips" reads "Your record", since the amount says chips; screen readers still hear "in chips".
+3. **Two desktop columns pack by height** and read down the first column, then the second. A plain two-column grid left a hole beside a tall card.
+4. **Under 360px the figures are one column.**
+5. **No new motion.** The card keeps the hooks stage 3 carries: tapping the name, the gear or the band's button still moves the name to the next screen's heading. Buttons press as everywhere.
+
+A measuring mistake, caught: the temporary server caches templates, so the first "before and after" count of small text compared the new page with itself and showed no change. Measured again on restarted servers: the fullest fixture card has 4 pieces of text under 16px, against 17 before.
+
+Verification:
+
+- `home.mjs`: 60 of 60 at 320, 390 and 1280px on the `seed_home.py` fixture. Three checks in its first draft tested nothing and were replaced before this count.
+- `screens.mjs` 46, `lifetime.mjs` 22, `navigate.mjs` 37.
+- 651 tests pass on SQLite (ten PostgreSQL-only skips), in the build-style run and on local PostgreSQL 17.
+- Captures inspected in two rounds at 390 and 1280px; 320px was checked by measurement only. The design skill's detector reported two advisories about black text that come from reading the templates without the stylesheet.
+
+AC1 and AC2 are met. **AC3 is open: only the human can judge it on a phone.** Not verified: a real phone; Safari's rendering of the two packed columns on an iPad or desktop.
