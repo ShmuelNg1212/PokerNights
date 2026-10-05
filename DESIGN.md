@@ -433,6 +433,17 @@ This supersedes three points of the Entry pages addendum: Sign up now carries th
 - **Known limits.** An invited Sign up is 848px tall at 390px wide, four pixels more than an 844px screen; the Create account button ends at 800px. A refused Sign up is taller and its button needs a scroll. Refused sign-ups return empty password fields by design.
 - **Measured.** 91 checks at 320, 390 and 1280px, including both invite paths end to end.
 
+### 2026-10-05 addendum — Installable app
+
+The site can be added to a phone's home screen and opens full-screen. [Plan](doc/plan/1791176898_installable_app.md).
+
+- **Raster exception.** The build ships four PNG app icons and nothing else raster: 180px (iPhone), 192px, 512px and a 512px maskable copy, rendered from `static/branding/app-icon.svg` by `web/tests/browser/make_icons.mjs`. The mark sits inside the central 62% of the square, within Android's safe zone, on `#231d17`.
+- **Colours.** The manifest background is Ground (`#130e0a`) and its theme, with the page's `theme-color`, is the header surface (`#1e1813`), so the system bar and the header are one colour. The iPhone status bar style is black, opaque: the page does not draw under the clock.
+- **Offline notice.** A fixed line at the top of every page while the phone reports no connection: “You’re offline. Changes can’t be saved until you reconnect.” Brass text at 15px, weight 600, on the warning fill with a Brass rule below, centred, one or two lines. The page and the sticky header move down by its measured height. Submitting a form while it shows flashes the line once (600ms) and sends nothing.
+- **Offline page.** Self-contained, with literal colours and an inline mark so it needs no other file: the mark at 72px, “You’re offline”, one sentence, a bone **Try again** button and a quiet **Go back** button, in a 440px centred column, vertically centred. It uses the system font, because the app font may not be available.
+- **No install prompt** and no splash images.
+- **Measured.** 33 checks: Chrome reports no installability error; the worker's cache holds only the offline page; 17 screens each have a way back; notice and offline page fit 320, 390 and 1280px with 48px controls.
+
 ## Do's and Don'ts
 
 ### Do:

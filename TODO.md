@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) is done. Stage 2 (installable app) is deferred. Next: stage 3, actions update in place, which needs its own study and plan. A last stage 6 is a motion overhaul with Motion (motion.dev).
+App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Next: stage 3, actions update in place, which needs its own study and plan. A last stage 6 is a motion overhaul with Motion (motion.dev).
 
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
@@ -52,6 +52,15 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **iPhone checklist for the installable app** (only you can do this):
+  1. Safari → Share → Add to Home Screen. The icon is the chip-and-crescent on a dark square, named PokerNights.
+  2. Open it from the home screen: no address bar or toolbar.
+  3. Log in (once more, inside the app).
+  4. Walk Your groups → a group → a session → a set → the set log, and back, using only on-screen links.
+  5. Switch to another app for a minute and return: the page refreshes.
+  6. Turn on Airplane Mode: the offline line appears. Tap a link: the "You're offline" page appears. Turn it off and tap Try again.
+  7. Look at the top of the screen around the clock and the bottom around the home bar on the set page.
 
 - [ ] Try the new way in: create an invite, open it in a private window, sign up and check you land in the group with the welcome. Open the same link signed out as an existing player and use “Already have an account? Log in”. Say when to push.
 

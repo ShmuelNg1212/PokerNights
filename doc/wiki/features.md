@@ -133,6 +133,20 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Log in offers Sign up only when `accounts.signup.allowed` would open it.
 - Two critique snapshots for these pages are in `.impeccable/critique/` (24 then 25 of 40).
 
+## Installable app
+
+- A web app manifest (`static/manifest.webmanifest`), PNG icons in `static/icons/` and iPhone meta tags let a phone add the site to its home screen and open it full-screen.
+- `static/js/app.js`, on every page: the offline notice; no form is sent while the browser reports offline; a page that does not refresh itself reloads when the app returns after 30 seconds away, unless a field holds unsaved typing, a sheet is open, or the page was rendered from a POST; and the service worker registration.
+- The service worker (`config/pwa.py`, served at `/sw.js`) does one thing: a navigation that fails for lack of a connection shows `/offline/`. It caches that page only. `SERVICE_WORKER=False` serves a worker that removes itself, and pages then also remove any worker and cache on the phone.
+- Not built: offline viewing or recording, push notifications, an install prompt, splash images, an app-store app.
+
+### Put PokerNights on your phone
+
+- **iPhone:** open the site in Safari, tap Share, then Add to Home Screen.
+- **Android:** open the site in Chrome, open the menu, then Install app or Add to Home screen.
+- On an iPhone you log in once more inside the installed app; it does not share Safari's login.
+- An invite link opened from a chat still opens in the browser, not in the installed app.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

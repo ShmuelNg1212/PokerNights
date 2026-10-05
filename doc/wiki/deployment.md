@@ -47,6 +47,12 @@ When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects
 - HTML is never cached.
 - Locally and in tests there is no tag and addresses are plain.
 
+## Service worker and its kill switch
+
+`/sw.js` is served by the Django function with `Cache-Control: no-cache`. If the worker ever misbehaves on phones: set the environment variable `SERVICE_WORKER=False` in Vercel and redeploy. The next visit from each phone then removes the worker and its cache. Remove the variable to turn it back on.
+
+App icons live under `/static/icons/` and are cached for a week without a version tag. To change the icon art, render new files under new names and update `base.html` and the manifest.
+
 ## Who can get in
 
 Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email; a superuser sets a new password in `/admin/`. Sign up and a refused login say so.

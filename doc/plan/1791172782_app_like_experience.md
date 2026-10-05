@@ -146,3 +146,5 @@ Verification: 618 tests pass on SQLite (six new in `config/tests.py`). PostgreSQ
 AC1 met for the measured pages (a signed-in set page loads more scripts through the same mechanism; not measured on production, no account). AC2 follows from the per-deployment tag and is confirmed on the next release, when the tag must change. AC3 met.
 
 Not verified: a real phone, and signed-in pages on production.
+
+2026-10-05: the human asked what stage 2 adds, then said “ok i like stage 2. start planning and studying.” Stage 2 is no longer deferred. It has its own study and plan: [installable app](1791176898_installable_app.md).
