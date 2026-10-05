@@ -494,12 +494,50 @@ Motion ([motion.dev](https://motion.dev), version 14.0.0) drives interactive mot
 
 - **Buttons.** A press sinks the button and it springs back on release. The shadow still drops while pressed. Keyboard activation does not move the button.
 - **Pending.** A sent control (`aria-busy`) shows a 2px brass line running along its lower edge. Under reduced motion the line is still.
-- **Sheets.** Rise from below the edge and leave the same way, faster. A close during the rise turns the sheet around from where it is. The backdrop fades.
+- **Sheets.** Since stage 2 they move by `transform`, which the browser animates off the main thread. Rise from below the edge and leave the same way, faster. A close during the rise turns the sheet around from where it is. The backdrop fades.
 - **Toasts.** Arrive from 16px below. A later toast sits lowest and lifts the earlier ones by its height plus 8px; before this they overlapped. Dismissed toasts drop and fade.
 - **Host dock.** Opening uses the `sheet` spring through the Web Animations API; closing keeps the 200ms ease-in. The keyboard behaviour is unchanged.
 - **`motion-on`** on `<html>` marks that Motion runs. It switches off the CSS animation of each element Motion has taken over, so nothing animates twice.
 
-**Measured.** `motion.mjs`, 34 checks at 390 and 1280px: each item above, an action sent during a sheet's rise leaves within 50ms, Motion animates only `x`, `y`, `scale` and `opacity`, reduced motion, a blocked Motion file, and ten screen changes leaving one set of listeners and nothing running.
+**Measured.** `motion.mjs`, 34 checks at 390 and 1280px: each item above, an action sent during a sheet's rise leaves within 50ms, Motion animates only `x`, `y`, `scale`, `transform` and `opacity`, reduced motion, a blocked Motion file, and ten screen changes leaving one set of listeners and nothing running.
+
+### 2026-10-05 addendum — Motion on the live set page (stage 2 of the motion overhaul)
+
+The set page shows a change, yours or someone else's, as movement. `static/js/flow.js` moves rows; `static/js/changes.js` marks what changed.
+
+**Presets added.**
+
+| Name | Shape | Used for |
+|---|---|---|
+| `shift` | spring, 260ms, no bounce | A row arriving, a row sliding to its new place, the "books balance" words |
+| `drop` | spring, 220ms, bounce 0.35 | The new edge landing on a buy-in stack |
+| `fade` | 180ms ease-out | A new set state fading in |
+| `mark` (CSS keyframes `mark-draw`, 320ms ease-out) | a 2px brass line drawn left to right | The underline of "Still in play" |
+
+`pokerMotion.run` takes a fourth argument for one-off options such as a delay. `pokerMotion.settle` removes the inline style two frames after the element's last animation ends.
+
+**Rules.**
+
+1. Rows carry money and move without bounce. Bounce stays on buttons, badges and the buy-in edge.
+2. A figure is at its accepted value on the first frame. Rows, edges, badges and rules move; digits do not.
+3. Rows only arrive and shift. Nothing reorders or leaves.
+4. Motion animates `transform` (as one string) and `opacity`. The separate `x`, `y` and `scale` remain only where movements combine on one element (buttons, toasts), with `will-change: transform` while they run.
+
+**Events.**
+
+| Event | Motion |
+|---|---|
+| A player is added | The row fades in and rises 12px. Several arrive 40ms apart. |
+| A row above grows or shrinks | The rows below slide to their place. |
+| A buy-in or rebuy | The new edge drops; "Rebuy added" springs in; the brass mark fades out over its last 400ms. |
+| "Still in play" changes | The underline draws, holds and fades. The figure appears at once. |
+| A cash-out, a player marked Left | The row's mark; the Left badge springs in; the name dims over 200ms. |
+| The set changes state | The new state fades in over 180ms. Rows do not move as well. |
+| A count is confirmed | The row's status badge springs; the progress line is marked. |
+| The books balance (once per set per browser) | The green rule draws with the `sheet` spring; 240ms later the words rise 8px and fade in. |
+| First sight of a set, typing, a hidden tab, reduced motion, no Motion | Nothing moves. |
+
+**Measured.** `flow.mjs`, 52 checks at 390 and 1280px: each row above on its first frame and at rest, a tap on a moving row, both redraw paths, the books balance complete in under 900ms, twenty redraws leaving nothing running and no inline style, reduced motion and a blocked Motion file.
 
 ## Do's and Don'ts
 

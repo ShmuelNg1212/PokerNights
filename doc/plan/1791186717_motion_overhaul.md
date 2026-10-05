@@ -109,3 +109,7 @@ Changes from the plan:
 - `dock.mjs` 163, `inplace.mjs` 38, `navigate.mjs` 37, `lifetime.mjs` 22, `archive.mjs` 85 and `entry.mjs` 91 pass on fresh databases.
 
 AC1 to AC4 are met, AC1 with change 4. **AC5 is open: how it feels on the human's phone.** Not verified: a real touch screen (the checks press with an emulated pointer), frame rate on a phone, and Safari, which draws `linear()` easing only from version 17.2.
+
+2026-10-05 correction: change 1 above is wrong. The AI kit was installed on 2026-10-04 (`.claude/skills/motion/`, `.agents/skills/motion/`, `.codex/config.toml`, `.mcp.json`); the agent had looked only in the home folder. See the [stage 2 study](../study/1791188203_motion_live_set_page.md).
+
+2026-10-05: stage 2 (the live set page) is built; see its [plan](1791188269_motion_live_set_page.md). Stages 3 and 4 each need their own plan.

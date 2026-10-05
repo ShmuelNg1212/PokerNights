@@ -10,7 +10,10 @@
   // starts them for the one that arrives (see page.js). An in-place update of the same page
   // ("morph") restarts nothing.
   document.addEventListener("turbo:before-render", function (event) {
-    if (event.detail.renderMethod !== "morph") window.pokerPage.stop();
+    if (event.detail.renderMethod !== "morph") { window.pokerPage.stop(); return; }
+    // The same before-event as a live poll (live.js), so flow.js sees both kinds of redraw.
+    var region = document.getElementById("live");
+    if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true }));
   });
   document.addEventListener("turbo:render", function (event) {
     if (event.detail.renderMethod === "morph") return;

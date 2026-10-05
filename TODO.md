@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) is done and not pushed. Stages 2 to 4 each need their own plan.
+App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) is done and not pushed. Stages 3 and 4 each need their own plan.
 
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
@@ -43,7 +43,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 ## Next (each needs its own study and plan)
 
 - [ ] After the next release, on your phone: press a few buttons, open and close a buy-in sheet (also close it while it is still rising), and open the host menu. Say what feels wrong: too bouncy, too slow, too much ([plan](doc/plan/1791186717_motion_overhaul.md)).
-- [ ] Optional: run `npx motion-ai` in the project folder to install Motion's AI kit; its installer asks questions the agent cannot answer.
+- [ ] After stage 2 is released, on your phone with a second device on the same set: add a player, record a rebuy and a cash-out with Left from the other device, end play, confirm counts and balance the books. Say whether the movement helps you see what changed or gets in the way ([plan](doc/plan/1791188269_motion_live_set_page.md)).
 
 - [ ] After the next release, on your iPhone: open a set that is counting up and tap a count field. The bar with the running total and the verdict should sit directly above the keyboard and change as you type; closing the keyboard puts the dock back. Say so if it still hides ([plan](doc/plan/1791184990_dock_behind_keyboard.md)).
 

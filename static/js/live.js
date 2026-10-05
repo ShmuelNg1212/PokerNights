@@ -63,7 +63,10 @@
     var active = document.activeElement;
     var focusKey = active && region.contains(active) ? active.dataset.focusKey : null;
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
+    // Before and after: flow.js compares the two to show what moved.
+    region.dispatchEvent(new Event("live:updating", {bubbles: true}));
     region.innerHTML = snapshot.html;
+    if (snapshot.state) region.dataset.state = snapshot.state;
     restore(typed);
     version = String(snapshot.version);
     region.dataset.version = version;
