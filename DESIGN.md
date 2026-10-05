@@ -368,7 +368,7 @@ Below 900px a host can fold the host dock to one bar and open it again. [Plan](d
 - **Count-up bar (2026-10-05).** In count-up the collapsed bar has two lines: the running total (“₱1,900 of ₱2,000 bought in”) in place of the “Host controls” label, then the verdict. Both follow the typed counts.
 - **Unchanged.** From 900px there is no toggle and a stored choice has no effect. Without JavaScript there is no toggle and the dock is expanded. Players have no dock. No token, colour or asset is added; the chevron is Lucide `chevron-down`.
 - **Scrolling with the iPhone keyboard open (2026-10-05).** The bar stays the bar for as long as the keyboard is open and follows the visible area as the page scrolls; the page's length does not change during the scroll and nothing but the finger scrolls it. A field is moved clear of the bar only when it gains focus. `--kb-h` is the keyboard's height (state and reserved room); `--kb` is the dock's offset (position).
-- **Measured.** 175 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
+- **Measured.** 178 checks at 320, 390 and 1280px over draft, open, in-play and two count-up sets: no horizontal overflow against the requested width, the last link clears the dock in both states, the toggle is at least 48px with the 3px focus outline, and keyboard focus stays on the toggle across a live update.
 
 ### 2026-10-04 addendum — Archive and delete
 
