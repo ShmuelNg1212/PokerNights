@@ -31,6 +31,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [sqlite_copy_misses_the_wal.md](footguns/sqlite_copy_misses_the_wal.md) | A plain copy of `db.sqlite3` can miss recent data |
 | [session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md) | `GameSession` is a set; the session is `GameNight` |
 | [template_cache_during_browser_checks.md](footguns/template_cache_during_browser_checks.md) | A verification server without autoreload can keep old compiled templates |
+| [scripts_run_once_per_tab.md](footguns/scripts_run_once_per_tab.md) | A script that starts once per page load keeps polling after the screen changes; register it with `page.js` |
 | [ios_date_input.md](footguns/ios_date_input.md) | The iPhone draws a date input at its own size; the shared field box fixes it and Chrome cannot prove it |
 | [mobile_browser_overflow_checks.md](footguns/mobile_browser_overflow_checks.md) | Mobile layout viewport width can grow with overflowing content; compare with the requested width |
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |

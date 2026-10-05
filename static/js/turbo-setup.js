@@ -1,9 +1,34 @@
-// Turbo sends the marked forms in the background and updates the page in place.
-// Links are not touched: navigation stays off unless an element says data-turbo="true".
+// Turbo changes screens without unloading the page and sends the marked forms in the
+// background. Links navigate in the app. A form does so only when it says data-turbo="true";
+// every other form posts natively and loads a page, which starts everything afresh.
 (function () {
   "use strict";
   if (!window.Turbo) return;
-  Turbo.session.drive = false;
+  Turbo.config.forms.mode = "optin";
+
+  // --- Screen changes. A swapped page stops the scripts of the page that is leaving and
+  // starts them for the one that arrives (see page.js). An in-place update of the same page
+  // ("morph") restarts nothing.
+  document.addEventListener("turbo:before-render", function (event) {
+    if (event.detail.renderMethod !== "morph") window.pokerPage.stop();
+  });
+  document.addEventListener("turbo:render", function (event) {
+    if (event.detail.renderMethod === "morph") return;
+    window.pokerPage.start();
+    // A real page load is announced by the browser and starts at the top. A swap is silent,
+    // so say the new title once and put focus at the start of the content.
+    var announcer = document.getElementById("route-announcer");
+    if (announcer) announcer.textContent = document.title;
+    var main = document.getElementById("main");
+    if (main && !document.querySelector("[autofocus]")) main.focus({ preventScroll: true });
+  });
+
+  // A link is fetched when the finger touches it, a moment before the tap completes. Turbo
+  // itself prefetches on mouse hover, which a phone only reports together with the tap.
+  document.addEventListener("touchstart", function (event) {
+    var link = event.target.closest && event.target.closest("a[href]");
+    if (link) link.dispatchEvent(new MouseEvent("mouseenter", { bubbles: false }));
+  }, { capture: true, passive: true });
 
   var sent = null; // the form whose update is on its way
 
@@ -48,7 +73,13 @@
     document.dispatchEvent(new CustomEvent("inplace:failed", { detail: { form: form, message: words } }));
   }
   document.addEventListener("turbo:fetch-request-error", function (event) {
-    failed(sent, "That wasn't sent. Check your connection and try again.");
+    if (sent) return failed(sent, "That wasn't sent. Check your connection and try again.");
+    // A screen change that could not be fetched: go there the ordinary way, so the service
+    // worker can show the offline page. A prefetch that failed is simply forgotten.
+    var request = event.detail.request;
+    if (request && request.headers && request.headers["X-Sec-Purpose"] === "prefetch") return;
+    event.preventDefault();
+    if (request && request.url) window.location.assign(request.url.toString());
   });
   // A page that is not an in-place update of this one (an error page, or another address)
   // is loaded the ordinary way, so every script starts clean.

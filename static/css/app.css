@@ -723,3 +723,8 @@ legend { padding: 0; }
 .is-offline .site-header { top: var(--offline-h, 44px); }
 .offline-notice.nudge { animation: offline-nudge var(--t-focal) var(--ease-out); }
 @keyframes offline-nudge { from { background: var(--warn); color: var(--ink); } }
+
+/* In-app screen changes: a thin loading line for a slow screen, and the pieces a swap needs. */
+.turbo-progress-bar { height: 3px; background: var(--brass); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+#main:focus { outline: none; }

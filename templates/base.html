@@ -16,6 +16,7 @@
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}" data-turbo-track="reload">
   <meta name="turbo-cache-control" content="no-cache">
+  <meta name="view-transition" content="same-origin">
   {% block head %}{% endblock %}
   {# Every page script loads once, here. Each registers with page.js and does nothing where its elements are absent. #}
   <script src="{% static 'js/page.js' %}" defer data-turbo-track="reload"></script>
@@ -46,7 +47,8 @@
     </form>
     {% endif %}
   </header>{% endblock %}
-  <main id="main" class="page {% block page_class %}{% endblock %}">
+  <div id="route-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true" data-turbo-permanent></div>
+  <main id="main" tabindex="-1" class="page {% block page_class %}{% endblock %}">
     {% if messages %}
     <ul class="messages" role="status">
       {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
