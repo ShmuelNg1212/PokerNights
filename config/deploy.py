@@ -28,3 +28,21 @@ def vercel_hosts(environ) -> list[str]:
     """Host names Vercel assigns to this deployment (empty when not on Vercel)."""
     names = ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL")
     return [environ[n] for n in names if environ.get(n)]
+
+
+def static_version(environ) -> str:
+    """A short tag that changes with every Vercel deployment; empty when not on Vercel.
+
+    It is added to stylesheet and script addresses so they can be cached for a year
+    and still change on the next release. On Vercel a missing tag would leave old
+    files cached for good, so that case refuses to start.
+    """
+    import hashlib
+
+    if not environ.get("VERCEL"):
+        return ""
+    names = ("VERCEL_DEPLOYMENT_ID", "VERCEL_GIT_COMMIT_SHA", "VERCEL_URL")
+    source = next((environ[n] for n in names if environ.get(n)), "")
+    if not source:
+        raise RuntimeError("Vercel gave no deployment id, commit or URL to version the static files with.")
+    return hashlib.sha256(source.encode()).hexdigest()[:10]
