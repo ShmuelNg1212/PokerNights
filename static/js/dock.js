@@ -11,7 +11,8 @@
   // The page reserves the measured dock height, so the last row clears the dock in either state.
   function measure() {
     var dock = region && region.querySelector(".host-controls");
-    if (dock) root.style.setProperty("--dock-h", Math.ceil(dock.getBoundingClientRect().height) + "px");
+    // A folding dock still has its full height; the page already reserves the height it will end with.
+    if (dock && !root.classList.contains("dock-closing")) root.style.setProperty("--dock-h", Math.ceil(dock.getBoundingClientRect().height) + "px");
   }
 
   function sync() {
@@ -19,8 +20,8 @@
     if (!toggle) return;
     toggle.hidden = false;
     toggle.setAttribute("aria-expanded", String(!root.classList.contains("dock-collapsed") && !root.classList.contains("kb-bar")));
-    // A live update replaces a dock that was still closing.
-    if (!toggle.parentElement.getAnimations || !toggle.parentElement.getAnimations().length) root.classList.remove("dock-closing");
+    // A live update replaces a dock that was still sliding.
+    if (sliding && sliding.effect.target !== toggle.parentElement) halt();
     if (watcher) { watcher.disconnect(); watcher.observe(toggle.parentElement); }
     measure();
   }
@@ -76,7 +77,7 @@
       open = now.open;
       root.classList.toggle("kb-open", open > 0);
       root.classList.toggle("kb-bar", bar);
-      dock.getAnimations().forEach(function (motion) { motion.cancel(); });
+      halt();
       sync();
     }
     // An iPhone reports a sliding frame only now and then, so while the keyboard is open it is read every frame.
@@ -109,20 +110,50 @@
       " field " + typing(document.activeElement);
   }
 
-  // The dock slides between its two heights. While it closes, "dock-closing" keeps the
-  // content rendered so it leaves with the edge. Reduced motion changes the size at once.
+  // The dock slides by transform, which the browser moves without laying the page out again.
+  // The layout takes its new height once: when an unfold starts, and when a fold ends. While
+  // it folds, "dock-closing" keeps the content rendered so it leaves with the edge. Reduced
+  // motion changes the size at once.
+  var sliding = null, followers = [];
+  // How much of the dock shows now, also in the middle of a slide.
+  function shown(dock) {
+    return dock.offsetHeight - (sliding ? new DOMMatrix(getComputedStyle(dock).transform).m42 : 0);
+  }
+  // Everything in the page that is not the dock or around it. A transform on something that
+  // contains the dock would stop it being fixed to the screen.
+  function beside(dock) {
+    var found = [], main = document.getElementById("main");
+    for (var el = dock; el && el !== main && el.parentElement; el = el.parentElement) {
+      Array.prototype.forEach.call(el.parentElement.children, function (other) { if (other !== el) found.push(other); });
+    }
+    return found;
+  }
+  function halt() {
+    var motion = sliding; sliding = null;
+    if (motion) motion.cancel();
+    followers.splice(0).forEach(function (motion) { motion.cancel(); });
+    root.classList.remove("dock-closing");
+  }
   function slide(dock, from, closing) {
     var to = dock.offsetHeight;
-    if (!dock.animate || from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (closing) root.classList.add("dock-closing");
-    dock.style.overflow = "hidden";
-    var done = function () { dock.style.overflow = ""; root.classList.remove("dock-closing"); };
-    var frames = [{ height: from + "px" }, { height: to + "px" }], motion;
+    if (!dock.animate || from === to || matchMedia("(prefers-reduced-motion: reduce)").matches || getComputedStyle(dock).position !== "fixed") { measure(); return; }
+    var full = to, scrolled = window.scrollY, motion = null;
+    if (closing) { root.classList.add("dock-closing"); full = dock.offsetHeight; }
+    // The page reserves the dock's final height from the first frame.
+    root.style.setProperty("--dock-h", to + "px");
+    var frames = [{ transform: "translateY(" + (full - from) + "px)" }, { transform: "translateY(" + (full - to) + "px)" }];
     // Opening uses the sheet spring where the browser can draw it; otherwise the fixed curve.
-    var spring = !closing && window.pokerMotion && window.pokerMotion.timing("sheet");
-    try { motion = spring && dock.animate(frames, spring); } catch (_) {}
-    if (!motion) motion = dock.animate(frames, closing ? { duration: 200, easing: "cubic-bezier(0.4,0,1,1)" } : { duration: 320, easing: "cubic-bezier(0.16,1,0.3,1)" });
-    motion.onfinish = motion.oncancel = done;
+    var timing = !closing && window.pokerMotion && window.pokerMotion.timing("sheet");
+    try { motion = timing && dock.animate(frames, timing); } catch (_) {}
+    if (!motion) { timing = closing ? { duration: 200, easing: "cubic-bezier(0.4,0,1,1)" } : { duration: 320, easing: "cubic-bezier(0.16,1,0.3,1)" }; motion = dock.animate(frames, timing); }
+    sliding = motion;
+    motion.onfinish = function () { if (sliding !== motion) return; sliding = null; root.classList.remove("dock-closing"); measure(); };
+    // A page scrolled to its end gets shorter under a folding dock, and the browser moves it
+    // down at once. Its content is put back where it was and glides down with the dock.
+    var drop = scrolled - window.scrollY;
+    if (drop > 0) beside(dock).forEach(function (el) {
+      followers.push(el.animate([{ transform: "translateY(" + -drop + "px)" }, { transform: "translateY(0px)" }], timing));
+    });
   }
 
   document.addEventListener("click", function (event) {
@@ -130,8 +161,8 @@
     if (!toggle || !region.contains(toggle)) return;
     // Above the keyboard the bar is not a choice to save: a tap puts the keyboard away.
     if (root.classList.contains("kb-bar")) { if (document.activeElement) document.activeElement.blur(); return; }
-    var dock = toggle.parentElement, from = dock.offsetHeight;
-    dock.getAnimations().forEach(function (motion) { motion.cancel(); });
+    var dock = toggle.parentElement, from = shown(dock);
+    halt();
     var collapsed = root.classList.toggle("dock-collapsed");
     slide(dock, from, collapsed);
     try { if (collapsed) localStorage.setItem(KEY, "collapsed"); else localStorage.removeItem(KEY); } catch (_) {}
@@ -168,6 +199,7 @@
         document.removeEventListener("focusout", left);
       }
       cancelAnimationFrame(loop);
+      halt();
       if (readout) readout.remove();
       region = watcher = readout = null; open = lifted = hidden = seat = loop = base = baseWidth = basePage = leftAt = 0;
       root.style.removeProperty("--kb");

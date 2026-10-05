@@ -6,7 +6,7 @@ const chrome=spawn(process.env.PN_CHROME_PATH || '/Applications/Google Chrome.ap
 let url;for(let i=0;i<40&&!url;i++){try{url=(await(await fetch('http://127.0.0.1:9341/json/version')).json()).webSocketDebuggerUrl;}catch{await sleep(150)}}
 const ws=new WebSocket(url);await new Promise(r=>ws.onopen=r);let id=0;const wait=new Map();ws.onmessage=e=>{const m=JSON.parse(e.data);if(wait.has(m.id)){const [ok,no]=wait.get(m.id);wait.delete(m.id);m.error?no(Error(JSON.stringify(m.error))):ok(m.result)}};
 const send=(method,params={},sessionId)=>new Promise((ok,no)=>{wait.set(++id,[ok,no]);ws.send(JSON.stringify({id,method,params,sessionId}))});
-async function user(name){const {browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});await send('Page.enable',{},s);await send('Network.enable',{},s);await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},s);
+async function user(name){const {browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});await send('Page.enable',{},s);await send('Network.enable',{},s);await send('Performance.enable',{},s);await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},s);
 const js=async expression=>{let r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true},s);if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value};
 const go=async path=>{await send('Page.navigate',{url:(process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765')+path},s);await sleep(450);for(let i=0;i<30;i++){if(await js('document.readyState')==='complete')break;await sleep(100)}};
 const click=async expr=>{await js(expr+'.click()');await sleep(650)};
@@ -83,10 +83,28 @@ try {
  check('toggle keeps focus across live update',await A.js(`document.activeElement===${toggle}`));
  // Motion: the dock slides between heights; closing keeps the content until the slide ends.
  await A.go('/s/3/');await A.js(`document.activeElement.blur()`);
- check('expanding animates the dock height',await A.js(`(()=>{${toggle}.click();const d=${dock};return d.getAnimations().length===1&&${shown}.length>1&&d.getBoundingClientRect().height<120})()`));await sleep(600);
+ // The slide is a transform: the layout takes its new height once and the browser moves the rest.
+ const props=`[...new Set(${dock}.getAnimations().flatMap(a=>a.effect.getKeyframes().flatMap(k=>Object.keys(k))))].filter(p=>!['offset','easing','composite','computedOffset'].includes(p)).join()`;
+ check('expanding slides the dock up by transform',await A.js(`(()=>{${toggle}.click();const d=${dock};return d.getAnimations().length===1&&${props}==='transform'&&${shown}.length>1&&innerHeight-d.getBoundingClientRect().top<120})()`));await sleep(600);
  check('expanded at rest',await A.js(`${dock}.getAnimations().length===0&&${dock}.style.overflow===''&&${dock}.getBoundingClientRect().height>120`));
  check('collapsing keeps content while sliding',await A.js(`(()=>{${toggle}.click();const d=${dock};return d.getAnimations().length===1&&document.documentElement.classList.contains('dock-closing')&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='false'})()`));await sleep(600);
  check('collapsed at rest',await A.js(`${dock}.getAnimations().length===0&&!document.documentElement.classList.contains('dock-closing')&&${shown}.length===1`));
+ // Layouts per slide, and the dock's top edge on every frame: it never jumps back.
+ const layouts=async()=>(await send('Performance.getMetrics',{},A.s)).metrics.find(m=>m.name==='LayoutCount').value;
+ const watchTop=`(()=>{window.__tops=[];const d=${dock};const t0=performance.now();(function f(){window.__tops.push(Math.round(d.getBoundingClientRect().top));if(performance.now()-t0<700)requestAnimationFrame(f)})()})()`;
+ let count=await layouts();await A.js(`${toggle}.click()`);await sleep(700);count=await layouts()-count;console.log('  layouts while unfolding',count);
+ check('unfolding lays the page out at most 4 times',count<=4);
+ count=await layouts();await A.js(`${toggle}.click();${watchTop}`);await sleep(800);count=await layouts()-count-1;console.log('  layouts while folding',count);
+ check('folding lays the page out at most 4 times',count<=4);
+ check('folding: the top edge only moves down',await A.js(`__tops.length>5&&__tops.every((t,i)=>i===0||t>=__tops[i-1]-1)`));
+ // Scrolled to the end, the page gets shorter under a folding dock. The last row glides down with it.
+ await A.js(`${toggle}.click()`);await sleep(700);await A.js(`window.scrollTo(0,document.documentElement.scrollHeight)`);await sleep(200);
+ const lastRow=`[...document.querySelectorAll('.player-row, .count-row')].at(-1)`;
+ await A.js(`(()=>{window.__rows=[];const r=${lastRow};const t0=performance.now();${toggle}.click();(function f(){window.__rows.push(Math.round(r.getBoundingClientRect().top));if(performance.now()-t0<500)requestAnimationFrame(f)})()})()`);await sleep(700);
+ console.log('  last row while folding at the end of the page',await A.js(`__rows[0]+' -> '+__rows.at(-1)+' largest step '+Math.max(...__rows.map((t,i)=>i?Math.abs(t-__rows[i-1]):0))`));
+ check('folding at the end of the page: the last row glides, no jump',await A.js(`__rows.at(-1)>__rows[0]&&Math.max(...__rows.map((t,i)=>i?Math.abs(t-__rows[i-1]):0))<=(__rows.at(-1)-__rows[0])/3`));
+ check('folded at rest, nothing left moving',await A.js(`document.getAnimations().filter(a=>a.effect&&a.effect.target&&a.effect.target.closest('#main')).length===0&&!document.documentElement.classList.contains('dock-closing')&&${shown}.length===1`));
+ await A.js(`window.scrollTo(0,0)`);
  check('quick double tap ends expanded',await A.js(`(()=>{${toggle}.click();${toggle}.click();${toggle}.click();return true})()`)&&(await sleep(600),await A.js(`${dock}.getAnimations().length===0&&!document.documentElement.classList.contains('dock-closing')&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='true'`)));
  await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
  check('reduced motion: no slide, immediate state',await A.js(`(()=>{${toggle}.click();return ${dock}.getAnimations().length===0&&${shown}.length===1&&getComputedStyle(${toggle}.querySelector('.icon')).transitionDuration==='0s'})()`));
