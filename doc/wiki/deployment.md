@@ -62,6 +62,14 @@ A signed-out visitor who opens a usable invite link lands on Sign up, and the ne
 
 ## Releasing a change
 
+**Run the suite the way the build does before every push.** On Vercel the tests run with `VERCEL` set, which adds `?v=<release>` to stylesheet and script addresses. A test that passes locally can fail there:
+
+```sh
+VERCEL=1 VERCEL_URL=example.vercel.app HTTPS_ONLY=False DATABASE_URL=sqlite:////private/tmp/pn-buildlike.sqlite3 .venv/bin/python manage.py test --noinput
+```
+
+On 2026-10-05 a test that asserted the plain stylesheet address failed the build of `6a3f24b`. Production kept the previous version, as designed, and the fix followed. A failed build is silent: after a push, check that the live site actually changed.
+
 1. Work on a branch. Run `.venv/bin/python manage.py test`, and the PostgreSQL suite when the change touches writes or locking (see [setup.md](setup.md)). **The Vercel build skips the ten PostgreSQL-only tests**, so the local PostgreSQL run is the only gate for concurrency.
 2. Push the branch. Vercel builds a private preview. Preview addresses need a Vercel login.
 3. Merge into `main` and push. Vercel runs the tests, then the migrations, then switches production to the new version.

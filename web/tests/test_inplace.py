@@ -92,4 +92,5 @@ class ScriptsLoadOnceTests(TestCase):
             found = re.findall(r'<script src="/static/js/([^"?]+)\.js[^"]*" defer data-turbo-track="reload"></script>', head)
             self.assertEqual(tuple(found), self.NAMES, url)
             self.assertNotIn("<script", body, url)
-            self.assertIn('rel="stylesheet" href="/static/css/app.css" data-turbo-track="reload"', head)
+            # The address carries ?v=<release> on Vercel, where the build runs these tests.
+            self.assertRegex(head, r'rel="stylesheet" href="/static/css/app\.css[^"]*" data-turbo-track="reload"')
