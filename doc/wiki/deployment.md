@@ -22,7 +22,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | Variable | Set by | Purpose |
 |---|---|---|
 | `SECRET_KEY` | us, sensitive | Random, different for Production and Preview |
-| `DB_CONN_MAX_AGE` | us | `0`: hold no database connection between requests; PgBouncer pools |
+| `DB_CONN_MAX_AGE` | us | `0`: hold no database connection between requests; PgBouncer pools. Opening one costs 16 to 33 ms per request (measured 2026-10-06). `60` is being tried; the `?perf=1` readout's `open` figure shows whether it helps. Set back to `0` if anything errors |
 | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (+ `PG*`, `POSTGRES_*`, `NEON_*`) | Neon integration | Connection strings. Only the first two are used |
 | `VERCEL`, `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | Vercel | Turn on the HTTPS settings, invite-only sign-up, and add the deployment's host names to `ALLOWED_HOSTS` |
 | `SIGNUP_REQUIRES_INVITE` | optional | Defaults to on at Vercel. Set `False` to open sign-up to everyone |

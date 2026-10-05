@@ -1,6 +1,6 @@
 # Phone performance and smooth motion: plan
 
-Status: stages 1 and 2 released 2026-10-06 as `c84f45a`; a tab fix waits for release and stage 3 for approval. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
+Status: stages 1 and 2 released 2026-10-06 as `c84f45a`; the tab fix as `fedaeb0`. Stage 3: A is built, B is the human's step, C and D have their own plan. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
 
 ## Outcome
 
@@ -115,6 +115,15 @@ The human sent nine screenshots of the readout; they are tabled in the [study's 
 
 - **Tabs felt "not snappy anymore".** Timing is identical to the previous release (marker 180 ms after the tap, movement over at 446 ms, both builds). The one visible change is the pressed look on the tapped tab, which shows the wait and blurs the marker's slide. Fixed on branch `fix/tab-switch-feel`: tabs take no pressed look. `navigate.mjs` 48 of 48, with the changed check failing first. Not released.
 - **Stage 3 has its numbers.** The proposal is in the addendum: (A) send the fetch at touch, which today has no head start and sends a duplicate on quick taps; (B) keep the database connection; (C) fewer queries on two screens; (D) actions without the redirect trip, as its own study; (E) a shorter slide if wanted. **Awaiting approval.**
+
+## Stage 3, as chosen by the human (2026-10-06)
+
+"A and B now, then plan for C, then D." The tab fix was released as `fedaeb0`.
+
+- **A. Fetch at touch: built, not released.** Branch `perf/stage-3`, commit `d427f4b`. Turbo waits 100 ms after a hover before it prefetches; for the length of the one call that passes a touch on, its timer is given no delay. Measured with a real touch held 60 and 130 ms: one request, 2 ms after the finger lands (before: at the tap, plus a wasted second one at 107 ms for a quick tap). `navigate.mjs` 52 of 52, the two new checks failing first; `inplace.mjs` 38, `motion.mjs` 34, `perf.mjs` 12; Django 682 pass. Ruling: the vendored Turbo file is not edited, because its address is cached for a year under its version name. If wrong: the touch falls back to today's behaviour, a request at the tap.
+  A page fetched ahead is rendered without flash messages (`config/prefetch.py`); they stay for the next ordinary page. Until now such a page was rarely the one shown; now it usually is. A message still waiting when a link is tapped is rare (messages come with form answers), and it is shown on the screen after.
+- **B. Kept database connection: the human's step.** In Vercel set `DB_CONN_MAX_AGE` to `60` for Production (it is `0`). It takes effect with the next deployment, so set it before A is released. The readout's `open` figure is the proof: 0 on most taps instead of 16 to 33. The code path is the default everywhere else and runs in the PostgreSQL suite; connections are checked before reuse (`conn_health_checks`) and server-side cursors are off for the pooler. If `open` does not fall, Vercel is not reusing the connection between requests and the next step would be Django's own connection pool, which needs a package. If anything errors, set it back to `0` and redeploy.
+- **C and D:** [plan](1791219154_fewer_queries_and_one_trip_actions.md), awaiting approval.
 
 ## For the human to do
 
