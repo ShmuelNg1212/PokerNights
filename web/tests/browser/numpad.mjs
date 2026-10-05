@@ -189,6 +189,50 @@ try {
  check('with motion: a refused key nudges the field by transform only',await A.js(`${F}.getAnimations().length===1&&${F}.getAnimations()[0].effect.getKeyframes().every(k=>Object.keys(k).filter(p=>!['offset','easing','composite','computedOffset'].includes(p)).join()==='transform')`));
  await A.up();await closeSheet();
 
+ // --- Setup forms: the bottom panel, with the field's label, Next and Done.
+ const PANEL=`document.querySelector('.numpad-panel')`,inp=n=>`document.querySelector('[name=${n}]')`;
+ await A.go('/s/4/settings/');
+ check('setup form: number fields no longer call the phone keyboard, text fields do',await A.js(`['small_blind','big_blind','min_buy_in','max_buy_in','default_buy_in','rake_flat','rake_percentage'].every(n=>document.querySelector('[name='+n+']').getAttribute('inputmode')==='none')&&[...document.querySelectorAll('#main input[type=text]:not([data-numpad])')].every(f=>f.getAttribute('inputmode')!=='none')`));
+ await A.tap(inp('small_blind'),700);
+ check('setup form: tapping a number field raises the panel named after it',await A.js(`!!${PANEL}&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Small blind'&&document.activeElement===${inp('small_blind')}`));
+ check('setup form: the field is clear of the panel and the page fits 390 wide',await A.js(`${inp('small_blind')}.getBoundingClientRect().bottom<=${PANEL}.getBoundingClientRect().top&&document.documentElement.scrollWidth<=390`));
+ check('setup form: pesos get a decimal point',await A.js(`${key('alt')}.textContent`)==='.');
+ await A.js(`${inp('small_blind')}.select()`);await type(['2','5','alt','5']);
+ check('setup form: keys write the amount',await A.js(`${inp('small_blind')}.value`)==='25.5');
+ await sleep(300);await A.shot('numpad-form-390');
+ await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,500);
+ check('setup form: Next moves to the next number field',await A.js(`document.activeElement===${inp('big_blind')}&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Big blind'`));
+ for(let i=0;i<5;i++)await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,350);
+ check('setup form: Next reaches the last number field, clear of the panel',await A.js(`document.activeElement===${inp('rake_percentage')}&&${PANEL}.querySelector('[data-numpad-next]').hidden&&${inp('rake_percentage')}.getBoundingClientRect().bottom<=${PANEL}.getBoundingClientRect().top`));
+ await A.js(`${inp('rake_percentage')}.value=''`);await type(['1','0','0']);
+ check('setup form: a percentage takes two digits before the point',await A.js(`${inp('rake_percentage')}.value`)==='10');
+ await type(['alt','2','5','5']);
+ check('setup form: and two after it',await A.js(`${inp('rake_percentage')}.value`)==='10.25');
+ await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,500);
+ check('setup form: Done puts the panel away',await A.js(`!${PANEL}&&!document.documentElement.classList.contains('numpad-open')`));
+ // The unit choice decides whether a decimal point is offered.
+ await A.js(`(()=>{const u=document.querySelector('[name=unit]');u.value='chips';u.dispatchEvent(new Event('change',{bubbles:true}))})()`);
+ await A.tap(inp('big_blind'),600);
+ check('setup form: after choosing chips, amounts take no decimal point',await A.js(`${key('alt')}.textContent`)==='00');
+ await A.js(`${inp('big_blind')}.select()`);await type(['4','alt']);
+ check('setup form: chips keys write whole chips',await A.js(`${inp('big_blind')}.value`)==='400');
+ // A text field on the same page takes the panel away and keeps the phone keyboard.
+ const text=`document.querySelector('#main input[type=text]:not([data-numpad])')`;
+ if(await A.js(`!!${text}`)){await A.js(`${text}.focus()`);await sleep(500);check('setup form: a text field puts the panel away',await A.js(`!${PANEL}`));}
+ else {await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,500);}
+ // Seats: a whole number of two digits.
+ await A.go('/g/1/?view=settings');await A.js(`document.querySelector('[name=seat_count]').closest('details').open=true`);
+ await A.tap(inp('seat_count'),700);
+ check('seats: the panel is named Seats and the phone keyboard stays away',await A.js(`!!${PANEL}&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Seats'&&${inp('seat_count')}.getAttribute('inputmode')==='none'`));
+ await A.js(`${inp('seat_count')}.value=''`);await type(['1','2','3']);
+ check('seats: two digits, the third is refused',await A.js(`${inp('seat_count')}.value`)==='12');
+ await type(['del']);
+ check('seats: delete works on a number field',await A.js(`${inp('seat_count')}.value`)==='1');
+ await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,500);
+ await A.computer();await A.go('/s/4/settings/');await A.js(`${inp('small_blind')}.focus()`);await sleep(300);
+ check('setup form on a computer: no panel, the field as before',await A.js(`!${PANEL}&&${inp('small_blind')}.getAttribute('inputmode')==='decimal'`));
+ await A.phone();
+
  // Fail safe: an error in the keys gives the phone keyboard back.
  await A.go(`/s/${PESOS}/`);await openBuy();
  await A.js(`window.__err=0;addEventListener('error',()=>__err++);${F}.dispatchEvent=()=>{throw new Error('numpad check: forced failure')}`);

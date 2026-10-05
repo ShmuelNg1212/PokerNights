@@ -18,7 +18,12 @@
   var DELETE = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 0 0-1.34.52l-6.33 5.74a1 1 0 0 0 0 1.48l6.33 5.74A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/><path d="m12 9 6 6m0-6-6 6"/></svg>';
 
   function on() { return !broken && root.dataset.numpad === "on" && coarse.matches; }
-  function rule(field) { return RULES[field.dataset.numpad]; }
+  // "amount" is pesos or chips by the form's Unit choice, read when it is needed because the choice can change.
+  function rule(field) {
+    var kind = field.dataset.numpad;
+    if (kind === "amount") { var unit = field.form && field.form.elements.unit; kind = unit && unit.value === "chips" ? "chips" : "pesos"; }
+    return RULES[kind];
+  }
   function slot(field) { return field.form && field.form.querySelector("[data-numpad-slot]"); }
   // A form with a slot shows the keys in that slot (a sheet). Any other marked field gets the bottom panel.
   function served(field) { return !!pad && on() && !!field && !!field.matches && field.matches("input[data-numpad]") && !!rule(field) && !field.disabled && !field.readOnly && (!!slot(field) || !field.closest("dialog")); }
@@ -47,11 +52,11 @@
     var label = field.id && document.querySelector('label[for="' + field.id + '"]');
     return field.getAttribute("aria-label") || (label ? label.textContent.trim() : "");
   }
-  // The next field to fill: the first later one that is empty with nothing saved, else simply the next.
+  // The next field: in a list of counts, the first later one still to count (empty, nothing confirmed); otherwise simply the next.
   function following(field) {
     var all = Array.prototype.filter.call(document.querySelectorAll("input[data-numpad]"), function (el) { return served(el) && !slot(el) && el.getClientRects().length; });
     var later = all.slice(all.indexOf(field) + 1);
-    return later.filter(function (el) { return !el.value && !el.dataset.saved; })[0] || later[0] || null;
+    return later.filter(function (el) { return !el.value && el.dataset.saved === ""; })[0] || later[0] || null;
   }
   function openPanel(field) {
     if (leaving) { leaving.cancel(); leaving = null; }

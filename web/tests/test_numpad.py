@@ -63,3 +63,32 @@ class SheetAmountTests(TestCase):
         self.assertEqual(form.count('class="hint"'), 1)
         self.assertIn("Allowed: ₱500–₱2,000", form)
         self.assertIn("Rake is Off.", form)
+
+
+class SetupFormTests(TestCase):
+    """Stakes, rake and seats are marked for the numpad and keep working without it."""
+
+    def setUp(self):
+        self.night = Night("Ben", state="open")
+        self.client.force_login(self.night.host.user)
+
+    def test_stakes_follow_the_unit_and_rake_percentage_takes_a_decimal(self):
+        page = self.client.get(reverse("session_settings", args=[self.night.session.pk]))
+        for name in ("small_blind", "big_blind", "min_buy_in", "max_buy_in", "default_buy_in", "rake_flat"):
+            tag = field(page, f'name="{name}"')
+            self.assertIn('data-numpad="amount"', tag, name)
+            self.assertIn('inputmode="decimal"', tag, name)
+        self.assertIn('data-numpad="percent"', field(page, 'name="rake_percentage"'))
+        self.assertContains(page, 'name="unit"')
+
+    def test_new_session_and_preset_forms_are_marked(self):
+        group = self.night.group.pk
+        for url in (reverse("session_create", args=[group]), reverse("preset_create", args=[group])):
+            page = self.client.get(url)
+            self.assertIn('data-numpad="amount"', field(page, 'name="small_blind"'), url)
+
+    def test_seats_take_whole_numbers(self):
+        page = self.client.get(reverse("group", args=[self.night.group.pk]) + "?view=settings")
+        tag = field(page, 'name="seat_count"')
+        self.assertIn('data-numpad="whole"', tag)
+        self.assertIn('type="number"', tag)
