@@ -74,12 +74,15 @@ class InPlaceMarksTests(TestCase):
         html = self.client.get(reverse("login")).content.decode()
         self.assertIn('src="/static/js/vendor/turbo-8.0.23.js"', html)
         self.assertIn('src="/static/js/turbo-setup.js?v=abc1234567"', html)
+        self.assertIn('src="/static/js/vendor/motion-14.0.0.js"', html)
+        self.assertIn('src="/static/js/motion.js?v=abc1234567"', html)
 
 
 class ScriptsLoadOnceTests(TestCase):
     """Every page script loads from the head of every page, so a screen change never runs one twice."""
 
-    NAMES = ("page", "app", "vendor/turbo-8.0.23", "turbo-setup", "forms", "toasts", "changes", "sheets", "live",
+    NAMES = ("page", "app", "vendor/turbo-8.0.23", "turbo-setup",
+             "vendor/motion-14.0.0", "motion", "forms", "toasts", "changes", "sheets", "live",
              "clock", "counts", "dock", "pick", "password")
 
     def test_scripts_are_in_the_head_in_order_and_none_in_the_body(self):

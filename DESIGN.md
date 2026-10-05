@@ -465,6 +465,42 @@ Links change the screen without a page load. [Plan](doc/plan/1791181102_screen_c
 - **Arrival.** A new screen starts at the top. Its title is announced once to screen readers and focus moves to the start of the content without a visible ring; a page with an auto-focused field keeps focus there.
 - **Back.** Returns to a freshly fetched screen at the scroll position it was left at.
 
+### 2026-10-05 addendum — Motion system (stage 1 of the motion overhaul)
+
+Motion ([motion.dev](https://motion.dev), version 14.0.0) drives interactive motion through `static/js/motion.js`. The look does not change.
+
+**Principles.**
+
+1. Motion explains: where did I go, what changed, did my tap work.
+2. Never in the way. No control waits for an animation; the next tap interrupts it. Interactions end within 300ms; a signature moment within 900ms, once.
+3. Money does not animate its value. A row may move; digits do not count.
+4. Reduced motion removes movement and keeps the state change.
+5. Springs for things a finger touches, eases for things that arrive or leave.
+6. Additive. Without JavaScript, or if Motion does not load, every screen works with the CSS motion described earlier in this document.
+
+**Presets** (`pokerMotion.run(element, keyframes, name)`).
+
+| Name | Shape | Used for |
+|---|---|---|
+| `press` | spring, stiffness 1200, damping 50 | A button sinking 3px under a finger |
+| `release` | spring, 200ms, bounce 0.45 | The button coming back |
+| `sheet` | spring, 300ms, bounce 0.14 | A sheet rising its own height; the host dock opening |
+| `arrive` | spring, 240ms, bounce 0.3 | A toast arriving or moving up the stack |
+| `leave` | 200ms, the ease-in curve | A sheet or toast leaving |
+| `nudge` | 300ms ease-out, 6px then 3px sideways | The field or message that explains a refusal |
+| `pulse` | 360ms ease-out, scale to 1.04 and back | The control whose action was accepted |
+
+**Components.**
+
+- **Buttons.** A press sinks the button and it springs back on release. The shadow still drops while pressed. Keyboard activation does not move the button.
+- **Pending.** A sent control (`aria-busy`) shows a 2px brass line running along its lower edge. Under reduced motion the line is still.
+- **Sheets.** Rise from below the edge and leave the same way, faster. A close during the rise turns the sheet around from where it is. The backdrop fades.
+- **Toasts.** Arrive from 16px below. A later toast sits lowest and lifts the earlier ones by its height plus 8px; before this they overlapped. Dismissed toasts drop and fade.
+- **Host dock.** Opening uses the `sheet` spring through the Web Animations API; closing keeps the 200ms ease-in. The keyboard behaviour is unchanged.
+- **`motion-on`** on `<html>` marks that Motion runs. It switches off the CSS animation of each element Motion has taken over, so nothing animates twice.
+
+**Measured.** `motion.mjs`, 34 checks at 390 and 1280px: each item above, an action sent during a sheet's rise leaves within 50ms, Motion animates only `x`, `y`, `scale` and `opacity`, reduced motion, a blocked Motion file, and ten screen changes leaving one set of listeners and nothing running.
+
 ## Do's and Don'ts
 
 ### Do:
