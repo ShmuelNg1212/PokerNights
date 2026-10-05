@@ -301,3 +301,6 @@ From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end
 - **Messages sit above the bottom bar** on a set page, never on it.
 - **The final page leads with its proof:** "6 players · ₱9,500 in · ₱9,500 out" and "The books balance." The cash-out total is labelled "Total cashed out". Rake rows show only when rake was collected. An even result reads "Even". A final set shows no Live status.
 - **Host controls are evenly spaced:** 8px between neighbouring controls at every width.
+
+
+On count confirmation, a visible typed field keeps its position when the accepted status adds a line. Other forms' drafts and open Details remain intact. See [the scroll footgun](footguns/count_status_moves_the_field.md).

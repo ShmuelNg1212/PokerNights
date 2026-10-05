@@ -34,6 +34,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [scripts_run_once_per_tab.md](footguns/scripts_run_once_per_tab.md) | A script that starts once per page load keeps polling after the screen changes; register it with `page.js` |
 | [ios_date_input.md](footguns/ios_date_input.md) | The iPhone draws a date input at its own size; the shared field box fixes it and Chrome cannot prove it |
 | [mobile_browser_overflow_checks.md](footguns/mobile_browser_overflow_checks.md) | Mobile layout viewport width can grow with overflowing content; compare with the requested width |
+| [count_status_moves_the_field.md](footguns/count_status_moves_the_field.md) | A wrapped saved-count status moves its field even when document scroll stays fixed |
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 | [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
 

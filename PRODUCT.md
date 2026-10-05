@@ -68,3 +68,9 @@ Hosts can clear away a session or a group. Archiving hides it and takes a sessio
 ## 2026-10-05 addendum — Entry flow
 
 An invite link is the way in. A signed-out visitor who opens one creates an account and is in the group at once; a person who already has an account logs in and confirms. Sign up says that friends see the username and that there is no password reset yet; only the site administrator can set a new password. The entry pages state that PokerNights records the game and never moves money.
+
+## 2026-10-05 addendum — Numpad and the end of a set
+
+On a phone, typed numbers use the app's own number keys: amounts, final counts, stakes, rake and seats. The phone's keyboard stays for text. The keys only offer what the field can take, so a chips amount has no decimal point. The environment variable `NUMPAD=False` returns to the phone's keyboard.
+
+Ending a set is arranged around the host's task. The players' count fields come first, one running total is always in view, and one main button names the next step. Before cash-outs are recorded the review says whether the books will balance. Finalizing asks once, because the app cannot reopen a finalized set. The final page opens with what went in, what came out and that the two agree. Accounting, permissions and what each step records are unchanged. [Plan](doc/plan/1791202390_host_gaps_numpad_count_up.md).

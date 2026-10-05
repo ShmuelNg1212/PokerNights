@@ -1,6 +1,6 @@
 # Host control gaps, an in-app numpad, and the count-up to finalize flow: plan
 
-Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); building in stages. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
+Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); all five stages built and verified; documentation synced; phone acceptance and release pending. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
 
 ## Outcome
 
@@ -159,3 +159,38 @@ Each stage is a separate set of commits and can be released on its own.
 ## Rollback
 
 Each stage reverts on its own. `NUMPAD=False` turns the numpad off without a release. No migration and no data change.
+
+
+## Progress, verification and rendezvous
+
+2026-10-05: resumed at the human's request after Claude Code's session limit. All five stages were already committed on `ui/host-gaps-numpad-count-up`; wiki updates were committed as `4b814dd`. DESIGN.md, PRODUCT.md and TODO.md were unfinished documentation changes. The human approved two independent review agents for the repeat critique.
+
+Implementation commits: `bd506a3` (gaps), `25f0e90` (sheet numpad), `b1de88c` (count-up, review and finalize), `7ca27b2` (setup forms). No service, model or migration change.
+
+Verification on the completed implementation:
+
+- 677 Django tests pass on SQLite in development settings and in build-style settings (`DEBUG=False`, HTTPS redirect off, a local test key); ten PostgreSQL-only skips.
+- All 677 pass on an isolated local PostgreSQL 17 cluster, including the locking/concurrency tests. The existing development and production databases were not used.
+- `numpad.mjs`: 87/87. Touch input, amount limits, physical keys, non-pointer activation, live updates, setup forms, reduced motion, blocked script and error recovery.
+- `count_flow.mjs`: 89/89. Eight-player phone layout, button states, retained drafts, live updates, review verdicts, toast clearance, cancellable two-step finalization, final proof, chips, desktop, player view and reduced motion.
+- Browser regressions: `dock.mjs` 223/223, `flow.mjs` 52/52, `motion.mjs` 34/34, `lifetime.mjs` 22/22, `navigate.mjs` 37/37 and `screens.mjs` 46/46. Each used a fresh temporary database. Temporary copies changed only the server port to 8767, preserving the pre-existing server on 8765.
+- An additional browser probe with `NUMPAD=False` and with JavaScript disabled passes 7/7: native input modes, no keys, setup fields, native count confirmation and a separate finalization submit inside a disclosure. Its first draft assumed an explicit off flag; the template correctly omits the flag, and the probe was corrected.
+- Static motion audit: the numpad animates `transform` for rise, leave and refusal, through the existing reduced-motion-aware wrapper. It has no frame loop and allocates nothing per animation frame. Money figures update directly.
+- One initial capture round was inspected at 320, 390 and 1280px. Independent review found inaccurate help about empty saved-count fields. Corrected to distinguish an uncounted blank from a retained saved count; a confirming capture round at all three widths fits without overflow (6/6 checks). No new layout or styling.
+- The action-in-place regression still selected the removed per-player Confirm button. Its selector now targets the shared `data-confirm-typed` button. The corrected check then exposed a real 34px field shift when the accepted status wrapped. `counts.js` now remembers a visible typed field on submit and restores its position after Turbo restores scroll, unless the scroll position changed while waiting. It uses an instant one-time adjustment, not an animation. `inplace.mjs` passes 38/38: the field is 324px from the top before and after, and the other form's reason and open Details survive. See the [footgun](../wiki/footguns/count_status_moves_the_field.md).
+
+Repeat critique: [snapshot](../../.impeccable/critique/2026-10-05T13-47-15Z__templates-web-count-up-html.md), **25 → 32 of 40**, no observed P0 or P1 issue. Assessment A reviewed design without detector findings. Assessment B scanned six templates and inspected rendered pages. Its six black-text advisories are standalone-template false positives; live overlay signals did not establish new defects. No user-visible overlay is left running. Questions were skipped because this is acceptance work within the approved cycle. Remaining P2 ideas are quieter desktop reference totals, a nearby Back to counts link on review, and explanatory rejected-key feedback for assistive technology. They are follow-ups, not release blockers in this plan.
+
+Plan deviations:
+
+1. NUMPAD also accepts an `amount` marker on setup forms, which reads the current Unit choice, so switching pesos/chips changes the offered key without a reload.
+2. Without JavaScript, Finalize uses a native disclosure with a separate submit, rather than submitting immediately. This retains the two-step safeguard.
+3. Count-up Next places the active row at the top of the free space so the next player is visible. Very narrow phones can still show only one whole row with the keys open; Next remains available.
+4. The review uses the number of players still to count rather than an estimated uncounted amount. It includes the accepted override and rake when calculating the post-batch verdict.
+
+Phone acceptance remains open: AC4–AC6 require the human's iPhone, including Safari and the installed app. Automated checks cannot prove that iOS suppresses the native keyboard. `NUMPAD=False` is the fallback. SPEC.md remains human-owned.
+
+
+Final confirmation, 2026-10-05: the completed tree passes 677 tests on SQLite (ten PostgreSQL-only skips), the build-style run, and all 677 on PostgreSQL 17. After the scroll fix, count-flow passes 89/89 and script lifetime passes 22/22 again. The nine selected browser suites pass 628 checks in total. The additional fallback and wording/layout probes pass 7/7 and 6/6. `git diff --check` is clean.
+
+AC1–AC3 are met for the listed current checks; older scripts already recorded as stale remain outside this cycle. AC4–AC6 remain open for the iPhone. The coordinator completed verification and doc sync, including the original three unfinished files, the repeat critique, browser README and scroll footgun. Local rendezvous uses `main` at `f044805`, an ancestor of the tested branch. There is no migration, push or deployment in this cycle. Release requires an instruction from the human.

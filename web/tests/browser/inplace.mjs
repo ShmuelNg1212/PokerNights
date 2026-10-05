@@ -99,7 +99,7 @@ try {
  check('end play: in place, count-up shown with its dock',await A.js(same)&&await A.js(`!!document.querySelector('#counts-form')&&!!document.querySelector('.host-controls')&&!document.querySelector('.dock-toggle').hidden`));
  // --- Counting: confirm one typed count; a reason typed in another form survives.
  await A.js(`document.querySelector('.count-row details').open=true;document.querySelector('.count-row details [name=reason]').value='another form';const f=document.querySelector('[data-count-input]');f.value='1000';f.dispatchEvent(new Event('input',{bubbles:true}));f.scrollIntoView({block:'center'})`);const top=`Math.round(document.querySelector('[data-count-input]').getBoundingClientRect().top)`;y=await A.js(top);
- await A.click(`document.querySelector('.count-row button[form=counts-form]')`,1400);
+ await A.click(`document.querySelector('[data-confirm-typed]')`,1400);
  console.log('  count field top before/after:',y,await A.js(top));
  check('count confirm: in place, the field stays under the finger',await A.js(same)&&Math.abs(await A.js(top)-y)<=16);
  check('count confirm: the row is counted and its field is empty again',await A.js(`document.querySelector('.count-row [data-status]').dataset.status==='ready'&&document.querySelector('[data-count-input]').value===''&&document.querySelector('[data-count-input]').dataset.saved==='100000'`));

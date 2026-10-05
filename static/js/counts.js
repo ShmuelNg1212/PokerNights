@@ -1,6 +1,7 @@
 // Local preview only. Confirmed counts and cash-outs remain server records.
 (function () {
   "use strict";
+  var confirmedField = null;
   function parse(text, chips) {
     var clean = text.replace(/,/g, "").replace(chips ? /chips/g : /₱|PHP/g, "").trim();
     if (!(chips ? /^\d+$/ : /^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/).test(clean)) return null;
@@ -99,6 +100,35 @@
   document.addEventListener("live:updated", update);
   document.addEventListener("numpad:open", update);
   window.addEventListener("pageshow", update);
+  // A saved-count status can wrap onto another line. Keep the visible field in place
+  // when its counts are accepted, unless the person scrolled while waiting.
+  document.addEventListener("turbo:submit-start", function (event) {
+    confirmedField = null;
+    if (event.target.id !== "counts-form") return;
+    var fields = document.querySelectorAll("[data-count-input]");
+    for (var i = 0; i < fields.length; i++) {
+      var field = fields[i], bounds = field.getBoundingClientRect();
+      if (field.value.trim() && bounds.top >= 70 && bounds.bottom <= window.innerHeight) {
+        confirmedField = { id: field.id, top: bounds.top, scroll: window.scrollY };
+        break;
+      }
+    }
+  });
+  document.addEventListener("inplace:updated", function (event) {
+    if (!event.detail.form || event.detail.form.id !== "counts-form") return;
+    var position = confirmedField;
+    confirmedField = null;
+    if (!position) return;
+    // Turbo restores the page's scroll after rendering; adjust after that work finishes.
+    setTimeout(function () {
+      var field = document.getElementById(position.id);
+      if (!field || Math.abs(window.scrollY - position.scroll) > 1) return;
+      var row = field.closest(".count-row"), top = field.getBoundingClientRect().top;
+      if (row && row.style.transform) top -= new DOMMatrix(getComputedStyle(row).transform).m42;
+      window.scrollBy({ top: top - position.top, behavior: "instant" });
+    }, 0);
+  });
+  document.addEventListener("inplace:failed", function () { confirmedField = null; });
   // Sending the counts hands them to the server, which shows a refused one again itself.
   document.addEventListener("submit", function (event) {
     if (event.target.id === "counts-form" && key()) { try { sessionStorage.removeItem(key()); } catch (_) {} }
@@ -109,6 +139,6 @@
     if (!on) return;
     recall();
     update();
-    return function () { document.documentElement.classList.remove("counts-enhanced"); };
+    return function () { confirmedField = null; document.documentElement.classList.remove("counts-enhanced"); };
   });
 })();

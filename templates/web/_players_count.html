@@ -39,7 +39,7 @@
     {% endwith %}{% endfor %}
   </ul>
   {% if me.is_host and session.state == 'reconciliation' and summary.awaiting_lines or me.is_host and session.state == 'reconciliation' and summary.ready_lines %}
-  <p class="small muted count-help">Type what each player has left; 0 for an empty stack. An empty field stays "Awaiting count". Payment: at the end of the session.</p>
+  <p class="small muted count-help">Type what each player has left; 0 for an empty stack. Leave an uncounted player blank. A saved count stays until you replace it. Payment: at the end of the session.</p>
   <button type="submit" form="counts-form" data-turbo="true" class="btn btn-block confirm-all">Confirm all counts</button>
   {% endif %}
   {% else %}<p class="muted">No players yet.</p>{% endif %}
