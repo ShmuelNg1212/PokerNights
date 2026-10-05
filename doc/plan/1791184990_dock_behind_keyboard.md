@@ -77,3 +77,5 @@ Changes from the plan:
 - `inplace.mjs` 38, `navigate.mjs` 37 and `lifetime.mjs` 22 pass on fresh databases.
 
 AC1 and AC2 are met, AC2 with the one changed limit. **AC3 is not met yet: it needs the human's iPhone after release.** The keyboard in the checks is a stand-in; nothing here proves that an iPhone reports the values assumed. If the dock still hides, the change does nothing harmful: with no keyboard detected the dock is as before.
+
+2026-10-05 release: the human said “push”. All 639 tests passed on local PostgreSQL 17 first (started for the run, stopped after). Pushed `main` at `62e869c` (previous production commit `8d3184f`). About two minutes later https://pokernights-five.vercel.app served the new stylesheet (with the `kb-open` rules) and the new `dock.js`. Not checked on production: any signed-in page, and the keyboard on a real iPhone (AC3).
