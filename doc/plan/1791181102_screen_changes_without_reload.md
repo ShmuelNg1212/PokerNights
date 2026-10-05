@@ -146,3 +146,5 @@ Acceptance: AC1 to AC5 are met, with these limits.
 Not verified: a real phone; the Back gesture inside the installed app; production timings for signed-in screens.
 
 Documentation synced: wiki architecture (the lifetime rule), features, the new footgun page, DESIGN.md, deployment (the build-style run), browser README, TODO.
+
+2026-10-05 release of 4b: pushed `main` at `8d3184f` (previous production commit `7b430c4`), live about two and a half minutes later. Checked on the live site, signed out: from the "Sign-up needs an invite" page a tap on Log in changed the screen with no document load and no reload, the new title was announced, the Show button was ready on the arrived page, Back returned without a reload, and there was no script error. Signed-in screens on production are not checked by the agent (no account); the phone checklist is in TODO.md.
