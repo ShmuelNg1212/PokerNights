@@ -1,14 +1,14 @@
 // Screen changes without a reload (Turbo link navigation). Seed a fresh temporary database with seed.py,
 // seed_end_set.py, seed_night.py and seed_opening.py. The script restarts the Django server on
-// 127.0.0.1:8765 itself to produce a failed send (PN_DB names the SQLite file).
+// 127.0.0.1:8765 itself to produce a failed send (PN_DB names the SQLite file; PN_PORT another port).
 import {spawn,execSync} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR||'/private/tmp/pn-navigate-review';mkdirSync(OUT,{recursive:true});
-const DB=process.env.PN_DB||'/private/tmp/pn-dock-check.sqlite3';const BASE='http://127.0.0.1:8765';
+const DB=process.env.PN_DB||'/private/tmp/pn-dock-check.sqlite3';const PORT=process.env.PN_PORT||'8765';const BASE='http://127.0.0.1:'+PORT;
 const M=JSON.parse(readFileSync('/private/tmp/pn-opening-manifest.json','utf8'));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function stopServer(){try{execSync('pkill -f "runserver 127.0.0.1:8765"')}catch{}}
-async function startServer(){stopServer();await sleep(700);spawn('.venv/bin/python',['manage.py','runserver','127.0.0.1:8765','--noreload'],{env:{...process.env,DEBUG:'True',DATABASE_URL:'sqlite:///'+DB},stdio:'ignore',detached:true}).unref();for(let i=0;i<40;i++){try{if((await fetch(BASE+'/healthz')).ok)return}catch{}await sleep(250)}throw Error('server did not start')}
+function stopServer(){try{execSync(`pkill -f "runserver 127.0.0.1:${PORT}"`)}catch{}}
+async function startServer(){stopServer();await sleep(700);spawn('.venv/bin/python',['manage.py','runserver','127.0.0.1:'+PORT,'--noreload'],{env:{...process.env,DEBUG:'True',DATABASE_URL:'sqlite:///'+DB},stdio:'ignore',detached:true}).unref();for(let i=0;i<40;i++){try{if((await fetch(BASE+'/healthz')).ok)return}catch{}await sleep(250)}throw Error('server did not start')}
 rmSync('/private/tmp/pn-navigate-chrome',{recursive:true,force:true});
 const chrome=spawn(process.env.PN_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--headless=new','--remote-debugging-port=9362','--user-data-dir=/private/tmp/pn-navigate-chrome','--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
 let url;for(let i=0;i<40&&!url;i++){try{url=(await(await fetch('http://127.0.0.1:9362/json/version')).json()).webSocketDebuggerUrl;}catch{await sleep(150)}}
@@ -49,6 +49,31 @@ try {
  check('and back to Your groups',await A.js(`location.pathname==='/'&&window.__mark===1`));
  console.log('  document loads during the walk:',docs(A,mark));
  check('the whole walk made no document load',docs(A,mark)===0&&A.errors(mark)===0);
+ // 1b. A tapped link answers at once and keeps the look while its screen is on the way.
+ await A.go('/g/1/');
+ const lit=el=>`(()=>{const el=${el};return getComputedStyle(el).backgroundColor!=='rgba(0, 0, 0, 0)'})()`;
+ check('a session row at rest has no pressed look',!(await A.js(lit(friday))));
+ const at=JSON.parse(await A.js(`(()=>{${friday}.scrollIntoView({block:'center'});const b=${friday}.getBoundingClientRect();return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2})})()`));
+ await send('Input.dispatchMouseEvent',{type:'mousePressed',x:at.x,y:at.y,button:'left',clickCount:1},A.s);
+ check('held down: the row looks pressed on the first frame',await A.js(`${friday}.matches(':active')`)&&await A.js(lit(friday)));
+ await send('Input.dispatchMouseEvent',{type:'mouseMoved',x:5,y:5,button:'left',buttons:1},A.s);await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:5,y:5,button:'left',clickCount:1},A.s);await sleep(200);
+ check('let go elsewhere: nothing pressed, same screen',await A.js(`location.pathname==='/g/1/'`)&&!(await A.js(lit(friday))));
+ await send('Network.emulateNetworkConditions',{offline:false,latency:700,downloadThroughput:-1,uploadThroughput:-1},A.s);
+ await A.js(`${friday}.click()`);await sleep(250);
+ check('tapped, screen on its way: the row stays pressed',await A.js(`location.pathname==='/g/1/'&&${friday}.classList.contains('is-going')`)&&await A.js(lit(friday)));
+ await sleep(2200);
+ check('arrived: nothing is marked',await A.js(`location.pathname.startsWith('/n/')&&!document.querySelector('.is-going,[aria-busy=true]')`));
+ await A.js(`${toSet}.click()`);await sleep(250);
+ check('a button link shows the busy line while its screen is on the way',await A.js(`(()=>{const el=${toSet};return !el.matches('.btn')||el.getAttribute('aria-busy')==='true'})()`));
+ await sleep(2200);
+ await send('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1},A.s);
+ await A.js('history.back()');await sleep(1200);
+ check('after Back: nothing is marked',await A.js(`location.pathname.startsWith('/n/')&&!document.querySelector('.is-going,[aria-busy=true]')`));
+ for(const [name,el] of [['back link',back],['set link',`document.querySelector('.set-link')`]]){await A.js(`(()=>{const el=${el};if(el)el.classList.add('is-going')})()`);check(name+' has a pressed look',await A.js(`!${el}`)||await A.js(lit(el)));await A.js(`(()=>{const el=${el};if(el)el.classList.remove('is-going')})()`)}
+ await A.go('/g/1/');await A.js(`document.querySelector('.tabs a:not([aria-current])').classList.add('is-going')`);
+ check('a tab has a pressed look',await A.js(lit(`document.querySelector('.tabs a.is-going')`)));
+ await A.go('/');await A.js(`document.querySelector('.group-home-head h2 a').classList.add('is-going')`);
+ check('a group name has a pressed look',await A.js(lit(`document.querySelector('.group-home-head h2 a')`)));
  // 2. No leak after 20 screen changes.
  await A.go('/g/1/');mark=events.length;
  for(let i=0;i<5;i++){await A.click(friday,600);await A.click(toSet,600);await A.click(back,600);await A.click(back,600)}

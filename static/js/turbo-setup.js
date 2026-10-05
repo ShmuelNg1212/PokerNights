@@ -13,7 +13,25 @@
   // on <html>. The phone's own Back and Forward set nothing, so they keep the plain cross-fade.
   var root = document.documentElement, still = matchMedia("(prefers-reduced-motion: reduce)");
   var tapped = null, action = "advance", leaving = "", carried = [], change = 0;
-  document.addEventListener("turbo:click", function (event) { tapped = event.target.closest ? event.target.closest("a[href]") : null; });
+  document.addEventListener("turbo:click", function (event) { tapped = event.target.closest ? event.target.closest("a[href]") : null; going(tapped); });
+  // The tapped link keeps its pressed look until its screen is drawn (app.css, "is-going"). A
+  // link that is a button shows the busy line that a sent form shows.
+  var waiting = null, waitingTimer = 0;
+  function arrived() {
+    clearTimeout(waitingTimer);
+    if (waiting) { waiting.classList.remove("is-going"); waiting.removeAttribute("aria-busy"); }
+    waiting = null;
+  }
+  function going(link) {
+    arrived();
+    if (!link) return;
+    waiting = link;
+    link.classList.add("is-going");
+    if (link.matches(".btn")) link.setAttribute("aria-busy", "true");
+    waitingTimer = setTimeout(arrived, 8000); // a visit that never came
+  }
+  document.addEventListener("turbo:load", arrived);
+  window.addEventListener("pageshow", arrived);
   document.addEventListener("turbo:before-visit", function () { leaving = window.location.pathname; });
   document.addEventListener("turbo:visit", function (event) { action = event.detail.action; });
 
