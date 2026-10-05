@@ -121,3 +121,55 @@ class VersionedPageTests(TestCase):
         self.assertIn('src="/static/js/forms.js?v=abc1234567"', html)
         # The preload and the stylesheet's own reference must be the same address, or the font downloads twice.
         self.assertIn('href="/static/fonts/archivo.woff2"', html)
+
+
+class ServerTimingTests(TestCase):
+    """Every response says how long the server took and how much of that was the database."""
+
+    PATTERN = r'^app;dur=\d+\.\d, db;dur=\d+\.\d;desc="(\d+) quer(?:y|ies)", connect;dur=\d+\.\d$'
+
+    def queries(self, response):
+        import re
+
+        match = re.match(self.PATTERN, response["Server-Timing"])
+        self.assertIsNotNone(match, response["Server-Timing"])
+        return int(match.group(1))
+
+    def test_a_page_without_the_database_reports_no_queries(self):
+        self.assertEqual(self.queries(self.client.get("/healthz")), 0)
+
+    def test_the_count_matches_the_queries_the_page_made(self):
+        from django.contrib.auth import get_user_model
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.client.force_login(get_user_model().objects.create_user("hana", password="x"))
+        with CaptureQueriesContext(connection) as made:
+            response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertGreater(len(made), 0)
+        self.assertEqual(self.queries(response), len(made))
+
+    def test_redirects_carry_it_too(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.queries(response)
+
+    def test_nothing_is_left_on_the_connection(self):
+        from django.db import connection, connections
+
+        self.client.get("/")
+        self.assertEqual(connection.execute_wrappers, [])
+        self.assertNotIn("connect", vars(connections["default"]))
+
+    def test_a_failing_view_leaves_nothing_behind(self):
+        from unittest import mock
+
+        from django.db import connection, connections
+
+        from config.timing import ServerTiming
+
+        with self.assertRaises(RuntimeError):
+            ServerTiming(mock.Mock(side_effect=RuntimeError("boom")))(mock.Mock())
+        self.assertEqual(connection.execute_wrappers, [])
+        self.assertNotIn("connect", vars(connections["default"]))
