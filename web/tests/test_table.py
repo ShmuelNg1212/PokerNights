@@ -90,6 +90,8 @@ class TablePageTests(TestCase):
         self.assertContains(page, 'class="dock-toggle"', count=1)
         self.assertContains(page, 'data-dock-status>₱1,000 still to account for.</span>')
         self.assertContains(page, 'data-dock-coverage>1 still to count.</span>')
+        self.assertContains(page, 'class="dock-count"', count=1)
+        self.assertRegex(page.content.decode(), r'<strong data-dock-accounted>₱[\d,]+</strong> of ₱[\d,]+ bought in')
         self.assertNotContains(page, 'Next:')
 
     def test_player_and_final_set_have_no_dock_toggle(self):

@@ -37,6 +37,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 | [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
 
+| [ios_keyboard_covers_fixed.md](footguns/ios_keyboard_covers_fixed.md) | Fixed elements at the bottom sit under the iPhone keyboard |
 | [opening_buy_ins_lock_rake.md](footguns/opening_buy_ins_lock_rake.md) | Configure rake before default opening buy-ins lock the rule |
 
 ## Journal

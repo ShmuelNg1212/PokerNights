@@ -39,7 +39,7 @@ try {
    await A.shot(`dock-${name}-${width}-expanded`);
    await A.click(toggle);
    check(tag+' collapsed shows only the bar',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1&&!document.querySelector('.next-action').getClientRects().length`));
-   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${name==='long'?96:72}`));
+   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${name==='long'?96:name==='counting'?76:72}`));
    check(tag+' collapsed bar names the state',await A.js(`${toggle}.querySelector('.dock-next').getClientRects().length>0`));
    check(tag+' collapsed clears last row',await A.js(clears(LAST[name])));
    check(tag+' collapsed fits width',await A.js(`document.documentElement.scrollWidth<=${width}`));
@@ -115,6 +115,52 @@ try {
  check('no JavaScript: last row clears dock',await A.js(clears('.player-list')));
  await A.shot('dock-running-390-nojs');
  await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
+ // iPhone keyboard: a stand-in visual viewport reports a 336px keyboard over the 844px page.
+ const fake=await send('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const v=new EventTarget();Object.assign(v,{width:innerWidth,height:844,offsetTop:0,offsetLeft:0,scale:1});Object.defineProperty(window,'visualViewport',{value:v,configurable:true});window.__kb=h=>{v.height=844-h;v.dispatchEvent(new Event('resize'))}})()`},A.s);
+ const bottom=`Math.round(${dock}.getBoundingClientRect().bottom)`,field=`[...document.querySelectorAll('[data-count-input]')].find(f=>f.dataset.saved==='')`;
+ const kb=async h=>{await A.js(`__kb(${h})`);await sleep(150)};
+ await A.go(`/s/${C.php}/`);await A.js(`localStorage.removeItem('rack-dock')`);await A.go(`/s/${C.php}/`);
+ check('keyboard closed: dock at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&!document.documentElement.classList.contains('kb-open')`));
+ await A.js(`${field}.focus()`);await kb(336);
+ check('keyboard up: dock sits on the keyboard',await A.js(`${bottom}===508`));
+ check('keyboard up: dock is the bar',await A.js(`${shown}.length===1&&${toggle}.getAttribute('aria-expanded')==='false'&&${dock}.getBoundingClientRect().height<=72`));
+ check('keyboard up: bar shows the live count and verdict',await A.js(`!!document.querySelector('[data-dock-accounted]').getClientRects().length&&!!document.querySelector('[data-dock-status]').getClientRects().length`));
+ check('keyboard up: typed field is not covered',await A.js(`${field}.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top`));
+ check('keyboard up: saved choice untouched',await A.js(`localStorage.getItem('rack-dock')===null&&!document.documentElement.classList.contains('dock-collapsed')`));
+ const typedBefore=await A.js(`document.querySelector('[data-dock-accounted]').textContent`);
+ await A.js(`(()=>{const f=${field};f.value='1000';f.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+ check('keyboard up: live count follows typing',await A.js(`document.querySelector('[data-dock-accounted]').textContent===document.querySelector('[data-count-preview] [data-count-accounted]').textContent`)&&typedBefore!==await A.js(`document.querySelector('[data-dock-accounted]').textContent`));
+ await A.shot('dock-counting-keyboard');
+ const last=`[...document.querySelectorAll('[data-count-input]')].pop()`;await A.js(`window.scrollTo(0,0);${last}.focus({preventScroll:true});${last}.scrollIntoView({block:'end'})`);await sleep(250);
+ check('keyboard up: a field under the bar is moved clear',await A.js(`${last}.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top`));
+ await A.click(toggle);
+ check('keyboard up: tapping the bar leaves the field and keeps the choice',await A.js(`!document.activeElement.matches('[data-count-input]')&&localStorage.getItem('rack-dock')===null`));
+ await kb(0);
+ check('keyboard closed again: back at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='true'&&!document.documentElement.style.getPropertyValue('--kb')`));
+ await A.click(toggle);await A.js(`${field}.focus()`);await kb(336);
+ check('collapsed dock also rides the keyboard',await A.js(`${bottom}===508&&${shown}.length===1`));
+ await kb(0);check('collapsed dock returns collapsed',await A.js(`${bottom}===844&&${shown}.length===1&&localStorage.getItem('rack-dock')==='collapsed'`));
+ await A.click(toggle);
+ await A.js(`${field}.focus();visualViewport.scale=2`);await kb(336);check('zoomed page: dock does not move',await A.js(`${bottom}===844`));
+ await A.js(`visualViewport.scale=1`);await kb(50);check('a 50px change is not a keyboard',await A.js(`${bottom}===844&&!document.documentElement.classList.contains('kb-open')`));
+ await kb(0);
+ // Typing in a field inside the dock keeps the dock expanded, above the keyboard and on screen.
+ await A.go('/s/3/');await A.js(`${dock}.querySelectorAll('details').forEach(d=>d.open=true)`);await sleep(200);
+ const inner=`${dock}.querySelector('input:not([type=hidden]):not([type=checkbox]),select,textarea')`;
+ if(await A.js(`!!${inner}`)){await A.js(`${inner}.focus()`);await kb(336);
+  check('field in the dock: dock expanded above the keyboard',await A.js(`${bottom}===508&&${shown}.length>1&&${dock}.getBoundingClientRect().top>=0`));
+  await A.shot('dock-running-keyboard-inner');await kb(0);} else check('field in the dock exists',false);
+ // Leaving the set page clears the keyboard state; coming back works once.
+ await A.go(`/s/${C.php}/`);await A.js(`${field}.focus()`);await kb(336);
+ await A.js(`Turbo.visit('/')`);await sleep(900);
+ check('leaving clears the keyboard state',await A.js(`!document.documentElement.classList.contains('kb-open')&&!document.documentElement.classList.contains('kb-bar')&&!document.documentElement.style.getPropertyValue('--kb')`));
+ await A.js(`__kb(0);Turbo.visit('/s/${C.php}/')`);await sleep(900);await A.js(`${field}.focus()`);await kb(336);
+ check('returning: dock rides the keyboard again',await A.js(`${bottom}===508&&${shown}.length===1`));
+ await kb(0);await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:fake.identifier},A.s);
+ const none=await send('Page.addScriptToEvaluateOnNewDocument',{source:`Object.defineProperty(window,'visualViewport',{value:undefined});window.__errors=[];addEventListener('error',e=>__errors.push(e.message))`},A.s);
+ await A.go(`/s/${C.php}/`);await A.click(toggle);await A.click(toggle);
+ check('no visual viewport: no error, dock as before',await A.js(`__errors.length===0&&${bottom}===844&&${shown}.length>1`));
+ await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:none.identifier},A.s);
  // A player has no dock.
  const P=await user('ben');await P.go('/s/3/');check('player has no dock or toggle',await P.js(`!document.querySelector('.host-controls')&&!document.querySelector('.dock-toggle')`));
  writeFileSync(`${OUT}/dock.json`,JSON.stringify(results,null,2));
