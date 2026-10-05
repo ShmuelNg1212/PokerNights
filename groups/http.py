@@ -49,9 +49,9 @@ def keep_form(request, key, form):
 def take_form(request, key, form_class, **kwargs):
     drafts = request.session.get("inline_forms", {})
     draft = drafts.pop(key, None)
-    request.session["inline_forms"] = drafts
     if draft is None:
-        return form_class(**kwargs)
+        return form_class(**kwargs)  # nothing taken: the login session is not written
+    request.session["inline_forms"] = drafts
     form = form_class(draft["data"], **kwargs)
     form.is_valid()
     for name, errors in draft["errors"].items():
