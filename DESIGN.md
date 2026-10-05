@@ -571,6 +571,20 @@ A screen change says which way it went. `static/js/turbo-setup.js` decides; the 
 
 **Measured.** `screens.mjs`, 46 checks at 390 and 1280px.
 
+### 2026-10-05 addendum — Your groups: the group card
+
+Each group on Your groups is one card: the rail surface, a 1px rule edge, the sheet radius (26px), 16px between cards. It replaces the earlier run of text divided by lines. A card has three zones in a fixed order, divided by rules and running edge to edge; nothing inside it is a second card.
+
+- **Who.** The group's name (1.75rem, links to the group). At the top right, the settings button: a round 48px quiet button with a gear icon, named "Group settings for {group}", which opens the Group settings tab. Under the name, up to six player chips, a "+N" counter for the rest, and the role badge at the right. The player count is read out to screen readers and not printed.
+- **Now.** A set in play is the felt band, the only felt on the page, with the table name, one facts line and its one action. An open session uses the raised rail colour. Nothing in progress is plain text on the card. Further open sessions are one row: "More open sessions", the number in a pill, a chevron.
+- **You.** "To settle" in brass, one row per person: who, the date, and the amount at 1.5rem in green or red. Then the viewer's figures in a two-column grid: a 1rem label, the signed amount at 1.75rem in the money width with its icon, and for a record one small note (sessions and wins). The last session's date sits beside its label. A third figure takes the full width; under 360px the figures are one column. A session sat out reads "Did not play".
+
+After the last card, "New group" is a full-width button with a dashed edge and a plus icon; it opens the form in a panel below it. From 900px, more than one group flows into two columns that pack by height.
+
+Text under 16px on a card is limited to the role and state badges and the note under a record. The fullest test card went from 17 such pieces to 4.
+
+**Measured.** `home.mjs`, 60 checks at 320, 390 and 1280px.
+
 ## Do's and Don'ts
 
 ### Do:
