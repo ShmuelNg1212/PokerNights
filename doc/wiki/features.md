@@ -88,7 +88,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
 - The dock slides open and closed (320 ms and 200 ms); reduced motion switches at once.
-- In count-up the collapsed bar shows the running total (“₱1,900 of ₱2,000 bought in”) and the verdict, both updated as counts are typed.
+- In count-up the bar shows the running total (“₱1,900 of ₱2,000 bought in”) and the verdict, both updated as counts are typed. Since 2026-10-05 it does so open as well as folded, and it is the host's one total on a phone (see “Count-up, review and finalize”).
+- Since 2026-10-05 count fields use the in-app numpad on a phone, so the next point applies only to text fields on the set page (a cancel reason, an override note, a reversal reason).
 - On an iPhone, while the keyboard is up, the dock sits on top of the keyboard as the bar and returns to its saved state when the keyboard closes. Typing in a field inside the dock keeps it expanded. The bar stays the bar and stays on the keyboard while the page is scrolled with the keyboard open, and only a new focus moves the page. `dock.js` reads `window.visualViewport` and sets `--kb` (the dock's offset), `--kb-h` (the keyboard's height) and the classes `kb-open` and `kb-bar` on `<html>`. A set page opened with `?kb=1` shows the numbers it reads. See the footgun [fixed elements sit under the iPhone keyboard](footguns/ios_keyboard_covers_fixed.md). Not yet confirmed on a real iPhone.
 - The options under “More host controls” are all full-width buttons, including Cancel this set and Or add one player.
 - There is no toggle from 900 px, without JavaScript, or for players.
@@ -192,6 +193,8 @@ See the [roadmap](../roadmap/README.md).
 
 ## End-of-set design (slice 2)
 
+The layout and several details below changed on 2026-10-05; “Count-up, review and finalize” at the end of this page describes the screens as built. What still holds from this list: the accounting gates, frozen results, the once-per-set books-balance rule, two columns from 900 px and JavaScript-free forms.
+
 - Count-up uses the neutral lead panel and shows ready plus finally cashed-out players out of all players with buy-ins. Earlier partial cash-outs do not complete a player. Total bought in and recorded cash-outs have separate labels.
 - Every eligible host count field stays inline. A confirmed count is written above the draft field. Count confirmation and recording cash-outs remain separate actions. Players see statuses and confirmed counts without host inputs.
 - The host dock links to the batch review when counts are ready, offers finalization only when the books balance, and exposes the next-step explanation. Resume play and cancellation remain under More host controls.
@@ -272,3 +275,29 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Nothing moves on first sight of a set, while you type, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load.
 - Code: `static/js/flow.js`, `static/js/changes.js`, the last block of `static/css/app.css`. Check: `web/tests/browser/flow.mjs`. The events table is in DESIGN.md.
 - Next stages (each with its own plan): the live set page, moving between screens, results and settle-up.
+
+## In-app numpad (2026-10-05)
+
+- **On a phone or tablet a typed number uses the app's own keys.** The phone's keyboard does not open for buy-in, rebuy and cash-out amounts, final counts, stakes, rake or seats. Text fields (names, reasons, notes) keep the phone's keyboard. On a computer nothing changes.
+- **Twelve keys in fixed places:** 1 to 9, one key that depends on the field, 0 and delete. That key is a decimal point where a decimal is allowed (pesos, the rake percentage) and "00" where it is not (chips, seats). On the setup forms it follows the Unit choice. Holding delete clears the field.
+- **A key that cannot give a valid number does nothing** and the field is marked for a moment: a second decimal point, a third decimal place, a digit past the largest amount.
+- **In a buy-in or cash-out sheet** the keys are part of the sheet, between the amount and the action.
+- **On a page with several number fields** (count-up, New session, Set settings, presets, New table) a panel rises from the bottom when a number field is tapped. It names the field and has **Next** and **Done**. During count-up it takes the host bar's place, shows the running total, and Next goes to the next player still to count.
+- **It fails safe.** The field stays a real field and the form sends the same value. The phone's keyboard is switched off only once the keys exist. If the script is missing or fails, or with the environment variable `NUMPAD=False`, every field uses the phone's keyboard as before.
+- Script: `static/js/numpad.js`. A field opts in with `data-numpad="pesos|chips|percent|whole|amount"`; a form that wants the keys in a fixed place holds an empty `<div data-numpad-slot>`. [Plan](../plan/1791202390_host_gaps_numpad_count_up.md).
+
+## Count-up, review and finalize (rework of 2026-10-05)
+
+From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end-of-set flow.
+
+- **Count-up leads with the players.** On a phone the overview is the title and one progress line; the players' count fields follow at once. Set totals and the balance check are below the list. Once every player is cashed out, the balance check moves directly under the overview, so a discrepancy is the first thing on the screen.
+- **One running total.** For the host it is in the bottom bar on a phone (open or folded) and with the main button on a computer. A player sees one read-only total under Set totals.
+- **A row is a name, a state and one field.** A confirmed count shows in its field in the quieter colour. Rows have no button of their own. Buy-in and time details are in Details.
+- **One main button, by state:** "Confirm N counts" while counts are typed; "Cash out counted players (N)" when counts are confirmed; "Finalize results" when everyone is cashed out and the books balance; "See the ₱100 difference" when they do not. With nothing typed and nobody counted there is no button, only the line that says what to do. "Confirm all counts" at the end of the list remains for a browser without scripts.
+- **The verdict has a tone and a mark:** brass with a warning mark for missing or extra once every count is in, green with a tick for a match, plain while counting. With an override it reads "Off by ₱100, covered by an override."
+- **Typed counts are kept for the tab** until they are confirmed, so leaving the page does not lose them.
+- **The review says where the books will stand,** directly above its button: they balance; they are ₱50 short or over; or some players are still to count.
+- **Finalize asks once.** The button opens a sheet with the players, total bought in, total cashed out and the verdict, and one button "Finalize set N". "Not yet" has the focus. Without scripts the same content is a disclosure.
+- **Messages sit above the bottom bar** on a set page, never on it.
+- **The final page leads with its proof:** "6 players · ₱9,500 in · ₱9,500 out" and "The books balance." The cash-out total is labelled "Total cashed out". Rake rows show only when rake was collected. An even result reads "Even". A final set shows no Live status.
+- **Host controls are evenly spaced:** 8px between neighbouring controls at every width.

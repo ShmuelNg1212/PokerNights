@@ -34,3 +34,13 @@ A new fixed bottom element (a sheet, a toast, a second dock) needs the same trea
 `web/tests/browser/dock.mjs` replaces `visualViewport` with a stand-in that reports a 336px keyboard. The check also shortens the real page (the device height) together with the stand-in, to act as a browser whose keyboard resizes the page. The stand-in must also **move**: `__pan(offsetTop)` slides the visible frame, with or without an event. The first version's stand-in never moved, so its checks passed while the phone misbehaved. This proves the script and layout, not that an iPhone reports those values. Only a real iPhone confirms it.
 
 A set page opened with `?kb=1` shows what the script reads (keyboard height, offset, visible and full height, the dock's edges, whether it runs as the installed app) in a label at the top of the visible frame. Ask for a screenshot of it before changing this code again.
+
+## 2026-10-05 addendum: number fields no longer open the keyboard
+
+Since the in-app numpad ([plan](../../plan/1791202390_host_gaps_numpad_count_up.md)), a number field on a phone has `inputmode="none"` and the app's own keys write into it, so the phone's keyboard does not open for counts or amounts. During count-up the numpad panel takes the dock's place while it is open (`numpad-open` on `<html>` hides the dock), so the case this page describes no longer arises for count fields.
+
+What remains exactly as described above: text fields on a set page (the cancel reason, the override note, a reversal reason) still open the phone's keyboard, and `dock.js` still keeps the bar above it. Do not remove that code.
+
+The numpad panel is a new fixed bottom element. It needs no keyboard treatment, because the keyboard is closed whenever it is shown: it goes as soon as a text field takes focus. `NUMPAD=False`, a missing script or a script error returns number fields to the phone's keyboard, and then everything above applies to them again.
+
+Only a real iPhone confirms that `inputmode="none"` keeps the keyboard closed in Safari and in the installed app. Headless Chrome has no keyboard; `numpad.mjs` and `count_flow.mjs` check the attribute and the keys, not the phone.
