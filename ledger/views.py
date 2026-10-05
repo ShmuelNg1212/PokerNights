@@ -169,6 +169,18 @@ def cash_out_counted(request, session_id):
         return redirect("session", session_id=session.pk)
     summary = queries.summary(session)
     ready = summary.ready_lines
+    batch_total = sum(line.count.amount for line in ready)
+    # What the books will say once this batch is recorded: the last cheap moment to catch a miscount.
+    difference = summary.cashed_out + batch_total + summary.adjustment + summary.rake - summary.total
+    if summary.awaiting_lines:
+        waiting = len(summary.awaiting_lines)
+        verdict = ("", f"After this batch {waiting} player{' is' if waiting == 1 else 's are'} still to count.")
+    elif difference == 0:
+        verdict = ("good", "After this batch the books balance.")
+    else:
+        off = money.format_amount(abs(difference), session.unit)
+        verdict = ("warn", f"After this batch the books are {off} {'short' if difference < 0 else 'over'}. "
+                           "Recount before recording, or record and fix it after.")
     context = {
         "session": session,
         "unit": session.unit,
@@ -177,9 +189,11 @@ def cash_out_counted(request, session_id):
         "participants": [line.participant for line in summary.lines],
         "awaiting": summary.awaiting_lines,
         "cashed_out": summary.cashed_out_lines,
-        "batch_total": sum(line.count.amount for line in ready),
+        "batch_total": batch_total,
         "summary": summary,
-        "after_batch": summary.cashed_out + sum(line.count.amount for line in ready),
+        "after_batch": summary.cashed_out + batch_total,
+        "verdict_tone": verdict[0],
+        "verdict": verdict[1],
         "request_id": uuid.uuid4(),
     }
     return render(request, "ledger/cash_out_counted.html", context)

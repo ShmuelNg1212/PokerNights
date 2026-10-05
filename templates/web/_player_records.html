@@ -1,7 +1,8 @@
-{% load money_tags %}
+{% load money_tags clock_tags %}
       {% if line.buy_ins or line.reversed_buy_ins or line.cash_outs or line.reversed_cash_outs or can_manage_players or p.member_id == me.pk and can_join %}
       <details data-key="player-{{ p.pk }}">
         <summary class="small">Details</summary>
+        {% if meta %}<p class="muted small">{% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}{% if line.play_seconds is not None %} · Played {% clock_value line.play_seconds line.clock_running %}{% endif %}</p>{% endif %}
         <ul class="list small">
           {% for b in line.buy_ins %}
           <li>

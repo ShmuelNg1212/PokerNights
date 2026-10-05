@@ -1,9 +1,10 @@
 {% load money_tags %}
-<section class="count-total{% if preview %} count-preview{% endif %}" aria-label="{% if preview %}Count preview{% else %}Confirmed count total{% endif %}"{% if preview %} data-count-preview data-unit="{{ unit }}" data-bought="{{ summary.total }}" data-cash="{{ summary.cashed_out }}" data-rake="{{ summary.rake }}" data-players="{{ summary.money_lines|length }}" data-stray="{{ count_total.stray|yesno:'1,0' }}"{% endif %}>
+{% if balance.overridden %}{% firstof "Off by "|add:balance.raw_difference_text|add:", covered by an override." as covered %}{% endif %}
+<section class="count-total{% if preview %} count-preview{% endif %}" aria-label="{% if preview %}Count preview{% else %}Confirmed count total{% endif %}"{% if preview %} data-count-preview data-unit="{{ unit }}" data-bought="{{ summary.total }}" data-cash="{{ summary.cashed_out }}" data-rake="{{ summary.rake }}" data-players="{{ summary.money_lines|length }}" data-stray="{{ count_total.stray|yesno:'1,0' }}"{% if covered %} data-covered="{{ covered }}"{% endif %}{% endif %}>
   <h3 data-count-label>Confirmed counts</h3>
   <p class="count-equation small"><span data-count-remaining>{{ count_total.remaining|amount:unit }}</span> counted + {{ summary.cashed_out|amount:unit }} cashed out{% if summary.rake %} + {{ summary.rake|amount:unit }} rake{% endif %}</p>
   <p class="count-accounted"><strong data-count-accounted>{{ count_total.accounted|amount:unit }}</strong> <span class="small muted">of {{ summary.total|amount:unit }} bought in</span></p>
-  <p class="count-verdict small" role="status" aria-atomic="true"><span data-count-status>{{ count_total.status_text }}</span> <span data-count-coverage>{{ count_total.missing }} still to count.</span></p>
-  {% if count_total.has_overrides %}<p class="small muted">Overrides are excluded from this stack check.</p>{% endif %}
+  <p class="count-verdict small" role="status" aria-atomic="true"><span class="verdict" data-count-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-count-coverage>{{ count_total.missing }} still to count.</span></p>
+  {% if count_total.has_overrides and not covered %}<p class="small muted">Overrides are excluded from this stack check.</p>{% endif %}
   {% if preview %}<noscript><p class="small muted">Confirm counts to update this total.</p></noscript>{% endif %}
 </section>

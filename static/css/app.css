@@ -312,23 +312,27 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .player-row .change-label { position: absolute; top: -4px; right: 0; }
 
 /* End of set: inline counting work, a slate overview and frozen results. */
-.count-progress { margin: 18px 0 12px; font-size: .875rem; color: var(--felt-ink); }
-.count-progress strong { display: block; color: var(--bone); font-size: 3rem; line-height: 1.1; font-stretch: var(--w-money); font-variant-numeric: tabular-nums; }
-.count-progress strong span { font-size: 1.75rem; }
-.count-stages { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--felt-ink); font-size: .8125rem; }
+.count-progress { margin: 0; font-size: .9375rem; color: var(--felt-ink); }
+.count-progress strong { color: var(--bone); font-variant-numeric: tabular-nums; }
+.count-stages { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: .8125rem; }
 .set-totals { margin: 16px 0 0; padding-top: 8px; border-top: 1px solid var(--line); }
 .set-totals > div, .result-facts > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 6px; }
 .set-totals dt { font-size: .84375rem; color: var(--felt-ink); }
 .set-totals dd { font-weight: 700; }
 .set-totals dd, .result-facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-width: 0; }
 .count-row, .result-row { border-bottom: 1px solid var(--rule); padding: 16px 0; min-width: 0; }
+.count-row { padding: 12px 0 0; }
 .count-identity { display: grid; grid-template-columns: 44px minmax(0,1fr) minmax(0,auto); align-items: center; gap: 10px; }
-.count-identity > .grow { overflow-wrap: anywhere; font-weight: 650; }
-.count-meta { margin: 6px 0; }
-.count-entry { margin-top: 12px; flex-wrap: nowrap !important; }
-.count-entry input { font-weight: 700; font-variant-numeric: tabular-nums; }
-.count-entry button { padding: 0 12px; }
-.count-row > details, .result-row > details { margin-top: 6px; }
+.count-identity > .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.count-name { font-weight: 650; }
+.count-state { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+/* One line per player to fill: the label, then the field. A confirmed count is the field's placeholder. */
+.count-entry { display: grid; grid-template-columns: auto minmax(0,1fr); align-items: center; column-gap: var(--s-3); margin-top: var(--s-2); }
+.count-entry label { margin: 0; color: var(--muted); font-weight: 500; }
+.count-entry input[data-count-input] { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.count-entry .error { grid-column: 1 / -1; margin-top: var(--s-1); }
+.result-row > details { margin-top: 6px; }
+.count-row:not(:has(details)) { padding-bottom: 12px; }
 .count-row .form-row, .result-row .form-row { flex-wrap: wrap; }
 .count-row .form-row > .grow, .result-row .form-row > .grow { min-width: 0; }
 .count-row .badge { vertical-align: baseline; }
@@ -363,17 +367,16 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .end-set-layout:not(.final-layout) { display: flex; flex-direction: column; }
   .end-set-layout:not(.final-layout) .table-left { display: contents; }
   .end-set-layout .felt { order: 0; }
-  .end-balance { order: 1; }
+  .end-balance { order: 4; }
+  .books-known > .end-balance { order: 1; }
   .count-workspace { order: 2; }
+  .count-facts { order: 3; }
   .end-set-layout .host-more > summary { min-height: var(--tap); }
   .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 154px; }
   .table-page:has(.final-layout), .table-page:has(.review-layout) { padding-bottom: 48px; }
 }
 @media (max-width:359px) {
   .count-identity { grid-template-columns: 36px minmax(0,1fr) minmax(0,auto); gap: 6px; }
-  .count-entry { flex-wrap: wrap !important; }
-  .count-entry > .grow { flex-basis: 100%; }
-  .count-entry button { width: 100%; }
   .review-player { gap: 6px; }
   .result-amount { font-size: 1.125rem; }
 }
@@ -848,3 +851,74 @@ input.numpad-refused { border-color: var(--down); }
   .sheet:has(.numpad) .sheet-amount { min-height: 56px !important; font-size: 2rem !important; }
   .sheet:has(.numpad) .numpad-key { min-height: 48px; }
 }
+
+/* Count-up: players first, one total, then reference figures (count-layout). */
+.count-facts { --felt-ink: var(--muted); padding: var(--s-4) 0 var(--s-2); }
+.count-facts h2 { margin: 0 0 var(--s-2); font-size: 1.0625rem; }
+.count-facts .set-totals { margin-top: var(--s-2); padding-top: 0; border-top: 0; }
+#balance { scroll-margin-top: 90px; }
+.counts-enhanced .confirm-all { display: none; }
+.count-layout .section-heading h2 .small { display: inline; margin-left: var(--s-1); }
+/* The verdict's severity is in its colour and its mark as well as its words. */
+.verdict[data-tone="warn"] { color: var(--warn); font-weight: 600; }
+.verdict[data-tone="good"] { color: var(--good); font-weight: 600; }
+.verdict[data-tone="warn"]::before, .verdict[data-tone="good"]::before { content: ""; display: inline-block; width: 1em; height: 1em; margin-right: var(--s-1); vertical-align: -.15em; background: currentColor; -webkit-mask: var(--mark) center / contain no-repeat; mask: var(--mark) center / contain no-repeat; }
+.verdict[data-tone="warn"] { --mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3zM12 9v4m0 4h.01'/%3E%3C/svg%3E"); }
+.verdict[data-tone="good"] { --mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+@media (min-width: 900px) {
+  .count-layout { grid-template-rows: auto auto auto auto 1fr; row-gap: var(--s-4); }
+  .count-layout > .felt { grid-column: 1; grid-row: 1; }
+  .count-layout > .host-controls { grid-column: 1; grid-row: 2; margin: 0; }
+  .count-layout > .count-facts { grid-column: 1; grid-row: 3; padding-top: 0; }
+  .count-layout > .end-balance { grid-column: 1; grid-row: 4; }
+  .count-layout.books-known > .end-balance { grid-row: 2; }
+  .count-layout.books-known > .host-controls { grid-row: 3; }
+  .count-layout.books-known > .count-facts { grid-row: 4; }
+  .count-layout > .count-workspace { grid-column: 2; grid-row: 1 / -1; }
+}
+@media (max-width: 899px) {
+  /* During count-up the dock's bar is the one running total, open or folded. */
+  .dock-enabled .table-layout .dock-total .dock-title { display: none; }
+  .dock-enabled .table-layout .dock-total { padding: 6px 0; }
+  .dock-enabled .table-layout .dock-total .dock-count { display: block; font-size: .9375rem; }
+  .dock-enabled .table-layout .dock-total .dock-count strong { font-size: 1.125rem; }
+  .dock-enabled .table-layout .dock-total .dock-next { display: block; color: var(--text); font-size: .9375rem; }
+  .dock-enabled .table-layout .host-controls > .count-preview { display: none; }
+}
+
+/* The numpad as a bottom panel, for a page with several number fields. It takes the dock's place while it is open. */
+.numpad-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; padding: var(--s-2) 16px max(var(--s-2), env(safe-area-inset-bottom)); background: var(--ground); border-top: 1px solid var(--rule); box-shadow: 0 -12px 32px oklch(0 0 0 / .45); }
+.motion-on .numpad-panel { box-shadow: 0 -12px 32px oklch(0 0 0 / .45), 0 48px 0 var(--ground); }
+.numpad-panel > * { max-width: 440px; margin-inline: auto; }
+.numpad-panel .numpad-key { min-height: var(--tap); }
+.numpad-strip { display: flex; align-items: center; gap: var(--s-2); margin-bottom: var(--s-2); }
+.numpad-about { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.numpad-about strong { font-size: .9375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.numpad-note { color: var(--muted); font-size: .8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.numpad-note:empty { display: none; }
+.numpad-open .table-layout .host-controls { display: none; }
+.numpad-open .page { padding-bottom: calc(var(--pad-h, 300px) + 16px) !important; }
+.numpad-open input[data-numpad] { scroll-margin-block: 90px calc(var(--pad-h, 300px) + 16px); }
+/* The row being counted goes to the top of what is left of the screen, so the next player shows under it. */
+.numpad-open .count-row { scroll-margin-top: 76px; }
+
+/* Review, finalize and final results (stage 4 of the count-up rework). */
+.review-verdict { margin: var(--s-3) 0; font-weight: 600; }
+.review-verdict.notice { color: var(--text); }
+/* Finalize asks once: the opener stands in for the disclosure where sheets work. */
+.sheets-enabled .finalize-opener { display: flex !important; }
+.sheet .sheet-cancel { display: flex !important; }
+.finalize-facts > div { margin-top: 0; padding: var(--s-2) 0; border-bottom: 1px solid var(--rule); }
+.finalize-facts dt { color: var(--muted); }
+.finalize-facts dd { font-weight: 700; }
+.finalize-verdict { font-size: 1.0625rem; }
+/* The proof leads the final page. */
+.final-proof { margin: 0 0 var(--s-4); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.final-proof .verdict { display: block; margin-top: var(--s-1); font-size: 1.0625rem; }
+/* A final set no longer changes, so it shows no live status. */
+.table-bar:has(~ #live[data-state="finalized"]) .live-status { display: none; }
+/* A message never sits on the bottom bar or the number keys. */
+@media (max-width: 899px) {
+  .dock-enabled .table-page:has(.table-layout .host-controls) .toast { bottom: calc(var(--dock-h, 128px) + var(--s-2)); }
+}
+.numpad-open .toast { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }

@@ -31,7 +31,9 @@ try {
   for(const [name,id] of Object.entries(SETS)) {
    await A.go(`/s/${id}/`);const tag=`${name} ${width}`;
    check(tag+' starts expanded with toggle',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&!${toggle}.hidden&&${shown}.length>1`));
-   check(tag+' expanded bar has only its title',await A.js(`!${toggle}.querySelector('.dock-next').getClientRects().length`));
+   // During count-up the bar is the one running total, open or folded; in every other state it is the title.
+   const counting=name==='counting'||name==='long';
+   check(tag+(counting?' expanded bar carries the running total':' expanded bar has only its title'),await A.js(`${toggle}.querySelector('.dock-next').getClientRects().length>0`)===counting&&await A.js(`${toggle}.querySelector('.dock-title').getClientRects().length>0`)!==counting);
    check(tag+' toggle is a 48px target',await A.js(`${toggle}.getBoundingClientRect().height>=48&&${toggle}.getBoundingClientRect().width>=${width-40}`));
    check(tag+' expanded clears last row',await A.js(clears(LAST[name])));
    check(tag+' expanded fits width',await A.js(`document.documentElement.scrollWidth<=${width}`));
@@ -39,7 +41,7 @@ try {
    await A.shot(`dock-${name}-${width}-expanded`);
    await A.click(toggle);
    check(tag+' collapsed shows only the bar',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1&&!document.querySelector('.next-action').getClientRects().length`));
-   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${name==='long'?96:name==='counting'?76:72}`));
+   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${name==='long'||(name==='counting'&&width===320)?96:name==='counting'?76:72}`));
    check(tag+' collapsed bar names the state',await A.js(`${toggle}.querySelector('.dock-next').getClientRects().length>0`));
    check(tag+' collapsed clears last row',await A.js(clears(LAST[name])));
    check(tag+' collapsed fits width',await A.js(`document.documentElement.scrollWidth<=${width}`));
@@ -134,7 +136,8 @@ try {
  const fake=await send('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const v=new EventTarget();Object.assign(v,{width:innerWidth,height:844,offsetTop:0,offsetLeft:0,scale:1});Object.defineProperty(window,'visualViewport',{value:v,configurable:true});window.__kb=(h,quiet)=>{v.height=844-h;if(!quiet)v.dispatchEvent(new Event('resize'))};window.__pan=(t,quiet)=>{v.offsetTop=t;if(!quiet)v.dispatchEvent(new Event('scroll'))}})()`},A.s);
  const bottom=`Math.round(${dock}.getBoundingClientRect().bottom)`,field=`[...document.querySelectorAll('[data-count-input]')].find(f=>f.dataset.saved==='')`;
  const kb=async h=>{await A.js(`__kb(${h})`);await sleep(150)};
- await A.go(`/s/${C.php}/`);await A.js(`localStorage.removeItem('rack-dock')`);await A.go(`/s/${C.php}/`);
+ // Typed counts are kept for the tab since the count-up rework, so earlier typing is cleared here.
+ await A.go(`/s/${C.php}/`);await A.js(`localStorage.removeItem('rack-dock');sessionStorage.clear()`);await A.go(`/s/${C.php}/`);
  check('keyboard closed: dock at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&!document.documentElement.classList.contains('kb-open')`));
  await A.js(`${field}.focus()`);await kb(336);
  check('keyboard up: dock sits on the keyboard',await A.js(`${bottom}===508`));

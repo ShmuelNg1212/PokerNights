@@ -308,6 +308,17 @@ class CountTotal:
             return f"{amount} {suffix}."
         return "Total matches so far; finish counting."
 
+    @property
+    def tone(self) -> str:
+        """``good`` when every count is in and matches, ``warn`` when every count is in and does not, else empty."""
+        if not self.summary.money_lines:
+            return ""
+        if self.stray:
+            return "warn"
+        if self.matches:
+            return "good"
+        return "warn" if self.complete and self.difference else ""
+
 
 def count_total(session_or_summary) -> CountTotal:
     found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)

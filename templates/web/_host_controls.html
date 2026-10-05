@@ -1,6 +1,7 @@
 {% load money_tags table_tags %}
 <div class="host-controls stack">
-  <button type="button" class="dock-toggle" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small">{% if session.state == 'reconciliation' %}<span data-dock-status>{{ count_total.status_text }}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: Open for players{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
+  {% if balance.overridden %}{% firstof "Off by "|add:balance.raw_difference_text|add:", covered by an override." as covered %}{% endif %}
+  <button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}<span class="verdict" data-dock-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: Open for players{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
   <h2 class="host-controls-heading">Host controls</h2>
   {% if can_configure_rake %}
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Choose rake before buy-ins</a>
@@ -25,16 +26,38 @@
   </form>
   {% elif session.state == 'reconciliation' %}
   {% include "web/_count_total.html" with preview=True %}
-  {% if summary.ready_lines %}
-  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}">Cash out counted players ({{ summary.ready_lines|length }})</a>
-  {% elif balance.ok %}
-  <form method="post" data-turbo="true" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-block next-action">Finalize results</button>
-  </form>
-  {% else %}<button type="button" class="btn btn-block next-action" disabled aria-describedby="batch-why">Cash out counted players (0)</button>{% endif %}
+  {# Shown by counts.js while counts are typed and not confirmed; it then stands in for the action below. #}
+  <button type="submit" form="counts-form" data-turbo="true" class="btn btn-primary btn-block next-action" data-confirm-typed hidden>Confirm counts</button>
+  {% if balance.ok %}
+  {# Finalizing cannot be undone in the app, so it asks once: the button opens a sheet that restates the books. Without the sheet the disclosure does the same. #}
+  <button hidden type="button" class="btn btn-primary btn-block next-action finalize-opener" data-sheet-open="finalize">Finalize results</button>
+  <details class="sheet-source" data-key="finalize" data-sheet-source="finalize" data-title="Finalize set {{ session.set_number }}?">
+    <summary class="btn btn-primary btn-block">Finalize results</summary>
+    <div class="sheet-content stack">
+      <dl class="result-facts finalize-facts">
+        <div><dt>Players</dt><dd>{{ summary.money_lines|length }}</dd></div>
+        <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
+        <div><dt>Total cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+        {% if summary.rake %}<div><dt>Collected rake</dt><dd>{{ summary.rake|amount:unit }}</dd></div>{% endif %}
+        {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
+      </dl>
+      <p class="finalize-verdict"><span class="verdict" data-tone="{% if balance.overridden %}warn{% else %}good{% endif %}">{% if balance.overridden %}Off by {{ balance.raw_difference_text }}, covered by an override.{% else %}The books balance.{% endif %}</span></p>
+      <p class="small muted">Finalizing freezes each player's result for this set. It cannot be undone here.</p>
+      <form method="post" data-turbo="true" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-block">Finalize set {{ session.set_number }}</button>
+      </form>
+      <button hidden type="button" class="btn btn-quiet btn-block sheet-cancel" data-sheet-close data-sheet-focus>Not yet</button>
+    </div>
+  </details>
+  {% elif balance.counted %}
+  <a class="btn btn-danger btn-block next-action" href="#balance" data-turbo="false" data-next-server>See the {{ balance.difference_text }} difference</a>
+  {% elif summary.ready_lines %}
+  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>Cash out counted players ({{ summary.ready_lines|length }})</a>
+  {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}
-    <p id="batch-why" class="dock-hint small muted">{% if balance.ok %}Every player is cashed out. Finalizing freezes each player's result. Check the cash-outs first.{% elif balance.counted %}Check the discrepancy before finalizing.{% elif summary.ready_lines %}Review the confirmed counts before recording cash-outs.{% elif summary.awaiting_lines %}No player has a confirmed count yet. Confirm a final count first; 0 is a valid count.{% else %}No buy-in is recorded, so there is nothing to finalize.{% endif %}</p>
+    {% if balance.ok %}{% firstof "Every player is cashed out. Finalizing freezes each player's result." as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override." as hint %}{% elif summary.ready_lines %}{% firstof "Review the confirmed counts before recording cash-outs." as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
+    <p id="batch-why" class="dock-hint small muted" data-hint="{{ hint }}">{{ hint }}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
   {% if session.state == 'reconciliation' %}

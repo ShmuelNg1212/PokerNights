@@ -9,30 +9,19 @@
     <li class="count-row" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}">
       <div class="count-identity">
         {% player_token p participants %}
-        <span class="grow">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}
-          {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}</span>
+        <span class="grow"><span class="count-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}{% if p.status == 'left' %} <span class="badge">Left</span>{% endif %}</span>
+          {% if session.state == 'reconciliation' and line.has_money %}<span class="count-state small"><span class="badge {% if line.status == 'cashed_out' %}badge-good{% elif line.status == 'ready' %}badge-live{% else %}badge-warn{% endif %}" data-status="{{ line.status }}">{{ line.status_label }}</span>{% if line.status == 'ready' %} <span class="num">Counted {{ line.count.amount|amount:unit }}</span>{% endif %}{% if line.has_cash_out %} <span class="muted num">Cashed out {{ line.cashed_out|amount:unit }}</span>{% endif %}</span>
+          {% elif not line.has_money %}<span class="count-state small muted">No buy-in yet</span>{% endif %}
+        </span>
         <span class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>Bought in</small></span>
       </div>
-      <div class="muted small count-meta">
-        {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}
-        {% else %}No buy-in yet{% endif %}
-        {% if line.has_cash_out %}<br>Cashed out {{ line.cashed_out|amount:unit }}{% endif %}
-        {% if line.play_seconds is not None %}<br>Played {% clock_value line.play_seconds line.clock_running %}{% endif %}
+      {% if me.is_host and session.state == 'reconciliation' and line.has_money and line.status != 'cashed_out' %}
+      {# These fields belong to the one counts form below, so one tap sends every typed count. A confirmed count shows as the field's placeholder. #}
+      <div class="count-entry">
+        <label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
+        <input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="{% if line.count %}{{ line.count.amount|plain:unit }}{% endif %}" aria-label="Final count of {{ p.member.display_name }}">
+        <span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span>
       </div>
-
-      {% if session.state == 'reconciliation' and line.has_money %}
-      <p class="small">
-        <span class="badge {% if line.status == 'cashed_out' %}badge-good{% elif line.status == 'ready' %}badge-live{% else %}badge-warn{% endif %}" data-status="{{ line.status }}">{{ line.status_label }}</span>
-        {% if line.status == 'ready' %}<span class="num">Counted {{ line.count.amount|amount:unit }}</span> <span class="muted">at {{ line.count.created_at|date:"g:i A" }}</span>{% endif %}
-        {% if line.status == 'cashed_out' %}<span class="muted">Payment: at the end of the session</span>{% endif %}
-      </p>
-      {% if me.is_host and line.status != 'cashed_out' %}
-      {# These fields belong to the one counts form below, so one tap sends every typed count. #}
-      <div class="form-row count-entry">
-        <div class="grow"><label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"><span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span></div>
-        <button type="submit" form="counts-form" data-turbo="true" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
-      </div>
-      {% endif %}
       {% endif %}
 
       {% if can_buy_in and p.status == 'joined' %}
@@ -45,13 +34,13 @@
       {% if can_cash_out and line.has_money and session.state == 'running' and not line.is_cashed_out %}
       {% include "web/_cash_out_form.html" %}
       {% endif %}
-      {% include "web/_player_records.html" %}
+      {% include "web/_player_records.html" with meta=True %}
     </li>
     {% endwith %}{% endfor %}
   </ul>
   {% if me.is_host and session.state == 'reconciliation' and summary.awaiting_lines or me.is_host and session.state == 'reconciliation' and summary.ready_lines %}
-  <p class="small muted">Type the counts you have, then confirm. Each button confirms every count that is typed. An empty field stays "Awaiting count".</p>
-  <button type="submit" form="counts-form" data-turbo="true" class="btn btn-primary btn-block">Confirm all counts</button>
+  <p class="small muted count-help">Type what each player has left; 0 for an empty stack. An empty field stays "Awaiting count". Payment: at the end of the session.</p>
+  <button type="submit" form="counts-form" data-turbo="true" class="btn btn-block confirm-all">Confirm all counts</button>
   {% endif %}
   {% else %}<p class="muted">No players yet.</p>{% endif %}
   {% if can_manage_players and addable_members %}

@@ -211,22 +211,21 @@ class BatchPageTests(TestCase):
         page = self.client.get(self.page_url)
         self.assertContains(page, "Cash out counted players (4)")
         self.assertContains(page, self.url)
-        self.assertContains(page, "Still to count: E, F.")
+        self.assertContains(page, 'data-status="awaiting">Awaiting count', count=2)  # E and F
         self.assertContains(page, "2 awaiting count")
         self.assertNotContains(page, "notice-bad")  # players still to count are not an error
 
-    def test_button_is_disabled_with_a_reason_when_nobody_is_ready(self):
+    def test_no_cash_out_button_and_a_reason_when_nobody_is_ready(self):
         night = counting("A", "B")
         self.client.force_login(night.host.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertContains(page, "Cash out counted players (0)")
-        self.assertContains(page, "disabled aria-describedby")
-        self.assertContains(page, "No player has a confirmed count yet.")
+        self.assertNotContains(page, "Cash out counted players")
+        self.assertContains(page, "Type each player's final count, then confirm. 0 is a valid count.")
         self.assertNotContains(page, reverse("cash_out_counted", args=[night.session.pk]))
 
     def test_review_lists_players_counts_cash_outs_total_and_who_is_pending(self):
         page = self.client.get(self.url)
-        for text in ("Confirmed count", "Cash-out", "₱2,500", "₱1,500", "₱0", "₱800", "Total of this batch", "₱4,800",
+        for text in ("confirmed final count", "Cash-out", "₱2,500", "₱1,500", "₱0", "₱800", "Total of this batch", "₱4,800",
                      "Still to count", "Awaiting count", "Cash out 4 players", "It does not finalize the set"):
             self.assertContains(page, text)
         html = page.content.decode()
@@ -238,7 +237,7 @@ class BatchPageTests(TestCase):
         self.assertRedirects(page, self.page_url)
         self.assertContains(page, "4 players cashed out; 2 awaiting final counts.")
         self.assertContains(page, "Counting up")
-        self.assertContains(page, "Cash out counted players (0)")
+        self.assertNotContains(page, "Cash out counted players (")
         count(self.night, "E", 700)
         count(self.night, "F", 500)
         page = self.confirm()

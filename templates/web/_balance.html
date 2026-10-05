@@ -24,7 +24,7 @@
   <div class="notice">{{ balance.explanation }}</div>
   {% else %}
   {# Players still to be counted or cashed out are normal progress, not a warning. #}
-  <div class="notice notice-info">{{ balance.explanation }}</div>
+  <div class="notice notice-info">{% if me.is_host or not balance.missing_cash_outs %}{{ balance.explanation }}{% else %}Not cashed out yet: {% for line in balance.missing_cash_outs %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</div>
   {% endif %}
 
   {% for line in summary.lines %}{% for a in line.adjustments %}
