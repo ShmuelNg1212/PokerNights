@@ -255,6 +255,14 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Reduced motion, no JavaScript, or a Motion file that fails to load: the app works as before.
 - Code: `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
 
+## Motion between screens (stage 3 of the motion overhaul)
+
+- A tapped link that goes deeper (Your groups → group → session → set → set log or a form) shifts the screen one way; a link that goes back shifts it the other way. A group's tabs shift their content sideways and slide the marker. The phone's own Back and Forward keep the plain cross-fade.
+- The group's name and the session's table name travel from the card or row that was tapped to the next screen's heading, and back. Players' chips travel between a session's results and a set's rows. The top bar stays still.
+- A movement lasts at most 260ms and a tap during it is followed.
+- Reduced motion, no JavaScript, or a browser without the feature (an iPhone before iOS 18): screens change at once.
+- Code: `static/js/turbo-setup.js` (direction, carried names, the transition itself), the last block of `static/css/app.css`, `data-depth` / `data-tab` / `data-carry` in the templates, `data-m` on chips. Check: `web/tests/browser/screens.mjs`. The table of movements is in DESIGN.md.
+
 ## Motion on the live set page (stage 2 of the motion overhaul)
 
 - A change on the set page is shown as movement, whether you made it or another person did: a new player's row fades in and rises; rows slide to their place when a row above changes height; a new buy-in edge drops onto its stack; badges spring in; the brass mark fades out instead of vanishing; the "Still in play" underline draws; a new set state fades in; the books balancing draws its rule and then raises its words, once per set per browser.

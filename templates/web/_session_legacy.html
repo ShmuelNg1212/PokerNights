@@ -1,5 +1,5 @@
 {% load money_tags clock_tags table_tags %}
-<section class="canceled-set section-rail"><div class="row"><h1 class="grow">{{ session.table.name }} · Set {{ session.set_number }}</h1><span class="badge">Canceled</span></div>
+<section class="canceled-set section-rail"><div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} · Set {{ session.set_number }}</h1><span class="badge">Canceled</span></div>
 <p class="muted">{{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %}</p>
 <h2>This set does not count</h2><p>{% if session.cancel_reason %}{{ session.cancel_reason }}{% else %}This set was canceled.{% endif %}</p>
 <p class="small muted">Recorded amounts remain in the log. This set has no final result.</p></section>

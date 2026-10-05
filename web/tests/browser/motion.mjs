@@ -90,6 +90,7 @@ try {
  await R.js(`${btn}.addEventListener('click',e=>e.preventDefault(),{once:true})`);await R.mouse('mouseReleased',btn);
  await R.js(`${opener}.click()`);check('reduced motion: sheet open at rest at once',await R.js(`${dialog}.open&&${ty(dialog)}===0`));
  await R.js(`${dialog}.querySelector('.sheet-head button').click()`);check('reduced motion: sheet closes at once',await R.js(`!${dialog}.open`));
+ await sleep(150); // the dialog's close event is delivered a moment after close()
  const r0=await R.js(count);await buy(R,500);
  await fail(R,'Not sent.');
  check('reduced motion: action recorded, toast shown',await R.js(count)>r0&&await R.js(`document.querySelectorAll('.toast').length===1`));

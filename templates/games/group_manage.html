@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block screen %} data-depth="2"{% endblock %}
 {% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} group · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
 {% block content %}

@@ -2,7 +2,7 @@
 <div class="table-layout end-set-layout">
   <aside class="table-left">
     <section class="felt hero" data-unit="{{ unit }}" aria-label="Count-up overview">
-      <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Counting up</span></div>
+      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Counting up</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
       {% if summary.money_lines %}
       <p class="count-progress" data-watch="count-progress" data-value="{{ count_complete }}"><strong>{{ count_complete }} <span>of {{ summary.money_lines|length }}</span></strong> players counted or cashed out</p>

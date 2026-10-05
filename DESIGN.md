@@ -540,6 +540,37 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 
 **Measured.** `flow.mjs`, 52 checks at 390 and 1280px: each row above on its first frame and at rest, a tap on a moving row, both redraw paths, the books balance complete in under 900ms, twenty redraws leaving nothing running and no inline style, reduced motion and a blocked Motion file.
 
+### 2026-10-05 addendum — Motion between screens (stage 3 of the motion overhaul)
+
+A screen change says which way it went. `static/js/turbo-setup.js` decides; the last block of `static/css/app.css` moves.
+
+**Depth.** Each screen states its depth on `<main>` (`data-depth`): Your groups 0, a group 1, a session 2, a set 3, the set log and the forms opened from a set 4; a form opened from a group is 2 and one opened from a session is 3. Log in, Sign up, invites and the offline page have none. A group's tabs are numbered in order (`data-tab`).
+
+**Tokens.** `screen`: 220ms, a 24px shift with a fade (ease-in for the screen leaving, ease-out for the one arriving). `carry`: 260ms ease-out for anything that travels.
+
+| Change | Motion |
+|---|---|
+| A tapped link to a deeper screen | The old screen moves 24px left and fades; the new one arrives from 24px to the right. |
+| A tapped link to a shallower screen | The mirror image. |
+| A group's tab | The content shifts towards the side the tab is on; the marker slides to the chosen tab; the back link, heading and tab bar stay still. |
+| The phone's Back and Forward; screens at the same depth; screens without a depth | The 180ms cross-fade. |
+| An action on a set or session page | No screen movement (stage 2 covers it). |
+
+**Carried.**
+
+- **A name.** The group's name travels from its card on Your groups to the group's heading; a session's table name travels from its row (or from the card's "in play" band) to the session's heading and stays in the heading of each set. Going back, it returns to the card or row. The two ends keep their own type size and fade through each other; the name is never stretched. It is carried only when the words match.
+- **A player's chip** travels between a session's results and a set's rows when the same player has one chip in each list, with the same colour and letters, and the chip was on screen. At most twelve.
+- **The top bar** stays still on every change.
+
+**Rules.**
+
+1. Nothing waits. A movement lasts 260ms at most, and a tap made during it is passed to the control under the finger.
+2. Exactly one element holds a carried name on a screen. Two would make the browser cancel the movement.
+3. Markers (`data-go` on `<html>`, the temporary names) are removed when the movement ends.
+4. Reduced motion, or a browser without the View Transition API (Safari before 18): screens change at once.
+
+**Measured.** `screens.mjs`, 42 checks at 390 and 1280px.
+
 ## Do's and Don'ts
 
 ### Do:

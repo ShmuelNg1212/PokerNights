@@ -6,18 +6,136 @@
   if (!window.Turbo) return;
   Turbo.config.forms.mode = "optin";
 
+  // --- Direction and carried names (DESIGN.md, "Motion between screens"). Where the browser
+  // animates a screen change (the View Transition API, which Turbo calls), the stylesheet needs
+  // to know which way the change goes, and which elements are the same thing on both screens.
+  // Each screen states its depth on <main>; a tapped link that goes deeper or back sets data-go
+  // on <html>. The phone's own Back and Forward set nothing, so they keep the plain cross-fade.
+  var root = document.documentElement, still = matchMedia("(prefers-reduced-motion: reduce)");
+  var tapped = null, action = "advance", leaving = "", carried = [], change = 0;
+  document.addEventListener("turbo:click", function (event) { tapped = event.target.closest ? event.target.closest("a[href]") : null; });
+  document.addEventListener("turbo:before-visit", function () { leaving = window.location.pathname; });
+  document.addEventListener("turbo:visit", function (event) { action = event.detail.action; });
+
+  function depth(main) { var value = main.dataset.depth; return value ? Number(value) : null; }
+  function words(el) { return el.textContent.replace(/\s+/g, " ").trim(); }
+  function carry(from, to, name) {
+    [from, to].forEach(function (el) { el.style.viewTransitionName = name; carried.push(el); });
+  }
+  function settle() {
+    root.removeAttribute("data-go");
+    carried.splice(0).forEach(function (el) {
+      el.style.viewTransitionName = "";
+      if (!el.getAttribute("style")) el.removeAttribute("style");
+    });
+  }
+  // The name on the card or row that was tapped, which becomes the next screen's heading.
+  function source(link) {
+    if (!link || !link.isConnected) return null;
+    if (link.matches(".session-link")) return link.querySelector("strong");
+    var band = link.closest(".home-band"), card = link.closest(".group-home");
+    return (band && band.querySelector(".band-title")) || (card && card.querySelector("h2 a"));
+  }
+  // Going back: the card or row on the arriving screen that leads to the screen being left.
+  function origin(main) {
+    var link = Array.from(main.querySelectorAll("a.session-link, .group-home h2 a")).find(function (a) { return a.getAttribute("href") === leaving; });
+    return link ? (link.matches(".session-link") ? link.querySelector("strong") : link) : null;
+  }
+  // A player's chip is carried between a session and one of its sets when it is the only chip
+  // of that player in the list on each screen and looks the same on both.
+  function chips(from, to) {
+    function list(main) {
+      var found = {};
+      main.querySelectorAll(".night-results .chip[data-m], #live .chip[data-m]").forEach(function (chip) {
+        var m = chip.dataset.m;
+        found[m] = m in found ? null : chip;
+      });
+      return found;
+    }
+    var before = list(from), after = list(to), count = 0;
+    Object.keys(before).forEach(function (m) {
+      var a = before[m], b = after[m];
+      if (!a || !b || count >= 12 || a.className !== b.className || a.textContent !== b.textContent) return;
+      var box = a.getBoundingClientRect();
+      if (box.bottom < 0 || box.top > window.innerHeight) return;
+      carry(a, b, "chip-" + m); count += 1;
+    });
+  }
+  function direct(newBody) {
+    settle(); change += 1;
+    var link = tapped, from = document.getElementById("main"), to = newBody.querySelector("#main");
+    tapped = null;
+    if (!document.startViewTransition || still.matches || action === "restore" || !from || !to) return;
+    var a = depth(from), b = depth(to), go = null;
+    if (a === null || b === null) return;
+    if (b > a) go = "deeper"; else if (b < a) go = "back";
+    else if (from.dataset.tab && to.dataset.tab && from.dataset.tab !== to.dataset.tab) go = Number(to.dataset.tab) > Number(from.dataset.tab) ? "next" : "prev";
+    if (!go) return;
+    root.dataset.go = go;
+    var was = (go === "deeper" && source(link)) || from.querySelector("[data-carry=title]");
+    var now = (go === "back" && origin(to)) || to.querySelector("[data-carry=title]");
+    if (was && now && words(was) && (words(now).indexOf(words(was)) === 0 || words(was).indexOf(words(now)) === 0)) carry(was, now, "title");
+    if ((a === 2 && b === 3) || (a === 3 && b === 2)) chips(from, to);
+  }
+  // The markers stay until the movement has ended, then leave nothing behind.
+  function arrived() {
+    if (!root.dataset.go && !carried.length) return;
+    var mine = change, done = function () { if (mine === change) settle(); };
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var moving = document.getAnimations().filter(function (motion) {
+        return motion.effect && motion.effect.pseudoElement && motion.effect.pseudoElement.indexOf("::view-transition") === 0;
+      });
+      Promise.allSettled(moving.map(function (motion) { return motion.finished; })).then(done);
+    }); });
+    setTimeout(done, 800);
+  }
+
   // --- Screen changes. A swapped page stops the scripts of the page that is leaving and
   // starts them for the one that arrives (see page.js). An in-place update of the same page
   // ("morph") restarts nothing.
+  // The browser photographs the old screen at the moment a transition starts. Turbo's own
+  // transition starts before it says what the new screen is, too early to mark what is carried.
+  // So the transition starts here, once the markers are set, and Turbo's render waits inside it.
+  var drawn = null; // tells the running transition that the new screen is in place
   document.addEventListener("turbo:before-render", function (event) {
-    if (event.detail.renderMethod !== "morph") { window.pokerPage.stop(); return; }
+    var morph = event.detail.renderMethod === "morph", region = document.getElementById("live");
     // The same before-event as a live poll (live.js), so flow.js sees both kinds of redraw.
-    var region = document.getElementById("live");
-    if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true }));
+    if (morph) { if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true })); }
+    else direct(event.detail.newBody);
+    var leave = function () { if (!morph) window.pokerPage.stop(); };
+    if (!document.startViewTransition || still.matches) { leave(); return; }
+    event.preventDefault();
+    var shown = new Promise(function (done) { drawn = done; setTimeout(done, 2000); });
+    try {
+      var transition = document.startViewTransition(function () { leave(); event.detail.resume(); return shown; });
+      moving += 1;
+      transition.finished.then(ended, ended);
+    } catch (_) { leave(); event.detail.resume(); }
   });
+  // Nothing waits for a movement. While one runs, the browser may give a tap to the page itself
+  // and report nothing under the finger, so the control is found by its place on the screen and
+  // the tap is passed on. Where more than one control is there (a bar over a list), it is left alone.
+  var moving = 0;
+  function ended() { moving = Math.max(0, moving - 1); }
+  function controlAt(x, y) {
+    var sheet = document.querySelector("dialog[open]");
+    var found = Array.from((sheet || document).querySelectorAll("a[href], button:not(:disabled), summary, label, input:not([type=hidden]), select")).filter(function (el) {
+      var box = el.getBoundingClientRect();
+      return box.width > 0 && x >= box.left && x <= box.right && y >= box.top && y <= box.bottom && (!el.checkVisibility || el.checkVisibility());
+    });
+    found = found.filter(function (el) { return !found.some(function (other) { return other !== el && el.contains(other); }); });
+    return found.length === 1 ? found[0] : null;
+  }
+  document.addEventListener("click", function (event) {
+    if (!moving || event.target !== root || !event.isTrusted) return;
+    var control = controlAt(event.clientX, event.clientY);
+    if (control) control.click();
+  }, true);
   document.addEventListener("turbo:render", function (event) {
+    if (drawn) { drawn(); drawn = null; }
     if (event.detail.renderMethod === "morph") return;
     window.pokerPage.start();
+    arrived();
     // A real page load is announced by the browser and starts at the top. A swap is silent,
     // so say the new title once and put focus at the start of the content.
     var announcer = document.getElementById("route-announcer");
