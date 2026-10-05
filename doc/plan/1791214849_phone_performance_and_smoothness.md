@@ -1,6 +1,6 @@
 # Phone performance and smooth motion: plan
 
-Status: stages 1 and 2 released 2026-10-06 as `c84f45a`; the tab fix as `fedaeb0`. Stage 3: A is built, B is the human's step, C and D have their own plan. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
+Status: stages 1 and 2 released 2026-10-06 as `c84f45a`; the tab fix as `fedaeb0`. Stage 3: A released as `53de23b`, B set by the human, C and D released as `60faac0`. The human accepted the result on the phone on 2026-10-06. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
 
 ## Outcome
 
