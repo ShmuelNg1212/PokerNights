@@ -207,6 +207,14 @@ Links change the screen without unloading the page (Turbo navigation). Forms do 
 
 Two things now replace content on the set page without a reload: the 4-second poll (`live.js`, replaces `#live`) and a background form send (Turbo morph refresh of the whole body). They share rules: `data-keep` fields keep typed text, `data-key` disclosures stay open, `data-focus-key` controls keep focus, and every page module reacts to `live:updated`. `turbo-setup.js` raises `inplace:updated` first so `live.js` can adopt the new version and skip a redundant poll. The sheet container and the offline notice are `data-turbo-permanent`, so a morph leaves them alone. See [features](features.md#actions-update-in-place).
 
+## Motion
+
+- `static/js/vendor/motion-14.0.0.js` defines `Motion`. `static/js/motion.js` loads after it and before the other page scripts, and exposes `window.pokerMotion`: `on()`, `run(element, keyframes, preset)`, `after(controls, done)` and `timing(preset)` (a spring as a duration and an easing for the Web Animations API).
+- `on()` is false under reduced motion or when `Motion` is missing. `run` then returns `null`, and each caller keeps its plain path. The class `motion-on` on `<html>` tells the CSS which of the two is in use.
+- `motion.js` registers with `window.pokerPage`. On stop it cancels every animation it started. Its document listeners (press, release, `inplace:updated`, `inplace:failed`) are added once per tab.
+- Callers: `toasts.js` (arrive, stack, leave), `sheets.js` (rise, leave), `dock.js` (the opening spring). The presets and their uses are in DESIGN.md, "Motion system".
+- Motion animates `transform` and `opacity` only. The dock's height stays on the Web Animations API.
+
 ## Live updates
 
 - `static/js/live.js` polls `GET /s/<id>/state/?v=<version>` each 4 seconds while the tab is visible.

@@ -247,3 +247,11 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
   - The month is the session's date. Players who left the group keep their history. There is no minimum number of sessions.
 - Words: a **Session** is the whole gathering and its settle-up; a **Set** is one round of buy-ins, counting and results. Screens say Set settings, Set log, Join this set and Poker variant. "Pesos game" and "chips game" still name the unit.
 - Branding: `static/branding/` has `logo-mark.svg` (a notched chip with a crescent), `logo-horizontal.svg`, `app-icon.svg` and `logo-mono.svg` for cream backgrounds. The header shows the mark beside the name; the mark is the favicon.
+
+## Motion (stage 1 of the motion overhaul)
+
+- Buttons sink under a finger and spring back. A sent control shows a running brass line until the answer arrives; an accepted one pulses once; a refusal nudges the field or message that explains it.
+- Sheets rise from the bottom edge with a spring and can be closed mid-rise. Toasts arrive, stack without overlapping, and drop away when dismissed. The host dock opens with the same spring.
+- Reduced motion, no JavaScript, or a Motion file that fails to load: the app works as before.
+- Code: `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
+- Next stages (each with its own plan): the live set page, moving between screens, results and settle-up.

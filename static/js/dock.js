@@ -58,8 +58,11 @@
     if (closing) root.classList.add("dock-closing");
     dock.style.overflow = "hidden";
     var done = function () { dock.style.overflow = ""; root.classList.remove("dock-closing"); };
-    var motion = dock.animate([{ height: from + "px" }, { height: to + "px" }],
-      closing ? { duration: 200, easing: "cubic-bezier(0.4,0,1,1)" } : { duration: 320, easing: "cubic-bezier(0.16,1,0.3,1)" });
+    var frames = [{ height: from + "px" }, { height: to + "px" }], motion;
+    // Opening uses the sheet spring where the browser can draw it; otherwise the fixed curve.
+    var spring = !closing && window.pokerMotion && window.pokerMotion.timing("sheet");
+    try { motion = spring && dock.animate(frames, spring); } catch (_) {}
+    if (!motion) motion = dock.animate(frames, closing ? { duration: 200, easing: "cubic-bezier(0.4,0,1,1)" } : { duration: 320, easing: "cubic-bezier(0.16,1,0.3,1)" });
     motion.onfinish = motion.oncancel = done;
   }
 
