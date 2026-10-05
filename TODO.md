@@ -53,7 +53,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Try actions in place on your phone:** on a running set, scroll to the last player, record a rebuy and check you stay there. During count-up, type a count in one row, confirm a different row... note both are confirmed together, as before; then check a reversal reason typed in Details survives a count. Mark a transfer paid on a session page. Turn on Airplane Mode and try a rebuy: nothing should be sent.
+- [ ] **Try actions in place on your phone:** on a running set, scroll to the last player, record a rebuy and check you stay there. During count-up, open a player's Details and type a reversal reason, then confirm a count: the reason should still be there and Details still open. Mark a transfer paid on a session page. Turn on Airplane Mode and try a rebuy: nothing should be sent.
 
 - [ ] **iPhone checklist for the installable app** (only you can do this):
   1. Safari → Share → Add to Home Screen. The icon is the chip-and-crescent on a dark square, named PokerNights.

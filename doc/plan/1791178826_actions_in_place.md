@@ -134,3 +134,5 @@ Acceptance: AC1 to AC5 are met, with these limits.
 Not verified: a real phone; an iPhone's back gesture with the page cache off; the installed (full-screen) app.
 
 Documentation synced: wiki external dependencies (the recorded library exception), features and architecture, DESIGN.md, browser README, TODO. The spike branches `spike/own` and `spike/turbo` are deleted.
+
+2026-10-05 release: pushed `main` at `1ad5d20` (previous production commit `31028b1`). Checked on the live site: the library is served from `/static/js/vendor/turbo-8.0.23.js` with a one-year immutable cache, compressed to about 50 KB, and its checksum matches the vendored file; `turbo-setup.js` carries the release tag; Turbo is loaded with navigation off; the login form still loads a page the ordinary way; no script error on the login page. Signed-in behaviour on production is not checked by the agent (no account); the human's phone checklist is in TODO.md.
