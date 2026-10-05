@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), merged locally to `main` as `0dc4c37`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Not pushed or deployed. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone acceptance remains open.
+Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), merged locally to `main` as `0dc4c37`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Released 2026-10-05 as `4a80de9`; Vercel build passed 677 tests and had no migrations to apply. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone acceptance remains open.
 
 App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) was released on 2026-10-05 as `1106548`. Stage 3 ([motion between screens](doc/plan/1791194279_motion_between_screens.md)) was released on 2026-10-05 as `648cca8`. Stage 4 needs its own plan.
 
@@ -64,7 +64,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Try the numpad and the new count-up on your phone** (after the release; only an iPhone confirms that the phone's keyboard stays closed):
+- [ ] **Try the numpad and the new count-up on your phone** (now live; only an iPhone confirms that the phone's keyboard stays closed):
   1. On a running set tap Rebuy: the amount shows with twelve keys under it and no phone keyboard. Type an amount, try a third decimal place (nothing should happen), hold delete, tap Max, confirm.
   2. Tap Cash out on a player: amount, keys, "Leaving the set", then the button.
   3. End play. The players' fields should be on the first screen. Tap the first one: the keys rise in place of the bottom bar, with the player's name and the running total. Use Next down the table, then Done, then "Confirm N counts".

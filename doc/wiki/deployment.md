@@ -127,3 +127,13 @@ DATABASE_URL='postgresql://…' DEBUG=False SECRET_KEY=any-long-local-value-for-
 - A full game in two phone-sized browsers, 26 of 26 checks: host login, group, table, roster player, invite link on https, sign-up from the invite, join, session, opening buy-ins, the second browser seeing the start through polling, rebuy, count-up, batch cash-out, balanced books, finalize, close, transfers marked paid to Settled, Your groups record, Stats, and `/admin/` refusing a non-staff account.
 - Polling on one set page for three minutes: 44 requests, median 109 ms, 95th percentile 179 ms.
 - The test data was removed afterwards; the database is empty with all migrations applied.
+
+
+## 2026-10-05 release — numpad and count-up
+
+Released `4a80de9` through the GitHub push to `main`. Deployment `dpl_C6m2u66yzgQSSXqjCUPog5EtETXu` reached Ready and was assigned https://pokernights-five.vercel.app. The Vercel build passed 677 tests with ten PostgreSQL-only skips, then reported no migrations to apply. All 677 had passed on local PostgreSQL 17 before release; the exact Vercel-style run also passed locally.
+
+The release adds the in-app numpad, even host-control gaps, player-first count-up, explicit review verdicts and a Finalize confirmation. `NUMPAD=False` remains the fallback after redeployment. Real iPhone acceptance remains open. See the [plan](../plan/1791202390_host_gaps_numpad_count_up.md).
+
+
+Live read-only checks: `/healthz` and Log in return 200, sign-up without an invite returns 403, HSTS is present, and the versioned app CSS and numpad script return 200. Their tag `ce4bbb73ee` matches the SHA-256-derived tag of the Ready deployment ID; the Log in document has `data-numpad="on"`. No production game data was created or changed.

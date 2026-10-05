@@ -1,6 +1,6 @@
 # Host control gaps, an in-app numpad, and the count-up to finalize flow: plan
 
-Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); all five stages built, verified and merged locally as `0dc4c37`; documentation synced; phone acceptance and release pending. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
+Status: approved on 2026-10-05 with every recommendation (numpad on every number, Finalize asks once, all seven critique issues); all five stages built, verified and merged locally as `0dc4c37`; documentation synced; released as `4a80de9`; phone acceptance pending. Date: 2026-10-05, Asia/Manila. Study: [Host control gaps, an in-app numpad, and the count-up to finalize flow](../study/1791201933_host_gaps_numpad_count_up.md).
 
 ## Outcome
 
@@ -197,3 +197,6 @@ AC1–AC3 are met for the listed current checks; older scripts already recorded 
 
 
 Local rendezvous complete, 2026-10-05: final fix/documentation commit `8d5465e`; merge to local `main` as `0dc4c37`, without conflicts. The merge tree equals the tested branch tree. Temporary verification servers and the isolated PostgreSQL cluster are stopped; the pre-existing server on 8765 was preserved. Not pushed or deployed. Phone acceptance and release remain pending.
+
+
+Production release, 2026-10-05: the human instructed "push and deploy". The exact Vercel-style local run (`VERCEL=1`, versioned static assets) passed 677 tests with ten PostgreSQL-only skips. Pushed `main` at `4a80de9`. Vercel deployment `dpl_C6m2u66yzgQSSXqjCUPog5EtETXu` reached Ready and the production alias points to it. Its build passed 677 tests (ten skips), then reported no migrations to apply. Production URL: https://pokernights-five.vercel.app. The real iPhone checks remain open.
