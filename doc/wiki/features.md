@@ -119,7 +119,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
 - Group → Sessions → Past sessions shows the status badge on each row and the amount still to pay; the heading counts the sessions not settled. `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
 - The session page shows the same status in its top bar and in its overview.
-- Hosts and players see the same thing.
+- Hosts and players see the same settlement facts. Hosts have Mark paid and Undo actions; player and archived views have no action column.
+- Who pays whom cards adapt to their available width. Below 440px, payer and payee each have a full-width row; wider cards show them side by side. Chips align with the first name line. Amount, payment state and action have explicit grid positions, so a paid timestamp grows below the badge. Complete amounts and units stay on one line.
 
 ## Stakes forms
 

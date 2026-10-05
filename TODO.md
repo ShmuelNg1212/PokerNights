@@ -119,6 +119,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 - [ ] Try the group and forms: open a current session, create a table, and submit a duplicate roster name. Check that the name stays beside its error. Read a set log.
 
+- [ ] Check transfer alignment on your iPhone after release ([plan](doc/plan/1791210163_transfer_alignment.md)): open Who pays whom in Safari and the installed app with long names. Mark paid, then Undo. Check first-line chips, full amounts and right-aligned actions. Still to pay must change; Session results must stay fixed.
+
 - [ ] Try the redesigned session page: close a finished session, dismiss/reopen the recap, mark a transfer paid, then Undo. Check that Still to pay changes and Session results stay fixed.
 
 - [ ] Try the new active set: tap `+`, confirm a rebuy, tap a player name for cash-out/details, and use the bottom host action.

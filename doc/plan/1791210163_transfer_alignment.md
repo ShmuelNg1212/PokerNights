@@ -1,12 +1,12 @@
 # Who pays whom: alignment repair plan
 
-Status: in-progress. Date: 2026-10-05, Asia/Manila. Study: [transfer alignment](../study/1791210055_transfer_alignment.md).
+Status: complete. Date: 2026-10-05, Asia/Manila. Study: [transfer alignment](../study/1791210055_transfer_alignment.md).
 
 ## Outcome
 
 Transfer cards make payer, payee, amount, payment state and host action easy to scan. Long names start beside their chips rather than surrounding them. Paid timestamps grow below the state. Mark paid and Undo have predictable positions at every card width.
 
-Mode: Operate. Visual authority: the existing Rack in DESIGN.md and the session surface brief. Sources: SPEC.md, PRODUCT.md, wiki features and the source study. Base: `main` at `ebb4ad7`. Working branch: `ui/transfer-alignment`, with study commit `717e17d`. No implementation has begun.
+Mode: Operate. Visual authority: the existing Rack in DESIGN.md and the session surface brief. Sources: SPEC.md, PRODUCT.md, wiki features and the source study. Base: `main` at `ebb4ad7`. Working branch: `ui/transfer-alignment`, with study commit `717e17d`. No implementation had begun at the approval checkpoint.
 
 ## Recommended layout
 
@@ -39,7 +39,7 @@ Settlement calculation, snapshots, payment services, role gates, CSRF, request I
 - [x] **Add meaningful browser coverage.** Add `transfer_layout.mjs` with fresh synthetic fixtures. Reuse existing night seeds; add a small fixture extension for mixed paid/unpaid and large chips if needed, through the real services. Measure identity alignment, financial grid placement, complete amounts, controls and overflow. Check both host and player/archived views, and payment/Undo transitions.
 - [x] **Verify the flow.** Run the Django suite and exact Vercel-style test command. Run the new layout check plus `night.mjs` and `inplace.mjs` on separate fresh temporary databases. Check 200% zoom, JavaScript off, reduced motion, long names and the narrow desktop detail column. PostgreSQL is required before a later release; this layout cycle has no write/locking change.
 - [x] **Bounded visual verification.** Use the study captures as the incumbent baseline. Inspect phone and desktop together after the complete build, fix any material defects in one batch, and confirm once. Do not expand into unrelated session redesign. Run the layout detector on the changed markup; explain any advisory findings with rendered evidence.
-- [ ] **Rendezvous and docs — `docs: record transfer alignment verification`.** Record actual checks and acceptance results in this plan. Update DESIGN.md's transfer layout, the session surface brief, wiki features, browser README and TODO phone check. Merge the verified branch locally to main. Do not push or deploy.
+- [x] **Rendezvous and docs — `docs: record transfer alignment verification`.** Record actual checks and acceptance results in this plan. Update DESIGN.md's transfer layout, the session surface brief, wiki features, browser README and TODO phone check. Merge the verified branch locally to main. Do not push or deploy.
 
 ## Verification and user check
 
@@ -64,3 +64,5 @@ Checks: 677 Django tests pass, ten PostgreSQL-only skips; the Vercel-style SQLit
 AC1–AC5 pass in Chrome: payer/payee/amount/state/action DOM order, visible keyboard focus, first-line chips, assigned grid rows, complete single-line figures, overflow and 48px targets at 320/390/768/900/1280px; large pesos/chips and long names; host/player/archived views; Mark paid/Undo, remaining totals, reversed payment records and unchanged frozen results; native forms without JavaScript; static cards with reduced motion. Desktop 200% zoom reflow is emulated at 640 CSS pixels and DPR 2 for a 1280px physical window. This is not a native Safari or browser-zoom appearance claim. AC6 automated checks pass; the iPhone appearance check remains on TODO.
 
 Bounded inspection: the first complete phone/desktop capture batch confirmed the intended hierarchy and grouping. Amount/state/action are distinct, with 8px identity joins and 12px/16px financial spacing. Long names get useful rows; the actual 416px desktop card uses the same protection. One confirmation batch corrected test measurement assumptions (text bounds instead of a fixed 40px line-height limit, and desktop zoom reflow instead of CSS body zoom). No broader redesign or further UI polishing was needed. The existing night regression had a stale “Session closed” message assertion; it now checks the actual closed state and generated transfer cards.
+
+2026-10-05: Rendezvous and doc sync complete. Implementation commit: `16a1ba8 fix(ui): align session transfer cards`. DESIGN.md, the session surface brief, wiki features, browser README and the iPhone TODO reflect the implemented behavior. Local rendezvous uses a fast-forward from main at `ebb4ad7` after the documentation commit. This cycle does not push or deploy. The temporary browsers and servers were stopped.
