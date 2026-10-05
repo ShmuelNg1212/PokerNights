@@ -1,6 +1,6 @@
 # Fewer queries and one-trip actions: plan
 
-Status: awaiting approval. Date: 2026-10-06, Asia/Manila. Study: [fewer queries and one-trip actions](../study/1791219090_fewer_queries_and_one_trip_actions.md). Base: `main` at `fedaeb0`. No implementation has begun. It starts after A (fetch at touch) is released and B (kept database connection) is read from the phone, so each change is measured apart.
+Status: approved 2026-10-06. Stage C built and verified, not released. Date: 2026-10-06, Asia/Manila. Study: [fewer queries and one-trip actions](../study/1791219090_fewer_queries_and_one_trip_actions.md). Base: `main` at `fedaeb0`. A was released as `53de23b` before this work began.
 
 ## Outcome
 
@@ -40,11 +40,35 @@ No model, migration, service or form changes. No caching and no stored totals. V
 
 ## Ordered implementation board
 
-- [ ] **C, tests first.** Query-count tests and the before/after HTML comparison, failing on the counts. Then the three changes, one commit each: `perf(web): read a session's sets once`, `perf(games): one read per clock`, `fix(groups): write the login session only when a draft is taken`.
-- [ ] **C rendezvous.** Both suites, the browser checks that read these pages (`night.mjs`, `home.mjs`, `flow.mjs`). Record counts before and after. Sync the wiki. Stop for the instruction to release, then read the phone's numbers.
+- [x] **C, tests first.** Query-count tests and the before/after HTML comparison, failing on the counts. Then the three changes, one commit each: `perf(web): read a session's sets once`, `perf(games): one read per clock`, `fix(groups): write the login session only when a draft is taken`.
+- [x] **C rendezvous.** Both suites, the browser checks that read these pages (`night.mjs`, `home.mjs`, `flow.mjs`). Record counts before and after. Sync the wiki. Stop for the instruction to release, then read the phone's numbers.
 - [ ] **D spike.** Report what it showed. Stop if it fails.
 - [ ] **D, tests first.** Middleware tests (one request, one write, messages shown, fallback, header absent), then the browser check for one request per action. Then the middleware, the header and the visit, and the switch. Commit `perf(web): answer an in-place action with its page`.
 - [ ] **D rendezvous.** Both suites and the five browser scripts. Sync DESIGN.md (nothing visual changes; one line), the wiki (architecture, deployment for the switch) and TODO. Stop for the instruction to release.
+
+## Stage C: verification record (2026-10-06)
+
+Branch `perf/fewer-queries`: `16d07eb` (login session write), `010b829` (sets and clocks read once).
+
+| Page | Queries before | After |
+|---|---|---|
+| Session, one set, closed | 23 | 14 |
+| Session, one set, open | 18 | 12 |
+| Session, three sets, open | 32 | 12 |
+| Set in play, and a poll that redraws | 15 | 13 |
+| Your groups | 14 reads and a write of the login session | 14 reads |
+| Group settings | up to 12 | up to 9 |
+
+- Django suite: 691 pass on SQLite (10 PostgreSQL-only skipped) and on PostgreSQL 17. Five new query-count tests failed first. New direct tests: `clock.timers` and `clock.player_clocks` against the single-set functions, `queries.rake_total` against the summaries, including a reversed buy-in.
+- AC2: 240 pages (every session, set, poll and log of the `seed.py`, `seed_end_set.py`, `seed_night.py` and `seed_home.py` fixtures, as host and as player) rendered before and after. With CSRF tokens, request ids and the text of running timers masked, all 240 are identical.
+- Browser: `night.mjs` 53, `home.mjs` 60, `flow.mjs` 52, `count_flow.mjs` 89, `inplace.mjs` 38, all pass.
+
+Rulings:
+
+1. **The set page stops at 13, not the 12 of AC1.** The thirteenth is the list of members a host can add, which the host menu shows. If wrong: nothing; the test asserts 13.
+2. **Two commits, not three.** The session page and the clocks change the same view, so they are one commit.
+3. **Two recap tests patched `clock.set_seconds`,** which the recap no longer calls. They now patch the one read that replaced it and assert the same outcomes.
+4. **A new session with no money still makes up to 8 small "does any record exist" queries** for the host's archive and delete panel (`night_has_records`). Left as it is: it stops at the first hit, so a session with money pays one.
 
 ## For the human to do
 
