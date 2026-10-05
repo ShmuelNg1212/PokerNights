@@ -17,3 +17,5 @@ Verification:
 - 642 tests pass on SQLite (ten PostgreSQL-only skips) and in the build-style run. PostgreSQL was not rerun: a script and CSS changed.
 
 AC1 and AC2 are met. **AC3 is not met yet: it needs the human's iPhone after release.** Not verified: anything on a real iPhone. The checks use a stand-in keyboard; they prove the script's logic for a sliding visible frame, not that an iPhone reports the values assumed, nor how smooth the bar is while the page moves.
+
+2026-10-05 release: the human merged and pushed `main` at `8190e23` (previous production commit `1106548`). Checked on the live site: `dock.js` is byte-for-byte the local file and the stylesheet has the readout rule. Not checked on production: any signed-in page, and the keyboard on a real iPhone (AC3).
