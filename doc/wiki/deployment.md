@@ -26,6 +26,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (+ `PG*`, `POSTGRES_*`, `NEON_*`) | Neon integration | Connection strings. Only the first two are used |
 | `VERCEL`, `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | Vercel | Turn on the HTTPS settings, invite-only sign-up, and add the deployment's host names to `ALLOWED_HOSTS` |
 | `SIGNUP_REQUIRES_INVITE` | optional | Defaults to on at Vercel. Set `False` to open sign-up to everyone |
+| `ANSWER_IN_PLACE` | optional | Defaults to on. Set `False` to answer every in-place action with a redirect again (two trips instead of one), without a release (`config/inplace.py`). Redeploy for it to take effect |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |
 
