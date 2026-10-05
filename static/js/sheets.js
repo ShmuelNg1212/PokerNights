@@ -9,9 +9,11 @@ var source = find(id); if (!source || S.dialog.open) return;
 S.key = id; S.opener = button;
 S.dialog.querySelector("h2").textContent = source.dataset.title;
 S.body.appendChild(source.querySelector(".sheet-content"));
+if (window.pokerNumpad) window.pokerNumpad.prepare(S.body); // the number keys are in place before the sheet rises
 S.dialog.showModal();
 if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
-var field = S.body.querySelector("input:not([type=hidden]), button");
+// A sheet that confirms something says where focus starts, so a stray Enter does not confirm it.
+var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
 }
 function close() {
@@ -40,6 +42,7 @@ if (field) { field.setAttribute("aria-invalid", "true"); field.setAttribute("ari
 document.addEventListener("click", function (event) {
 var trigger = event.target.closest("[data-sheet-open]");
 if (trigger && S) open(trigger.dataset.sheetOpen, trigger);
+if (S && event.target.closest("[data-sheet-close]") && S.dialog.contains(event.target)) close();
 var quick = event.target.closest("[data-amount]");
 if (quick) { var field = quick.closest("form").querySelector("[name=amount]"); field.value = quick.dataset.amount; field.focus(); }
 });

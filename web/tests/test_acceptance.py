@@ -232,7 +232,8 @@ class EndOfSetAcceptanceTest(TestCase):
         page = host.get(page_url)
         self.assertContains(page, "Play ended 11:00 PM")
         self.assertContains(page, "3 h 00 min")
-        self.assertContains(page, "Cash out counted players (0)")
+        self.assertNotContains(page, "Cash out counted players")  # nobody is counted yet
+        self.assertContains(page, "Type each player's final count, then confirm.")
         self.assertContains(page, "6 awaiting count")
 
         # 11:10 PM: four players are counted, C with nothing left.
@@ -241,7 +242,7 @@ class EndOfSetAcceptanceTest(TestCase):
             host.post(confirm, {"participant_id": seats[name].pk, "amount": amount})
         page = host.get(page_url)
         self.assertContains(page, "Cash out counted players (4)")
-        self.assertContains(page, "Still to count: E, F.")
+        self.assertContains(page, 'data-status="awaiting">Awaiting count', count=2)  # E and F
 
         review_url = reverse("cash_out_counted", args=[game.pk])
         review = host.get(review_url)

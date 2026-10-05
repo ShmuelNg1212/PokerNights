@@ -585,6 +585,38 @@ Text under 16px on a card is limited to the role and state badges and the note u
 
 **Measured.** `home.mjs`, 60 checks at 320, 390 and 1280px.
 
+### 2026-10-05 addendum — Numpad, count-up rework and even host controls
+
+This Operate extension inherits The Rack: no new colour, font, radius or imagery. [Plan](doc/plan/1791202390_host_gaps_numpad_count_up.md); the critique that led to it is in the [study](doc/study/1791201933_host_gaps_numpad_count_up.md).
+
+**The Gap Rule.** Neighbouring controls in the host controls are 8px apart (`--s-2`) at every width: the main actions, "More host controls" and the options under it. Spacing between a label, its field and its button inside an opened option is form spacing and is unchanged.
+
+**Numpad.** On a device whose main pointer is a finger, a typed number uses the app's own keys; the phone's keyboard stays closed for that field. The field remains a real text field with the brass caret and focus ring.
+
+- Twelve keys in a three-column grid with an 8px gap, built from the shared secondary button: 22px tabular figures at weight 700, 52px high in a sheet (48px on a screen under 700px high) and 48px in the panel. The order never changes: 1 to 9, one key that depends on the field, 0, delete. That key is a decimal point where a decimal is allowed and "00" where it is not. Delete is a drawn icon named "Delete"; holding it clears the field.
+- In a sheet the keys sit between the amount and the action, and a cash-out sheet reads amount, keys, option, action. A sheet that holds the keys may use 96dvh.
+- On a page with several number fields the keys are a bottom panel on the ground colour with a rule edge and the dock's shadow. Its strip names the field, repeats the running total during count-up, and holds Next (secondary) and Done (the panel's one bone button). The panel hides the dock while it is open and the page reserves its height.
+- A refused key changes nothing; the field's border turns to the negative colour for 260ms and, with motion on, the field makes the existing 300ms nudge by `transform`.
+- Movement: the panel rises with the sheet spring and leaves with the 200ms exit, by `transform` only. Keys sink and spring back like every button and act as the finger goes down. A typed figure appears at its value. Moving to the next field scrolls smoothly; in the count list the row being counted goes to the top of the free space, so the next player shows beneath it. Reduced motion: the panel appears and goes at once, nothing travels and scrolling is instant.
+- On touch a tapped key returns to its resting colour (no hover remains).
+
+**Count-up.** The earlier Count-up section describes the accounting and the preview, which are unchanged. The composition is now:
+
+- Phone order: the neutral overview (title, state badge, date, one progress line at body size), the player counts, then Set totals and the Balance check. Once every player is cashed out the Balance check sits directly under the overview. From 900px: overview, host controls, Set totals and Balance check in the 400px column, the player counts in the flexible column.
+- A count row: the identity token, the name with its state badge and written amounts beneath, the bought-in figure at the right; then one line with the label "Final count (₱)" and a right-aligned field. A confirmed count is the field's placeholder in Bone Dim. No button on the row. Buy-in count and time played are in Details.
+- One running total for the host: the dock's bar on a phone, open or folded (an 18px tabular figure "of ₱X bought in", the verdict beneath, "Preview ·" before it while counts are unsaved); the "Confirmed counts" block with the main action from 900px and where the dock cannot fold. A player keeps one read-only block under Set totals.
+- One bone action per state: "Confirm N counts", "Cash out counted players (N)", "Finalize results". A discrepancy offers "See the ₱100 difference" in the danger treatment. No disabled stand-in button: when there is nothing to do yet, the hint line says what to do.
+- Confirming typed counts preserves the visible field's position when its saved status wraps. The one-time adjustment is instant; a changed scroll position is left alone.
+- **The Verdict Rule.** A verdict states severity three ways: its words, its colour and a mark before it. Brass with a warning triangle when every count is in and the total is off, green with a tick when it matches, plain text while counting is unfinished. The marks are CSS masks in the text colour, not images.
+
+**Cash-out review.** One verdict sits directly above the action: a green outlined notice when the batch balances the books, a brass notice when it leaves them short or over, plain text when players are still to count. The column is headed "Cash-out". Rake rows appear only when rake was collected.
+
+**Finalize.** The action opens the shared sheet titled "Finalize set N?", with fact rows (players, total bought in, total cashed out, rake and override when present), the verdict, one sentence that it cannot be undone here, the bone "Finalize set N" and a quiet "Not yet" that takes the focus. Without the sheet the same content is a native disclosure.
+
+**Messages.** On a set page a floating message sits above the dock's measured height, or above the numpad panel, never on them.
+
+**Final results.** The overview leads with the proof line ("6 players · ₱9,500 in · ₱9,500 out") and the verdict, then the viewer's result when they played. The cash-out total is "Total cashed out". Rake rows appear only when rake was collected. A zero result reads "Even". The connection status is not shown on a final set.
+
 ## Do's and Don'ts
 
 ### Do:

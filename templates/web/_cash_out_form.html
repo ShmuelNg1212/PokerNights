@@ -2,9 +2,10 @@
 <form method="post" data-turbo="true" action="{% url 'cash_out_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
   <input type="hidden" name="participant_id" value="{{ p.pk }}">
   <div class="form-row">
-    <div class="grow"><input type="text" name="amount" data-keep="cash-out-{{ p.pk }}" inputmode="decimal" autocomplete="off" required placeholder="{% if unit == 'chips' %}Chips cashed out{% else %}Cash-out in pesos{% endif %}" aria-label="Cash-out amount for {{ p.member.display_name }}"></div>
+    <div class="grow"><input type="text" name="amount" data-keep="cash-out-{{ p.pk }}" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" inputmode="decimal" autocomplete="off" required placeholder="{% if unit == 'chips' %}Chips cashed out{% else %}Cash-out in pesos{% endif %}" aria-label="Cash-out amount for {{ p.member.display_name }}"></div>
     <button type="submit" class="btn btn-primary">Cash out</button>
   </div>
+  <div data-numpad-slot></div>
   {% if session.state == 'running' and p.status == 'joined' %}
   <label class="check"><input type="checkbox" name="left" value="1"><span class="grow">Leaving the set</span></label>
   {% endif %}

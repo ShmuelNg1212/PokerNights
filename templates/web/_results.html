@@ -8,7 +8,7 @@
       <div class="count-identity">
         {% player_token r.participant participants %}
         <span class="player-name grow">{{ r.participant.member.display_name }}{% if r.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
-        <span class="result-amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:unit }}</span>
+        <span class="result-amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {% if r.net == 0 %}Even{% else %}{{ r.net|signed_amount:unit }}{% endif %}</span>
       </div>
       <dl class="result-facts">
         {% if r.rake_total %}<div><dt>Rake already collected</dt><dd>{{ r.rake_total|amount:unit }}</dd></div>{% endif %}
@@ -21,5 +21,5 @@
     </li>
     {% endfor %}
   </ul>
-  {% if outcome.finalization.raw_difference %}<p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>{% else %}<p class="books-balanced">The books balance. {% if outcome.finalization.total_rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}</p>{% endif %}
+  {% if outcome.finalization.raw_difference %}<p class="small muted">The books were off by {{ outcome.finalization.raw_difference|signed_amount:unit }}. A host override covered it; see the players' lines.</p>{% endif %}
 </section>

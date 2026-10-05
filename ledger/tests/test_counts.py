@@ -234,7 +234,7 @@ class CountPageTests(TestCase):
         self.night.cash("B", 700)
         page = self.client.get(self.page_url)
         for text in ('data-status="ready">Ready to cash out', 'data-status="cashed_out">Cashed out', 'data-status="awaiting">Awaiting count',
-                     "Counted ₱1,600", "Payment: at the end of the session", "Change count", "Confirm count"):
+                     "Counted ₱1,600", "Payment: at the end of the session", "Confirm all counts"):
             self.assertContains(page, text)
 
     def test_zero_is_accepted_and_empty_is_refused(self):
@@ -352,7 +352,7 @@ class ConfirmSeveralCountsPageTests(TestCase):
         self.assertEqual(html.count('<form id="counts-form"'), 1)
         for name in "ABCD":
             self.assertIn(f'form="counts-form" name="count_{self.night.players[name].pk}"', html)
-        self.assertEqual(html.count('type="submit" form="counts-form"'), 5)  # four rows and "Confirm all counts"
+        self.assertEqual(html.count('type="submit" form="counts-form"'), 2)  # the dock's button and "Confirm all counts"; none per row
         self.assertIn("Confirm all counts", html)
 
     def test_one_submit_confirms_every_typed_count_and_skips_empty_fields(self):

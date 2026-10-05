@@ -1,28 +1,28 @@
 {% load money_tags clock_tags %}
-<div class="table-layout end-set-layout">
-  <aside class="table-left">
-    <section class="felt hero" data-unit="{{ unit }}" aria-label="Count-up overview">
-      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Counting up</span></div>
-      <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
-      {% if summary.money_lines %}
-      <p class="count-progress" data-watch="count-progress" data-value="{{ count_complete }}"><strong>{{ count_complete }} <span>of {{ summary.money_lines|length }}</span></strong> players counted or cashed out</p>
-      <div class="count-stages"><span>{{ summary.awaiting_lines|length }} awaiting count</span><span>{{ summary.ready_lines|length }} ready to cash out</span><span>{{ summary.cashed_out_lines|length }} cashed out</span></div>
-      {% else %}<p class="count-progress" data-watch="count-progress" data-value="0">No buy-in is recorded, so there is nothing to count.</p>{% endif %}
-      <dl class="set-totals">
-        <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
-        <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
-        {% include "web/_rake_totals.html" %}
-        <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
-      </dl>
-      {% include "web/_count_total.html" %}
-    </section>
-    <div class="end-balance">{% include "web/_balance.html" %}</div>
-    {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
-  </aside>
+{# Document order is the order of work: overview, the players' counts, the host's next action, then reference figures. #}
+<div class="table-layout end-set-layout count-layout{% if balance.counted %} books-known{% endif %}">
+  <section class="felt hero" data-unit="{{ unit }}" aria-label="Count-up overview">
+    <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Counting up</span></div>
+    <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
+    {% if summary.money_lines %}
+    <p class="count-progress" data-watch="count-progress" data-value="{{ count_complete }}"><strong>{{ count_complete }} <span>of {{ summary.money_lines|length }}</span></strong> players counted or cashed out</p>
+    {% else %}<p class="count-progress" data-watch="count-progress" data-value="0">No buy-in is recorded, so there is nothing to count.</p>{% endif %}
+  </section>
   <div class="count-workspace">
     <div class="section-heading"><h2>Player counts <span class="muted small">{{ summary.player_count }} players</span></h2></div>
-    {% if me.is_host %}<p class="small muted">Count what each player has left. Type 0 for an empty stack. Earlier cash-outs are already recorded.</p>{% endif %}
-    {% if summary.awaiting_lines %}<p class="small muted">Still to count: {% for line in summary.awaiting_lines %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
     {% include "web/_players_count.html" %}
   </div>
+  {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
+  <section class="count-facts" aria-labelledby="set-totals-title">
+    <h2 id="set-totals-title">Set totals</h2>
+    {% if summary.money_lines %}<div class="count-stages"><span>{{ summary.awaiting_lines|length }} awaiting count</span><span>{{ summary.ready_lines|length }} ready to cash out</span><span>{{ summary.cashed_out_lines|length }} cashed out</span></div>{% endif %}
+    <dl class="set-totals">
+      <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
+      <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+      {% if summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}
+      <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
+    </dl>
+    {% if not me.is_host %}{% include "web/_count_total.html" %}{% endif %}
+  </section>
+  <div class="end-balance" id="balance">{% include "web/_balance.html" %}</div>
 </div>

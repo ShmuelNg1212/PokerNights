@@ -4,9 +4,11 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), on branch `ui/host-gaps-numpad-count-up`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Verified and ready for local rendezvous; not pushed. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone acceptance remains open.
+
 App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) was released on 2026-10-05 as `1106548`. Stage 3 ([motion between screens](doc/plan/1791194279_motion_between_screens.md)) was released on 2026-10-05 as `648cca8`. Stage 4 needs its own plan.
 
-The Your groups redesign is done ([plan](doc/plan/1791200012_your_groups_redesign.md)): each group is a card with one settings button, and the viewer's figures are large. No migration. Not pushed.
+The Your groups redesign is done ([plan](doc/plan/1791200012_your_groups_redesign.md)): each group is a card with one settings button, and the viewer's figures are large. No migration. Merged and pushed as `f044805` on 2026-10-05, as recorded by local `main` and `origin/main`. The phone check remains open.
 
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
@@ -61,6 +63,17 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **Try the numpad and the new count-up on your phone** (after the release; only an iPhone confirms that the phone's keyboard stays closed):
+  1. On a running set tap Rebuy: the amount shows with twelve keys under it and no phone keyboard. Type an amount, try a third decimal place (nothing should happen), hold delete, tap Max, confirm.
+  2. Tap Cash out on a player: amount, keys, "Leaving the set", then the button.
+  3. End play. The players' fields should be on the first screen. Tap the first one: the keys rise in place of the bottom bar, with the player's name and the running total. Use Next down the table, then Done, then "Confirm N counts".
+  4. Leave the page with a count typed and come back: it should still be there.
+  5. Make one count wrong on purpose and open "Cash out counted players": the review should say how much the books are short before you record anything.
+  6. Fix it, cash out, and tap "Finalize results": it should ask once, with the totals. Try "Not yet", then finalize.
+  7. Open New session and tap a blind or buy-in field: the same keys, with Next between fields.
+  8. Say what feels wrong: key size, the panel's height, how Next scrolls, anything you miss from the phone's keyboard. If the phone's keyboard appears anywhere for a number, say where. `NUMPAD=False` in Vercel turns the numpad off without a release.
+- [ ] `SPEC.md` does not mention the numpad or that Finalize asks for confirmation. Add them if the spec should match the app.
 
 - [ ] **Try screen changes on your phone:** tap Your groups → a group → a session → a set and back; screens should no longer blink. Use the phone's Back gesture, in Safari and in the installed app. Leave a set page and come back a few times, then record a rebuy. Turn on Airplane Mode and tap a link: the "You're offline" page should appear.
 

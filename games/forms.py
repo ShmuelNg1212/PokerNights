@@ -8,16 +8,19 @@ from ledger import money
 from .models import GameType, RakeMode, StakesFields, Unit
 
 
-def amount_field(label, help_text=""):
+# data-numpad: on a phone the app's own number keys write into the field (static/js/numpad.js).
+# "amount" follows the form's Unit choice: pesos take a decimal point, chips do not.
+def amount_field(label, help_text="", required=True):
     return forms.CharField(
-        label=label, help_text=help_text,
-        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+        label=label, help_text=help_text, required=required,
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
     )
 
 
 class TableForm(forms.Form):
     name = forms.CharField(label="Table name", max_length=60)
-    seat_count = forms.IntegerField(label="Seats", min_value=2, max_value=12, initial=9)
+    seat_count = forms.IntegerField(label="Seats", min_value=2, max_value=12, initial=9,
+                                    widget=forms.NumberInput(attrs={"data-numpad": "whole"}))
     default_preset = forms.ChoiceField(label="Usual preset", required=False)
 
     def __init__(self, *args, presets=(), **kwargs):
@@ -85,12 +88,12 @@ class RakeForm(StakesForm):
     )
     rake_percentage = forms.CharField(
         label="Percentage (%)", required=False,
-        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "percent"}),
         help_text="For Percentage: 0.01%–99.99%, up to two decimal places. Rounded down per buy-in.",
     )
     rake_flat = forms.CharField(
         label="Flat amount per buy-in", required=False,
-        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
         help_text="For Flat amount: enter pesos for a pesos game, or whole chips for a chips game.",
     )
 

@@ -1,6 +1,6 @@
 # Your groups: one settings button and a new layout: plan
 
-Status: approved and built on 2026-10-05; not pushed. Date: 2026-10-05, Asia/Manila. Study: [Your groups: one settings button and a new layout](../study/1791200012_your_groups_redesign.md).
+Status: approved and built on 2026-10-05; merged and pushed as `f044805` (local remote-tracking evidence). Date: 2026-10-05, Asia/Manila. Study: [Your groups: one settings button and a new layout](../study/1791200012_your_groups_redesign.md).
 
 ## Outcome
 
@@ -93,3 +93,6 @@ Verification:
 - Captures inspected in two rounds at 390 and 1280px; 320px was checked by measurement only. The design skill's detector reported two advisories about black text that come from reading the templates without the stylesheet.
 
 AC1 and AC2 are met. **AC3 is open: only the human can judge it on a phone.** Not verified: a real phone; Safari's rendering of the two packed columns on an iPad or desktop.
+
+
+2026-10-05 documentation correction: local `main` and `origin/main` record the Your groups merge as `f044805`, after the verification above. The earlier "not pushed" status is stale. Phone acceptance remains open.
