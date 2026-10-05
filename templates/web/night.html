@@ -2,6 +2,7 @@
 {% load money_tags clock_tags table_tags %}
 {% block title %}Session · {{ night }}{% endblock %}
 {% block page_class %}table-page night-page{% endblock %}
+{% block head %}<meta name="turbo-refresh-method" content="morph"><meta name="turbo-refresh-scroll" content="preserve">{% endblock %}
 {% block content %}
 <nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% else %}<span class="badge">Session {{ night.get_status_display|lower }}</span>{% endif %}</nav>
 {% if night.is_archived %}
@@ -104,8 +105,8 @@
           <div class="transfer-bottom"><span class="transfer-amount amount">{{ t.amount|amount:unit }}</span>
             <span class="small transfer-state">{% if t.paid %}<span class="badge badge-good">Paid</span><br>{{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</span>
             {% if me.is_host %}{% if t.paid %}
-            <form method="post" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
-            {% else %}<form method="post" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
+            <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
+            {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
           </div>
         </li>
         {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
@@ -145,6 +146,6 @@
     {% endif %}
   </div>
 </div>
-{% if recap %}<div id="table-sheets"></div>{% endif %}
+{% if recap %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
 {% endblock %}
 {% block scripts %}{% load static %}<script src="{% static 'js/clock.js' %}" defer></script>{% if recap %}<script src="{% static 'js/sheets.js' %}" defer></script>{% endif %}{% endblock %}

@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Next: stage 3, actions update in place, which needs its own study and plan. A last stage 6 is a motion overhaul with Motion (motion.dev).
+App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Next: stage 4, screen changes without a reload, which needs its own study and plan. Next: stage 3, actions update in place, which needs its own study and plan. A last stage 6 is a motion overhaul with Motion (motion.dev).
 
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
@@ -52,6 +52,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **Try actions in place on your phone:** on a running set, scroll to the last player, record a rebuy and check you stay there. During count-up, type a count in one row, confirm a different row... note both are confirmed together, as before; then check a reversal reason typed in Details survives a count. Mark a transfer paid on a session page. Turn on Airplane Mode and try a rebuy: nothing should be sent.
 
 - [ ] **iPhone checklist for the installable app** (only you can do this):
   1. Safari → Share → Add to Home Screen. The icon is the chip-and-crescent on a dark square, named PokerNights.

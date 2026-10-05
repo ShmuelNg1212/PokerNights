@@ -31,8 +31,40 @@ if (event.target !== dialog) return;
 var box = dialog.getBoundingClientRect();
 if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close();
 });
+// Puts a refusal inside the sheet, beside the amount, and makes the form ready to send again.
+function showError(form, text) {
+var note = form.querySelector(".sheet-error") || document.createElement("p");
+note.className = "sheet-error"; note.id = "sheet-error"; note.setAttribute("role", "alert"); note.textContent = text;
+form.prepend(note);
+var field = form.querySelector("[name=amount]");
+if (field) { field.setAttribute("aria-invalid", "true"); field.setAttribute("aria-describedby", note.id); field.focus(); }
+}
+var discard = false; // after an in-place update the page already holds a fresh copy of the sheet's form
+// A form in the sheet was sent in the background (see turbo-setup.js) and the page has been updated.
+document.addEventListener("inplace:updated", function (event) {
+var form = event.detail.form;
+try { sessionStorage.removeItem(draftKey); } catch (_) {}
+if (!form || !dialog.contains(form)) return;
+var error = document.querySelector(".message-error");
+if (error) {
+// Refused: keep the sheet and what was typed, and take the fresh request id from the page.
+var source = find(key), fresh = source && Array.from(source.querySelectorAll("form")).find(function (el) { return el.getAttribute("action") === form.getAttribute("action"); });
+var id = form.querySelector("[name=request_id]"), freshId = fresh && fresh.querySelector("[name=request_id]");
+if (id && freshId) id.value = freshId.value;
+delete form.dataset.sent;
+form.querySelectorAll("button[type=submit]").forEach(function (button) { button.disabled = false; button.removeAttribute("aria-busy"); if (button.dataset.label) button.textContent = button.dataset.label; });
+showError(form, error.textContent);
+return;
+}
+discard = true;
+close();
+});
+document.addEventListener("inplace:failed", function (event) {
+if (event.detail.form && dialog.contains(event.detail.form)) showError(event.detail.form, event.detail.message);
+});
 dialog.addEventListener("close", function () {
 var current = find(key), content = body.querySelector(".sheet-content");
+if (discard) { content = null; discard = false; }
 if (content && current) {
 var replacement = current.querySelector(".sheet-content");
 if (replacement) replacement.replaceWith(content); else current.appendChild(content);
@@ -79,10 +111,7 @@ open(saved.key, region.querySelector('[data-sheet-open="' + saved.key + '"]'));
 var form = Array.from(body.querySelectorAll("form")).find(function (el) { return el.getAttribute("action") === saved.action; });
 if (form) {
 form.querySelectorAll("[data-keep]").forEach(function (el) { if (Object.hasOwn(saved.fields, el.dataset.keep)) el.value = saved.fields[el.dataset.keep]; });
-var field = form.querySelector("[name=amount]");
-var note = document.createElement("p"); note.className = "sheet-error"; note.id = "sheet-error"; note.setAttribute("role", "alert"); note.textContent = error.textContent;
-form.prepend(note);
-if (field) { field.setAttribute("aria-invalid", "true"); field.setAttribute("aria-describedby", note.id); field.focus(); }
+showError(form, error.textContent);
 var left = form.querySelector("[name=left]"); if (left) left.checked = saved.left;
 }
 }

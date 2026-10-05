@@ -8,7 +8,7 @@
   </div>
   <ul class="player-list">
     {% if can_join and not my_participant %}<li class="join-row">
-      {% if seats_free > 0 %}<form method="post" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<button class="btn btn-quiet" type="submit">{% icon 'plus' %} Join this set</button></form>
+      {% if seats_free > 0 %}<form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<button class="btn btn-quiet" type="submit">{% icon 'plus' %} Join this set</button></form>
       {% else %}<p class="muted small">The table is full ({{ session.seat_count }} seats).</p>{% endif %}
     </li>{% endif %}
     {% for line in summary.lines %}{% with p=line.participant %}

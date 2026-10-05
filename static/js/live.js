@@ -127,6 +127,14 @@
   });
   window.addEventListener("online", poll);
 
+  // A form sent in the background has already brought this page up to date (turbo-setup.js).
+  document.addEventListener("inplace:updated", function () {
+    version = region.dataset.version;
+    pending = null;
+    lastOk = new Date();
+    showStatus();
+  });
+
   showStatus();
   schedule();
 })();

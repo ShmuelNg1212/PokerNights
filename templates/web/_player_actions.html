@@ -4,7 +4,7 @@
           <li>
             <div class="row"><span class="grow">{% if forloop.first %}Buy-in{% else %}Rebuy{% endif %} · {{ b.created_at|date:"H:i" }}</span><span class="num">{{ b.amount|amount:unit }}</span></div>
             {% if can_reverse %}
-            <form method="post" action="{% url 'buy_in_reverse' session.pk b.pk %}" class="form-row" data-once>{% csrf_token %}
+            <form method="post" data-turbo="true" action="{% url 'buy_in_reverse' session.pk b.pk %}" class="form-row" data-once>{% csrf_token %}
               <div class="grow"><input type="text" name="reason" data-keep="reverse-buy-in-{{ b.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
               <button type="submit" class="btn btn-small btn-danger">Reverse</button>
             </form>
@@ -18,7 +18,7 @@
           <li>
             <div class="row"><span class="grow">{% if c.kind == 'final' %}Final cash-out{% else %}Cash-out{% endif %} · {{ c.created_at|date:"H:i" }}</span><span class="num">{{ c.amount|amount:unit }}</span></div>
             {% if can_cash_out %}
-            <form method="post" action="{% url 'cash_out_reverse' session.pk c.pk %}" class="form-row" data-once>{% csrf_token %}
+            <form method="post" data-turbo="true" action="{% url 'cash_out_reverse' session.pk c.pk %}" class="form-row" data-once>{% csrf_token %}
               <div class="grow"><input type="text" name="reason" data-keep="reverse-cash-out-{{ c.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal"></div>
               <button type="submit" class="btn btn-small btn-danger">Reverse</button>
             </form>
@@ -33,13 +33,13 @@
         <p class="small muted">Exception: cash this player out now, without a confirmed count.</p>
         {% include "web/_cash_out_form.html" %}
         {% if line.status == 'ready' %}
-        <form method="post" action="{% url 'count_clear' session.pk p.pk %}">{% csrf_token %}
+        <form method="post" data-turbo="true" action="{% url 'count_clear' session.pk p.pk %}">{% csrf_token %}
           <button type="submit" class="btn btn-small btn-quiet">Clear the count</button>
         </form>
         {% endif %}
         {% endif %}
         {% if not line.has_money %}{% if can_manage_players or p.member_id == me.pk and can_join %}
-        <form method="post" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
+        <form method="post" data-turbo="true" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
           <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this set{% else %}Remove from set{% endif %}</button>
         </form>
         {% endif %}{% endif %}

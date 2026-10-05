@@ -1,7 +1,7 @@
 {% load money_tags clock_tags table_tags %}
 <section class="count-list" aria-label="Player counts">
   {% if me.is_host and session.state == 'reconciliation' %}
-  <form id="counts-form" method="post" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
+  <form id="counts-form" method="post" data-turbo="true" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
   {% endif %}
   {% if summary.lines %}
   <ul class="player-list">
@@ -30,13 +30,13 @@
       {# These fields belong to the one counts form below, so one tap sends every typed count. #}
       <div class="form-row count-entry">
         <div class="grow"><label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label><input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="Final count" aria-label="Final count of {{ p.member.display_name }}"><span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span></div>
-        <button type="submit" form="counts-form" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
+        <button type="submit" form="counts-form" data-turbo="true" class="btn {% if line.status == 'awaiting' %}btn-primary{% endif %}">{% if line.status == 'ready' %}Change count{% else %}Confirm count{% endif %}</button>
       </div>
       {% endif %}
       {% endif %}
 
       {% if can_buy_in and p.status == 'joined' %}
-      <form method="post" action="{% url 'buy_in_add' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
+      <form method="post" data-turbo="true" action="{% url 'buy_in_add' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
         <input type="hidden" name="participant_id" value="{{ p.pk }}">
         <div class="grow"><input type="text" name="amount" data-keep="buy-in-{{ p.pk }}" inputmode="decimal" autocomplete="off" value="{{ default_buy_in }}" aria-label="Buy-in amount for {{ p.member.display_name }}"></div>
         <button type="submit" class="btn btn-primary">{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>
@@ -51,12 +51,12 @@
   </ul>
   {% if me.is_host and session.state == 'reconciliation' and summary.awaiting_lines or me.is_host and session.state == 'reconciliation' and summary.ready_lines %}
   <p class="small muted">Type the counts you have, then confirm. Each button confirms every count that is typed. An empty field stays "Awaiting count".</p>
-  <button type="submit" form="counts-form" class="btn btn-primary btn-block">Confirm all counts</button>
+  <button type="submit" form="counts-form" data-turbo="true" class="btn btn-primary btn-block">Confirm all counts</button>
   {% endif %}
   {% else %}<p class="muted">No players yet.</p>{% endif %}
   {% if can_manage_players and addable_members %}
   <p><a class="btn btn-primary btn-block" href="{% url 'participants_add' session.pk %}">Add players</a></p>
-  <form method="post" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
+  <form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}" class="form-row">{% csrf_token %}
     <div class="grow">
       <label for="add-player">Or add one player</label>
       <select id="add-player" name="member_id">{% for m in addable_members %}<option value="{{ m.pk }}">{{ m.display_name }}</option>{% endfor %}</select>

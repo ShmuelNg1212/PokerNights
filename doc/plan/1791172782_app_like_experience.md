@@ -148,3 +148,5 @@ AC1 met for the measured pages (a signed-in set page loads more scripts through 
 Not verified: a real phone, and signed-in pages on production.
 
 2026-10-05: the human asked what stage 2 adds, then said “ok i like stage 2. start planning and studying.” Stage 2 is no longer deferred. It has its own study and plan: [installable app](1791176898_installable_app.md).
+
+2026-10-05: stage 3 has its own study and plan, [actions in place](1791178826_actions_in_place.md), with the Turbo-versus-own-module trial. The human chose Turbo. Built and released the same day.

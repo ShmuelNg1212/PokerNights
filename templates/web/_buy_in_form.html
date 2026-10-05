@@ -1,5 +1,5 @@
 {% load money_tags table_tags %}
-<form method="post" action="{% url 'buy_in_add' session.pk %}" class="stack buy-form" data-once>{% csrf_token %}{% request_id_field %}
+<form method="post" data-turbo="true" action="{% url 'buy_in_add' session.pk %}" class="stack buy-form" data-once>{% csrf_token %}{% request_id_field %}
   <input type="hidden" name="participant_id" value="{{ p.pk }}">
   <label>Amount {% if unit == 'chips' %}(chips){% else %}(pesos){% endif %}
     <input class="sheet-amount" type="text" name="amount" data-keep="buy-in-{{ p.pk }}" inputmode="decimal" autocomplete="off" value="{{ default_buy_in }}" required aria-label="Buy-in amount for {{ p.member.display_name }}">
