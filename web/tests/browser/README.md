@@ -130,5 +130,5 @@ Since 2026-10-06:
 - `perf.mjs` (12 checks) covers the `Server-Timing` header and the `?perf=1` readout. Seed `seed.py` and `seed_flow.py`, serve, run.
 - `marks.mjs` (18 checks) marks three neighbouring player rows the way `changes.js` does and measures that no mark or badge covers a row, a name, an amount or a button, at 320, 390 and 1280px, as host and as player, also with a long name and a large amount. Same seeds. It only reads, so it can be rerun on the same database.
 - `dock.mjs` has 228 checks: the slide is a transform, a fold and an unfold each lay the page out at most 4 times, the dock's top edge never jumps back, and the last row glides when the dock folds at the end of the page.
-- `navigate.mjs` has 48 checks: a held link looks pressed, a tapped link stays pressed while its screen is on the way, a button link shows the busy line, and nothing stays marked after arrival or Back.
+- `navigate.mjs` has 48 checks: a held link looks pressed, a tapped link stays pressed while its screen is on the way, a button link shows the busy line, and nothing stays marked after arrival or Back. A tapped tab must not light.
 - `navigate.mjs` and `inplace.mjs` restart the server themselves. `PN_PORT` names its port (default 8765); they stop only the server on that port.

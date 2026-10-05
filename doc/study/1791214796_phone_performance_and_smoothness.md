@@ -107,3 +107,80 @@ Production, signed out, on a kept connection: 60–90 ms to first byte for the l
 - Emulation is not an iPhone. Safari's compositor, the installed app's shell and a real radio behave differently. The on-phone readout in the plan exists for this reason.
 - The dock is tied to the keyboard handling in `dock.js`, which took two cycles to get right on an iPhone ([footgun](../wiki/footguns/ios_keyboard_covers_fixed.md)). A change to how it slides must not touch how it sits on the keyboard.
 - The human tests on the live build. Each stage must be inert unless asked for, or fall back to today's behaviour.
+
+## Addendum, 2026-10-06: numbers from the human's iPhone
+
+Source: nine screenshots of the `?perf=1` readout, taken at 12:25 to 12:28 on Wi-Fi in Safari, on the release `c84f45a`. One full game was played: a new session, a set opened and started, two rebuys, count-up, cash-out, finalize, the session closed and three transfers marked paid. Times are milliseconds.
+
+### Screen changes (a link)
+
+| Screen | Wait | Draw | Move | Total | Server | Queries | Database | Open |
+|---|---|---|---|---|---|---|---|---|
+| Group, Stats tab | 206 | 15 | 311 | 532 | 70 | 7 | 22 | 32 |
+| Group, Settings tab | 176 | 21 | 307 | 504 | 54 | 10 | 15 | 16 |
+| Group, Stats tab | 231 | 27 | 309 | 567 | 65 | 7 | 23 | 27 |
+| New session | 155 | 27 | 308 | 490 | 43 | 7 | 9 | 19 |
+| Session | 190 | 34 | 301 | 525 | 110 | 19 | 51 | 26 |
+| Your groups | 216 | 19 | 297 | 532 | 59 | 12 | 17 | 18 |
+| Your groups (once) | 2 | 13 | 310 | 325 | 121 | 12 | 63 | 33 |
+
+### Actions (a form sent in place)
+
+| Action | Wait | Draw | Move | Total | Server (last answer) | Queries | Database | Open |
+|---|---|---|---|---|---|---|---|---|
+| Open for players | 406 | 45 | 277 | 728 | 88 | 17 | 39 | 24 |
+| Start the set | 606 | 35 | 604 | 1,245 | 88 | 15 | 36 | 27 |
+| Confirm rebuy | 410 | 27 | 625 | 1,062 | 87 | 15 | 38 | 26 |
+| Confirm rebuy | 406 | 24 | 614 | 1,044 | 88 | 15 | 37 | 26 |
+| End play and count up | 388 | 45 | 264 | 697 | 91 | 14 | 35 | 24 |
+| Confirm 4 counts | 367 | 42 | 1,020 | 1,429 | 81 | 14 | 33 | 24 |
+| Finalize set | 449 | 46 | 400 | 895 | 63 | 16 | 20 | 17 |
+| Mark paid | 392 | 23 | 607 | 1,022 | 69 | 23 | 25 | 18 |
+| Mark paid | 342 | 24 | 283 | 649 | 118 | 23 | 59 | 26 |
+
+Full loads: a set, server 165 (17 queries, database 106, open 25); a session, server 114 (23 queries, database 58, open 27).
+
+Taps that ask the server nothing (sheets, the host menu, the number keys' Done): 0 to 3 late frames of about 42, the longest 59 ms. The host menu folded and unfolded with 0 and 1 late frames.
+
+### What the numbers say
+
+1. **The phone itself is not the limit.** Drawing a new screen takes 13 to 46 ms. Late frames are 1 to 3 per tap and the longest is 59 ms. This agrees with the emulated figures.
+2. **A screen change is about half waiting and half movement.** Roughly 200 ms of wait, 20 ms of drawing and 300 ms of movement.
+3. **Most of the wait is not our server's work.** Wait minus server is 110 to 170 ms on every screen change: the trip to Vercel and back, and Vercel's own handling. Nothing in this repository shortens that, except not making the trip at tap time.
+4. **The server's own share is 45 to 120 ms**, of which opening a database connection is 16 to 33 ms on every request, queries are 9 to 63 ms (about 2.5 ms each), and Python is 15 to 25 ms.
+5. **An action costs two trips.** The form is posted, the server answers with a redirect, and the page is fetched again. That is why an action waits about 400 ms where a link waits about 200.
+6. **"Move" on actions is decoration, not delay.** It runs until the last animation stops: the sheet leaving, the toast, the pulse, the books-balanced moment (1,020 ms after confirming counts). The page is usable from "draw".
+
+### The fetch at touch never had a head start
+
+The readout shows one screen change with a wait of 2 ms and every other at 155 to 231 ms. The design says a link is fetched when the finger touches it, which should take a tap's length (about 100 ms) off every wait. It does not.
+
+Cause: Turbo waits 100 ms after the pointer reaches a link before it sends the prefetch (`PREFETCH_DELAY`, meant for a mouse that is only passing over). `turbo-setup.js` reports the touch to Turbo as that pointer event, so the wait applies to a finger too. Measured locally with a real touch held for a set time:
+
+| Finger down for | Requests for the screen | Head start |
+|---|---|---|
+| 60 ms | 2: at the tap, and a wasted one at 107 ms | 0 |
+| 90 ms | 2: at the tap, and a wasted one at 110 ms | 0 |
+| 130 ms | 1, at 103 ms | 33 ms |
+| 200 ms | 1, at 103 ms | 103 ms |
+
+So an ordinary tap gets nothing, and a quick tap also sends the request twice. The second one is thrown away after costing a function call and its queries.
+
+### The tab report
+
+The human found switching a group's tabs "not snappy anymore" after the release. Measured on the previous release (`90ff346`) and this one, side by side with a touch and 150 ms of added delay: the marker reaches the new tab 180 ms after the tap and the movement ends at 446 ms, in both, on all three tabs. Nothing became slower. One thing changed: the tapped tab now lights up at once (the pressed look from stage 2). A lit tab looks chosen, its content has not come yet, and for 200 ms the wait is on show; then the marker slides under a tab that is already lit, so the slide reads as a fade. The earlier build showed nothing until tab and content moved together.
+
+This is a conclusion from a measurement that found no difference in time, plus reasoning about the one visible difference. It could not be confirmed on an iPhone here. The pressed look is removed from tabs; the phone decides whether that was it. The readout itself adds a little work on every frame while it follows a tap, so the feel should be judged with `?perf=0`.
+
+### Proposal for stage 3, in order of gain per risk
+
+| | Change | Expected gain | Size and risk |
+|---|---|---|---|
+| A | Send the fetch the moment the finger touches a link, and stop the duplicate | 70 to 120 ms off the wait of every screen change; one request less per quick tap | A few lines in `turbo-setup.js`; no server change |
+| B | Keep the database connection between requests (`DB_CONN_MAX_AGE`, a Vercel variable) | 16 to 33 ms off every request; twice that off an action | No code. Needs a check that Neon's pooler and Vercel's function reuse behave; undone by setting it back |
+| C | Fewer queries on Session (19 to 23) and Your groups (12 to 17) | 20 to 40 ms on those two screens | Read-only query work with tests |
+| D | Answer an in-place action with the page itself, without the redirect trip | About 200 ms off every action, the host's most frequent taps | The largest change: it touches how every form answers and the no-JavaScript path must keep working. Needs its own study |
+| E | A shorter slide between screens (220 ms now) | Up to about 80 ms of perceived time | One number; a matter of taste for the human |
+
+Recommended: A and B now, C after, D as its own study. E only if the human asks.
+

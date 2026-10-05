@@ -71,7 +71,8 @@ try {
  check('after Back: nothing is marked',await A.js(`location.pathname.startsWith('/n/')&&!document.querySelector('.is-going,[aria-busy=true]')`));
  for(const [name,el] of [['back link',back],['set link',`document.querySelector('.set-link')`]]){await A.js(`(()=>{const el=${el};if(el)el.classList.add('is-going')})()`);check(name+' has a pressed look',await A.js(`!${el}`)||await A.js(lit(el)));await A.js(`(()=>{const el=${el};if(el)el.classList.remove('is-going')})()`)}
  await A.go('/g/1/');await A.js(`document.querySelector('.tabs a:not([aria-current])').classList.add('is-going')`);
- check('a tab has a pressed look',await A.js(lit(`document.querySelector('.tabs a.is-going')`)));
+ // A tab is the exception: lit, it reads as chosen before its content has come, and the wait shows.
+ check('a tapped tab keeps its look; the marker alone says which tab is current',!(await A.js(lit(`document.querySelector('.tabs a.is-going')`)))&&await A.js(`getComputedStyle(document.querySelector('.tabs a.is-going')).color===getComputedStyle(document.querySelector('.tabs a:not([aria-current]):not(.is-going)')).color`));
  await A.go('/');await A.js(`document.querySelector('.group-home-head h2 a').classList.add('is-going')`);
  check('a group name has a pressed look',await A.js(lit(`document.querySelector('.group-home-head h2 a')`)));
  // 2. No leak after 20 screen changes.

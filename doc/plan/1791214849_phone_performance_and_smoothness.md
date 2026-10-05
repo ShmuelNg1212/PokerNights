@@ -1,6 +1,6 @@
 # Phone performance and smooth motion: plan
 
-Status: stages 1 and 2 released 2026-10-06 as `c84f45a`. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
+Status: stages 1 and 2 released 2026-10-06 as `c84f45a`; a tab fix waits for release and stage 3 for approval. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
 
 ## Outcome
 
@@ -108,6 +108,13 @@ Acceptance: AC1 to AC6 met locally, with the rulings below. AC7 (figures from th
 8. **`navigate.mjs` and `inplace.mjs` take `PN_PORT`.** They restart "the server on 8765" themselves, and a server from an earlier session was running there. It was left alone.
 
 Self-review only: no second reviewer read the branch.
+
+## After the release: the phone's verdict (2026-10-06)
+
+The human sent nine screenshots of the readout; they are tabled in the [study's addendum](../study/1791214796_phone_performance_and_smoothness.md). AC7 is met. Two results:
+
+- **Tabs felt "not snappy anymore".** Timing is identical to the previous release (marker 180 ms after the tap, movement over at 446 ms, both builds). The one visible change is the pressed look on the tapped tab, which shows the wait and blurs the marker's slide. Fixed on branch `fix/tab-switch-feel`: tabs take no pressed look. `navigate.mjs` 48 of 48, with the changed check failing first. Not released.
+- **Stage 3 has its numbers.** The proposal is in the addendum: (A) send the fetch at touch, which today has no head start and sends a duplicate on quick taps; (B) keep the database connection; (C) fewer queries on two screens; (D) actions without the redirect trip, as its own study; (E) a shorter slide if wanted. **Awaiting approval.**
 
 ## For the human to do
 

@@ -816,9 +816,9 @@ legend { padding: 0; }
 /* dock.js, "?kb=1": what the script reads, for a screenshot from a phone. */
 .kb-readout { position: fixed; left: 4px; z-index: 50; margin: 0; padding: 4px 6px; font: 11px/1.3 ui-monospace, monospace; color: #fff; background: rgb(0 0 0 / .85); pointer-events: none; white-space: pre; }
 /* A tapped link answers on the first frame and keeps the look while its screen is on the way
-   ("is-going", turbo-setup.js). The surface lightens; nothing moves, so reduced motion keeps it. */
+   ("is-going", turbo-setup.js). The surface lightens; nothing moves, so reduced motion keeps it.
+   Tabs are left out: a lit tab reads as chosen before its content has come, which makes the wait show. */
 :is(.session-link, .set-link, .home-row, .home-dues a, .group-home-head h2 a, .table-bar > a):is(:active, .is-going) { background-color: var(--pressed); box-shadow: -8px 0 0 var(--pressed), 8px 0 0 var(--pressed); border-radius: var(--r-bar); }
-.tabs a:is(:active, .is-going) { background-color: var(--pressed); color: var(--text); }
 /* "?perf=1" readout (perf.js): the last few taps and what each cost. */
 .perf-readout { position: fixed; top: calc(env(safe-area-inset-top) + 4px); left: 4px; right: 4px; z-index: 50; margin: 0; padding: 4px 6px; font: 10px/1.35 ui-monospace, monospace; color: #fff; background: rgb(0 0 0 / .85); pointer-events: none; white-space: pre-wrap; overflow-wrap: anywhere; view-transition-name: perf-readout; }
 /* Motion between screens (turbo-setup.js sets data-go on <html>; DESIGN.md, "Motion between screens").

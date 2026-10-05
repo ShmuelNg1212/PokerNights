@@ -308,7 +308,7 @@ On count confirmation, a visible typed field keeps its position when the accepte
 
 ## Feedback on a touch (2026-10-06)
 
-- A link that changes the screen (a session row, a set link, a group name, a row on a group card, a tab, a back link) lightens the moment it is touched and stays so until the next screen is drawn. A link that is a button shows the busy line.
+- A link that changes the screen (a session row, a set link, a group name, a row on a group card, a back link) lightens the moment it is touched and stays so until the next screen is drawn. A link that is a button shows the busy line. A group's tabs do not light: the marker sliding to the tab is their answer.
 - A changed player or count row is marked by a brass box inside the row. "Rebuy added" or "Updated" appears in the line under the player's name. Neither covers another row, a name, an amount or a button.
 
 ## Measuring on a phone (2026-10-06)
