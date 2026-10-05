@@ -454,6 +454,15 @@ No visual change. On the set page and the session page an accepted action update
 - A send that fails says “That wasn’t sent. Check your connection and try again.” in the sheet or as a floating error, and changes nothing.
 - Nothing on the page changes before the server answers; the button shows its busy state until then.
 
+### 2026-10-05 addendum — Screen changes
+
+Links change the screen without a page load. [Plan](doc/plan/1791181102_screen_changes_without_reload.md).
+
+- **Loading line.** When a screen takes longer than 500ms, a 3px Brass line grows across the top of the viewport. No spinner and no skeleton.
+- **Fade.** The existing 180ms cross-fade between screens is kept, now within one page; reduced motion removes it. Direction and shared elements are left for the motion stage.
+- **Arrival.** A new screen starts at the top. Its title is announced once to screen readers and focus moves to the start of the content without a visible ring; a page with an auto-focused field keeps focus there.
+- **Back.** Returns to a freshly fetched screen at the scroll position it was left at.
+
 ## Do's and Don'ts
 
 ### Do:

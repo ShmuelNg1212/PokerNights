@@ -78,6 +78,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "config.prefetch.PrefetchLeavesOneTimeState",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 

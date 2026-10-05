@@ -157,6 +157,14 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Turbo's page cache is off on every page. Links and all other forms load a page as before; that is stage 4.
 - Without JavaScript every form is a native form, unchanged.
 
+## Screen changes without a reload
+
+- Tapping a link swaps the screen without unloading the page: one request, no rebuild, no blank moment. Back and Forward fetch a fresh page and restore the scroll position.
+- A link is fetched as the finger touches it.
+- Forms that lead to another page (New session, close session, log in, log out, group settings) still load a page.
+- A slow screen shows a thin brass line at the top after half a second.
+- Without JavaScript every link is an ordinary link.
+
 ## Limits today
 
 - The app records who owes what. It does not move money.

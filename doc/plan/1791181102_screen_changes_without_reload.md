@@ -91,3 +91,58 @@ Converting forms that lead elsewhere; directional transitions and motion (stage 
 ## Rollback
 
 4b: set navigation off again in `turbo-setup.js` (one line) and release. 4a: revert its commits; it changes no behaviour, so there is no data or state to undo.
+
+## Progress and blockers
+
+2026-10-05: Study with a trial, and plan. The human approved with “approved.”
+
+### Release 4a: script lifetimes
+
+Built on `feat/script-lifetime`. `static/js/page.js` and all twelve modules reshaped; scripts moved to the head; the per-page script blocks removed.
+
+- Found by the new lifetime check: `password.js` and `pick.js` added their listeners again on every start when the elements stayed in the page. Both now release them on stop.
+- Every existing browser check passed with **no assertion changed**: `dock` 145, `archive` 85, `settled` 24, `entry` 91, `session_form` 69, `install` 33, `inplace` 37. `lifetime.mjs`: 22 of 22.
+- Two older scripts, `counts.mjs` and `night.mjs`, show one crash and one failure; the same on unmodified `main`.
+
+**A failed build.** The first push of 4a (`6a3f24b`) did not go live. The Vercel build runs the test suite with `VERCEL` set, which adds the release tag to static addresses, and a new test asserted the plain stylesheet address. The build failed, production kept the previous version, and nothing was visible to users. Fixed in `7b430c4`, which went live. The suite is now also run the build's way before every push; the command is in the deployment page.
+
+Checked on the live site after 4a: 14 scripts in the head, none in the body; Turbo loaded with navigation off; the login form unchanged; no script error.
+
+### Release 4b: links on
+
+Built on `feat/link-navigation`.
+
+Changes from the plan:
+
+1. **Start and stop follow Turbo's render events, not its load event,** and only for a swap. An in-place update of the same page restarts nothing, which the stage 3 sheet behaviour depends on.
+2. **Prefetch at touch is a synthetic `mouseenter`** sent to the link at `touchstart`. Turbo 8.0.23 prefetches on `mouseenter` only (read in its source); this reuses its mechanism instead of adding a second one.
+3. **The prefetch guard is middleware** that renders a prefetched page without flash messages and restores the session's one-time values afterwards. They are copied before the view runs, because the views change them in place; the first version restored an already-emptied value.
+4. **The two `entry.mjs` failures from the trial did not recur** once scripts had lifetimes, so they were a symptom of the leak, not a separate fault.
+5. **The anchor check** accepts the section anywhere in the viewport: a section near the end of a page cannot scroll to the top.
+
+Measured:
+
+| | Before | After |
+|---|---|---|
+| Document loads while walking through seven screens and back | 9 | 0 |
+| Poll requests in 8.5 s on a set page after 22 screen changes | 9 in the trial without lifetimes | 2 |
+| Poll requests after leaving the set page | 2 in the trial | 0 |
+| Script errors in 22 screen changes | 3 in the trial | 0 |
+| Time per screen change, local server, emulated slow connection | 865–873 ms | 472–480 ms |
+
+The timing caveat from the study stands: the local server lacks production's static caching, so the gain on the live site will be smaller.
+
+Verification:
+
+- 639 tests pass on SQLite, the same suite passes run the build's way, and all 639 pass on local PostgreSQL 17 (started for the run, stopped after). Six new tests for the prefetch guard, one for script placement.
+- `navigate.mjs`: 37 of 37. With links on: `inplace` 38 (two assertions changed to the new truth and one added), `entry` 91, `dock` 145, `archive` 85, `settled` 24, `session_form` 69, `install` 33, `lifetime` 22.
+
+Acceptance: AC1 to AC5 are met, with these limits.
+
+- Line 8 is proven by the live region's text and the focused element; no screen reader was run.
+- Line 10's "another site" case is tested with Django's admin login, which is outside the app's pages; a truly external address was not tested.
+- Line 13 is `install.mjs` passing; the installed app on a real iPhone is not tested.
+
+Not verified: a real phone; the Back gesture inside the installed app; production timings for signed-in screens.
+
+Documentation synced: wiki architecture (the lifetime rule), features, the new footgun page, DESIGN.md, deployment (the build-style run), browser README, TODO.

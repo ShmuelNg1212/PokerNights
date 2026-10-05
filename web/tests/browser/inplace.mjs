@@ -33,7 +33,7 @@ try {
  await startServer();const A=await user('hana');
  // --- A rebuy from a sheet, near the bottom of the list.
  await A.go('/s/3/');
- check('navigation is off by default and the page cache is off',await A.js(`Turbo.session.drive===false&&document.querySelector('meta[name=turbo-cache-control]').content==='no-cache'&&document.querySelector('meta[name=turbo-refresh-method]').content==='morph'`));
+ check('forms are opt-in, and the page cache is off',await A.js(`Turbo.config.forms.mode==='optin'&&document.querySelector('meta[name=turbo-cache-control]').content==='no-cache'&&document.querySelector('meta[name=turbo-refresh-method]').content==='morph'`));
  await A.js(`document.querySelector('.host-more').open=true;document.querySelector('.host-more details[data-key=cancel]').open=true;document.querySelector('#cancel-reason').value='typed elsewhere';${opener}.scrollIntoView({block:'center'})`);await sleep(200);
  let y=await A.js('window.scrollY'),t0=await A.js(total),mark=events.length;
  await A.click(opener,500);const id1=await A.js(`document.querySelector('dialog [name=request_id]').value`);
@@ -120,7 +120,8 @@ try {
  check('undo: in place, row back to Not paid',await A.js(same)&&await A.js(`!document.querySelector('[data-transfer="${tr}"]').classList.contains('is-paid')`));
  // --- Links and out-of-scope forms still load a page the ordinary way.
  await A.go('/s/3/');await A.click(`document.querySelector('.table-bar a')`,1200);
- check('a link still loads a new page',await A.js(`window.__mark!==1&&location.pathname.startsWith('/n/')`));
+ check('a link changes the screen',await A.js(`location.pathname.startsWith('/n/')&&!!document.querySelector('.night-layout')`));
+ await A.click(`document.querySelector('form[action$="/logout/"] button')`,1400);check('a form that leads elsewhere still loads a page',await A.js(`window.__mark!==1&&location.pathname==='/accounts/login/'`));await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91'`);await A.click(`document.querySelector('form.form-section [type=submit]')`,1400);await A.go('/n/1/');
  check('forms that lead elsewhere are not marked',await A.js(`[...document.querySelectorAll('form[action$="/close/"], form[action$="/next-set/"], form[action$="/logout/"]')].every(f=>f.dataset.turbo!=='true')`));
  // --- Without JavaScript the same form reloads as before.
  await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);await A.go('/s/3/');const before=await A.js(total);

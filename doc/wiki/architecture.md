@@ -192,6 +192,17 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 - **Known gap.** A write on a finished set that was started just before the group was archived can still land, because set writes do not lock the group row. It is visible after restore and breaks no money rule.
 - **Request ids.** These actions carry none; a repeat is a no-op, as for `close_night`.
 
+## Screen changes
+
+Links change the screen without unloading the page (Turbo navigation). Forms do so only when marked `data-turbo="true"`; every other form posts natively and loads a page.
+
+- **Script lifetime.** Every script loads once from the head and registers a start and a stop with `static/js/page.js`. `turbo-setup.js` calls stop before a page is swapped out and start after the next one is in. See the footgun [scripts run once per tab](footguns/scripts_run_once_per_tab.md). This is a rule for every future script.
+- **No page cache.** `turbo-cache-control: no-cache` on every page. Back and Forward fetch the page again; scroll position is still restored.
+- **Prefetch.** A link is fetched when the pointer or finger reaches it. `config.prefetch.PrefetchLeavesOneTimeState` makes such a request render without flash messages and leave the session's one-time values (`inline_forms`, `new_invite_url`, `count_drafts`) untouched, so a page that is never shown consumes nothing. A new one-time session value must be added to its list.
+- **A failed screen change** falls back to an ordinary navigation, so the service worker's offline page appears.
+- **Accessibility.** After a swap the new title is written to a polite live region and focus moves to `<main>`, unless the page has an `autofocus` field.
+- **A release.** Script and stylesheet tags are tracked; the first screen change after a release is a full page load.
+
 ## In-place updates
 
 Two things now replace content on the set page without a reload: the 4-second poll (`live.js`, replaces `#live`) and a background form send (Turbo morph refresh of the whole body). They share rules: `data-keep` fields keep typed text, `data-key` disclosures stay open, `data-focus-key` controls keep focus, and every page module reacts to `live:updated`. `turbo-setup.js` raises `inplace:updated` first so `live.js` can adopt the new version and skip a redundant poll. The sheet container and the offline notice are `data-turbo-permanent`, so a morph leaves them alone. See [features](features.md#actions-update-in-place).
