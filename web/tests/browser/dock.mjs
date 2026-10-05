@@ -51,6 +51,20 @@ try {
    check(tag+' expands again',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&${shown}.length>1&&localStorage.getItem('rack-dock')===null`));
   }
  }
+ // One gap between neighbouring host controls, at every width, with "More host controls" closed and open.
+ const gapsOf=sel=>`(()=>{const kids=[...document.querySelector(${JSON.stringify(sel)}).children].filter(el=>el.getClientRects().length).map(el=>el.getBoundingClientRect());return kids.slice(1).map((r,i)=>Math.round((r.top-kids[i].bottom)*10)/10)})()`;
+ for(const width of [320,390,1280]) {
+  await size(A,width);
+  for(const [name,id] of Object.entries(SETS)) {
+   await A.go(`/s/${id}/`);const tag=`${name} ${width}`;
+   const main=await A.js(gapsOf('.host-controls'));
+   check(tag+' host controls are 8px apart ('+main.join(',')+')',main.length>0&&main.every(g=>g===8));
+   await A.js(`document.querySelector('.host-more').open=true`);await sleep(350);
+   const more=await A.js(gapsOf('.host-more'));
+   check(tag+' options under More are 8px apart ('+more.join(',')+')',more.length>0&&more.every(g=>g===8));
+   check(tag+' open More keeps the main gaps',(await A.js(gapsOf('.host-controls'))).every(g=>g===8));
+  }
+ }
  await size(A,390);
  // Keyboard: focus ring, activation, and focus kept across a live update made by another session.
  await A.go('/s/3/');await A.js(`${toggle}.focus()`);
