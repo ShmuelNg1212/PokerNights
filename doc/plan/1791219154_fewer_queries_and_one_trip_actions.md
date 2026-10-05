@@ -1,6 +1,6 @@
 # Fewer queries and one-trip actions: plan
 
-Status: approved 2026-10-06. Stages C and D built and verified, not released. Date: 2026-10-06, Asia/Manila. Study: [fewer queries and one-trip actions](../study/1791219090_fewer_queries_and_one_trip_actions.md). Base: `main` at `fedaeb0`. A was released as `53de23b` before this work began.
+Status: approved 2026-10-06. Stages C and D released together 2026-10-06 as `60faac0` (previous production commit `53de23b`), at the human's word; the live site carries the in-place mark and the new script. Phone acceptance is open. Date: 2026-10-06, Asia/Manila. Study: [fewer queries and one-trip actions](../study/1791219090_fewer_queries_and_one_trip_actions.md). Base: `main` at `fedaeb0`. A was released as `53de23b` before this work began.
 
 ## Outcome
 
