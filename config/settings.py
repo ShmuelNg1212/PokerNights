@@ -177,6 +177,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_VERSION = static_version(os.environ)
 # Turn off to make installed phones remove the service worker (see config/pwa.py).
 SERVICE_WORKER = env.bool("SERVICE_WORKER", default=True)
+# Turn off to return every number field to the phone's own keyboard (see static/js/numpad.js).
+NUMPAD = env.bool("NUMPAD", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

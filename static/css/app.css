@@ -821,3 +821,30 @@ legend { padding: 0; }
 @keyframes screen-in-right { from { opacity: 0; transform: translateX(24px); } }
 @keyframes screen-out-right { to { opacity: 0; transform: translateX(24px); } }
 @keyframes screen-in-left { from { opacity: 0; transform: translateX(-24px); } }
+
+/* In-app numpad (numpad.js): twelve keys that write into the number field above them. The slot is in the form;
+   it takes no room until the keys are in it. */
+[data-numpad-slot]:empty { display: none; }
+.numpad { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--s-2); touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.numpad-key { min-height: 52px; padding: 0; font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent; }
+.numpad-key .icon { width: 26px; height: 26px; }
+input.numpad-refused { border-color: var(--down); }
+/* A finger leaves no hover behind: a tapped key returns to its resting colour. */
+@media (hover: none) { .numpad-key:hover { background: var(--surface-2); } }
+.sheet label > .sheet-amount { margin-top: 6px; }
+/* Cash-out in a sheet reads top to bottom like buy-in: amount, keys, option, then the action. */
+.sheet form:has(.numpad):has(.form-row) { display: flex; flex-direction: column; gap: var(--s-3); }
+.sheet form:has(.numpad):has(.form-row) > * { margin-top: 0; }
+.sheet form:has(.numpad) > .form-row { display: contents; }
+.sheet form:has(.numpad) > .form-row > [type=submit] { order: 3; width: 100%; }
+.sheet form:has(.numpad) > .form-row ~ .check { order: 2; }
+.sheet form:has(.numpad) > .form-row ~ [data-numpad-slot] { order: 1; }
+/* A sheet that holds the keys may use more of the screen, and tightens on a short one, so its action stays in view. */
+.sheet:has(.numpad) { max-height: 96dvh; }
+@media (max-height: 700px) {
+  .sheet:has(.numpad) { padding-top: var(--s-3); padding-bottom: var(--s-4); }
+  .sheet:has(.numpad) .sheet-head { margin-bottom: var(--s-2); }
+  .sheet:has(.numpad) .stack > * + * { margin-top: var(--s-2); }
+  .sheet:has(.numpad) .sheet-amount { min-height: 56px !important; font-size: 2rem !important; }
+  .sheet:has(.numpad) .numpad-key { min-height: 48px; }
+}

@@ -9,6 +9,7 @@ var source = find(id); if (!source || S.dialog.open) return;
 S.key = id; S.opener = button;
 S.dialog.querySelector("h2").textContent = source.dataset.title;
 S.body.appendChild(source.querySelector(".sheet-content"));
+if (window.pokerNumpad) window.pokerNumpad.prepare(S.body); // the number keys are in place before the sheet rises
 S.dialog.showModal();
 if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
 var field = S.body.querySelector("input:not([type=hidden]), button");
