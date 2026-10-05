@@ -126,3 +126,23 @@ The planned approach (Django's manifest storage with fingerprinted file names) c
 - Rules that bound it: reduced motion disables movement (AGENTS.md rule 9); money figures appear at their accepted value, never counting up (rule 9, PRODUCT.md); the app works without JavaScript.
 - Motion's MCP server is not connected in this session. The human needs to add it. Whether its AI kit needs a paid Motion+ plan is unverified. A Motion skill became available in this session and will be used.
 - Stage 6 comes after stage 4 on purpose: screen-to-screen transitions cannot be animated across full page reloads in the way an overhaul would want.
+
+## Stage 1 progress, 2026-10-05
+
+Built on `feat/static-caching`, merged into `main` and released as `e229cf6` (previous production commit `77c0fbd`). The release also carried the entry flow fixes that were waiting on local `main`.
+
+Measured on production, signed out, phone-sized headless Chrome on an emulated slow connection (400 ms round trip, 1.6 Mbit down), warm browser cache:
+
+| Screen change | Before | After |
+|---|---|---|
+| Log in → Sign up | 6 requests (4 re-checks), 927 ms | 1 request, 595 ms |
+| Sign up → Log in | 7 requests (5 re-checks), 925 ms | 1 request, 516 ms |
+| First visit, cold cache | 8 requests, 2,734 ms | 7 requests, 1,738 ms (one sample each; cold loads vary) |
+
+Checked on the live site: `.css` and `.js` addresses carry `?v=012fdea36b` and answer `public, max-age=31536000, immutable`; the font and logo answer a one-week cache with background revalidation; HTML stays `no-store`.
+
+Verification: 618 tests pass on SQLite (six new in `config/tests.py`). PostgreSQL was not rerun for this stage; it changes no query or write. `collectstatic --dry-run` succeeds with the new storage.
+
+AC1 met for the measured pages (a signed-in set page loads more scripts through the same mechanism; not measured on production, no account). AC2 follows from the per-deployment tag and is confirmed on the next release, when the tag must change. AC3 met.
+
+Not verified: a real phone, and signed-in pages on production.
