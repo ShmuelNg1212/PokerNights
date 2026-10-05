@@ -769,3 +769,28 @@ legend { padding: 0; }
 @keyframes books-rule { from { transform: scaleX(0); } }
 /* dock.js, "?kb=1": what the script reads, for a screenshot from a phone. */
 .kb-readout { position: fixed; left: 4px; z-index: 50; margin: 0; padding: 4px 6px; font: 11px/1.3 ui-monospace, monospace; color: #fff; background: rgb(0 0 0 / .85); pointer-events: none; white-space: pre; }
+/* Motion between screens (turbo-setup.js sets data-go on <html>; DESIGN.md, "Motion between screens").
+   Deeper and back are a short shift with a fade; a group's tabs shift sideways; the top bar stays still;
+   a carried name or chip moves to its new place. Without data-go a screen change is the plain cross-fade above. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition { pointer-events: none; }
+  .site-header { view-transition-name: site-header; }
+  ::view-transition-old(site-header) { display: none; }
+  ::view-transition-new(site-header) { animation: none; }
+  ::view-transition-group(*) { animation-duration: 260ms; animation-timing-function: var(--ease-out); }
+  html:is([data-go=deeper], [data-go=next])::view-transition-old(root) { animation: screen-out-left 220ms var(--ease-in) both; }
+  html:is([data-go=deeper], [data-go=next])::view-transition-new(root) { animation: screen-in-right 220ms var(--ease-out) both; }
+  html:is([data-go=back], [data-go=prev])::view-transition-old(root) { animation: screen-out-right 220ms var(--ease-in) both; }
+  html:is([data-go=back], [data-go=prev])::view-transition-new(root) { animation: screen-in-left 220ms var(--ease-out) both; }
+  /* A carried name keeps its own size at each end; the two fade through each other as the box moves. */
+  ::view-transition-old(title), ::view-transition-new(title) { width: 100%; height: 100%; object-fit: none; object-position: left top; }
+  /* A group's tabs: the heading and the tab bar stay, the marker slides to the chosen tab, the content shifts. */
+  html:is([data-go=next], [data-go=prev]) .group-page > .table-bar { view-transition-name: page-bar; }
+  html:is([data-go=next], [data-go=prev]) .group-page > .page-heading { view-transition-name: page-heading; }
+  html:is([data-go=next], [data-go=prev]) .tabs { view-transition-name: tabs; }
+  html:is([data-go=next], [data-go=prev]) .tabs a[aria-current] { view-transition-name: tab-current; }
+}
+@keyframes screen-out-left { to { opacity: 0; transform: translateX(-24px); } }
+@keyframes screen-in-right { from { opacity: 0; transform: translateX(24px); } }
+@keyframes screen-out-right { to { opacity: 0; transform: translateX(24px); } }
+@keyframes screen-in-left { from { opacity: 0; transform: translateX(-24px); } }

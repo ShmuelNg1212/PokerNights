@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block screen %} data-depth="0"{% endblock %}
 {% load static %}
 {% block page_class %}hub-page home-page{% if cards|length > 1 %} home-many{% endif %}{% endblock %}
 {% block content %}

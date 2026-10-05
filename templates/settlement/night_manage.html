@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block screen %} data-depth="3"{% endblock %}
 {% load money_tags %}
 {% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} session · {{ night }}{% endblock %}
 {% block page_class %}form-page{% endblock %}

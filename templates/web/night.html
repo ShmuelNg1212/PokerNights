@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block screen %} data-depth="2"{% endblock %}
 {% load money_tags clock_tags table_tags %}
 {% block title %}Session · {{ night }}{% endblock %}
 {% block page_class %}table-page night-page{% endblock %}
@@ -14,7 +15,7 @@
 <div class="night-layout">
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
-      <h1>{{ night.table.name }}</h1>
+      <h1 data-carry="title">{{ night.table.name }}</h1>
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
       {% if outcome.status == 'settled' %}

@@ -28,7 +28,8 @@ def player_token(participant, participants):
                 initial = label
                 break
     colour = (participant.join_order - 1) % 10 + 1
-    return format_html('<span class="chip k{}" aria-hidden="true">{}</span>', colour, initial)
+    # data-m names the player, so a screen change can carry the chip to the same player's row (turbo-setup.js).
+    return format_html('<span class="chip k{}" data-m="{}" aria-hidden="true">{}</span>', colour, getattr(participant.member, "pk", ""), initial)
 
 @register.simple_tag
 def member_token(member, members):

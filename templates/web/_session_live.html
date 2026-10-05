@@ -3,7 +3,7 @@
 <div class="table-layout">
   <aside class="table-left">
     <section class="felt{% if session.state != 'running' %} hero{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
-      <div class="row"><h1 class="grow">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge{% if session.state == 'running' %} badge-live{% endif %}">{{ session.get_state_display }}</span></div>
+      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge{% if session.state == 'running' %} badge-live{% endif %}">{{ session.get_state_display }}</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
       <div class="pot">
         <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div><div class="display-amount">{{ summary.in_play|display_amount:unit }}</div></div>
