@@ -124,3 +124,11 @@ On 2026-10-05 `inplace.mjs` was updated to confirm typed counts through `[data-c
 For transfer alignment, seed a fresh temporary database in this order: `seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_transfer_layout.py`. Serve it and run `transfer_layout.mjs` (155 checks). It reads `/private/tmp/pn-transfer-layout-manifest.json` plus the earlier night manifest. Checks cover mixed paid/unpaid cards, long names and large pesos/chips at 320, 390, 768, 900 and 1280px; actual text bounds and complete units; first-line identity alignment; assigned financial rows; 48px actions, keyboard focus and DOM order; host/player/archived views; container-query fallback; reduced motion; in-place payment/Undo and native forms without JavaScript. Desktop 200% zoom reflow is emulated with a 640px CSS viewport and DPR 2, corresponding to a 1280px physical window. This is not a Safari appearance check. Fixtures are consumed by real service writes. Use a fresh database for each repeat and each other browser suite.
 
 On 2026-10-05 the night regression’s native-close assertion was corrected: it checks two transfer cards and removal of the close action, rather than the stale wording “Session closed.” The server’s accepted message is “The session is closed. Transfers are listed below.”
+
+Since 2026-10-06:
+
+- `perf.mjs` (12 checks) covers the `Server-Timing` header and the `?perf=1` readout. Seed `seed.py` and `seed_flow.py`, serve, run.
+- `marks.mjs` (18 checks) marks three neighbouring player rows the way `changes.js` does and measures that no mark or badge covers a row, a name, an amount or a button, at 320, 390 and 1280px, as host and as player, also with a long name and a large amount. Same seeds. It only reads, so it can be rerun on the same database.
+- `dock.mjs` has 228 checks: the slide is a transform, a fold and an unfold each lay the page out at most 4 times, the dock's top edge never jumps back, and the last row glides when the dock folds at the end of the page.
+- `navigate.mjs` has 48 checks: a held link looks pressed, a tapped link stays pressed while its screen is on the way, a button link shows the busy line, and nothing stays marked after arrival or Back.
+- `navigate.mjs` and `inplace.mjs` restart the server themselves. `PN_PORT` names its port (default 8765); they stop only the server on that port.

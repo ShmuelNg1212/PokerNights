@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Phone performance and smoothness ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md), [study](doc/study/1791214796_phone_performance_and_smoothness.md)): stages 1 and 2 are built on branch `perf/phone-smoothness` and verified locally on 2026-10-06. Every response carries a `Server-Timing` header and `?perf=1` shows a readout on the phone; the host dock slides without laying the page out (3 layouts per slide, from 27 to 55); links look pressed from the first frame of a touch; a changed row's mark stays inside the row and "Rebuy added" sits under the name. No migration. 682 tests pass on SQLite and PostgreSQL 17. **Not merged or pushed: waiting for the instruction to release.** Stage 3 (the server) is decided from the phone's numbers.
+
 Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), merged locally to `main` as `0dc4c37`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Released 2026-10-05 as `4a80de9`; Vercel build passed 677 tests and had no migrations to apply. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone acceptance remains open.
 
 App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) was released on 2026-10-05 as `1106548`. Stage 3 ([motion between screens](doc/plan/1791194279_motion_between_screens.md)) was released on 2026-10-05 as `648cca8`. Stage 4 needs its own plan.
@@ -63,6 +65,12 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **After the smoothness release, send the phone's numbers** ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md)):
+  1. Open the app with `?perf=1` added to the address. A small readout appears at the top.
+  2. Walk Your groups → a group → a session → a set in play. Record a rebuy. Fold and unfold the host menu. Go back to Your groups.
+  3. Screenshot the readout after each few taps (it keeps five lines). Do it once on Wi-Fi and once on mobile data if you can. `?perf=0` removes it.
+  4. Say whether a tap on a card or row now feels answered, whether the host menu slides cleanly (also during count-up), and whether the yellow marks and "Rebuy added" still cover anything. Have two players change at once if you can.
 
 - [ ] **Try the numpad and the new count-up on your phone** (now live; only an iPhone confirms that the phone's keyboard stays closed):
   1. On a running set tap Rebuy: the amount shows with twelve keys under it and no phone keyboard. Type an amount, try a third decimal place (nothing should happen), hold delete, tap Max, confirm.

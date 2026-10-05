@@ -87,7 +87,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
-- The dock slides open and closed (320 ms and 200 ms); reduced motion switches at once.
+- The dock slides open and closed (320 ms and 200 ms); reduced motion switches at once. It moves by transform, so the page is laid out once per slide; a page scrolled to its end glides down with a folding dock.
 - In count-up the bar shows the running total (“₱1,900 of ₱2,000 bought in”) and the verdict, both updated as counts are typed. Since 2026-10-05 it does so open as well as folded, and it is the host's one total on a phone (see “Count-up, review and finalize”).
 - Since 2026-10-05 count fields use the in-app numpad on a phone, so the next point applies only to text fields on the set page (a cancel reason, an override note, a reversal reason).
 - On an iPhone, while the keyboard is up, the dock sits on top of the keyboard as the bar and returns to its saved state when the keyboard closes. Typing in a field inside the dock keeps it expanded. The bar stays the bar and stays on the keyboard while the page is scrolled with the keyboard open, and only a new focus moves the page. `dock.js` reads `window.visualViewport` and sets `--kb` (the dock's offset), `--kb-h` (the keyboard's height) and the classes `kb-open` and `kb-bar` on `<html>`. A set page opened with `?kb=1` shows the numbers it reads. See the footgun [fixed elements sit under the iPhone keyboard](footguns/ios_keyboard_covers_fixed.md). Not yet confirmed on a real iPhone.
@@ -305,3 +305,14 @@ From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end
 
 
 On count confirmation, a visible typed field keeps its position when the accepted status adds a line. Other forms' drafts and open Details remain intact. See [the scroll footgun](footguns/count_status_moves_the_field.md).
+
+## Feedback on a touch (2026-10-06)
+
+- A link that changes the screen (a session row, a set link, a group name, a row on a group card, a tab, a back link) lightens the moment it is touched and stays so until the next screen is drawn. A link that is a button shows the busy line.
+- A changed player or count row is marked by a brass box inside the row. "Rebuy added" or "Updated" appears in the line under the player's name. Neither covers another row, a name, an amount or a button.
+
+## Measuring on a phone (2026-10-06)
+
+- Add `?perf=1` to any address. A small readout stays at the top of that tab and adds one line per tap: `wait` (tap to the server's answer), `draw`, `move` (until everything has stopped), the total, then `server` (the whole request), `db` (time in queries, with their count), `open` (time to open a database connection) and `late` (frames longer than 25 ms, of all frames, with the longest).
+- A screen that was fetched when the finger touched its link reads `wait 0 (fetched ahead)`.
+- `?perf=0` removes it. It lasts for the tab only and nothing runs without it.

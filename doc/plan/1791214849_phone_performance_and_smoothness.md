@@ -1,6 +1,6 @@
 # Phone performance and smooth motion: plan
 
-Status: approved 2026-10-05, in progress. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
+Status: stages 1 and 2 built and verified 2026-10-06, not released. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
 
 ## Outcome
 
@@ -61,13 +61,53 @@ No change to services, models, money rules, polling interval, the service worker
 
 ## Ordered implementation board
 
-- [ ] **Stage 1, tests first.** Write failing tests for the header (present, well-formed, counts match, absent of side effects on a prefetch). Add the middleware. Add `perf.js` and its styles. Browser check: readout appears with `?perf=1`, survives a screen change, and is absent without it. Commit `feat(perf): server timing header and on-phone readout`.
-- [ ] **Stage 1 rendezvous.** Run both suites. Record in this plan. Update the wiki (architecture, a short "measuring on a phone" note) and TODO with the phone walk. Stop for the instruction to release.
-- [ ] **Stage 2, dock.** Extend `dock.mjs` with the layout-count check so it fails first. Change `slide()` and the `--dock-h` writes. Run `dock.mjs`, `count_flow.mjs` and `numpad.mjs`. Commit `perf(ui): slide the host dock without layout`.
-- [ ] **Stage 2, pressed links.** Add the check to `navigate.mjs` so it fails first. Add the CSS and the waiting mark. Commit `feat(ui): pressed state for links`.
-- [ ] **Stage 2, marks.** Add the overlap check to `flow.mjs` so it fails first. Draw the mark inside the row and move the badge into the line under the name. Commit `fix(ui): keep change marks inside their rows`.
-- [ ] **Stage 2 rendezvous.** Rerun the probe for before and after figures. Both suites and the browser checks. Update DESIGN.md, the wiki and TODO. Stop for the instruction to release.
+- [x] **Stage 1, tests first.** Write failing tests for the header (present, well-formed, counts match, absent of side effects on a prefetch). Add the middleware. Add `perf.js` and its styles. Browser check: readout appears with `?perf=1`, survives a screen change, and is absent without it. Commit `feat(perf): server timing header and on-phone readout`.
+- [x] **Stage 1 rendezvous.** Run both suites. Record in this plan. Update the wiki (architecture, a short "measuring on a phone" note) and TODO with the phone walk. Stop for the instruction to release.
+- [x] **Stage 2, dock.** Extend `dock.mjs` with the layout-count check so it fails first. Change `slide()` and the `--dock-h` writes. Run `dock.mjs`, `count_flow.mjs` and `numpad.mjs`. Commit `perf(ui): slide the host dock without layout`.
+- [x] **Stage 2, pressed links.** Add the check to `navigate.mjs` so it fails first. Add the CSS and the waiting mark. Commit `feat(ui): pressed state for links`.
+- [x] **Stage 2, marks.** Add the overlap check to `flow.mjs` so it fails first. Draw the mark inside the row and move the badge into the line under the name. Commit `fix(ui): keep change marks inside their rows`.
+- [x] **Stage 2 rendezvous.** Rerun the probe for before and after figures. Both suites and the browser checks. Update DESIGN.md, the wiki and TODO. Stop for the instruction to release.
 - [ ] **Stage 3.** Addendum to the study from the phone's numbers, then a plan, then approval.
+
+## Verification record (2026-10-06)
+
+Branch `perf/phone-smoothness`: `9e684fc` (timing header and readout), `326f23d` (dock), `9dbd24f` (pressed links), `b615c44` (marks). Not merged, not pushed.
+
+| Check | Result |
+|---|---|
+| Django suite, SQLite | 682 pass, 10 skipped (PostgreSQL-only) |
+| Django suite, PostgreSQL 17 | 682 pass |
+| Build-style run (`VERCEL=1`, throwaway SQLite) | 682 pass, 10 skipped |
+| `perf.mjs` (new) | 12 of 12 |
+| `dock.mjs` | 228 of 228 (was 223; 3 of the 5 new checks failed before the change) |
+| `navigate.mjs` | 48 of 48 (7 of the 16 new checks failed before the change) |
+| `marks.mjs` (new) | 18 of 18 (12 failed before the change) |
+| `flow.mjs`, `motion.mjs`, `count_flow.mjs`, `numpad.mjs`, `inplace.mjs` | 52, 34, 89, 87 and 38, all pass |
+
+Host dock, same probe as the study, processor slowed 6×:
+
+| | Before | After |
+|---|---|---|
+| Fold: main-thread work | 80 ms | 32 ms |
+| Fold: layouts | 27 | 5 by the probe, 3 by `dock.mjs` |
+| Unfold: main-thread work | 127 ms | 26 ms |
+| Unfold: layouts | 55 | 5 by the probe, 3 by `dock.mjs` |
+| Style work for one fold and unfold, 4× | 75 ms | 11 ms |
+
+Acceptance: AC1 to AC6 met locally, with the rulings below. AC7 (figures from the phone) waits for the release of stage 1.
+
+### Rulings made while building
+
+1. **Opening a database connection is timed too.** The header has a third figure, `connect`, because a new connection per request is one of stage 3's candidates and query time alone would hide it. The middleware shadows the connection's `connect` method for the length of one request and removes it in a `finally`. If wrong: the figure reads 0 and nothing else changes.
+2. **The page content glides with a folding dock.** Not in the plan. Writing `--dock-h` once makes a page that is scrolled to its end jump down when the dock folds. The elements beside the dock are moved back by transform and glide down with it, as before. If wrong: a jump of about 110 px at the end of the page on fold.
+3. **AC3 measures 3 layouts in `dock.mjs` and 5 in the probe.** The probe's window includes its own reads. The criterion that matters, no layout per frame, holds in both.
+4. **AC5's contrast clause could not hold as written.** On a near-black ground a pressed look that darkens cannot be seen, so the surface lightens by 12% bone. Bone text on it stays above 11:1. If wrong: the pressed look is one custom property, `--pressed`.
+5. **A button link shows the existing busy line** while its screen is on the way, the same sign a sent form gives. Not in the plan; it reuses a built pattern.
+6. **The mark reaches 8 px into the page's side margin.** Rows have no side padding, so a mark kept wholly inside would touch the player's chip. Above and below it stays 2 px inside the row. If wrong: one `inset` value.
+7. **The overlap check is its own script, `marks.mjs`,** not an addition to `flow.mjs`. It only reads, so it can be rerun; `flow.mjs` uses up its fixtures.
+8. **`navigate.mjs` and `inplace.mjs` take `PN_PORT`.** They restart "the server on 8765" themselves, and a server from an earlier session was running there. It was left alone.
+
+Self-review only: no second reviewer read the branch.
 
 ## For the human to do
 

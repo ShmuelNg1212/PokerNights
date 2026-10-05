@@ -617,6 +617,16 @@ This Operate extension inherits The Rack: no new colour, font, radius or imagery
 
 **Final results.** The overview leads with the proof line ("6 players · ₱9,500 in · ₱9,500 out") and the verdict, then the viewer's result when they played. The cash-out total is "Total cashed out". Rake rows appear only when rake was collected. A zero result reads "Even". The connection status is not shown on a final set.
 
+### 2026-10-06 addendum — Smoothness on a phone
+
+[Plan](doc/plan/1791214849_phone_performance_and_smoothness.md). This supersedes two earlier points: the host dock no longer animates its height, and a changed row's mark is no longer an outline.
+
+- **Host dock.** The dock slides by `transform`. The layout takes its new height once: when an unfold starts and when a fold ends, and `--dock-h` is written once per slide. Timings and curves are unchanged (the sheet spring to open, 200ms ease-in to close). A page scrolled to its end glides down with a folding dock. One slide costs 3 layouts; animating the height cost 27 to 55.
+- **Pressed links.** Session rows, set links, group names, the rows on a group card, tabs and back links lighten (`--pressed`, 12% bone) from the first frame of a touch. Nothing moves, so reduced motion keeps it. The tapped link keeps the look (`is-going`) until its screen is drawn. A link that is a button shows the busy line instead, as a sent form does.
+- **Changed rows.** The brass mark is a 2px box drawn inside the row, 2px from its top and bottom and 8px into the page's side margin, over a 12% brass tint. Marks on neighbouring rows never cross and no mark covers another row. It still fades over its last 400ms. The pot and single figures keep their own marks.
+- **"Rebuy added" and "Updated".** The badge sits in the line under the player's name, after the buy-in count. It wraps to its own line when the row is narrow. It is never placed over the amount, the name or a button, and it does not change the row's height where it fits.
+- **Measuring.** `?perf=1` on any address shows a readout of each tap for that tab: the wait for the server, drawing, movement, the server's own figures and late frames. `?perf=0` removes it.
+
 ## Do's and Don'ts
 
 ### Do:
