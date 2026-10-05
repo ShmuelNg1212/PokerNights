@@ -44,6 +44,7 @@ When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects
 - Stylesheet and script addresses carry `?v=<release>` on Vercel (`config.storage.VersionedStaticStorage`, tag from `config.deploy.static_version`). `vercel.json` caches `/static/css/` and `/static/js/` for a year as immutable.
 - Fonts, branding and icons are cached for a week with background revalidation and are not versioned. **To change a font or a logo, give the file a new name.**
 - On Vercel with no deployment id, commit or URL to derive the tag from, the app refuses to start, so the build fails and production keeps its version.
+- The web app manifest is cached for a day with background revalidation.
 - HTML is never cached.
 - Locally and in tests there is no tag and addresses are plain.
 

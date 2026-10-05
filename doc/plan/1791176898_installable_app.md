@@ -126,3 +126,17 @@ Acceptance: AC1 and AC3 to AC8 are met. **AC2 (the iPhone checklist) is open** u
 Not verified: anything on a real phone; the offline notice with a real loss of signal (emulated here); `navigator.onLine` behaviour on Wi-Fi without internet; a screen reader.
 
 Documentation synced: DESIGN.md, wiki features (with the install instructions) and deployment (kill switch), browser README, TODO.
+
+2026-10-05 release: pushed `main` at `bf08555` (previous production commit `e229cf6`), then a follow-up that caches the manifest for a day, after the live check showed it fetched on every screen change.
+
+Checked on the live site:
+
+- Chrome's own report on production: manifest parsed with no error; **no installability error**.
+- The manifest is served as `application/manifest+json`; the four icons as `image/png`; `/sw.js` as JavaScript with `Cache-Control: no-cache`; `/offline/` answers 200 without login.
+- The live worker is active at scope `/` and its cache holds exactly `/offline/`.
+- The offline notice appears when the browser is put offline.
+- The static version tag changed from `012fdea36b` to `c54ec03773` with this release, which confirms stage 1's AC2 (a new release changes the addresses).
+
+Not comparable any more: the throttled screen-change timing from stage 1. Page requests now pass through the service worker, which the emulated slow connection does not throttle, so the lower numbers it shows are not evidence of a speed-up.
+
+AC2 (the iPhone checklist) stays open for the human.
