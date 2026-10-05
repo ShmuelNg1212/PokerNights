@@ -308,8 +308,14 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .felt[data-unit=chips] .pot-side > div:last-child strong { font-size: 1rem; }
   .section-heading { padding: 8px 0 0; }
 }
-.player-row { position: relative; }
-.player-row .change-label { position: absolute; top: -4px; right: 0; }
+/* Rows touch, so a changed row's mark is drawn inside the row and reaches into the page's side
+   margin: marks on neighbouring rows never cross, and no mark covers the row above or below. */
+.player-row, .count-row { position: relative; }
+:is(.player-row, .count-row).just-changed { outline: 0; background-color: transparent; animation: none; isolation: isolate; }
+:is(.player-row, .count-row).just-changed::before { content: ""; position: absolute; inset: 2px -8px; z-index: -1; border: 2px solid var(--brass); border-radius: var(--r-row); background-color: color-mix(in oklch, var(--brass) 12%, transparent); pointer-events: none; animation: accepted-change var(--t-focal) var(--ease-out); }
+/* "Rebuy added" takes a place in the line under the name. It can wrap; it cannot cover anything. */
+.player-meta { flex-wrap: wrap; row-gap: 2px; }
+.player-meta .change-label { padding: 0 6px; font-size: .6875rem; line-height: 1.2; }
 
 /* End of set: inline counting work, a slate overview and frozen results. */
 .count-progress { margin: 0; font-size: .9375rem; color: var(--felt-ink); }
@@ -796,6 +802,8 @@ legend { padding: 0; }
 .motion-on .just-changed { transition: outline-color 400ms var(--ease-in), background-color 400ms var(--ease-in); }
 .motion-on .just-changed .change-label { transition: opacity 400ms var(--ease-in); }
 .motion-on .change-fading { outline-color: transparent; background-color: transparent; }
+.motion-on :is(.player-row, .count-row).just-changed::before { animation: none; transition: opacity 400ms var(--ease-in); }
+.motion-on :is(.player-row, .count-row).change-fading::before { opacity: 0; }
 .motion-on .change-fading .change-label { opacity: 0; }
 .motion-on .pot-main.just-changed { position: relative; box-shadow: none; }
 .motion-on .pot-main.just-changed::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); transform-origin: left; animation: mark-draw var(--t-sheet) var(--ease-out); transition: opacity 400ms var(--ease-in); }

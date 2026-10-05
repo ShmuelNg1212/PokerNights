@@ -19,13 +19,14 @@
           <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
           <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span>{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
             {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+            <span class="change-label badge badge-warn" hidden>Updated</span>
           </span></button>
 
           <div class="player-meta fallback-meta">{% buy_in_stack line.buy_in_count %}
             {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+            <span class="change-label badge badge-warn" hidden>Updated</span>
           </div>
           {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
-          <span class="change-label badge badge-warn" hidden>Updated</span>
         </div>
         <div class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small></div>
       </div>

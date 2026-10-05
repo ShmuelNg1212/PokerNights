@@ -1,14 +1,14 @@
 // Actions update in place (Turbo, forms only). Seed a fresh temporary database with seed.py,
 // seed_end_set.py, seed_night.py and seed_opening.py. The script restarts the Django server on
-// 127.0.0.1:8765 itself to produce a failed send (PN_DB names the SQLite file).
+// 127.0.0.1:8765 itself to produce a failed send (PN_DB names the SQLite file; PN_PORT another port).
 import {spawn,execSync} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR||'/private/tmp/pn-inplace-review';mkdirSync(OUT,{recursive:true});
-const DB=process.env.PN_DB||'/private/tmp/pn-dock-check.sqlite3';const BASE='http://127.0.0.1:8765';
+const DB=process.env.PN_DB||'/private/tmp/pn-dock-check.sqlite3';const PORT=process.env.PN_PORT||'8765';const BASE='http://127.0.0.1:'+PORT;
 const M=JSON.parse(readFileSync('/private/tmp/pn-opening-manifest.json','utf8'));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function stopServer(){try{execSync('pkill -f "runserver 127.0.0.1:8765"')}catch{}}
-async function startServer(){stopServer();await sleep(700);spawn('.venv/bin/python',['manage.py','runserver','127.0.0.1:8765','--noreload'],{env:{...process.env,DEBUG:'True',DATABASE_URL:'sqlite:///'+DB},stdio:'ignore',detached:true}).unref();for(let i=0;i<40;i++){try{if((await fetch(BASE+'/healthz')).ok)return}catch{}await sleep(250)}throw Error('server did not start')}
+function stopServer(){try{execSync(`pkill -f "runserver 127.0.0.1:${PORT}"`)}catch{}}
+async function startServer(){stopServer();await sleep(700);spawn('.venv/bin/python',['manage.py','runserver','127.0.0.1:'+PORT,'--noreload'],{env:{...process.env,DEBUG:'True',DATABASE_URL:'sqlite:///'+DB},stdio:'ignore',detached:true}).unref();for(let i=0;i<40;i++){try{if((await fetch(BASE+'/healthz')).ok)return}catch{}await sleep(250)}throw Error('server did not start')}
 rmSync('/private/tmp/pn-inplace-chrome',{recursive:true,force:true});
 const chrome=spawn(process.env.PN_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--headless=new','--remote-debugging-port=9358','--user-data-dir=/private/tmp/pn-inplace-chrome','--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
 let url;for(let i=0;i<40&&!url;i++){try{url=(await(await fetch('http://127.0.0.1:9358/json/version')).json()).webSocketDebuggerUrl;}catch{await sleep(150)}}

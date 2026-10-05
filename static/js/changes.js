@@ -31,13 +31,17 @@
       if (previous != null && previous !== value) {
         var was = previous.split(":"), now = value.split(":");
         el.classList.add("just-changed");
-        var badge = el.querySelector(".change-label");
-        if (badge) {
+        // The badge sits in the line under the name, which the row has twice: in the button
+        // that opens the player's sheet and in the plain line shown without it. One is displayed.
+        var badges = el.querySelectorAll(".change-label");
+        if (badges.length) {
           // A player row: bought in, buy-in count, cashed out, status.
           var rebuy = Number(now[1]) > Number(was[1]);
-          badge.textContent = rebuy ? "Rebuy added" : "Updated";
-          badge.hidden = false;
-          pop(badge);
+          badges.forEach(function (badge) {
+            badge.textContent = rebuy ? "Rebuy added" : "Updated";
+            badge.hidden = false;
+            if (badge.getClientRects().length) pop(badge);
+          });
           var edge = el.querySelector(".buy-stack i:last-of-type");
           if (edge && rebuy) {
             edge.classList.add("new-edge");
@@ -53,7 +57,7 @@
         if (status && was[0] !== now[0]) pop(status);
         // The mark fades out over its last moments instead of vanishing.
         setTimeout(function () { el.classList.add("change-fading"); }, HOLD_MS - FADE_MS);
-        setTimeout(function () { el.classList.remove("just-changed", "change-fading", "just-left"); if (badge) badge.hidden = true; }, HOLD_MS);
+        setTimeout(function () { el.classList.remove("just-changed", "change-fading", "just-left"); badges.forEach(function (badge) { badge.hidden = true; }); }, HOLD_MS);
       }
       seen[key] = value;
       try { sessionStorage.setItem(key, value); } catch (_) {}
