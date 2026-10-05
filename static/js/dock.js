@@ -4,7 +4,9 @@
   "use strict";
   var region = null, watcher = null; // set while a set page is shown
   var root = document.documentElement, KEY = "rack-dock";
-  var view = window.visualViewport, lifted = 0; // px the dock is raised above the page's bottom edge
+  var view = window.visualViewport;
+  var open = 0, lifted = 0; // px: the keyboard's height, and how far the dock is raised above the page's bottom edge
+  var base = 0, baseWidth = 0, leftAt = 0, loop = 0, readout = null;
 
   // The page reserves the measured dock height, so the last row clears the dock in either state.
   function measure() {
@@ -24,31 +26,77 @@
   }
 
   // An iPhone keyboard covers the bottom of the page instead of resizing it, and a fixed dock
-  // stays under it. The visual viewport says how much is covered; the dock is raised by that
-  // much and shown as its bar, unless the typing is in one of the dock's own fields.
-  function keyboard() {
+  // stays under it. With the keyboard open the visible frame (the visual viewport) is shorter
+  // than the page's frame and slides inside it as the person scrolls. Two numbers, kept apart:
+  //   open   - the keyboard's height: how much shorter the visible frame is than it was with no
+  //            field in use. A scroll does not change it. It decides the bar and the page's padding.
+  //   lifted - how far the page's bottom edge is below the visible frame's. It falls to 0 as the
+  //            visible frame slides down. It only positions the dock.
+  function typing(el) {
+    return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable) && !/^(checkbox|radio|button|submit)$/.test(el.type);
+  }
+  function frame(dock) {
+    var active = document.activeElement, height = view.height, now = Date.now();
+    if (Math.abs(view.scale - 1) >= 0.01 || getComputedStyle(dock).position !== "fixed") return { open: 0, lifted: 0 };
+    if (view.width !== baseWidth) { baseWidth = view.width; base = height; } // first look, or the phone was turned
+    if (typing(active)) { leftAt = 0; base = Math.max(base, height); }
+    else {
+      // No field in use: this is the full height, once a closing keyboard has had time to go.
+      if (!leftAt) leftAt = now;
+      if (height >= base || now - leftAt > 600) base = height;
+      return { open: 0, lifted: 0 };
+    }
+    var covered = Math.round(base - height);
+    if (covered < 80) return { open: 0, lifted: 0 }; // a browser toolbar, not a keyboard
+    return { open: covered, lifted: Math.max(0, Math.round(base - view.offsetTop - height)) };
+  }
+  // reveal: a field has just gained focus, so it may be moved clear of the bar.
+  function keyboard(reveal) {
     var dock = region && region.querySelector(".host-controls");
     if (!dock || !view) return;
-    var covered = 0, active = document.activeElement;
-    if (getComputedStyle(dock).position === "fixed" && Math.abs(view.scale - 1) < 0.01)
-      covered = Math.round(dock.getBoundingClientRect().bottom + lifted - view.offsetTop - view.height);
-    if (covered < 80) covered = 0; // a browser toolbar, not a keyboard
-    var bar = covered > 0 && !(dock.contains(active) && !active.matches(".dock-toggle"));
-    if (covered !== lifted || bar !== root.classList.contains("kb-bar")) {
-      lifted = covered;
-      if (covered) root.style.setProperty("--kb", covered + "px"); else root.style.removeProperty("--kb");
-      root.classList.toggle("kb-open", covered > 0);
+    var now = frame(dock), active = document.activeElement, opened = now.open > 0 && open === 0;
+    var bar = now.open > 0 && !(dock.contains(active) && !active.matches(".dock-toggle"));
+    if (now.lifted !== lifted) {
+      lifted = now.lifted;
+      if (lifted) root.style.setProperty("--kb", lifted + "px"); else root.style.removeProperty("--kb");
+    }
+    if (now.open !== open || bar !== root.classList.contains("kb-bar")) {
+      open = now.open;
+      if (open) root.style.setProperty("--kb-h", open + "px"); else root.style.removeProperty("--kb-h");
+      root.classList.toggle("kb-open", open > 0);
       root.classList.toggle("kb-bar", bar);
       dock.getAnimations().forEach(function (motion) { motion.cancel(); });
       sync();
     }
-    // The browser scrolls a focused field clear of the keyboard, not of the bar above it.
-    if (bar && region.contains(active)) {
+    // An iPhone reports a sliding frame only now and then, so while the keyboard is open it is read every frame.
+    if (open && !loop) loop = requestAnimationFrame(watch);
+    // The browser scrolls a focused field clear of the keyboard, not of the bar above it. Only
+    // then: a scroll made with the keyboard open is the person's own and is left alone.
+    if ((reveal || opened) && bar && region.contains(active)) {
       var under = active.getBoundingClientRect().bottom + 12 - dock.getBoundingClientRect().top;
       if (under > 0) window.scrollBy(0, under);
     }
+    if (readout) report(dock);
   }
-  function settle() { setTimeout(keyboard, 0); } // the focus has moved by then
+  function watch() {
+    if (!region || !open) { loop = 0; return; }
+    loop = requestAnimationFrame(watch); // booked first, so keyboard() does not start a second watcher
+    keyboard();
+    if (!open) { cancelAnimationFrame(loop); loop = 0; }
+  }
+  function focused() { setTimeout(function () { keyboard(true); }, 0); } // the focus has moved by then
+  function left() { setTimeout(keyboard, 0); }
+
+  // "?kb=1" on a set page shows what this script reads, for a screenshot from a phone.
+  function report(dock) {
+    var box = dock.getBoundingClientRect();
+    readout.style.top = Math.round(view.offsetTop + 4) + "px";
+    readout.textContent = "keyboard " + open + " lifted " + lifted + "\nvisible " + Math.round(view.height) + " offset " + Math.round(view.offsetTop) +
+      " scale " + view.scale + "\nfull " + Math.round(base) + " inner " + window.innerHeight + " client " + root.clientHeight +
+      "\ndock " + Math.round(box.top) + "-" + Math.round(box.bottom) + " scrollY " + Math.round(window.scrollY) +
+      "\napp " + (window.navigator.standalone === true || matchMedia("(display-mode: standalone)").matches) +
+      " field " + typing(document.activeElement);
+  }
 
   // The dock slides between its two heights. While it closes, "dock-closing" keeps the
   // content rendered so it leaves with the edge. Reduced motion changes the size at once.
@@ -78,6 +126,7 @@
     try { if (collapsed) localStorage.setItem(KEY, "collapsed"); else localStorage.removeItem(KEY); } catch (_) {}
     sync();
   });
+  function keyboard0() { keyboard(); } // an event listener passes its event; it is not a reveal
   document.addEventListener("live:updated", function () { sync(); keyboard(); });
 
   window.pokerPage.register(function () {
@@ -88,22 +137,30 @@
     try { root.classList.toggle("dock-collapsed", localStorage.getItem(KEY) === "collapsed"); } catch (_) {}
     sync();
     if (view) {
-      view.addEventListener("resize", keyboard);
-      view.addEventListener("scroll", keyboard);
-      document.addEventListener("focusin", settle);
-      document.addEventListener("focusout", settle);
+      view.addEventListener("resize", keyboard0);
+      view.addEventListener("scroll", keyboard0);
+      document.addEventListener("focusin", focused);
+      document.addEventListener("focusout", left);
+      if (/[?&]kb=1(&|$)/.test(window.location.search) && region.querySelector(".host-controls")) {
+        readout = document.createElement("pre");
+        readout.className = "kb-readout";
+        document.body.appendChild(readout);
+      }
       keyboard();
     }
     return function () {
       if (watcher) watcher.disconnect();
       if (view) {
-        view.removeEventListener("resize", keyboard);
-        view.removeEventListener("scroll", keyboard);
-        document.removeEventListener("focusin", settle);
-        document.removeEventListener("focusout", settle);
+        view.removeEventListener("resize", keyboard0);
+        view.removeEventListener("scroll", keyboard0);
+        document.removeEventListener("focusin", focused);
+        document.removeEventListener("focusout", left);
       }
-      region = watcher = null; lifted = 0;
+      cancelAnimationFrame(loop);
+      if (readout) readout.remove();
+      region = watcher = readout = null; open = lifted = loop = base = baseWidth = leftAt = 0;
       root.style.removeProperty("--kb");
+      root.style.removeProperty("--kb-h");
       root.classList.remove("dock-enabled", "dock-closing", "kb-open", "kb-bar");
     };
   });
