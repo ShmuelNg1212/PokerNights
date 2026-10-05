@@ -10,7 +10,18 @@ On an iPhone (every browser there uses Safari's engine, and so does the installe
 
 ## Remedy
 
-`static/js/dock.js` reads `window.visualViewport`. The covered height is the fixed element's bottom edge minus `offsetTop + height` of the visual viewport. It writes that to `--kb` on `<html>` and the CSS raises the dock by it. It ignores a zoomed page (`scale` not 1) and changes under 80px. The page's bottom padding and the fields' scroll margin include `--kb`, or a field near the end cannot scroll clear.
+`static/js/dock.js` reads `window.visualViewport` and keeps **two numbers apart**:
+
+- **The keyboard's height** (`--kb-h`, class `kb-open`): how much shorter the visible frame is than it was with no field in use. It does not change while the person scrolls. It decides whether the dock is the bar, and how much room the page reserves.
+- **The dock's offset** (`--kb`): the full height minus `offsetTop` minus the visible frame's height, never below 0. It falls to 0 as the visible frame slides down inside the page's frame. It only positions the dock.
+
+The first version used one number for both, measured with `offsetTop`. With the keyboard open an iPhone slides the visible frame inside the page's frame, both when the person scrolls and when a low field is tapped, so that number fell to 0 and the script concluded the keyboard had closed: the menu opened in full over the field, and the page's length changed under the finger. The human reported this on 2026-10-05 in the installed app during count-up.
+
+Other rules the second version follows:
+
+- A covered field is scrolled clear only when it gains focus or the keyboard opens. Doing it on every viewport event pulls the page back while the person scrolls.
+- While the keyboard is open the script reads the visible frame every frame. An iPhone sends `visualViewport` scroll events sparsely, so an event-only dock drifts and then jumps. One watcher only: book the next frame before calling the function that may start the watcher, or it doubles every frame.
+- "No keyboard" is decided by focus: with no text field in use the current height is the full height. A height change under 80px is a browser toolbar. A zoomed page (`scale` not 1) is ignored.
 
 `interactive-widget=resizes-content` and the VirtualKeyboard API do not work on iOS.
 
@@ -18,4 +29,6 @@ A new fixed bottom element (a sheet, a toast, a second dock) needs the same trea
 
 ## Checking
 
-`web/tests/browser/dock.mjs` replaces `visualViewport` with a stand-in that reports a 336px keyboard. This proves the script and layout, not that an iPhone reports those values. Only a real iPhone confirms it.
+`web/tests/browser/dock.mjs` replaces `visualViewport` with a stand-in that reports a 336px keyboard. The stand-in must also **move**: `__pan(offsetTop)` slides the visible frame, with or without an event. The first version's stand-in never moved, so its checks passed while the phone misbehaved. This proves the script and layout, not that an iPhone reports those values. Only a real iPhone confirms it.
+
+A set page opened with `?kb=1` shows what the script reads (keyboard height, offset, visible and full height, the dock's edges, whether it runs as the installed app) in a label at the top of the visible frame. Ask for a screenshot of it before changing this code again.

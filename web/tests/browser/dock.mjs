@@ -115,8 +115,9 @@ try {
  check('no JavaScript: last row clears dock',await A.js(clears('.player-list')));
  await A.shot('dock-running-390-nojs');
  await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
- // iPhone keyboard: a stand-in visual viewport reports a 336px keyboard over the 844px page.
- const fake=await send('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const v=new EventTarget();Object.assign(v,{width:innerWidth,height:844,offsetTop:0,offsetLeft:0,scale:1});Object.defineProperty(window,'visualViewport',{value:v,configurable:true});window.__kb=h=>{v.height=844-h;v.dispatchEvent(new Event('resize'))}})()`},A.s);
+ // iPhone keyboard: a stand-in visual viewport reports a 336px keyboard over the 844px page. __pan slides the
+ // visible frame inside the layout frame, as a scroll with the keyboard open does on an iPhone.
+ const fake=await send('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const v=new EventTarget();Object.assign(v,{width:innerWidth,height:844,offsetTop:0,offsetLeft:0,scale:1});Object.defineProperty(window,'visualViewport',{value:v,configurable:true});window.__kb=(h,quiet)=>{v.height=844-h;if(!quiet)v.dispatchEvent(new Event('resize'))};window.__pan=(t,quiet)=>{v.offsetTop=t;if(!quiet)v.dispatchEvent(new Event('scroll'))}})()`},A.s);
  const bottom=`Math.round(${dock}.getBoundingClientRect().bottom)`,field=`[...document.querySelectorAll('[data-count-input]')].find(f=>f.dataset.saved==='')`;
  const kb=async h=>{await A.js(`__kb(${h})`);await sleep(150)};
  await A.go(`/s/${C.php}/`);await A.js(`localStorage.removeItem('rack-dock')`);await A.go(`/s/${C.php}/`);
@@ -156,6 +157,34 @@ try {
  check('leaving clears the keyboard state',await A.js(`!document.documentElement.classList.contains('kb-open')&&!document.documentElement.classList.contains('kb-bar')&&!document.documentElement.style.getPropertyValue('--kb')`));
  await A.js(`__kb(0);Turbo.visit('/s/${C.php}/')`);await sleep(900);await A.js(`${field}.focus()`);await kb(336);
  check('returning: dock rides the keyboard again',await A.js(`${bottom}===508&&${shown}.length===1`));
+ // Scrolling with the keyboard open slides the visible frame. The dock stays the bar on the keyboard and the page keeps its length.
+ const R=`document.documentElement`,pan=async(t,quiet)=>{await A.js(`__pan(${t},${!!quiet})`);await sleep(120)};
+ const seen=[];for(const t of [0,150,336]){await pan(t);seen.push(await A.js(`({bar:${shown}.length===1&&${R}.classList.contains('kb-bar'),open:${R}.classList.contains('kb-open'),tall:${R}.scrollHeight,bottom:${bottom}})`))}
+ check('scrolling with the keyboard open: the dock stays the bar',seen.every(x=>x.bar&&x.open));
+ check('scrolling with the keyboard open: the page keeps its length',seen.every(x=>x.tall===seen[0].tall));
+ check('scrolling with the keyboard open: the bar stays on the keyboard',seen[0].bottom===508&&seen[1].bottom===658&&seen[2].bottom===844);
+ await pan(100,true);check('the bar follows the visible frame without an event',await A.js(`${bottom}===608`));
+ check('one watcher reads the frame, once per frame',await A.js(`new Promise(ok=>{let n=0,f=0;const r=requestAnimationFrame;window.requestAnimationFrame=c=>{n++;return r(c)};(function tick(){if(++f<30)r(tick);else{window.requestAnimationFrame=r;ok(n)}})()})`).then(n=>n>=25&&n<=32));
+ await pan(0);await kb(0);await A.js(`document.activeElement.blur()`);await sleep(100);
+ await A.js(`__pan(336,true);${field}.focus()`);await kb(336);
+ check('keyboard opening over a low field: the bar, not the full menu',await A.js(`${shown}.length===1&&${R}.classList.contains('kb-bar')&&${bottom}===844`));
+ await pan(0);
+ // Only a new focus moves the page; a scroll with the keyboard open is left alone.
+ await A.js(`${last}.focus({preventScroll:true})`);await sleep(200);await A.js(`window.scrollBy(0,-140)`);await sleep(100);
+ const y0=await A.js(`scrollY`);await pan(10);await pan(0);
+ check('a scroll with the keyboard open does not pull the page back',await A.js(`scrollY`)===y0&&await A.js(`${last}.getBoundingClientRect().bottom>${dock}.getBoundingClientRect().top`));
+ await A.js(`[...document.querySelectorAll('[data-count-input]')].find(f=>f!==${last}).focus({preventScroll:true})`);await sleep(100);await A.js(`${last}.focus({preventScroll:true})`);await sleep(250);
+ check('a new focus on a covered field moves it clear once',await A.js(`${last}.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top`));
+ check('no readout without ?kb=1',await A.js(`!document.querySelector('.kb-readout')`));
+ await kb(0);await A.js(`__kb(336,true)`);await sleep(150);
+ check('keyboard closed: nothing is still watching the frame',await A.js(`${bottom}===844&&!${R}.classList.contains('kb-open')`));
+ await A.js(`__kb(0,true);document.activeElement.blur()`);
+ await A.go(`/s/${C.php}/?kb=1`);await A.js(`${field}.focus()`);await kb(336);
+ check('?kb=1 shows the readout with the keyboard height',await A.js(`(document.querySelector('.kb-readout')||{}).textContent||''`).then(t=>/keyboard 336/.test(t)&&/offset 0/.test(t)));
+ await A.shot('dock-keyboard-readout');
+ await kb(0);await A.js(`Turbo.visit('/')`);await sleep(900);
+ check('leaving removes the readout and the frame watch',await A.js(`!document.querySelector('.kb-readout')`)&&await A.js(`new Promise(ok=>{let n=0;const r=requestAnimationFrame;window.requestAnimationFrame=f=>{n++;return r(f)};setTimeout(()=>{window.requestAnimationFrame=r;ok(n)},300)})`)===0);
+ await A.go(`/s/${C.php}/`);
  await kb(0);await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:fake.identifier},A.s);
  const none=await send('Page.addScriptToEvaluateOnNewDocument',{source:`Object.defineProperty(window,'visualViewport',{value:undefined});window.__errors=[];addEventListener('error',e=>__errors.push(e.message))`},A.s);
  await A.go(`/s/${C.php}/`);await A.click(toggle);await A.click(toggle);
