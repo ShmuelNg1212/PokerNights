@@ -6,3 +6,5 @@
 2. **The word moving with the marker.** The whole current tab was one layer, word included. Now the marker is its own element under the word: in a tab change the marker slides, the words stay in place and change colour, and the tab bar stays still. A mid-movement capture was inspected.
 
 Verification: `screens.mjs` 46 of 46 (four new checks, which failed first). `lifetime.mjs` 22, `motion.mjs` 34, `flow.mjs` 52, `inplace.mjs` 38, `navigate.mjs` 37. 649 tests on SQLite and in the build-style run; PostgreSQL not rerun (a template, a script and CSS). `remaining.mjs` stops on "missing route preset" after 60 checks, and does the same on the release before stage 3, so it is an older stale script; it is added to the list in the browser README.
+
+2026-10-05 release of the two fixes: the human merged and pushed `main` at `fc321da` (previous production commit `648cca8`). About two and a half minutes later the live site served the new `turbo-setup.js` (byte-for-byte the local file) and the stylesheet with the tab marker. Not checked on production: any signed-in page, and whether the flash is gone on a real iPhone (AC4).
