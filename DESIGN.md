@@ -552,7 +552,7 @@ A screen change says which way it went. `static/js/turbo-setup.js` decides; the 
 |---|---|
 | A tapped link to a deeper screen | The old screen moves 24px left and fades; the new one arrives from 24px to the right. |
 | A tapped link to a shallower screen | The mirror image. |
-| A group's tab | The content shifts towards the side the tab is on; the marker slides to the chosen tab; the back link, heading and tab bar stay still. |
+| A group's tab | The content shifts towards the side the tab is on; the marker slides under the words to the chosen tab; the words, the back link, the heading and the tab bar stay still. |
 | The phone's Back and Forward; screens at the same depth; screens without a depth | The 180ms cross-fade. |
 | An action on a set or session page | No screen movement (stage 2 covers it). |
 
@@ -566,10 +566,10 @@ A screen change says which way it went. `static/js/turbo-setup.js` decides; the 
 
 1. Nothing waits. A movement lasts 260ms at most, and a tap made during it is passed to the control under the finger.
 2. Exactly one element holds a carried name on a screen. Two would make the browser cancel the movement.
-3. Markers (`data-go` on `<html>`, the temporary names) are removed when the movement ends.
+3. Markers (`data-go` on `<html>`, the temporary names) are removed only when the browser reports the whole change finished. Removed sooner, the old screen's layer restarts its fade and the previous screen flashes.
 4. Reduced motion, or a browser without the View Transition API (Safari before 18): screens change at once.
 
-**Measured.** `screens.mjs`, 42 checks at 390 and 1280px.
+**Measured.** `screens.mjs`, 46 checks at 390 and 1280px.
 
 ## Do's and Don'ts
 

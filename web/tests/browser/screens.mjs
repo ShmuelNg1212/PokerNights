@@ -16,7 +16,9 @@ const LOG=`(()=>{window.__vt=[];window.__errors=[];addEventListener('error',e=>_
  const start=document.startViewTransition&&document.startViewTransition.bind(document);if(!start)return;
  document.startViewTransition=function(cb){const t=start(cb),rec={go:document.documentElement.dataset.go||'',t0:performance.now(),anims:[],ok:null};__vt.push(rec);
   t.ready.then(()=>{rec.anims=document.getAnimations().filter(a=>a.effect&&a.effect.pseudoElement&&a.effect.pseudoElement.startsWith('::view-transition')).map(a=>({p:a.effect.pseudoElement.replace('::view-transition-',''),n:a.animationName||'',d:Math.round(a.effect.getComputedTiming().endTime)}))},e=>{rec.ok=false;rec.err=String(e)});
-  t.finished.then(()=>{rec.ms=Math.round(performance.now()-rec.t0);if(rec.ok===null)rec.ok=true});return t}})()`;
+  // Until the browser says the change has finished, its layers are still on screen: a marker removed before then restarts their animation.
+  const watch=()=>{if(rec.ok!==null)return;if(rec.go&&document.documentElement.dataset.go!==rec.go)rec.lost=true;requestAnimationFrame(watch)};requestAnimationFrame(watch);
+  t.finished.then(()=>{if(rec.go&&document.documentElement.dataset.go!==rec.go)rec.lost=true;rec.ms=Math.round(performance.now()-rec.t0);if(rec.ok===null)rec.ok=true});return t}})()`;
 async function user(name,width=390,setup){const {browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});
  await send('Page.enable',{},s);await send('Runtime.enable',{},s);await send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},s);
  await send('Page.addScriptToEvaluateOnNewDocument',{source:LOG},s);if(setup)await setup(s);
@@ -55,6 +57,7 @@ async function walk(width){
  r=await step('.table-bar a',`screens-back-${width}`);check(`${W} session → group: back, the name returns to its row`,back(r)&&has(r,'group(title)')&&r.path==='/g/1/',r);
  r=await step('.tabs a[href$="view=stats"]',`screens-tab-${width}`);
  check(`${W} Sessions → Stats: the content shifts, the marker slides, the heading and tab bar stay`,r.ok&&r.go==='next'&&ran(r,'new(root)','screen-in-right')&&has(r,'group(tab-current)')&&has(r,'group(tabs)')&&has(r,'group(page-heading)'),r);
+ check(`${W} tabs: the marker is its own layer under the words, and each word is a layer that stays in place`,['tab-1','tab-2','tab-3'].every(n=>has(r,`group(${n})`))&&await A.js(`(()=>{const m=document.querySelector('.tabs a[aria-current] .tab-marker');return !!m&&m.textContent===''&&document.querySelectorAll('.tab-marker').length===1&&getComputedStyle(document.querySelector('.tabs a[aria-current]')).backgroundColor==='rgba(0, 0, 0, 0)'})()`),r);
  r=await step('.tabs a[href$="view=settings"]');check(`${W} Stats → Group settings: onward`,r.ok&&r.go==='next',r);
  r=await step('.tabs a:first-child');check(`${W} Group settings → Sessions: the other way`,r.ok&&r.go==='prev'&&ran(r,'new(root)','screen-in-left'),r);
  r=await step('.table-bar a');check(`${W} group → Your groups: back, the name returns to its card`,back(r)&&has(r,'group(title)')&&r.path==='/',r);
@@ -62,6 +65,7 @@ async function walk(width){
  r=await step('!history.forward()');check(`${W} the phone's Forward: the plain cross-fade`,plain(r)&&r.path==='/',r);
  check(`${W} the top bar never animates`,all.every(still),all.filter(x=>!still(x))[0]);
  check(`${W} every movement lasts 300ms or less (longest ${Math.max(...all.flatMap(x=>x.anims.map(a=>a.d)))}ms; slowest change ${Math.max(...all.map(x=>x.ms||0))}ms in all)`,all.every(quick));
+ check(`${W} the direction stays until the browser has finished each change`,all.every(x=>!x.lost),all.filter(x=>x.lost)[0]);
  check(`${W} nothing is left on the page after any change`,all.every(clean),all.filter(x=>!clean(x))[0]);
  check(`${W} no change was cancelled and no script error`,all.every(x=>x.ok)&&await A.js(`__errors.length===0`),await A.js(`__errors`));
  return A;

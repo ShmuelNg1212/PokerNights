@@ -59,3 +59,10 @@ class ScreenDepthTests(TestCase):
         html = self.main(reverse("session", args=[self.session.pk]))[0]
         for participant in self.night.players.values():
             self.assertEqual(html.count(f'data-m="{participant.member_id}"'), 1)
+
+    def test_only_the_current_tab_has_the_marker_that_slides(self):
+        group = reverse("group", args=[self.group.pk])
+        for url in (group, group + "?view=settings"):
+            html = self.main(url)[0]
+            self.assertEqual(html.count('class="tab-marker"'), 1, url)
+            self.assertIn('aria-current="page"><span class="tab-marker" aria-hidden="true"></span>', html)
