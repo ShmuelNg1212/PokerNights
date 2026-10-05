@@ -1,6 +1,6 @@
 # Motion on the live set page: plan
 
-Status: approved and built on 2026-10-05; not pushed. Date: 2026-10-05, Asia/Manila. Study: [Motion on the live set page](../study/1791188203_motion_live_set_page.md). Stage 2 of the [motion overhaul](1791186717_motion_overhaul.md).
+Status: approved, built and released on 2026-10-05. Date: 2026-10-05, Asia/Manila. Study: [Motion on the live set page](../study/1791188203_motion_live_set_page.md). Stage 2 of the [motion overhaul](1791186717_motion_overhaul.md).
 
 ## Outcome
 
@@ -114,3 +114,5 @@ Verification:
 - Mid-animation captures were inspected at 390 and 1280px (rebuy mark, rows mid-slide with a sheet rising, count-up rows).
 
 AC1 to AC4 are met, AC1 with changes 1 to 3. **AC5 is open: only the human can judge it on a phone with a second device.** Not verified: a real phone, Safari (it draws the `linear()` spring easing only from 17.2), frame rate with a long player list, and the books-balance moment when its panel is off-screen as it arrives (it plays unseen and does not replay).
+
+2026-10-05: Stage 2 released. The human pushed `main` at `1106548` (previous production commit `680c3b1`); the agent's own push was refused by the session's permission check. The suite had passed on local PostgreSQL 17 for this code. Checked on the live site: the login page lists `flow.js` in the script order, and `flow.js`, `motion.js`, `changes.js`, `live.js`, `turbo-setup.js`, `sheets.js` and `app.css` are byte-for-byte the local files. Not checked on production: any signed-in page (so not the set page's `data-state` or the movement itself), a touch screen.
