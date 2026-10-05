@@ -192,6 +192,10 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 - **Known gap.** A write on a finished set that was started just before the group was archived can still land, because set writes do not lock the group row. It is visible after restore and breaks no money rule.
 - **Request ids.** These actions carry none; a repeat is a no-op, as for `close_night`.
 
+## In-place updates
+
+Two things now replace content on the set page without a reload: the 4-second poll (`live.js`, replaces `#live`) and a background form send (Turbo morph refresh of the whole body). They share rules: `data-keep` fields keep typed text, `data-key` disclosures stay open, `data-focus-key` controls keep focus, and every page module reacts to `live:updated`. `turbo-setup.js` raises `inplace:updated` first so `live.js` can adopt the new version and skip a redundant poll. The sheet container and the offline notice are `data-turbo-permanent`, so a morph leaves them alone. See [features](features.md#actions-update-in-place).
+
 ## Live updates
 
 - `static/js/live.js` polls `GET /s/<id>/state/?v=<version>` each 4 seconds while the tab is visible.

@@ -11,7 +11,18 @@ Pinned in `requirements.txt`. Verified against PyPI and against the LightChat re
 | `dj-database-url` | 3.1.2 | `DATABASE_URL` to `DATABASES` |
 | `psycopg[binary]` | 3.3.6 | PostgreSQL driver |
 
-There is no other runtime dependency, no JavaScript package and no build tool.
+There is no other Python runtime dependency and no build tool.
+
+## JavaScript library
+
+| Library | Version | Purpose |
+|---|---|---|
+| Turbo (Hotwire, 37signals) | 8.0.23 | Sends marked forms in the background and updates the page in place (stage 3 of the app-like experience) |
+
+- One vendored file, `static/js/vendor/turbo-8.0.23.js` (217 KB, 46 KB compressed), the `turbo.es2017-umd.js` build from the npm package `@hotwired/turbo@8.0.23`. SHA-256 begins `f9e09e3a3093874f`. MIT licence in `static/js/vendor/turbo-LICENSE.txt`.
+- No package manager and no build step. To update: download the new build under a new file name with its version, change the one `<script>` in `base.html`, and run every browser check.
+- It is the recorded exception to the "no front-end framework" rule in AGENTS.md, approved in the [stage 3 plan](../plan/1791178826_actions_in_place.md).
+- Navigation is switched off (`Turbo.session.drive = false`). Only elements marked `data-turbo="true"` use it.
 
 ## Services
 

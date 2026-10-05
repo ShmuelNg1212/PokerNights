@@ -1,5 +1,5 @@
 {% load money_tags %}
-<form method="post" action="{% url 'cash_out_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
+<form method="post" data-turbo="true" action="{% url 'cash_out_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
   <input type="hidden" name="participant_id" value="{{ p.pk }}">
   <div class="form-row">
     <div class="grow"><input type="text" name="amount" data-keep="cash-out-{{ p.pk }}" inputmode="decimal" autocomplete="off" required placeholder="{% if unit == 'chips' %}Chips cashed out{% else %}Cash-out in pesos{% endif %}" aria-label="Cash-out amount for {{ p.member.display_name }}"></div>

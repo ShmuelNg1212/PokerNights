@@ -33,14 +33,14 @@
 
   {% if me.is_host %}
     {% if summary.adjustment %}
-    <form method="post" action="{% url 'override_void' session.pk %}">{% csrf_token %}
+    <form method="post" data-turbo="true" action="{% url 'override_void' session.pk %}">{% csrf_token %}
       <button type="submit" class="btn btn-small btn-quiet">Remove the override</button>
     </form>
     {% endif %}
     {% if balance.counted and not balance.ok %}
     <details data-key="override">
       <summary class="small">Cannot find the error? Finalize with an override</summary>
-      <form method="post" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
+      <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
         <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
         <div class="field">
           <label for="absorber">Who absorbs the difference?</label>

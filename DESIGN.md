@@ -444,6 +444,16 @@ The site can be added to a phone's home screen and opens full-screen. [Plan](doc
 - **No install prompt** and no splash images.
 - **Measured.** 33 checks: Chrome reports no installability error; the worker's cache holds only the offline page; 17 screens each have a way back; notice and offline page fit 320, 390 and 1280px with 48px controls.
 
+### 2026-10-05 addendum — Actions update in place
+
+No visual change. On the set page and the session page an accepted action updates the screen without a reload. [Plan](doc/plan/1791178826_actions_in_place.md).
+
+- The page stays where it was: the tapped control stays under the finger, typed text in other fields stays, opened sections stay open.
+- A sheet closes after the server accepts and focus returns to its opener. A refusal keeps the sheet open with the message beside the amount.
+- Success messages float as before. After an in-place update an error also floats, as a toast with the alert role and a Dismiss button, for 12 seconds, because the page may be scrolled away from the top.
+- A send that fails says “That wasn’t sent. Check your connection and try again.” in the sheet or as a floating error, and changes nothing.
+- Nothing on the page changes before the server answers; the button shows its busy state until then.
+
 ## Do's and Don'ts
 
 ### Do:

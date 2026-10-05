@@ -50,7 +50,7 @@ class InstallTagsTests(TestCase):
         for page in (signed_out, self.client.get(reverse("home")), self.client.get(reverse("group", args=[group.pk]))):
             for tag in self.TAGS:
                 self.assertContains(page, tag)
-            self.assertContains(page, 'id="offline-notice" class="offline-notice" role="status" hidden')
+            self.assertContains(page, 'id="offline-notice" class="offline-notice" role="status" data-turbo-permanent hidden')
             self.assertContains(page, '<body data-method="GET">')
 
     def test_a_page_rendered_from_a_post_says_so(self):

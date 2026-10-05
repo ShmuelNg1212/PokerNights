@@ -15,10 +15,12 @@
   <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <meta name="turbo-cache-control" content="no-cache">
+  {% block head %}{% endblock %}
 </head>
 <body data-method="{{ request.method }}">
   <a class="skip-link" href="#main">Skip to content</a>
-  <div id="offline-notice" class="offline-notice" role="status" hidden>You're offline. Changes can't be saved until you reconnect.</div>
+  <div id="offline-notice" class="offline-notice" role="status" data-turbo-permanent hidden>You're offline. Changes can't be saved until you reconnect.</div>
   {% block header %}<header class="site-header">
     <a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>
     {% if user.is_authenticated %}
@@ -38,6 +40,8 @@
     {% block content %}{% endblock %}
   </main>
   <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/vendor/turbo-8.0.23.js' %}" defer></script>
+  <script src="{% static 'js/turbo-setup.js' %}" defer></script>
   <script src="{% static 'js/forms.js' %}" defer></script>
   <script src="{% static 'js/toasts.js' %}" defer></script>
   {% block scripts %}{% endblock %}

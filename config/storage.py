@@ -14,6 +14,7 @@ class VersionedStaticStorage(StaticFilesStorage):
     def url(self, name):
         address = super().url(name)
         version = getattr(settings, "STATIC_VERSION", "")
-        if version and name.endswith(VERSIONED):
+        # A vendored library carries its version in its file name and is not re-downloaded per release.
+        if version and name.endswith(VERSIONED) and "/vendor/" not in name:
             return f"{address}?v={version}"
         return address
