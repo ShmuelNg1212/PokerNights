@@ -2,21 +2,17 @@
 // outside the live region, so a poll that redraws the dock keeps it.
 (function () {
   "use strict";
-  var region = document.getElementById("live");
-  if (!region) return;
+  var region = null, watcher = null; // set while a set page is shown
   var root = document.documentElement, KEY = "rack-dock";
-  // The page reserves the measured dock height, so the last row clears the dock in either state.
-  var watcher = window.ResizeObserver ? new ResizeObserver(measure) : null;
-  root.classList.add("dock-enabled");
-  try { if (localStorage.getItem(KEY) === "collapsed") root.classList.add("dock-collapsed"); } catch (_) {}
 
+  // The page reserves the measured dock height, so the last row clears the dock in either state.
   function measure() {
-    var dock = region.querySelector(".host-controls");
+    var dock = region && region.querySelector(".host-controls");
     if (dock) root.style.setProperty("--dock-h", Math.ceil(dock.getBoundingClientRect().height) + "px");
   }
 
   function sync() {
-    var toggle = region.querySelector(".dock-toggle");
+    var toggle = region && region.querySelector(".dock-toggle");
     if (!toggle) return;
     toggle.hidden = false;
     toggle.setAttribute("aria-expanded", String(!root.classList.contains("dock-collapsed")));
@@ -39,9 +35,9 @@
     motion.onfinish = motion.oncancel = done;
   }
 
-  region.addEventListener("click", function (event) {
-    var toggle = event.target.closest(".dock-toggle");
-    if (!toggle) return;
+  document.addEventListener("click", function (event) {
+    var toggle = region && event.target.closest(".dock-toggle");
+    if (!toggle || !region.contains(toggle)) return;
     var dock = toggle.parentElement, from = dock.offsetHeight;
     dock.getAnimations().forEach(function (motion) { motion.cancel(); });
     var collapsed = root.classList.toggle("dock-collapsed");
@@ -50,5 +46,18 @@
     sync();
   });
   document.addEventListener("live:updated", sync);
-  sync();
+
+  window.pokerPage.register(function () {
+    region = document.getElementById("live");
+    if (!region) return;
+    watcher = window.ResizeObserver ? new ResizeObserver(measure) : null;
+    root.classList.add("dock-enabled");
+    try { root.classList.toggle("dock-collapsed", localStorage.getItem(KEY) === "collapsed"); } catch (_) {}
+    sync();
+    return function () {
+      if (watcher) watcher.disconnect();
+      region = watcher = null;
+      root.classList.remove("dock-enabled", "dock-closing");
+    };
+  });
 })();

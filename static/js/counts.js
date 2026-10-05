@@ -59,5 +59,5 @@
   document.addEventListener("change", update);
   document.addEventListener("live:updated", update);
   window.addEventListener("pageshow", update);
-  update();
+  window.pokerPage.register(update);
 })();

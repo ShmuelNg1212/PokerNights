@@ -23,4 +23,3 @@
 {% if can_sign_up %}<p class="entry-alt">No account? <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign up</a></p>
 {% else %}<p class="entry-alt entry-alt-plain">No account? Ask a host of your group for an invite link.</p>{% endif %}
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/password.js' %}" defer></script>{% endblock %}

@@ -4,8 +4,12 @@
 (function () {
   "use strict";
 
+  window.pokerPage.register(function () {
   var region = document.getElementById("live");
   if (!region || !region.dataset.url) return;
+  // Everything this page starts ends with it: the poll timer, a request in flight and
+  // the listeners on document and window.
+  var life = new AbortController(), stopped = false;
 
   var statusLine = document.getElementById("live-status");
   var BASE_MS = 4000;
@@ -75,7 +79,7 @@
 
   function schedule() {
     clearTimeout(timer);
-    if (!document.hidden) timer = setTimeout(poll, delay);
+    if (!stopped && !document.hidden) timer = setTimeout(poll, delay);
   }
 
   function poll() {
@@ -83,7 +87,8 @@
     fetch(region.dataset.url + "?v=" + encodeURIComponent(version), {
       credentials: "same-origin",
       headers: { "X-Requested-With": "fetch" },
-      cache: "no-store"
+      cache: "no-store",
+      signal: life.signal
     })
       .then(function (response) {
         if (response.status === 204) return null;
@@ -96,6 +101,7 @@
         return response.json();
       })
       .then(function (snapshot) {
+        if (stopped) return;
         failures = 0;
         delay = BASE_MS;
         lastOk = new Date();
@@ -104,10 +110,12 @@
         }
       })
       .catch(function () {
+        if (stopped) return;
         failures += 1;
         if (failures >= 2) delay = Math.min(delay * 2, MAX_MS);
       })
       .then(function () {
+        if (stopped) return;
         showStatus();
         schedule();
       });
@@ -124,8 +132,8 @@
 
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) clearTimeout(timer); else poll();
-  });
-  window.addEventListener("online", poll);
+  }, { signal: life.signal });
+  window.addEventListener("online", poll, { signal: life.signal });
 
   // A form sent in the background has already brought this page up to date (turbo-setup.js).
   document.addEventListener("inplace:updated", function () {
@@ -133,8 +141,14 @@
     pending = null;
     lastOk = new Date();
     showStatus();
-  });
+  }, { signal: life.signal });
 
   showStatus();
   schedule();
+  return function () {
+    stopped = true;
+    clearTimeout(timer);
+    life.abort();
+  };
+  });
 })();

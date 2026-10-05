@@ -22,6 +22,7 @@
     });
   }
 
-  tick();
+  // One interval for the whole tab; each page gets its figures at once when it arrives.
   setInterval(tick, 5000);
+  window.pokerPage.register(tick);
 })();

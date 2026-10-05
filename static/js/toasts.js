@@ -39,5 +39,5 @@
     list().appendChild(item);
     float(item, 12000);
   });
-  successes();
+  window.pokerPage.register(successes);
 })();
