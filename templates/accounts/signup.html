@@ -18,4 +18,3 @@
 </form>
 {% if not invited_to %}<p class="entry-alt">Already have an account? <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a></p>{% endif %}
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/password.js' %}" defer></script>{% endblock %}

@@ -1,11 +1,9 @@
 // Highlight accepted server values only. Amounts themselves never interpolate.
 (function () {
   "use strict";
-  var region = document.getElementById("live");
-  if (!region) return;
-  var prefix = "rack:" + region.dataset.url + ":";
-  var seen = {};
+  var region = null, prefix = "", seen = {};
   function update() {
+    if (!region) return;
     region.querySelectorAll("[data-balance]").forEach(function (el) {
       var key = "balanced:" + el.dataset.balance;
       try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); } } catch (_) {}
@@ -30,5 +28,12 @@
     });
   }
   document.addEventListener("live:updated", update);
-  update();
+  window.pokerPage.register(function () {
+    region = document.getElementById("live");
+    if (!region) return;
+    prefix = "rack:" + region.dataset.url + ":";
+    seen = {};
+    update();
+    return function () { region = null; };
+  });
 })();

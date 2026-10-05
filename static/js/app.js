@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   var root = document.documentElement;
-  var notice = document.getElementById("offline-notice");
+  function noticeEl() { return document.getElementById("offline-notice"); }
 
   // The service worker shows an offline page when a navigation fails. See config/pwa.py.
   if ("serviceWorker" in navigator) {
@@ -18,7 +18,7 @@
 
   // navigator.onLine is a hint, not proof. The notice is advice; the server decides what is saved.
   function showConnection() {
-    var offline = navigator.onLine === false;
+    var offline = navigator.onLine === false, notice = noticeEl();
     root.classList.toggle("is-offline", offline);
     if (notice) {
       notice.hidden = !offline;
@@ -28,13 +28,14 @@
   }
   window.addEventListener("offline", showConnection);
   window.addEventListener("online", showConnection);
-  showConnection();
+  window.pokerPage.register(showConnection);
 
   // A form sent with no connection fails, and must not look as if it worked. Typed values stay.
   document.addEventListener("submit", function (event) {
     if (navigator.onLine !== false) return;
     event.preventDefault();
     event.stopPropagation();
+    var notice = noticeEl();
     if (notice) { notice.classList.remove("nudge"); void notice.offsetWidth; notice.classList.add("nudge"); }
   }, true);
 

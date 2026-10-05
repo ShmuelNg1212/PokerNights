@@ -74,3 +74,22 @@ class InPlaceMarksTests(TestCase):
         html = self.client.get(reverse("login")).content.decode()
         self.assertIn('src="/static/js/vendor/turbo-8.0.23.js"', html)
         self.assertIn('src="/static/js/turbo-setup.js?v=abc1234567"', html)
+
+
+class ScriptsLoadOnceTests(TestCase):
+    """Every page script loads from the head of every page, so a screen change never runs one twice."""
+
+    NAMES = ("page", "app", "vendor/turbo-8.0.23", "turbo-setup", "forms", "toasts", "changes", "sheets", "live",
+             "clock", "counts", "dock", "pick", "password")
+
+    def test_scripts_are_in_the_head_in_order_and_none_in_the_body(self):
+        night = Night("A")
+        self.client.force_login(night.host.user)
+        for url in (reverse("login"), reverse("home"), reverse("session", args=[night.session.pk]),
+                    reverse("night", args=[night.session.night_id])):
+            html = self.client.get(url, follow=True).content.decode()
+            head, body = html.split("</head>", 1)
+            found = re.findall(r'<script src="/static/js/([^"?]+)\.js[^"]*" defer data-turbo-track="reload"></script>', head)
+            self.assertEqual(tuple(found), self.NAMES, url)
+            self.assertNotIn("<script", body, url)
+            self.assertIn('rel="stylesheet" href="/static/css/app.css" data-turbo-track="reload"', head)

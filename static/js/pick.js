@@ -3,6 +3,8 @@
 (function () {
   "use strict";
 
+  window.pokerPage.register(function () {
+  var life = new AbortController();
   var form = document.querySelector("form[data-pick]");
   if (!form) return;
 
@@ -51,9 +53,11 @@
   }
 
   form.querySelector("[data-pick-search-box]").hidden = false;
-  search.addEventListener("input", filter);
+  search.addEventListener("input", filter, { signal: life.signal });
   // Enter in the search field must not send the form by accident.
-  search.addEventListener("keydown", function (event) { if (event.key === "Enter") event.preventDefault(); });
-  form.addEventListener("change", update);
+  search.addEventListener("keydown", function (event) { if (event.key === "Enter") event.preventDefault(); }, { signal: life.signal });
+  form.addEventListener("change", update, { signal: life.signal });
   update();
+  return function () { life.abort(); };
+  });
 })();

@@ -14,9 +14,24 @@
   <link rel="apple-touch-icon" href="{% static 'icons/app-180.png' %}">
   <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" data-turbo-track="reload">
   <meta name="turbo-cache-control" content="no-cache">
   {% block head %}{% endblock %}
+  {# Every page script loads once, here. Each registers with page.js and does nothing where its elements are absent. #}
+  <script src="{% static 'js/page.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/app.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/vendor/turbo-8.0.23.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/turbo-setup.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/forms.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/toasts.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/changes.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/sheets.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/live.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/clock.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/counts.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/dock.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/pick.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/password.js' %}" defer data-turbo-track="reload"></script>
 </head>
 <body data-method="{{ request.method }}">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -39,11 +54,5 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
-  <script src="{% static 'js/app.js' %}" defer></script>
-  <script src="{% static 'js/vendor/turbo-8.0.23.js' %}" defer></script>
-  <script src="{% static 'js/turbo-setup.js' %}" defer></script>
-  <script src="{% static 'js/forms.js' %}" defer></script>
-  <script src="{% static 'js/toasts.js' %}" defer></script>
-  {% block scripts %}{% endblock %}
 </body>
 </html>
