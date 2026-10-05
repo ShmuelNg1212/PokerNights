@@ -195,7 +195,7 @@ def session_state(request, session_id):
     if request.GET.get("v") == str(session.version):
         return HttpResponse(status=204)
     html = render_to_string("web/_session_live.html", session_context(session, shown_as(me, session.night)), request=request)
-    return JsonResponse({"version": session.version, "html": html})
+    return JsonResponse({"version": session.version, "state": session.state, "html": html})
 
 
 def session_log(request, session_id):

@@ -209,11 +209,14 @@ Two things now replace content on the set page without a reload: the 4-second po
 
 ## Motion
 
-- `static/js/vendor/motion-14.0.0.js` defines `Motion`. `static/js/motion.js` loads after it and before the other page scripts, and exposes `window.pokerMotion`: `on()`, `run(element, keyframes, preset)`, `after(controls, done)` and `timing(preset)` (a spring as a duration and an easing for the Web Animations API).
+- `static/js/vendor/motion-14.0.0.js` defines `Motion`. `static/js/motion.js` loads after it and before the other page scripts, and exposes `window.pokerMotion`: `on()`, `run(element, keyframes, preset, extra)`, `after(controls, done)`, `settle(element, controls, properties)` and `timing(preset)` (a spring as a duration and an easing for the Web Animations API).
 - `on()` is false under reduced motion or when `Motion` is missing. `run` then returns `null`, and each caller keeps its plain path. The class `motion-on` on `<html>` tells the CSS which of the two is in use.
 - `motion.js` registers with `window.pokerPage`. On stop it cancels every animation it started. Its document listeners (press, release, `inplace:updated`, `inplace:failed`) are added once per tab.
-- Callers: `toasts.js` (arrive, stack, leave), `sheets.js` (rise, leave), `dock.js` (the opening spring). The presets and their uses are in DESIGN.md, "Motion system".
-- Motion animates `transform` and `opacity` only. The dock's height stays on the Web Animations API.
+- Callers: `toasts.js` (arrive, stack, leave), `sheets.js` (rise, leave), `dock.js` (the opening spring), `flow.js` (rows and state on the set page), `changes.js` (edge, badges, books balance). The presets and their uses are in DESIGN.md, "Motion system".
+- **The set page has a before-event.** `live:updating` is dispatched on `#live` before either kind of redraw: by `live.js` before it replaces the HTML, and by `turbo-setup.js` before a morph render. `live:updated` follows the redraw as before. `flow.js` reads each keyed row's position (`li[data-watch]`) and the set's state (`#live[data-state]`, also `state` in the poll's JSON) on the first event and compares on the second. A redraw with no before-event, such as a first load or a screen change, moves nothing.
+- **Motion writes the final style once more on the frame after it reports the end.** Clearing an inline style in the `finished` callback is undone. Use `pokerMotion.settle`, which waits two frames.
+- Motion starts an animation on the frame after `run` is called, before that frame is painted. A check that reads the first frame must read it in `requestAnimationFrame`.
+- Motion animates `transform` and `opacity` only: `transform` as one string where a single movement is enough (sheets, rows), the separate `x`, `y` and `scale` where movements combine (buttons, toasts), with `will-change: transform` set by `run` while they play. The dock's height stays on the Web Animations API.
 
 ## Live updates
 

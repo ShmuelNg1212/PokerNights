@@ -64,3 +64,42 @@ class LiveStateTests(TestCase):
         self.assertContains(page, "js/live.js")
         self.assertContains(page, f'data-url="{self.url}"')
         self.assertContains(page, "Total bought in")
+
+
+class FlowMarkerTests(TestCase):
+    """flow.js compares rows by key and the set's state before and after a redraw, on both redraw paths."""
+
+    def setUp(self):
+        self.night = Night("A", "B")
+        self.client.force_login(self.night.host.user)
+        self.page = reverse("session", args=[self.night.session.pk])
+        self.state = reverse("session_state", args=[self.night.session.pk])
+
+    def keys(self):
+        return [f'data-watch="player-{p.pk}"' for p in self.night.players.values()]
+
+    def test_the_page_and_the_snapshot_carry_the_row_keys_and_the_state(self):
+        page = self.client.get(self.page)
+        snapshot = self.client.get(self.state).json()
+        self.assertContains(page, 'id="live" data-state="running"')
+        self.assertEqual(snapshot["state"], "running")
+        for key in self.keys():
+            self.assertContains(page, key, count=1)
+            self.assertEqual(snapshot["html"].count(key), 1)
+
+    def test_the_state_follows_the_set_and_count_up_rows_are_keyed(self):
+        self.night.buy("A", 1000)
+        self.night.go("reconciliation")
+        page = self.client.get(self.page)
+        snapshot = self.client.get(self.state).json()
+        self.assertContains(page, 'id="live" data-state="reconciliation"')
+        self.assertEqual(snapshot["state"], "reconciliation")
+        for p in self.night.players.values():
+            self.assertContains(page, f'data-watch="count-{p.pk}"', count=1)
+            self.assertIn(f'data-watch="count-{p.pk}"', snapshot["html"])
+
+    def test_the_balanced_message_is_its_own_element(self):
+        self.night.buy("A", 1000)
+        self.night.go("reconciliation")
+        self.night.cash("A", 1000)
+        self.assertContains(self.client.get(self.page), '<span class="books-message">')

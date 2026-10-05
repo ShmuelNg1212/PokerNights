@@ -9,8 +9,8 @@
   {% endif %}
   {% if balance.ok %}
   <div class="books-balanced" data-balance="{{ session.pk }}">
-    {% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
-    {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}
+    <span class="books-message">{% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
+    {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}</span>
   </div>
   {% elif balance.counted %}
   {# Every player is cashed out and the books still differ: show the exact signed amount first. #}

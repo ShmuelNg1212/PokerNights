@@ -18,7 +18,7 @@ There is no other Python runtime dependency and no build tool.
 | Library | Version | Purpose |
 |---|---|---|
 | Turbo (Hotwire, 37signals) | 8.0.23 | Sends marked forms in the background and updates the page in place (stage 3 of the app-like experience) |
-| Motion (motion.dev) | 14.0.0 | Springs and interruptible animation for buttons, sheets and toasts (motion overhaul, stage 1) |
+| Motion (motion.dev) | 14.0.0 | Springs and interruptible animation for buttons, sheets, toasts and the live set page (motion overhaul, stages 1 and 2) |
 
 - One vendored file, `static/js/vendor/turbo-8.0.23.js` (217 KB, 46 KB compressed), the `turbo.es2017-umd.js` build from the npm package `@hotwired/turbo@8.0.23`. SHA-256 begins `f9e09e3a3093874f`. MIT licence in `static/js/vendor/turbo-LICENSE.txt`.
 - No package manager and no build step. To update: download the new build under a new file name with its version, change the one `<script>` in `base.html`, and run every browser check.
@@ -28,9 +28,9 @@ There is no other Python runtime dependency and no build tool.
 Motion:
 
 - One vendored file, `static/js/vendor/motion-14.0.0.js` (144 KB, 48 KB compressed), the `dist/motion.js` standalone build from the npm package `motion@14.0.0`. It defines the global `Motion`. SHA-256 begins `cbd68b4c7f906740`. MIT licence in `static/js/vendor/motion-LICENSE.txt`.
-- Only `static/js/motion.js` calls it. If the file does not load, `pokerMotion.on()` is false and the app uses its CSS motion.
+- Only `static/js/motion.js` calls it; the other scripts go through `window.pokerMotion`. If the file does not load, `pokerMotion.on()` is false and the app uses its CSS motion.
 - To update: download the new build under a new file name, change the one `<script>` in `base.html` and the name in `web/tests/test_inplace.py` and `web/tests/browser/motion.mjs`, and run every browser check.
-- Approved in the [motion overhaul plan](../plan/1791186717_motion_overhaul.md). The Motion AI kit (`npx motion-ai`) is not installed: its installer is interactive and has to be run by the human.
+- Approved in the [motion overhaul plan](../plan/1791186717_motion_overhaul.md). The Motion AI kit is installed (`.claude/skills/motion/`, `.agents/skills/motion/`, `.codex/config.toml`, `.mcp.json`). Its "motion" server (docs search) connects when a session starts; the "motion-plus" server needs a sign-in and Motion+, which is paid and not used. Motion's layout animation for plain JavaScript is Motion+ only, so `flow.js` moves rows by hand.
 
 ## Services
 

@@ -12,17 +12,30 @@
     arrive: { type: "spring", visualDuration: 0.24, bounce: 0.3 },
     leave: { duration: 0.2, ease: [0.4, 0, 1, 1] },
     nudge: { duration: 0.3, ease: "easeOut" },
-    pulse: { duration: 0.36, ease: "easeOut" }
+    pulse: { duration: 0.36, ease: "easeOut" },
+    // The set page (flow.js, changes.js). Rows carry money, so they move without bounce.
+    shift: { type: "spring", visualDuration: 0.26, bounce: 0 },
+    drop: { type: "spring", visualDuration: 0.22, bounce: 0.35 },
+    fade: { duration: 0.18, ease: "easeOut" }
   };
 
   function on() { return !!window.Motion && !reduce.matches; }
   function mark() { root.classList.toggle("motion-on", on()); }
 
-  function run(el, keyframes, preset) {
+  // "transform" and "opacity" run in the compositor. The separate x, y and scale are for
+  // movements that combine on one element; they get a compositor hint while they run.
+  function run(el, keyframes, preset, extra) {
     if (!el || !on()) return null;
-    var controls = window.Motion.animate(el, keyframes, PRESETS[preset] || preset);
+    var options = PRESETS[preset] || preset;
+    if (extra) options = Object.assign({}, options, extra);
+    var separate = "x" in keyframes || "y" in keyframes || "scale" in keyframes;
+    if (separate) el.style.willChange = "transform";
+    var controls = window.Motion.animate(el, keyframes, options);
     running.push(controls); latest.set(el, controls);
-    after(controls, function () { var at = running.indexOf(controls); if (at > -1) running.splice(at, 1); });
+    after(controls, function () {
+      var at = running.indexOf(controls); if (at > -1) running.splice(at, 1);
+      if (separate && latest.get(el) === controls) el.style.willChange = "";
+    });
     return controls;
   }
   // Calls back when the animation ends or is cut short; at once when there is none.
@@ -36,7 +49,16 @@
     var found = /^(\d+)ms (.+)$/.exec(String(window.Motion.spring(Object.assign({ keyframes: [0, 1] }, PRESETS[preset]))));
     return found ? { duration: Number(found[1]), easing: found[2] } : null;
   }
-  function rest(el, controls) { after(controls, function () { if (latest.get(el) === controls) el.style.transform = ""; }); }
+  // Leaves no inline style behind once the element's last animation has ended. Motion writes
+  // the final value once more on the frame after it reports the end, so this waits two frames.
+  function settle(el, controls, properties) {
+    after(controls, function () {
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        if (latest.get(el) === controls) (properties || ["transform"]).forEach(function (name) { el.style[name] = ""; });
+      }); });
+    });
+  }
+  function rest(el, controls) { settle(el, controls); }
 
   // Buttons sink under a finger and spring back. Listeners are for the whole tab.
   document.addEventListener("pointerdown", function (event) {
@@ -71,7 +93,7 @@
   document.addEventListener("inplace:failed", function () { answered(true); });
   if (reduce.addEventListener) reduce.addEventListener("change", mark);
 
-  window.pokerMotion = { on: on, run: run, after: after, timing: timing };
+  window.pokerMotion = { on: on, run: run, after: after, settle: settle, timing: timing };
 
   window.pokerPage.register(function () {
     mark();

@@ -68,7 +68,7 @@ try {
  await A.js(`${dialog}.querySelector('.sheet-head button').click()`);await sleep(500);
  // Only movement and opacity are animated by Motion.
  await A.js(`${btn}.addEventListener('click',e=>e.preventDefault(),{once:true})`);await A.mouse('mousePressed',btn);await A.mouse('mouseReleased',btn);await sleep(400);
- check('Motion animates only movement, scale and opacity',await A.js(`__runs.length>0&&__runs.every(r=>r.keys.every(k=>['x','y','scale','opacity'].includes(k)))`));
+ check('Motion animates only movement, scale and opacity',await A.js(`__runs.length>0&&__runs.every(r=>r.keys.every(k=>['x','y','scale','opacity','transform'].includes(k)))`));
  // The host menu opens with the spring.
  const toggle=`document.querySelector('.dock-toggle')`,dock=`document.querySelector('.host-controls')`;
  await A.js(`${toggle}.click()`);await sleep(700);

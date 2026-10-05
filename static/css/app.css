@@ -752,3 +752,18 @@ legend { padding: 0; }
 .btn[aria-busy=true] { position: relative; overflow: hidden; }
 .btn[aria-busy=true]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--brass); animation: busy-line 900ms var(--ease-out) infinite; }
 @keyframes busy-line { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+/* The set page (flow.js, changes.js). Motion springs the new edge and the badges; the mark fades out; the pot's underline draws. */
+.books-message { display: block; }
+.motion-on .new-edge { animation: none; }
+.motion-on .just-changed { transition: outline-color 400ms var(--ease-in), background-color 400ms var(--ease-in); }
+.motion-on .just-changed .change-label { transition: opacity 400ms var(--ease-in); }
+.motion-on .change-fading { outline-color: transparent; background-color: transparent; }
+.motion-on .change-fading .change-label { opacity: 0; }
+.motion-on .pot-main.just-changed { position: relative; box-shadow: none; }
+.motion-on .pot-main.just-changed::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); transform-origin: left; animation: mark-draw var(--t-sheet) var(--ease-out); transition: opacity 400ms var(--ease-in); }
+.motion-on .pot-main.change-fading::after { opacity: 0; }
+@keyframes mark-draw { from { transform: scaleX(0); } }
+.motion-on .just-left .player-name { animation: name-dim 200ms var(--ease-out); }
+@keyframes name-dim { from { color: inherit; } }
+.motion-on .balance-arrived::before { animation: books-rule var(--balance-ms, 320ms) var(--balance-ease, var(--ease-out)); }
+@keyframes books-rule { from { transform: scaleX(0); } }

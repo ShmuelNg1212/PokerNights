@@ -10,7 +10,7 @@ S.key = id; S.opener = button;
 S.dialog.querySelector("h2").textContent = source.dataset.title;
 S.body.appendChild(source.querySelector(".sheet-content"));
 S.dialog.showModal();
-if (window.pokerMotion) window.pokerMotion.run(S.dialog, { y: [S.dialog.offsetHeight, 0] }, "sheet");
+if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
 var field = S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
 }
@@ -18,10 +18,11 @@ function close() {
 var dialog = S.dialog;
 if (!dialog.open || dialog.classList.contains("closing")) return;
 // With Motion the sheet leaves from wherever it is, so a close during the rise turns it around.
-var leaving = window.pokerMotion && window.pokerMotion.run(dialog, { y: dialog.offsetHeight }, "leave");
+var leaving = window.pokerMotion && window.pokerMotion.run(dialog, { transform: "translateY(" + dialog.offsetHeight + "px)" }, "leave");
 if (leaving) {
 dialog.classList.add("closing");
-window.pokerMotion.after(leaving, function () { if (dialog.open) dialog.close(); dialog.classList.remove("closing"); dialog.style.transform = ""; });
+window.pokerMotion.after(leaving, function () { if (dialog.open) dialog.close(); dialog.classList.remove("closing"); });
+window.pokerMotion.settle(dialog, leaving);
 }
 else if (matchMedia("(prefers-reduced-motion: reduce)").matches) dialog.close();
 else { dialog.classList.add("closing"); setTimeout(function () { if (dialog.open) dialog.close(); dialog.classList.remove("closing"); }, 200); }

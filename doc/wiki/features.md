@@ -196,7 +196,7 @@ See the [roadmap](../roadmap/README.md).
 - Every eligible host count field stays inline. A confirmed count is written above the draft field. Count confirmation and recording cash-outs remain separate actions. Players see statuses and confirmed counts without host inputs.
 - The host dock links to the batch review when counts are ready, offers finalization only when the books balance, and exposes the next-step explanation. Resume play and cancellation remain under More host controls.
 - Batch review shows the confirmed amount to record, this batch's total, the amount already cashed out and the prospective total after confirmation. It makes no payment and does not finalize.
-- The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser. Reduced motion leaves it static.
+- The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser; with Motion the rule draws and then the words rise. Reduced motion leaves it static.
 - Final set results use frozen snapshots, with Final tags, signed amounts, directional icons and time played. The viewer's result is prominent. Who pays whom stays on the session page.
 - Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check sits above the count list. Waiting for counts is a neutral notice. When every player is cashed out and the books still differ, the panel leads with the exact signed amount and the next step. Long names wrap. JavaScript-free forms remain usable.
 
@@ -254,4 +254,11 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Sheets rise from the bottom edge with a spring and can be closed mid-rise. Toasts arrive, stack without overlapping, and drop away when dismissed. The host dock opens with the same spring.
 - Reduced motion, no JavaScript, or a Motion file that fails to load: the app works as before.
 - Code: `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
+
+## Motion on the live set page (stage 2 of the motion overhaul)
+
+- A change on the set page is shown as movement, whether you made it or another person did: a new player's row fades in and rises; rows slide to their place when a row above changes height; a new buy-in edge drops onto its stack; badges spring in; the brass mark fades out instead of vanishing; the "Still in play" underline draws; a new set state fades in; the books balancing draws its rule and then raises its words, once per set per browser.
+- Figures show their accepted value from the first frame. Rows never reorder.
+- Nothing moves on first sight of a set, while you type, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load.
+- Code: `static/js/flow.js`, `static/js/changes.js`, the last block of `static/css/app.css`. Check: `web/tests/browser/flow.mjs`. The events table is in DESIGN.md.
 - Next stages (each with its own plan): the live set page, moving between screens, results and settle-up.
