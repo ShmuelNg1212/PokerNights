@@ -245,3 +245,41 @@ class ClockDisplayTests(TestCase):
         self.client.force_login(table.host.user)
         self.assertContains(self.client.get(reverse("session", args=[table.game.pk])), "not recorded")
         self.assertContains(self.client.get(reverse("session_log", args=[table.game.pk])), "Playing time was not recorded")
+
+
+class OneReadClockTests(TestCase):
+    """``timers`` and ``player_clocks`` answer in one query what four functions answer in four."""
+
+    def setUp(self):
+        _, self.host = make_group()
+        self.running = make_session(self.host, state="open", table_name="Running")
+        self.ended = make_session(self.host, state="open", table_name="Ended")
+        self.untimed = make_session(self.host, state="open", table_name="Untimed")
+        self.players = {}
+        for session in (self.running, self.ended):
+            member = groups.add_roster_player(self.host, "P" + str(session.pk))
+            self.players[session.pk] = services.add_participant(session.pk, self.host, member.pk)
+            with mock.patch("django.utils.timezone.now", return_value=minute(0)):
+                services.transition(session.pk, self.host, "start", opening_buy_ins=False)
+        with mock.patch("django.utils.timezone.now", return_value=minute(7)):
+            services.transition(self.ended.pk, self.host, "end")
+
+    def test_timers_match_the_single_set_functions(self):
+        now, sets = minute(30), (self.running, self.ended, self.untimed)
+        with self.assertNumQueries(1):
+            found = clock.timers([s.pk for s in sets], now)
+        self.assertEqual(found, {self.running.pk: (30 * MIN, True), self.ended.pk: (7 * MIN, False)})
+        for one in sets:
+            seconds, running = found.get(one.pk, (None, False))
+            self.assertEqual(seconds, clock.set_seconds(one, now))
+            self.assertEqual(running, clock.is_running(one))
+        self.assertEqual(clock.seconds_by_set([s.pk for s in sets], now), {self.running.pk: 30 * MIN, self.ended.pk: 7 * MIN})
+
+    def test_player_clocks_match_the_two_functions(self):
+        now = minute(30)
+        for one in (self.running, self.ended, self.untimed):
+            with self.assertNumQueries(1):
+                totals, running = clock.player_clocks(one, now)
+            self.assertEqual(totals, clock.player_seconds(one, now))
+            self.assertEqual(running, clock.running_participant_ids(one))
+        self.assertEqual(clock.player_clocks(self.running, now), ({self.players[self.running.pk].pk: 30 * MIN}, {self.players[self.running.pk].pk}))

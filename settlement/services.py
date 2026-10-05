@@ -53,18 +53,23 @@ def session_results(night: GameNight) -> list:
     return [(member_id, net, played) for member_id, net, played, _ in session_standings(night)]
 
 
-def session_standings(night: GameNight) -> list:
+def result_rows(night: GameNight) -> list:
+    """``[(member_id, net, play_seconds, rake_total)]`` of the current results, by set then join order."""
+    return list(
+        PlayerResult.objects.filter(is_current=True, finalization__session__night=night)
+        .order_by("finalization__session__set_number", "participant__join_order")
+        .values_list("member_id", "net", "play_seconds", "rake_total")
+    )
+
+
+def session_standings(night: GameNight, rows=None) -> list:
     """``[(member_id, net, sets_played, play_seconds)]`` over the finalized sets, in first-join order.
 
     ``play_seconds`` is None when none of the member's sets recorded playing time.
+    ``rows`` is ``result_rows(night)`` when the caller has already read it.
     """
-    rows = (
-        PlayerResult.objects.filter(is_current=True, finalization__session__night=night)
-        .order_by("finalization__session__set_number", "participant__join_order")
-        .values_list("member_id", "net", "play_seconds")
-    )
     totals, played, seconds = {}, {}, {}
-    for member_id, net, play_seconds in rows:
+    for member_id, net, play_seconds, _ in result_rows(night) if rows is None else rows:
         totals[member_id] = totals.get(member_id, 0) + net
         played[member_id] = played.get(member_id, 0) + 1
         if play_seconds is not None:
@@ -72,13 +77,10 @@ def session_standings(night: GameNight) -> list:
     return [(member_id, net, played[member_id], seconds.get(member_id)) for member_id, net in totals.items()]
 
 
-def settlement_balances(night):
+def settlement_balances(night, rows=None):
     """Remaining player balances: add back the fee already collected at buy-in."""
     totals = {}
-    rows = PlayerResult.objects.filter(is_current=True, finalization__session__night=night).order_by(
-        "finalization__session__set_number", "participant__join_order"
-    ).values_list("member_id", "net", "rake_total")
-    for member_id, net, rake in rows:
+    for member_id, net, _, rake in result_rows(night) if rows is None else rows:
         totals[member_id] = totals.get(member_id, 0) + net + rake
     return list(totals.items())
 

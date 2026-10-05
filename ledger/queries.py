@@ -340,6 +340,13 @@ def group_rake(group):
     return totals, rows
 
 
+def rake_total(session_ids) -> int:
+    """Collected rake over these sets in one query: the fees of accepted buy-ins, as ``Summary.rake`` adds them."""
+    from django.db.models import Sum
+    found = RakeEntry.objects.filter(buy_in__session_id__in=session_ids, buy_in__reversal__isnull=True)
+    return found.aggregate(total=Sum("amount"))["total"] or 0
+
+
 def night_has_records(night) -> bool:
     """True when any ledger row exists under the session's sets, reversed and voided rows included."""
     from .models import CashOutBatch, Finalization

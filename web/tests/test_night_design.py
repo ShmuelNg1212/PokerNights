@@ -54,13 +54,14 @@ class NightDesignTests(TestCase):
 
     def test_recap_sums_frozen_buy_ins_and_handles_unknown_time(self):
         self.close()
-        with patch('settlement.queries.clock.set_seconds', side_effect=[60, None]):
+        # One of the two finalized sets has a timer; the other recorded none.
+        with patch('settlement.queries.clock.seconds_by_set', side_effect=lambda ids: {ids[0]: 60}):
             recap = queries.night_recap(self.night, queries.night_outcome(self.night).standings)
         self.assertEqual(recap['total_buy_in'], 500000)
         self.assertEqual(recap['play_seconds'], 60)
         self.assertTrue(recap['partial_time'])
         self.assertEqual([s.member.display_name for s in recap['winners']], ['A'])
-        with patch('settlement.queries.clock.set_seconds', return_value=None):
+        with patch('web.views.clock.timers', return_value={}):
             page = self.client.get(self.url)
         self.assertContains(page, 'Not recorded')
         self.assertNotContains(page, 'Your session result')  # host did not play
@@ -70,9 +71,10 @@ class NightDesignTests(TestCase):
         games.transition(two.second.pk, two.host, 'cancel', 'Synthetic cancellation')
         services.close_night(two.night_id, two.host)
         night = GameNight.objects.get(pk=two.night_id)
-        with patch('settlement.queries.clock.set_seconds', return_value=90) as timer:
+        with patch('settlement.queries.clock.seconds_by_set', side_effect=lambda ids: {i: 90 for i in ids}) as timer:
             recap = queries.night_recap(night, queries.night_outcome(night).standings)
         timer.assert_called_once()
+        self.assertEqual(len(timer.call_args.args[0]), 1)  # the finalized set only
         self.assertEqual((recap['total_buy_in'], recap['play_seconds']), (250000, 90))
 
     def test_chips_break_even_recap_has_no_percentage_or_peso(self):

@@ -152,10 +152,11 @@ class NightOutcome:
 
 
 def night_outcome(night) -> NightOutcome:
-    rows = services.session_standings(night)
+    results = services.result_rows(night)
+    rows = services.session_standings(night, results)
     members = Member.objects.in_bulk([row[0] for row in rows])
     found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
-    balances = dict(services.settlement_balances(night))
+    balances = dict(services.settlement_balances(night, results))
     for order, standing in enumerate(found.standings, 1):
         standing.join_order = order
         standing.rake_total = balances[standing.pk] - standing.net
@@ -165,22 +166,27 @@ def night_outcome(night) -> NightOutcome:
         found.transfers = list(
             Transfer.objects.filter(plan=found.plan).select_related("payer", "payee").order_by("position")
         )
-        paid = {p.transfer_id: p for p in Payment.objects.filter(transfer__in=found.transfers, active=True)}
+        found.payments = list(
+            Payment.objects.filter(night=night).select_related("payer", "payee", "recorded_by")
+        )
+        # A transfer's payment is recorded under the transfer's own session (services.mark_paid),
+        # so the session's payments hold every active one.
+        paid = {p.transfer_id: p for p in found.payments if p.active and p.transfer_id is not None}
         for transfer in found.transfers:
             transfer.paid = paid.get(transfer.pk)
             transfer.payer_token = identities[transfer.payer_id]
             transfer.payee_token = identities[transfer.payee_id]
-        found.payments = list(
-            Payment.objects.filter(night=night).select_related("payer", "payee", "recorded_by")
-        )
     return found
 
 
-def night_recap(night, standings):
-    """Read-only closing recap. Buy-ins are frozen; unknown timer duration is not zero."""
-    finals = list(Finalization.objects.filter(session__night=night, is_current=True)
-                  .select_related("session"))
-    durations = [clock.set_seconds(f.session) for f in finals]
+def night_recap(night, standings, seconds=None):
+    """Read-only closing recap. Buy-ins are frozen; unknown timer duration is not zero.
+
+    ``seconds`` is ``{session_id: seconds}`` for the session's timed sets when the caller has it.
+    """
+    finals = list(Finalization.objects.filter(session__night=night, is_current=True))
+    timed = clock.seconds_by_set([f.session_id for f in finals]) if seconds is None else seconds
+    durations = [timed.get(f.session_id) for f in finals]
     known = [seconds for seconds in durations if seconds is not None]
     best = max((s.net for s in standings), default=0)
     return {

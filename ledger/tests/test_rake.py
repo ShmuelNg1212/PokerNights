@@ -206,3 +206,26 @@ class RakeBalanceTests(TestCase):
         self.assertEqual(queries.group_rake(other.group)[0], {'php': 0, 'chips': 10})
         totals, rows = queries.group_rake(n.group)
         self.assertEqual(sum(row['total'] for row in rows), totals['php'])
+
+
+class RakeTotalTests(TestCase):
+    """The one-query total the session page shows must equal what each set's summary adds up."""
+
+    def test_it_equals_the_summaries_over_several_sets_and_skips_reversed_buy_ins(self):
+        one, two = Night('A', 'B'), Night('C')
+        for night in (one, two):
+            configure(night, rake_mode='percent', rake_basis_points=500)
+        one.buy('A', 1000)
+        reversed_one = one.buy('B', 2000)
+        two.buy('C', 500)
+        services.reverse_buy_in(one.session.pk, one.host, reversed_one.pk, 'duplicate')
+        ids = [one.session.pk, two.session.pk]
+        self.assertEqual(queries.rake_total(ids), sum(queries.summary(n.session).rake for n in (one, two)))
+        self.assertEqual(queries.rake_total(ids), 5000 + 2500)
+        self.assertEqual(queries.rake_total([one.session.pk]), 5000)
+
+    def test_no_sets_and_no_rake_are_zero(self):
+        plain = Night('A')
+        plain.buy('A', 1000)
+        self.assertEqual(queries.rake_total([]), 0)
+        self.assertEqual(queries.rake_total([plain.session.pk]), 0)

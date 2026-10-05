@@ -53,15 +53,23 @@ def set_seconds(session, now=None):
     return _total(rows, now or timezone.now()) if rows else None
 
 
-def seconds_by_set(session_ids, now=None) -> dict:
-    """``{session_id: seconds}`` for the sets that have timed play, in one query."""
+def timers(session_ids, now=None) -> dict:
+    """``{session_id: (seconds, running)}`` for the sets that have timed play, in one query."""
     now = now or timezone.now()
     rows = {}
     for session_id, started, ended in PlayPeriod.objects.filter(session_id__in=session_ids).values_list(
         "session_id", "started_at", "ended_at"
     ):
         rows.setdefault(session_id, []).append((started, ended))
-    return {session_id: _total(periods, now) for session_id, periods in rows.items()}
+    return {
+        session_id: (_total(periods, now), any(ended is None for _, ended in periods))
+        for session_id, periods in rows.items()
+    }
+
+
+def seconds_by_set(session_ids, now=None) -> dict:
+    """``{session_id: seconds}`` for the sets that have timed play, in one query."""
+    return {session_id: seconds for session_id, (seconds, _) in timers(session_ids, now).items()}
 
 
 def is_running(session) -> bool:
@@ -81,6 +89,19 @@ def player_seconds(session, now=None) -> dict:
 
 def running_participant_ids(session) -> set:
     return set(PlayInterval.objects.filter(session=session, ended_at__isnull=True).values_list("participant_id", flat=True))
+
+
+def player_clocks(session, now=None) -> tuple[dict, set]:
+    """``player_seconds`` and ``running_participant_ids`` from one read of the set's intervals."""
+    now = now or timezone.now()
+    totals, running = {}, set()
+    for participant_id, started, ended in PlayInterval.objects.filter(session=session).values_list(
+        "participant_id", "started_at", "ended_at"
+    ):
+        totals[participant_id] = totals.get(participant_id, 0) + int(((ended or now) - started).total_seconds())
+        if ended is None:
+            running.add(participant_id)
+    return totals, running
 
 
 def format_duration(seconds) -> str:

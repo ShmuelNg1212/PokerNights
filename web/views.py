@@ -142,8 +142,7 @@ def session_context(session, me) -> dict:
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
     }
-    played = clock.player_seconds(session)
-    running_ids = clock.running_participant_ids(session)
+    played, running_ids = clock.player_clocks(session)
     for line in summary.lines:
         line.play_seconds = played.get(line.participant.pk)
         line.clock_running = line.participant.pk in running_ids
@@ -152,8 +151,7 @@ def session_context(session, me) -> dict:
             context["can_cash_out"] and session.state == GameSession.State.RUNNING
             and line.has_money and not line.is_cashed_out
         )
-    context["set_seconds"] = clock.set_seconds(session)
-    context["set_running"] = clock.is_running(session)
+    context["set_seconds"], context["set_running"] = clock.timers([session.pk]).get(session.pk, (None, False))
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
         for result in outcome.results:
@@ -228,19 +226,21 @@ def night(request, night_id):
     """The session page: its sets, in order."""
     night, host = night_for(request.user, night_id)
     me = shown_as(host, night)
-    sets = [s for s in night.sets.order_by("set_number") if host.is_host or s.state != GameSession.State.SETUP]
+    # The session's sets are read once, and each figure over them in one query whatever their number.
+    by_number = list(night.sets.order_by("set_number"))
+    sets = [s for s in by_number if host.is_host or s.state != GameSession.State.SETUP]
+    timers = clock.timers([s.pk for s in sets])
     for one in sets:
-        one.play_seconds = clock.set_seconds(one)
-        one.clock_running = clock.is_running(one)
+        one.play_seconds, one.clock_running = timers.get(one.pk, (None, False))
     timed = [one.play_seconds for one in sets if one.play_seconds is not None]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
     context["total_play_seconds"] = sum(timed) if timed else None
-    context["total_rake"] = sum(ledger_queries.summary(s).rake for s in sets)
+    context["total_rake"] = ledger_queries.rake_total([s.pk for s in sets])
     context["can_start_next_set"] = (
         me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
     )
     State = GameSession.State
-    all_sets = list(night.sets.all())
+    all_sets = sorted(by_number, key=lambda s: (s.game_date, s.pk), reverse=True)  # the model's own order
     unfinished = [s for s in all_sets if s.state not in (State.FINALIZED, State.CANCELED)]
     outcome = settlement_queries.night_outcome(night)
     context.update({
@@ -253,7 +253,9 @@ def night(request, night_id):
         and any(s.state == State.FINALIZED for s in all_sets),
     })
     if night.is_closed and not night.is_archived:
-        context["recap"] = settlement_queries.night_recap(night, outcome.standings)
+        context["recap"] = settlement_queries.night_recap(
+            night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()}
+        )
     if host.is_host:
         context["manage"] = {
             "unfinished": [s for s in all_sets if s.state in games.UNFINISHED_STATES],
