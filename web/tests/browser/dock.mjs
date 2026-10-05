@@ -185,6 +185,13 @@ try {
  await kb(0);await A.js(`Turbo.visit('/')`);await sleep(900);
  check('leaving removes the readout and the frame watch',await A.js(`!document.querySelector('.kb-readout')`)&&await A.js(`new Promise(ok=>{let n=0;const r=requestAnimationFrame;window.requestAnimationFrame=f=>{n++;return r(f)};setTimeout(()=>{window.requestAnimationFrame=r;ok(n)},300)})`)===0);
  await A.go(`/s/${C.php}/`);
+ // A browser whose keyboard shortens the page itself (Chrome on an iPhone): the dock is already on the keyboard and must not rise.
+ const tall=h=>send('Emulation.setDeviceMetricsOverride',{width:390,height:h,deviceScaleFactor:1,mobile:true},A.s);
+ await A.js(`${field}.focus()`);await sleep(100);await tall(508);await kb(336);
+ check('keyboard that shortens the page: the dock stays on it, as the bar',await A.js(`${bottom}===508&&${shown}.length===1&&${R}.classList.contains('kb-bar')&&${dock}.getBoundingClientRect().top>=0`),await A.js(`[${bottom},${R}.style.getPropertyValue('--kb'),${R}.style.getPropertyValue('--kb-h'),innerHeight]`));
+ check('keyboard that shortens the page: no room is reserved twice',await A.js(`!${R}.style.getPropertyValue('--kb')&&!${R}.style.getPropertyValue('--kb-h')`));
+ await A.js(`document.activeElement.blur()`);await tall(844);await kb(0);
+ check('that keyboard closed: back at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&!${R}.classList.contains('kb-open')`));
  await kb(0);await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:fake.identifier},A.s);
  const none=await send('Page.addScriptToEvaluateOnNewDocument',{source:`Object.defineProperty(window,'visualViewport',{value:undefined});window.__errors=[];addEventListener('error',e=>__errors.push(e.message))`},A.s);
  await A.go(`/s/${C.php}/`);await A.click(toggle);await A.click(toggle);
