@@ -102,8 +102,8 @@
       <ul class="transfer-list">
         {% for t in outcome.transfers %}
         <li class="transfer-row panel{% if t.paid %} is-paid{% endif %}" data-transfer="{{ t.pk }}">
-          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span>{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong></span><span class="transfer-direction">{% icon 'arrow-right' %}<span>pays</span></span><span>{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong></span></div>
-          <div class="transfer-bottom"><span class="transfer-amount amount">{{ t.amount|amount:unit }}</span>
+          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong></span><span class="transfer-direction">{% icon 'arrow-right' %}<span>pays</span></span><span class="transfer-party">{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong></span></div>
+          <div class="transfer-bottom{% if me.is_host %} has-action{% endif %}">{% with figure=t.amount|amount:unit %}<span class="transfer-amount amount{% if figure|length > 17 %} amount-long{% elif figure|length > 10 %} amount-compact{% endif %}">{{ figure }}</span>{% endwith %}
             <span class="small transfer-state">{% if t.paid %}<span class="badge badge-good">Paid</span><br>{{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</span>
             {% if me.is_host %}{% if t.paid %}
             <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>

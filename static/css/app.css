@@ -408,21 +408,35 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .payment-progress::-webkit-progress-bar { background: var(--felt-deep); }
 .payment-progress::-webkit-progress-value { background: var(--bone); }
 .payment-progress::-moz-progress-bar { background: var(--bone); }
-.transfer-list { list-style: none; margin: 0; padding: 0; }
+.transfer-list { list-style: none; margin: 0; padding: 0; container: transfers / inline-size; }
 .transfer-row { padding: var(--s-4); }
 .transfer-row.is-paid { background: transparent; }
 .transfer-row.is-paid .transfer-amount { color: var(--muted); }
-.transfer-bottom form { margin-left: auto; }
+.transfer-bottom form { grid-area: action; margin: 0; justify-self: end; }
 .transfer-bottom .btn { min-width: 124px; }
 .settled-figure { display: flex; align-items: center; gap: var(--s-2); font-size: 3rem; }
 .settled-figure .icon { width: 2.25rem; height: 2.25rem; stroke-width: 3; }
-.transfer-parties { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; }
-.transfer-parties > span:not(.transfer-direction) { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* Stack by default, including browsers without container queries. */
+.transfer-parties { display: grid; gap: var(--s-2); align-items: start; }
+.transfer-party { display: flex; align-items: flex-start; gap: var(--s-2); min-width: 0; }
+.transfer-party strong { min-width: 0; padding-top: 4px; }
 .transfer-parties .chip { width: 32px; height: 32px; flex: 0 0 32px; font-size: .75rem; }
-.transfer-direction { display: grid; justify-items: center; color: var(--bone-dim); font-size: .75rem; line-height: 1.1; }
-.transfer-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-top: 14px; }
-.transfer-amount { font-size: 1.75rem; font-weight: 800; font-stretch: 80%; }
-.transfer-state { color: var(--bone-dim); flex: 1; min-width: 100px; }
+.transfer-direction { display: flex; align-items: center; gap: var(--s-2); margin-left: 4px; color: var(--bone-dim); font-size: .75rem; line-height: 1.1; }
+.transfer-direction .icon { transform: rotate(90deg); }
+.transfer-bottom { display: grid; grid-template-columns: minmax(0,1fr); grid-template-areas: "amount" "state"; align-items: start; gap: var(--s-3) var(--s-4); margin-top: var(--s-4); }
+.transfer-bottom.has-action { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "amount amount" "state action"; }
+.transfer-amount { grid-area: amount; font-size: 1.75rem; font-weight: 800; font-stretch: 80%; white-space: nowrap; }
+.transfer-amount.amount-compact { font-size: 1.375rem; }
+.transfer-amount.amount-long { font-size: 1.125rem; }
+.transfer-state { grid-area: state; color: var(--bone-dim); min-width: 0; }
+@container transfers (min-width: 440px) {
+  .transfer-parties { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: var(--s-3); }
+  .transfer-direction { display: grid; justify-items: center; gap: 0; margin: 4px 0 0; }
+  .transfer-direction .icon { transform: none; }
+  .transfer-bottom.has-action { grid-template-areas: "amount action" "state action"; }
+  .transfer-amount.amount-compact { font-size: 1.75rem; }
+  .transfer-amount.amount-long { font-size: 1.375rem; }
+}
 .night-results .amount { font-size: 1.375rem; overflow-wrap: anywhere; max-width: 100%; }
 .night-results .grow { min-width: 0; }
 .night-results .row { flex-wrap: wrap; }

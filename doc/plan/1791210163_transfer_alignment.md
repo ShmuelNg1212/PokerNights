@@ -1,6 +1,6 @@
 # Who pays whom: alignment repair plan
 
-Status: awaiting-approval. Date: 2026-10-05, Asia/Manila. Study: [transfer alignment](../study/1791210055_transfer_alignment.md).
+Status: in-progress. Date: 2026-10-05, Asia/Manila. Study: [transfer alignment](../study/1791210055_transfer_alignment.md).
 
 ## Outcome
 
@@ -35,10 +35,10 @@ Settlement calculation, snapshots, payment services, role gates, CSRF, request I
 
 ## Ordered implementation board
 
-- [ ] **Implement and verify — `fix(ui): align session transfer cards`.** Read Impeccable's craft floor before UI edits. Replace wrapping financial flex layout with named grid areas. Add explicit identity hooks and container-aware narrow-card adaptation. Keep existing form routes, fields and Turbo attributes.
-- [ ] **Add meaningful browser coverage.** Add `transfer_layout.mjs` with fresh synthetic fixtures. Reuse existing night seeds; add a small fixture extension for mixed paid/unpaid and large chips if needed, through the real services. Measure identity alignment, financial grid placement, complete amounts, controls and overflow. Check both host and player/archived views, and payment/Undo transitions.
-- [ ] **Verify the flow.** Run the Django suite and exact Vercel-style test command. Run the new layout check plus `night.mjs` and `inplace.mjs` on separate fresh temporary databases. Check 200% zoom, JavaScript off, reduced motion, long names and the narrow desktop detail column. PostgreSQL is required before a later release; this layout cycle has no write/locking change.
-- [ ] **Bounded visual verification.** Use the study captures as the incumbent baseline. Inspect phone and desktop together after the complete build, fix any material defects in one batch, and confirm once. Do not expand into unrelated session redesign. Run the layout detector on the changed markup; explain any advisory findings with rendered evidence.
+- [x] **Implement and verify — `fix(ui): align session transfer cards`.** Read Impeccable's craft floor before UI edits. Replace wrapping financial flex layout with named grid areas. Add explicit identity hooks and container-aware narrow-card adaptation. Keep existing form routes, fields and Turbo attributes.
+- [x] **Add meaningful browser coverage.** Add `transfer_layout.mjs` with fresh synthetic fixtures. Reuse existing night seeds; add a small fixture extension for mixed paid/unpaid and large chips if needed, through the real services. Measure identity alignment, financial grid placement, complete amounts, controls and overflow. Check both host and player/archived views, and payment/Undo transitions.
+- [x] **Verify the flow.** Run the Django suite and exact Vercel-style test command. Run the new layout check plus `night.mjs` and `inplace.mjs` on separate fresh temporary databases. Check 200% zoom, JavaScript off, reduced motion, long names and the narrow desktop detail column. PostgreSQL is required before a later release; this layout cycle has no write/locking change.
+- [x] **Bounded visual verification.** Use the study captures as the incumbent baseline. Inspect phone and desktop together after the complete build, fix any material defects in one batch, and confirm once. Do not expand into unrelated session redesign. Run the layout detector on the changed markup; explain any advisory findings with rendered evidence.
 - [ ] **Rendezvous and docs — `docs: record transfer alignment verification`.** Record actual checks and acceptance results in this plan. Update DESIGN.md's transfer layout, the session surface brief, wiki features, browser README and TODO phone check. Merge the verified branch locally to main. Do not push or deploy.
 
 ## Verification and user check
@@ -54,3 +54,13 @@ Revert the scoped markup/CSS and associated documentation commits. No data rollb
 ## Progress
 
 2026-10-05: source and rendered study complete. Mechanical layout scan is empty; rendered measurements identify wrapping and alignment failures. Baseline Django suite passes 677 tests with ten PostgreSQL-only skips. Waiting for human approval of this plan. Application code is unchanged.
+
+2026-10-05: Human approved Phase 2 with “continue.” Execution, rendezvous and doc sync are authorized. Push and deployment remain outside this cycle.
+
+2026-10-05: Implementation and verification complete. The list container retains the planned 440px breakpoint; the 900px viewport produces 416px cards and correctly uses stacked identities. Identity chips/direction align at the first line. Named financial areas keep paid timestamps below the badge and actions at their assigned right edge. Complete transfer figures use 28px normally, content-length roles of 22px/18px narrow and 28px/22px wide. The stacked default remains usable without container queries. Service routes, permission gates and native form fields are unchanged.
+
+Checks: 677 Django tests pass, ten PostgreSQL-only skips; the Vercel-style SQLite test command also passes 677 with ten skips. `transfer_layout.mjs` passes 155/155, `night.mjs` passes 53/53, and `inplace.mjs` passes 38/38. Each suite used a fresh temporary SQLite database and isolated localhost server. The layout detector reports `[]`. No production or development inspection data was added. No PostgreSQL run is required for this UI-only cycle; it remains required before release.
+
+AC1–AC5 pass in Chrome: payer/payee/amount/state/action DOM order, visible keyboard focus, first-line chips, assigned grid rows, complete single-line figures, overflow and 48px targets at 320/390/768/900/1280px; large pesos/chips and long names; host/player/archived views; Mark paid/Undo, remaining totals, reversed payment records and unchanged frozen results; native forms without JavaScript; static cards with reduced motion. Desktop 200% zoom reflow is emulated at 640 CSS pixels and DPR 2 for a 1280px physical window. This is not a native Safari or browser-zoom appearance claim. AC6 automated checks pass; the iPhone appearance check remains on TODO.
+
+Bounded inspection: the first complete phone/desktop capture batch confirmed the intended hierarchy and grouping. Amount/state/action are distinct, with 8px identity joins and 12px/16px financial spacing. Long names get useful rows; the actual 416px desktop card uses the same protection. One confirmation batch corrected test measurement assumptions (text bounds instead of a fixed 40px line-height limit, and desktop zoom reflow instead of CSS body zoom). No broader redesign or further UI polishing was needed. The existing night regression had a stale “Session closed” message assertion; it now checks the actual closed state and generated transfer cards.
