@@ -151,11 +151,19 @@
     if (main && !document.querySelector("[autofocus]")) main.focus({ preventScroll: true });
   });
 
-  // A link is fetched when the finger touches it, a moment before the tap completes. Turbo
-  // itself prefetches on mouse hover, which a phone only reports together with the tap.
+  // A link is fetched when the finger touches it, so the answer is on its way while the finger is
+  // still down. Turbo prefetches on mouse hover, which a phone only reports together with the tap,
+  // so the touch is passed on as that hover. Turbo then waits 100ms before it sends, in case the
+  // mouse is only passing over; a tap is over by then. A finger has arrived, so for the length of
+  // this one call Turbo's timer is given no delay. Without this a tap got no head start, and a
+  // quick tap asked for the screen twice.
   document.addEventListener("touchstart", function (event) {
     var link = event.target.closest && event.target.closest("a[href]");
-    if (link) link.dispatchEvent(new MouseEvent("mouseenter", { bubbles: false }));
+    if (!link) return;
+    var timer = window.setTimeout;
+    window.setTimeout = function (run) { return timer.call(window, run, 0); };
+    try { link.dispatchEvent(new MouseEvent("mouseenter", { bubbles: false })); }
+    finally { window.setTimeout = timer; }
   }, { capture: true, passive: true });
 
   var sent = null; // the form whose update is on its way

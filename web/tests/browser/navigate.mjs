@@ -75,6 +75,20 @@ try {
  check('a tapped tab keeps its look; the marker alone says which tab is current',!(await A.js(lit(`document.querySelector('.tabs a.is-going')`)))&&await A.js(`getComputedStyle(document.querySelector('.tabs a.is-going')).color===getComputedStyle(document.querySelector('.tabs a:not([aria-current]):not(.is-going)')).color`));
  await A.go('/');await A.js(`document.querySelector('.group-home-head h2 a').classList.add('is-going')`);
  check('a group name has a pressed look',await A.js(lit(`document.querySelector('.group-home-head h2 a')`)));
+ // 1c. A touched link is fetched at once, so the answer is on its way while the finger is still down, and a
+ // quick tap does not ask twice. (Turbo alone waits 100ms, as for a mouse passing over.)
+ await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1},A.s);
+ for(const hold of [60,130]){
+  await A.go('/g/1/');
+  await A.js(`(()=>{const f=window.fetch;window.__sent=[];window.__timer=window.setTimeout;window.fetch=function(u,o){__sent.push({t:performance.now(),u:String((u&&u.url)||u)});return f.apply(this,arguments)};addEventListener('touchstart',()=>{window.__touch=performance.now()},{capture:true,once:true});addEventListener('click',()=>{window.__click=performance.now()},{capture:true,once:true})})()`);
+  const p=JSON.parse(await A.js(`(()=>{${friday}.scrollIntoView({block:'center'});const b=${friday}.getBoundingClientRect();return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2,path:${friday}.getAttribute('href')})})()`));
+  await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:p.x,y:p.y}]},A.s);await sleep(hold);await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]},A.s);await sleep(1300);
+  const got=JSON.parse(await A.js(`JSON.stringify({timer:window.setTimeout===window.__timer,sent:__sent.filter(r=>new URL(r.u,location.href).pathname===${JSON.stringify(p.path)}).map(r=>Math.round(r.t-__touch)),lift:Math.round(__click-__touch),at:location.pathname})`));
+  console.log(`  finger down ${hold}ms: lifted at ${got.lift}ms, requests at ${got.sent.join(', ')}ms`);
+  check(`touch for ${hold}ms: the screen is asked for once, as the finger lands`,got.sent.length===1&&got.sent[0]<=25&&got.at===p.path);
+  check(`touch for ${hold}ms: the page's timers are left as they were`,got.timer===true);
+ }
+ await send('Emulation.setTouchEmulationEnabled',{enabled:false},A.s);
  // 2. No leak after 20 screen changes.
  await A.go('/g/1/');mark=events.length;
  for(let i=0;i<5;i++){await A.click(friday,600);await A.click(toSet,600);await A.click(back,600);await A.click(back,600)}
