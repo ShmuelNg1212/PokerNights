@@ -42,6 +42,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Next (each needs its own study and plan)
 
+- [ ] After the next release, on your iPhone: open a set that is counting up and tap a count field. The bar with the running total and the verdict should sit directly above the keyboard and change as you type; closing the keyboard puts the dock back. Say so if it still hides ([plan](doc/plan/1791184990_dock_behind_keyboard.md)).
+
 - [ ] **Password reset.** The repeat critique still rates account recovery P1. A host-issued reset link (hosts already issue invite links) is the candidate; it needs a token model and a migration.
 - [ ] Entry pages: make the invitation the subject (group name as the heading, compact mark), shorten the password help, and give a new player a first step on the group page. From the repeat critique.
 

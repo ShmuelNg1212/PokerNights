@@ -611,15 +611,24 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .dock-enabled .table-layout .dock-toggle { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; column-gap: var(--s-2); width: 100%; min-height: var(--tap); margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
   .dock-toggle .dock-next { display: none; grid-column: 1; font-weight: 400; overflow-wrap: anywhere; }
   .dock-toggle .icon { grid-column: 2; grid-row: 1 / span 2; color: var(--muted); }
-  .dock-collapsed .dock-toggle { padding: 6px 0; }
-  .dock-collapsed .dock-toggle .dock-title { font-size: .8125rem; color: var(--muted); }
-  .dock-collapsed .dock-toggle .dock-next { display: block; color: var(--text); font-size: .9375rem; }
+  .dock-toggle .dock-count { display: none; grid-column: 1; font-weight: 400; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  :is(.dock-collapsed, .kb-bar) .dock-toggle { padding: 6px 0; }
+  :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-title { font-size: .8125rem; color: var(--muted); }
+  :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-next { display: block; color: var(--text); font-size: .9375rem; }
+  :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-count { display: block; font-size: .9375rem; }
+  :is(.dock-collapsed, .kb-bar) .dock-toggle:has(.dock-count) .dock-title { display: none; }
   .dock-collapsed .dock-toggle .icon { transform: rotate(180deg); }
+  .kb-bar .dock-toggle .icon { visibility: hidden; }
   .dock-enabled .table-layout .host-controls { padding-top: 0; }
-  .dock-collapsed:not(.dock-closing) .table-layout .host-controls > :not(.dock-toggle) { display: none; }
+  :is(.dock-collapsed:not(.dock-closing), .kb-bar) .table-layout .host-controls > :not(.dock-toggle) { display: none; }
+  /* iPhone keyboard: dock.js raises the dock by the height the keyboard covers. */
+  .kb-open .table-layout .host-controls { bottom: var(--kb, 0px); padding-bottom: 6px; max-height: calc(100dvh - var(--kb, 0px) - 16px); }
   .dock-toggle .icon { transition: transform var(--t-fast) var(--ease-out); }
   .dock-enabled .table-page:has(.table-layout .host-controls) { padding-bottom: calc(var(--dock-h, 128px) + 16px); }
+  /* The page also reserves the keyboard's height, so a field near the end can scroll clear of the raised bar. */
+  .kb-open .table-page:has(.table-layout .host-controls) { padding-bottom: calc(var(--dock-h, 128px) + var(--kb, 0px) + 16px); }
   .dock-enabled .count-entry input { scroll-margin-block-end: calc(var(--dock-h, 200px) + 16px); }
+  .kb-open .count-entry input { scroll-margin-block-end: calc(var(--dock-h, 200px) + var(--kb, 0px) + 16px); }
 }
 /* Options under "More host controls" are buttons; an open one keeps its form directly below. */
 .host-more > * + * { margin-top: var(--s-2); }

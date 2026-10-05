@@ -51,9 +51,12 @@
     put("status", status);
     var coverage = missing + " still to count." + (invalid ? " " + invalid + " invalid." : "");
     put("coverage", coverage);
-    // The collapsed dock bar repeats the verdict, so it stays readable while typing.
+    // The collapsed dock bar repeats the running total and the verdict, so both stay readable while typing.
     var bar = document.querySelector("[data-dock-status]");
-    if (bar) { bar.textContent = status; bar.parentElement.querySelector("[data-dock-coverage]").textContent = coverage; }
+    if (bar) {
+      bar.textContent = status; bar.parentElement.querySelector("[data-dock-coverage]").textContent = coverage;
+      document.querySelector("[data-dock-accounted]").textContent = invalid ? "Unavailable" : format(total, chips);
+    }
   }
   document.addEventListener("input", function (event) { if (event.target.matches("[data-count-input]")) update(); });
   document.addEventListener("change", update);

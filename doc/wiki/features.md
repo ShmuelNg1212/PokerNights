@@ -88,6 +88,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
 - The dock slides open and closed (320 ms and 200 ms); reduced motion switches at once.
+- In count-up the collapsed bar shows the running total (“₱1,900 of ₱2,000 bought in”) and the verdict, both updated as counts are typed.
+- On an iPhone, while the keyboard is up, the dock sits on top of the keyboard as the bar and returns to its saved state when the keyboard closes. Typing in a field inside the dock keeps it expanded. `dock.js` reads `window.visualViewport` and sets `--kb` and the classes `kb-open` and `kb-bar` on `<html>`. See the footgun [fixed elements sit under the iPhone keyboard](footguns/ios_keyboard_covers_fixed.md). Not yet confirmed on a real iPhone.
 - The options under “More host controls” are all full-width buttons, including Cancel this set and Or add one player.
 - There is no toggle from 900 px, without JavaScript, or for players.
 - Code: `templates/web/_host_controls.html`, `static/js/dock.js`, the last block of `static/css/app.css`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
