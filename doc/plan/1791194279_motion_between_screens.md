@@ -20,3 +20,5 @@ Verification:
 - Mid-movement captures were inspected at 390px (a tab change with the marker sliding; chips travelling from a session's results to a set).
 
 **AC4 is open: only the human can judge it on a phone.** Not verified: Safari and the installed app on an iPhone (whether a tap during a movement reaches its control there, how the carried name looks when its two sizes differ a lot, and whether the phone's Back gesture plays cleanly with the cross-fade); frame rate on a long page.
+
+2026-10-05 release: the human merged and pushed `main` at `648cca8` (previous production commit `8190e23`). The suite had passed on local PostgreSQL 17 for this code. About two and a half minutes after the merge commit the live site served the new `turbo-setup.js` (byte-for-byte the local file) and the stylesheet with the screen movements, and the login page no longer carried Turbo's `view-transition` meta tag. Not checked on production: any signed-in page, and anything on a real iPhone (AC4).
