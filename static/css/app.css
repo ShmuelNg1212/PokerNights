@@ -714,3 +714,12 @@ legend { padding: 0; }
 /* A link inside a sentence keeps a 48px touch height without stretching the line. */
 .inline-target { display: inline-block; min-height: var(--tap); padding: 14px 0; margin: -14px 0; line-height: 20px; color: var(--text); text-underline-offset: 4px; }
 .entry-alt-plain { min-height: var(--tap); display: flex; align-items: center; justify-content: center; }
+
+/* Offline notice: a fixed line at the top while the phone reports no connection. */
+.offline-notice { position: fixed; top: 0; left: 0; right: 0; z-index: 30; min-height: 44px; display: flex; align-items: center; justify-content: center;
+  padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top)); background: var(--warn-bg); color: var(--warn); border-bottom: 1px solid var(--warn);
+  font-size: .9375rem; font-weight: 600; text-align: center; text-wrap: balance; }
+.is-offline body { padding-top: var(--offline-h, 44px); }
+.is-offline .site-header { top: var(--offline-h, 44px); }
+.offline-notice.nudge { animation: offline-nudge var(--t-focal) var(--ease-out); }
+@keyframes offline-nudge { from { background: var(--warn); color: var(--ink); } }
