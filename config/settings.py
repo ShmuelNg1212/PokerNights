@@ -17,7 +17,7 @@ from pathlib import Path
 import environ
 from django.core.exceptions import ImproperlyConfigured
 
-from config.deploy import database_config, vercel_hosts
+from config.deploy import database_config, static_version, vercel_hosts
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -171,6 +171,12 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Stylesheets and scripts carry ?v=<release> on Vercel and are cached for a year (see vercel.json).
+STATIC_VERSION = static_version(os.environ)
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},
+}
 
 
 # Email

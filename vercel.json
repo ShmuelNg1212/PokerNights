@@ -4,5 +4,25 @@
   "regions": [
     "sin1"
   ],
-  "buildCommand": "HTTPS_ONLY=False DATABASE_URL=sqlite:////tmp/pokernights-build-tests.sqlite3 python manage.py test --noinput && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" python manage.py migrate --noinput"
+  "buildCommand": "HTTPS_ONLY=False DATABASE_URL=sqlite:////tmp/pokernights-build-tests.sqlite3 python manage.py test --noinput && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" python manage.py migrate --noinput",
+  "headers": [
+    {
+      "source": "/static/(css|js)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/static/(fonts|branding|icons)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+        }
+      ]
+    }
+  ]
 }

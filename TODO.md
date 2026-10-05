@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) is done. Stage 2 (installable app) is deferred. Next: stage 3, actions update in place, which needs its own study and plan. A last stage 6 is a motion overhaul with Motion (motion.dev).
+
 The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
 
 The stakes forms revamp is done ([plan](doc/plan/1791121411_session_form.md)): one field box for every form, and New session, Set settings and presets in titled groups with pairs. No migration.

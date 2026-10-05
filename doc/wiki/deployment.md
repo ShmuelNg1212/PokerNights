@@ -39,6 +39,14 @@ python3 -c "import secrets;print(secrets.token_urlsafe(64),end='')" | npx vercel
 
 When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects to HTTPS, marks session and CSRF cookies `Secure`, and sends HSTS for one year (this host only). `manage.py check --deploy` is clean with these settings and `config/tests.py` enforces it. The app refuses to start on Vercel without `DATABASE_URL`.
 
+## Static files and caching
+
+- Stylesheet and script addresses carry `?v=<release>` on Vercel (`config.storage.VersionedStaticStorage`, tag from `config.deploy.static_version`). `vercel.json` caches `/static/css/` and `/static/js/` for a year as immutable.
+- Fonts, branding and icons are cached for a week with background revalidation and are not versioned. **To change a font or a logo, give the file a new name.**
+- On Vercel with no deployment id, commit or URL to derive the tag from, the app refuses to start, so the build fails and production keeps its version.
+- HTML is never cached.
+- Locally and in tests there is no tag and addresses are plain.
+
 ## Who can get in
 
 Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email; a superuser sets a new password in `/admin/`. Sign up and a refused login say so.
