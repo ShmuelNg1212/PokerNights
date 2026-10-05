@@ -53,8 +53,9 @@ Branch `perf/fewer-queries`: `16d07eb` (login session write), `010b829` (sets an
 | Page | Queries before | After |
 |---|---|---|
 | Session, one set, closed | 23 | 14 |
-| Session, one set, open | 18 | 12 |
-| Session, three sets, open | 32 | 12 |
+| Session, one set, open | 18 | 11 |
+| Session, three sets, open | 32 | 11 |
+| Session with no money yet, seen by a host | 24 | 17 |
 | Set in play, and a poll that redraws | 15 | 13 |
 | Your groups | 14 reads and a write of the login session | 14 reads |
 | Group settings | up to 12 | up to 9 |
