@@ -1,6 +1,6 @@
 # Phone performance and smooth motion: plan
 
-Status: stages 1 and 2 built and verified 2026-10-06, not released. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
+Status: stages 1 and 2 released 2026-10-06 as `c84f45a`. Stage 3 waits for the phone's numbers. Approved 2026-10-05. Working branch: `perf/phone-smoothness`. Date: 2026-10-05, Asia/Manila. Study: [phone performance and smoothness](../study/1791214796_phone_performance_and_smoothness.md). Base: `main` at `90ff346`.
 
 ## Outcome
 
@@ -71,7 +71,7 @@ No change to services, models, money rules, polling interval, the service worker
 
 ## Verification record (2026-10-06)
 
-Branch `perf/phone-smoothness`: `9e684fc` (timing header and readout), `326f23d` (dock), `9dbd24f` (pressed links), `b615c44` (marks). Not merged, not pushed.
+Branch `perf/phone-smoothness`: `9e684fc` (timing header and readout), `326f23d` (dock), `9dbd24f` (pressed links), `b615c44` (marks). Merged to `main` by fast-forward and pushed on 2026-10-06; the Vercel build passed and the live site carries the header about two minutes after the push.
 
 | Check | Result |
 |---|---|
