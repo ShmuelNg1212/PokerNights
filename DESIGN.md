@@ -635,6 +635,10 @@ This Operate extension inherits The Rack: no new colour, font, radius or imagery
 - **Group settings → Players.** The once-only link is a `notice-good` panel at the top of the Players panel with a read-only field, as the invite link is. The action is a small button in the member's Manage block, between the role button and Remove; a live link adds one muted line and “Cancel link”.
 - No new token, colour, font or asset.
 
+### 2026-10-06 addendum — Copy button in a link field
+
+A link that is shown once sits in a read-only field with a text button in its right edge, built like the password Show button: transparent, 80 px wide at least, the field's full height (48 px), bone text at 14 px semibold. It reads "Copy", then "Copied" in the success green for two seconds; the word changes, so colour is not the only signal. The address ends in an ellipsis before the button. A refusal adds one 14 px line in the text colour under the field. Template `web/_copy_field.html`; classes `.copy-wrap`, `.copy-button`, `.copy-status`.
+
 ## Do's and Don'ts
 
 ### Do:
