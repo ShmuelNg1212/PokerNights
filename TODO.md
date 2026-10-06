@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. **Not pushed, so not released.**
+Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. Released 2026-10-06 as `283ecc2` (previous production commit `7639c8f`); the live site serves the new `counts.js`. Phone acceptance remains open.
 
 Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
 
@@ -72,8 +72,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Say when to push player rebuys and counts** (or push it: `git push origin main`). One migration that adds a table and one empty column.
-- [ ] **After it is released, with two phones on one set** (a host and a player with a login):
+- [ ] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
   1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
   2. Open the Rebuy sheet for that player on the host's phone and leave it open. Record another rebuy from the player's phone, then confirm on the host's phone: it should be refused and say who recorded the other one.
   3. End play. On the player's phone type a count and tap Send to host. The host's row should show "Entered" and the number, and the main button "Confirm 1 count".

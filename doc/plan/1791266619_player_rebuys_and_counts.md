@@ -135,3 +135,5 @@ Acceptance: AC1 to AC10 are met. AC2 and AC4 were measured in the browser check 
 Not verified: physical phones, a screen reader, mobile data, and more than three people on one set.
 
 Documentation synced: wiki features, architecture, deployment and journal, PRODUCT.md, DESIGN.md, browser README, TODO.
+
+2026-10-06 release: pushed `283ecc2` to `main` on the human's instruction (previous production commit `7639c8f`). About three minutes later the live site served the new `counts.js`; `/healthz` and Log in answered 200, and the new address `/s/1/counts/enter/` answered a signed-out POST with 403 (the CSRF check), so the route exists. The Vercel build log and the migration were not read from here, and no set was played on the live site. Phone acceptance remains open.
