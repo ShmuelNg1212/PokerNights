@@ -62,8 +62,9 @@ def signup(request):
 def password_reset(request, token):
     """The address in a reset link. Opening it changes nothing; saving a password uses the link up."""
     response = _password_reset(request, token)
-    # The address is a key to the account: it is not passed on to any other page or site.
-    response["Referrer-Policy"] = "no-referrer"
+    # The address is a key to the account, so it is never passed on to another site. Not "no-referrer":
+    # the browser would then send the form with "Origin: null" and the CSRF check would refuse it.
+    response["Referrer-Policy"] = "same-origin"
     return response
 
 

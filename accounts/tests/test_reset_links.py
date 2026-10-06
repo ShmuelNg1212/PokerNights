@@ -119,10 +119,19 @@ class ResetPageTests(TestCase):
         self.assertContains(page, "<title>Reset password · PokerNights</title>")
         self.assertNotIn("maria", page.content.decode().split("</title>")[0])
 
-    def test_page_is_never_stored_and_sends_no_referrer(self):
+    def test_page_is_never_stored_and_keeps_its_address_on_this_site(self):
         for page in (self.client.get(self.url), self.client.get(reverse("password_reset", args=["nope"]))):
             self.assertIn("no-store", page["Cache-Control"])
-            self.assertEqual(page["Referrer-Policy"], "no-referrer")
+            # "no-referrer" would make a browser post the form with "Origin: null", which CSRF refuses.
+            self.assertEqual(page["Referrer-Policy"], "same-origin")
+
+    def test_a_browser_post_passes_the_csrf_check(self):
+        browser = Client(enforce_csrf_checks=True)
+        token = browser.get(self.url).context["csrf_token"]
+        data = {"new_password1": NEW, "new_password2": NEW, "csrfmiddlewaretoken": str(token)}
+        response = browser.post(self.url, data, headers={"Origin": "http://testserver"})
+        self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
+        self.assertEqual(browser.post(self.url, data, headers={"Origin": "null"}).status_code, 403)
 
     def test_opening_the_link_never_uses_it(self):
         for _ in range(3):

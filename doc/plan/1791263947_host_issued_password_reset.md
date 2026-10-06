@@ -119,3 +119,28 @@ Set `RESET_LINKS=False` in Vercel for an immediate stop. To remove the code, rev
 ## Progress and blockers
 
 2026-10-06: Study and plan complete. Waiting for the human's approval. No code written.
+
+2026-10-06: The human approved with “approved.”; all six decisions as recommended.
+
+2026-10-06 execution on `feat/password-reset`, tests first.
+
+Changes from the plan:
+
+- **`Referrer-Policy` is `same-origin`, not `no-referrer`.** The browser check found that with `no-referrer` a browser posts the form with `Origin: null` and Django's CSRF check refuses it, so no password could be saved. `same-origin` still keeps the address from any other site. A test with CSRF checks on now covers both origins. Django's own test client did not show this.
+- **Sign up also falls back** to “There is no password reset yet.” when `RESET_LINKS=False`; the plan named only the Log in line.
+- **A switched-off account** (`is_active` false) is refused as “not valid”. The plan did not name the case.
+- `accounts` reports a bad link with its own `ResetLinkError`, because it cannot import `groups.errors.RuleError`.
+
+2026-10-06 verification:
+
+- 744 tests pass on SQLite (twelve PostgreSQL-only skips) and all 744 on local PostgreSQL 17, started for the run and stopped after. The two race tests (two uses of one link; two issues at once) passed six times on PostgreSQL.
+- `reset.mjs`: 43 of 43 on a fresh temporary database. `entry.mjs`: 91 of 91 on another, after its two wording checks and one selector were updated.
+- Captures inspected at 390px: the reset page, the once-only notice, the active-link row and the used-link page.
+
+Acceptance: AC1 to AC10 are met.
+
+Not verified: a physical phone, a screen reader, a chat app's in-app browser and its link preview against the live site, and the switch on Vercel.
+
+Note: a development server that this cycle did not start was already listening on port 8765 (process 33989). It was left running; the checks used port 8771.
+
+Documentation synced: wiki features, architecture, deployment and journal, PRODUCT.md, DESIGN.md, roadmap, browser README, TODO.
