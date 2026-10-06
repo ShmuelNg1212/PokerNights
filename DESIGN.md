@@ -628,6 +628,13 @@ This Operate extension inherits The Rack: no new colour, font, radius or imagery
 - **One-trip actions (2026-10-06).** An action sent in place is answered with its page in one request. Nothing visual changes: the same in-place update, marks, toasts and sheet behaviour, sooner.
 - **Measuring.** `?perf=1` on any address shows a readout of each tap for that tab: the wait for the server, drawing, movement, the server's own figures and late frames. `?perf=0` removes it.
 
+### 2026-10-06 addendum — Password reset link
+
+- **Set a new password** (`templates/accounts/reset.html`) uses the entry frame without the description line: mark, name, heading, “Your username is **name**.” in the `.entry-invite` line, New password with the one Show button, Repeat password, and the bone button “Save and log in”. The tab title never names the account.
+- **A link that doesn't work** follows the invalid-invite page: heading, one `notice-bad` alert with the reason and the next step, and Log in as a quiet line.
+- **Group settings → Players.** The once-only link is a `notice-good` panel at the top of the Players panel with a read-only field, as the invite link is. The action is a small button in the member's Manage block, between the role button and Remove; a live link adds one muted line and “Cancel link”.
+- No new token, colour, font or asset.
+
 ## Do's and Don'ts
 
 ### Do:

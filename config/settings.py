@@ -183,6 +183,8 @@ SERVICE_WORKER = env.bool("SERVICE_WORKER", default=True)
 NUMPAD = env.bool("NUMPAD", default=True)
 # Turn off to answer every in-place action with a redirect again, two trips instead of one (see config/inplace.py).
 ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
+# Turn off to hide password reset links and refuse every one already sent (see accounts/services.py).
+RESET_LINKS = env.bool("RESET_LINKS", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

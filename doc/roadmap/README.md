@@ -8,7 +8,7 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Partly built 2026-10-04: profit/loss, sessions and win rate by month or all time. Seasons, year filter, average, ROI and a ranking threshold remain |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
-| 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployed 2026-10-04 at https://pokernights-five.vercel.app (Vercel and Neon, invite-only sign-up). Password reset and claim links remain |
+| 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployed 2026-10-04 at https://pokernights-five.vercel.app (Vercel and Neon, invite-only sign-up). Password reset by a host-issued link built 2026-10-06. Claim links remain |
 
 ## Visual redesign pulled forward
 

@@ -177,7 +177,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - The session page does not refresh by itself; the set page does.
 - No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
-- No password reset by email. A superuser sets a new password in `/admin/`.
+- No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
 - On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
 
 See the [roadmap](../roadmap/README.md).
@@ -316,3 +316,14 @@ On count confirmation, a visible typed field keeps its position when the accepte
 - Add `?perf=1` to any address. A small readout stays at the top of that tab and adds one line per tap: `wait` (tap to the server's answer), `draw`, `move` (until everything has stopped), the total, then `server` (the whole request), `db` (time in queries, with their count), `open` (time to open a database connection) and `late` (frames longer than 25 ms, of all frames, with the longest).
 - A screen that was fetched when the finger touched its link reads `wait 0 (fetched ahead)`.
 - `?perf=0` removes it. It lasts for the tab only and nothing runs without it.
+
+## Password reset link (2026-10-06)
+
+- **A host creates it.** Group settings → Players → “Manage {name}” → **Create password reset link**, for a member with a login. The link is shown once in the Players section and is sent by the host; the app sends nothing and stores only the link's hash.
+- **It works once and for 24 hours.** Creating another cancels the earlier one. While one is live the member's Manage block says “Reset link active until …” with **Cancel link**. Any host of a group the person is in sees and can cancel it.
+- **Refused for:** yourself; a roster player without a login; a site administrator (staff or superuser); a person who hosts another group. The last two keep a host from reaching the admin or another group's host powers by taking over an account.
+- **The person opens it** (`/accounts/reset/<token>/`, signed out or not): the page names their username and asks for a new password twice, with Sign up's rules and wording. Saving logs them in on Your groups and signs every other device out. Opening the link without saving changes nothing, so a chat app's preview cannot spend it.
+- **A link that is used, cancelled, expired or unknown** answers 404 with the reason and “Ask a host of your group for a new one.”
+- **What a host can still do:** open the link themselves and log in as one of their own players. The audit log records who created the link (`password_reset.issued`), a cancel (`password_reset.cancelled`) and the use (`password.reset`).
+- **Switch:** `RESET_LINKS=False` hides the action, refuses every link and returns Log in and Sign up to the “no reset yet” wording.
+- Code: `accounts/services.py` (the link's life and the password change), `groups/services.py` (`create_password_reset`, `cancel_password_reset`: who may ask), `accounts/views.py` (`password_reset`), `templates/accounts/reset.html`. Check: `web/tests/browser/reset.mjs`. [Plan](../plan/1791263947_host_issued_password_reset.md).

@@ -2,14 +2,14 @@
 
 Turbo fetches a link when the pointer or finger reaches it and marks the request
 ``X-Sec-Purpose: prefetch``. The page may never be shown. Flash messages and the session's
-one-time values (a kept form, a new invite link, typed counts) are therefore left exactly
+one-time values (a kept form, a new invite or reset link, typed counts) are therefore left exactly
 as they were, and the prefetched page is rendered without the messages.
 """
 
 import copy
 
 # Session values that a view shows once and then removes.
-ONE_TIME_KEYS = ("inline_forms", "new_invite_url", "count_drafts")
+ONE_TIME_KEYS = ("inline_forms", "new_invite_url", "new_reset_link", "count_drafts")
 
 
 def is_prefetch(request) -> bool:

@@ -3,6 +3,12 @@
 <section id="players" aria-labelledby="players-heading">
 <h2 id="players-heading">Players</h2>
 <div class="panel">
+{% if new_reset_link %}
+<div class="notice notice-good">
+  <p><strong>Reset link for {{ new_reset_link.name }}.</strong> Send it to {{ new_reset_link.name }} only. Whoever opens it can set the password. It works once and expires {{ new_reset_link.expires_at|date:"M j, H:i" }}.</p>
+  <input type="text" readonly value="{{ new_reset_link.url }}" aria-label="Password reset link for {{ new_reset_link.name }}" onfocus="this.select()">
+</div>
+{% endif %}
 <ul class="list">
   {% for m in members %}
   <li>
@@ -25,6 +31,19 @@
           {% csrf_token %}
           <input type="hidden" name="role" value="{% if m.is_host %}player{% else %}host{% endif %}">
           <button type="submit" class="btn btn-small">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
+        </form>
+        {% endif %}
+        {% if reset_links and m.has_login %}
+        {% if m.reset_link %}
+        <p class="small muted">Reset link active until {{ m.reset_link.expires_at|date:"M j, H:i" }}.</p>
+        <form method="post" action="{% url 'member_reset_link_cancel' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-small">Cancel link</button>
+        </form>
+        {% endif %}
+        <form method="post" action="{% url 'member_reset_link' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-small">{% if m.reset_link %}Create a new reset link{% else %}Create password reset link{% endif %}</button>
         </form>
         {% endif %}
         <form method="post" action="{% url 'member_remove' group.pk m.pk %}">

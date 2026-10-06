@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserCreationForm
 
 from .models import User
 
@@ -13,10 +13,12 @@ class LoginForm(AuthenticationForm):
     }
 
 
-class SignupForm(UserCreationForm):
-    """Django's sign-up rules with the app's words. The validators are unchanged."""
+class PlainWords:
+    """The app's wording for Django's password and username errors, by error code.
 
-    # Plain wording by Django's error code. A code that is not listed keeps Django's message.
+    A code that is not listed keeps Django's message. The cursor goes to the first refused field.
+    """
+
     WORDS = {
         "unique": "That name is taken. Try another.",
         "password_too_short": "Too short. Use at least 8 characters.",
@@ -26,23 +28,7 @@ class SignupForm(UserCreationForm):
         "password_mismatch": "The two passwords don't match.",
     }
     USERNAME_WORDS = {"invalid": "Use letters and numbers, with no spaces."}
-
-    class Meta(UserCreationForm.Meta):
-        model = User
-        fields = ("username",)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["username"].help_text = "Your friends see this name. Letters and numbers, no spaces."
-        self.fields["password1"].help_text = (
-            "At least 8 characters, not a common password, not only digits, and not like your username."
-        )
-        self.fields["password2"].label = "Repeat password"
-        self.fields["password2"].help_text = ""
-
-    def validate_password_for_user(self, user, password_field_name="password1"):
-        # A broken rule is reported under Password, where the rule is stated. A mismatch stays under Repeat password.
-        super().validate_password_for_user(user, "password1")
+    PASSWORD_HELP = "At least 8 characters, not a common password, not only digits, and not like your username."
 
     def full_clean(self):
         super().full_clean()
@@ -58,8 +44,41 @@ class SignupForm(UserCreationForm):
                 plain, error_class=getattr(errors, "error_class", None), renderer=errors.renderer,
                 field_id=getattr(errors, "field_id", None),
             )
-        # The cursor goes to the first refused field instead of always to Username.
         refused = next((name for name in self.fields if name in self._errors), None)
         if refused:
-            self.fields["username"].widget.attrs.pop("autofocus", None)
+            for field in self.fields.values():
+                field.widget.attrs.pop("autofocus", None)
             self.fields[refused].widget.attrs["autofocus"] = True
+
+
+class SignupForm(PlainWords, UserCreationForm):
+    """Django's sign-up rules with the app's words. The validators are unchanged."""
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].help_text = "Your friends see this name. Letters and numbers, no spaces."
+        self.fields["password1"].help_text = self.PASSWORD_HELP
+        self.fields["password2"].label = "Repeat password"
+        self.fields["password2"].help_text = ""
+
+    def validate_password_for_user(self, user, password_field_name="password1"):
+        # A broken rule is reported under Password, where the rule is stated. A mismatch stays under Repeat password.
+        super().validate_password_for_user(user, "password1")
+
+
+class NewPasswordForm(PlainWords, SetPasswordForm):
+    """Django's set-password rules, worded and laid out as on Sign up."""
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+        self.fields["new_password1"].help_text = self.PASSWORD_HELP
+        self.fields["new_password1"].widget.attrs["autofocus"] = True
+        self.fields["new_password2"].label = "Repeat password"
+        self.fields["new_password2"].help_text = ""
+
+    def validate_password_for_user(self, user, password_field_name="new_password1"):
+        super().validate_password_for_user(user, "new_password1")

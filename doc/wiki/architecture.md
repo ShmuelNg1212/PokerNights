@@ -7,7 +7,7 @@ One Django 6.1 project with server-rendered templates, one stylesheet and small 
 | App | Responsibility | Key files |
 |---|---|---|
 | `config` | Settings from the environment, root URLs, `/healthz`, database options per engine | `settings.py`, `deploy.py` |
-| `accounts` | Custom `User`, sign-up, login, logout. `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py` |
+| `accounts` | Custom `User`, sign-up, login, logout, and `PasswordResetLink` (a hashed one-use token; `services.py` is its only writer). `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py`, `services.py` |
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `groups` | `GameGroup`, `GroupRakeAccount`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
 | `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, the lifecycle, the clock | `services.py`, `access.py`, `forms.py` |

@@ -62,16 +62,23 @@ class EntryPagesTests(TestCase):
         page = self.client.post(self.login, {"username": "hana2", "password": "wrong"})
         self.assertContains(page, 'class="notice notice-bad" role="alert"', count=1)
         self.assertContains(page, "That username and password don&#x27;t match. Check capital letters.")
-        self.assertContains(page, "Forgot your password? There is no reset yet.")
+        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.")
         self.assertContains(page, 'value="hana2"')
         self.assertNotContains(page, 'value="wrong"')
+
+    @override_settings(RESET_LINKS=False)
+    def test_entry_pages_fall_back_when_reset_links_are_off(self):
+        page = self.client.post(self.login, {"username": "nobody", "password": "wrong"})
+        self.assertContains(page, "Forgot your password? There is no reset yet.")
+        self.assertContains(self.client.get(self.signup), "<strong>There is no password reset yet.</strong>")
 
     def test_signup_has_short_help_and_plain_labels(self):
         page = self.client.get(self.signup)
         self.assertContains(page, "<h1>Create your account</h1>")
         self.assertContains(page, "Your friends see this name. Letters and numbers, no spaces.")
         self.assertContains(page, "At least 8 characters, not a common password, not only digits, and not like your username.")
-        self.assertContains(page, "<strong>There is no password reset yet.</strong> Save it in your phone's password manager.")
+        self.assertContains(page, "Forgot it later? A host of your group can send you a reset link.")
+        self.assertNotContains(page, "There is no password reset yet.")
         self.assertContains(page, "Repeat password")
         self.assertNotContains(page, "Password confirmation")
         self.assertNotContains(page, "<ul>")  # the stock four-bullet rule list is gone

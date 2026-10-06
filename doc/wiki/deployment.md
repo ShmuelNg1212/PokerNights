@@ -27,6 +27,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `VERCEL`, `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | Vercel | Turn on the HTTPS settings, invite-only sign-up, and add the deployment's host names to `ALLOWED_HOSTS` |
 | `SIGNUP_REQUIRES_INVITE` | optional | Defaults to on at Vercel. Set `False` to open sign-up to everyone |
 | `ANSWER_IN_PLACE` | optional | Defaults to on. Set `False` to answer every in-place action with a redirect again (two trips instead of one), without a release (`config/inplace.py`). Redeploy for it to take effect |
+| `RESET_LINKS` | optional | Defaults to on. Set `False` to hide password reset links and refuse every one already sent, without a release (`accounts/services.py`). Redeploy for it to take effect |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |
 
@@ -58,7 +59,7 @@ App icons live under `/static/icons/` and are cached for a week without a versio
 
 ## Who can get in
 
-Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email; a superuser sets a new password in `/admin/`. Sign up and a refused login say so.
+Sign-up works only from a usable invite link (not revoked, expired or used up). Anything else answers 403 with an explanation. The first host of a group is added by a superuser: `/admin/` → Users → Add user. That person logs in, creates a group and sends invite links from Group settings. There is no password reset by email. A host creates a one-use reset link for a member in Group settings and sends it; Sign up and a refused login say so. A superuser still sets the password in `/admin/` for a site administrator, for a person who hosts more than one group, and for a group's only host.
 
 A signed-out visitor who opens a usable invite link lands on Sign up, and the new account joins that group at once. A person who already has an account logs in and confirms on the Join page. Where sign-up needs an invite, Log in offers the Sign up link only when the visit carries a usable one.
 

@@ -74,3 +74,7 @@ An invite link is the way in. A signed-out visitor who opens one creates an acco
 On a phone, typed numbers use the app's own number keys: amounts, final counts, stakes, rake and seats. The phone's keyboard stays for text. The keys only offer what the field can take, so a chips amount has no decimal point. The environment variable `NUMPAD=False` returns to the phone's keyboard.
 
 Ending a set is arranged around the host's task. The players' count fields come first, one running total is always in view, and one main button names the next step. Before cash-outs are recorded the review says whether the books will balance. Finalizing asks once, because the app cannot reopen a finalized set. The final page opens with what went in, what came out and that the two agree. Accounting, permissions and what each step records are unchanged. [Plan](doc/plan/1791202390_host_gaps_numpad_count_up.md).
+
+## 2026-10-06 addendum — Password reset link
+
+A person who forgot their password asks a host of their group. The host creates a reset link in Group settings and sends it; the person opens it, chooses a new password and is logged in. The link works once, lasts 24 hours and can be cancelled. The app sends nothing itself. A host cannot create one for a site administrator or for a person who hosts another group; those accounts, and a group's only host, still go to the site administrator. A host could use a link to log in as one of their own players; the audit log records who created and who used each link. [Plan](doc/plan/1791263947_host_issued_password_reset.md).

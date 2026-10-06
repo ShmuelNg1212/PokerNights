@@ -58,7 +58,7 @@ try {
  // Errors.
  await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='wrong-password'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
  check('wrong login: one notice, username kept, password empty',await A.js(`document.querySelectorAll('.notice-bad').length===1&&document.querySelector('[name=username]').value==='hana'&&document.querySelector('[name=password]').value===''`));
- check('wrong login: plain words, forgot line, focus on Password',await A.js(`${text("That username and password don't match.")}&&${text('Forgot your password? There is no reset yet.')}&&document.activeElement.name==='password'&&document.querySelectorAll('[role=alert]').length===1&&document.querySelectorAll('[aria-invalid=true]').length===2`));
+ check('wrong login: plain words, forgot line, focus on Password',await A.js(`${text("That username and password don't match.")}&&${text('Forgot your password? Ask a host of your group for a reset link.')}&&document.activeElement.name==='password'&&document.querySelectorAll('[role=alert]').length===1&&document.querySelectorAll('[aria-invalid=true]').length===2`));
  check('contrast forgot line',await A.js(contrast('.entry-forgot'))>=4.5);
  for(const width of [320,390]){await A.size(width);check('login error fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));await A.shot('entry-login-error-'+width);}
  await A.size(390);await A.go('/accounts/signup/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password1]').value='12345678';document.querySelector('[name=password2]').value='12345678'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
@@ -70,8 +70,8 @@ try {
  // A newcomer: invite link -> sign up -> group, in two screens.
  const B=await page();await B.go(M.invite);
  check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("You're invited to "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
- check('sign up says who sees the name and that there is no reset',await B.js(`${text('Your friends see this name.')}&&${text('There is no password reset yet.')}`));
- check('contrast password warning',await B.js(contrast('.hint-note strong'))>=4.5);
+ check('sign up says who sees the name and where a reset comes from',await B.js(`${text('Your friends see this name.')}&&${text('A host of your group can send you a reset link.')}`));
+ check('contrast reset note',await B.js(contrast('.hint-note'))>=4.5);
  await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);
  await B.js(`document.querySelector('form.form-section').addEventListener('submit',()=>setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},5))`);
  await B.click(`document.querySelector('form.form-section [type=submit]')`);

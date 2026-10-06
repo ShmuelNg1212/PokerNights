@@ -1,6 +1,6 @@
 <div class="field">
   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
   {% if toggle %}<div class="password-wrap">{{ field }}<button type="button" class="password-toggle" data-password-toggle hidden aria-label="Show password">Show</button></div>{% else %}{{ field }}{% endif %}
-  {% if field.help_text %}<div id="{{ field.auto_id }}_helptext" class="hint">{{ field.help_text }}{% if note %}<span class="hint-note"><strong>{{ note_strong }}</strong> {{ note }}</span>{% endif %}</div>{% endif %}
+  {% if field.help_text %}<div id="{{ field.auto_id }}_helptext" class="hint">{{ field.help_text }}{% if note %}<span class="hint-note">{% if note_strong %}<strong>{{ note_strong }}</strong> {% endif %}{{ note }}</span>{% endif %}</div>{% endif %}
   {% if field.errors %}<div class="errors">{{ field.errors }}</div>{% endif %}
 </div>
