@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. **Not pushed, so not released.**
+
 Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
 
 Host-issued password reset ([plan](doc/plan/1791263947_host_issued_password_reset.md), [study](doc/study/1791263946_host_issued_password_reset.md)): built on branch `feat/password-reset` and merged to local `main` on 2026-10-06. A host creates a one-use, 24-hour reset link in Group settings → Players; the player sets a new password with it and is logged in. One migration (`accounts.0002`, a new table). 744 tests pass on SQLite and PostgreSQL 17; `reset.mjs` 43 of 43. `RESET_LINKS=False` in Vercel turns it off. Released 2026-10-06 as `d573ba0`, pushed by the human (previous production commit `be53e29`). Phone acceptance remains open.
@@ -69,6 +71,16 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **Say when to push player rebuys and counts** (or push it: `git push origin main`). One migration that adds a table and one empty column.
+- [ ] **After it is released, with two phones on one set** (a host and a player with a login):
+  1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
+  2. Open the Rebuy sheet for that player on the host's phone and leave it open. Record another rebuy from the player's phone, then confirm on the host's phone: it should be refused and say who recorded the other one.
+  3. End play. On the player's phone type a count and tap Send to host. The host's row should show "Entered" and the number, and the main button "Confirm 1 count".
+  4. Change the number on the player's phone while the host has typed another player's count: the host's typing should stay.
+  5. Type a different number over the player's on the host's phone and confirm. The player's phone should say what the host confirmed.
+  6. Say what feels wrong. `PLAYER_ENTRIES=False` in Vercel turns it off without a release.
+- [ ] `SPEC.md` says nothing about players recording their own rebuy or count. Add it if the spec should match the app.
 
 - [ ] **The copy button is live. On your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
 - [ ] **After it is released, try it on two phones:** as a host open Group settings → Players → Manage a player → Create password reset link, and send yourself the link. Open it signed out on the other phone, try a short password, then a good one. Check you land on Your groups, that the old password no longer works, and that the same link then says it has been used. Create another link and tap Cancel link. If anything misbehaves, `RESET_LINKS=False` in Vercel turns it off.

@@ -5,10 +5,12 @@ Every amount is in the session's unit (pesos or chips).
 
 from dataclasses import dataclass, field
 
+from django.conf import settings
+
 from games.models import GameSession, Participant
 
 from . import money
-from .models import BalanceAdjustment, BuyIn, CashOut, FinalCount, RakeEntry
+from .models import BalanceAdjustment, BuyIn, CashOut, CountEntry, FinalCount, RakeEntry
 
 
 @dataclass
@@ -22,6 +24,7 @@ class PlayerLine:
     reversed_cash_outs: list = field(default_factory=list)
     adjustments: list = field(default_factory=list)  # active (not voided)
     count: object = None  # the current confirmed FinalCount, if any
+    entry: object = None  # the player's own current CountEntry, if any; a statement, never a count
 
     @property
     def buy_in_count(self) -> int:
@@ -72,6 +75,11 @@ class PlayerLine:
     @property
     def status_label(self) -> str:
         return {"cashed_out": "Cashed out", "ready": "Ready to cash out", "awaiting": "Awaiting count"}[self.status]
+
+    @property
+    def entered(self):
+        """The player's own number while it waits for the host. The player still counts as awaiting."""
+        return self.entry if self.status == "awaiting" and self.has_money else None
 
     @property
     def cashed_out(self) -> int:
@@ -168,6 +176,9 @@ def summary(session: GameSession) -> Summary:
             line.cash_outs.append(cash_out)
     for count in FinalCount.objects.filter(session=session, is_current=True).select_related("confirmed_by"):
         lines[count.participant_id].count = count
+    if settings.PLAYER_ENTRIES and session.state == GameSession.State.RECONCILIATION:
+        for entry in CountEntry.objects.filter(session=session, is_current=True):
+            lines[entry.participant_id].entry = entry
     for adjustment in BalanceAdjustment.objects.filter(session=session, voided_at__isnull=True):
         lines[adjustment.participant_id].adjustments.append(adjustment)
     shown = [

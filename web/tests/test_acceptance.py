@@ -76,7 +76,8 @@ class GameNightAcceptanceTest(TestCase):
         host.post(add_buy_in, {"participant_id": seats["B"].pk, "amount": "1000"})
         host.post(reverse("session_transition", args=[session.pk]), {"action": "start"})
         host.post(add_buy_in, {"participant_id": seats["C"].pk, "amount": "500"})  # C arrives late with a half buy-in
-        self.assertEqual(player_b.post(add_buy_in, {"participant_id": seats["B"].pk, "amount": "1000"}).status_code, 403)
+        # A player records nothing for another player (their own rebuy is covered in test_player_entries).
+        self.assertEqual(player_b.post(add_buy_in, {"participant_id": seats["A"].pk, "amount": "1000"}).status_code, 403)
 
         live = player_b.get(page_url)
         self.assertContains(live, "Total bought in")

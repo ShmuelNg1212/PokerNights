@@ -32,7 +32,8 @@
     var box = document.querySelector("[data-count-preview]");
     if (!box || typeof BigInt !== "function") return;
     var chips = box.dataset.unit === "chips";
-    var remaining = 0n, missing = 0, invalid = 0, drafts = 0, typed = {};
+    // "entered" counts a player's own number that the host has not typed over: confirming accepts it.
+    var remaining = 0n, missing = 0, invalid = 0, drafts = 0, entered = 0, typed = {};
     document.querySelectorAll("[data-count-input]").forEach(function (input) {
       var text = input.value.trim(), value = null;
       if (text) {
@@ -40,6 +41,7 @@
         value = parse(text, chips);
         if (value === null) invalid++;
       } else if (input.dataset.saved !== "") value = BigInt(input.dataset.saved);
+      else if (input.dataset.entered) { value = BigInt(input.dataset.entered); entered++; }
       else missing++;
       var error = input.parentElement.querySelector("[data-count-error]");
       var bad = !!text && value === null;
@@ -63,10 +65,11 @@
     var tone = invalid || box.dataset.stray === "1" ? "warn" : complete ? (difference === 0n ? "good" : "warn") : "";
     if (box.dataset.players === "0") tone = "";
     // A recorded override covers the difference; typed counts put the stack check back.
-    if (!drafts && box.dataset.covered) { status = box.dataset.covered; tone = ""; }
+    var pending = drafts + entered;
+    if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = ""; }
     var shown = invalid ? "Unavailable" : format(total, chips);
     function put(key, text) { box.querySelector("[data-count-" + key + "]").textContent = text; }
-    put("label", drafts ? "Preview · unsaved counts" : "Confirmed counts");
+    put("label", drafts ? "Preview · unsaved counts" : entered ? "Preview · players' counts" : "Confirmed counts");
     put("remaining", invalid ? "Unavailable" : format(remaining, chips));
     put("accounted", shown);
     put("status", status);
@@ -80,19 +83,19 @@
       bar.dataset.tone = tone;
       document.querySelector("[data-dock-accounted]").textContent = shown;
       var prefix = document.querySelector("[data-dock-prefix]");
-      if (prefix) prefix.textContent = drafts ? "Preview · " : "";
+      if (prefix) prefix.textContent = pending ? "Preview · " : "";
     }
     // While counts are typed, the main button confirms them and stands in for the next step.
     var confirm = document.querySelector("[data-confirm-typed]"), hint = document.getElementById("batch-why");
     if (confirm) {
-      confirm.hidden = !drafts;
-      if (!confirm.hasAttribute("aria-busy")) { confirm.disabled = invalid > 0; confirm.textContent = "Confirm " + drafts + (drafts === 1 ? " count" : " counts"); }
-      document.querySelectorAll("[data-next-server]").forEach(function (el) { el.hidden = drafts > 0; });
-      if (hint) hint.textContent = !drafts ? hint.dataset.hint : invalid ? "Check the highlighted counts first." : "Typed counts are not saved until you confirm them.";
+      confirm.hidden = !pending;
+      if (!confirm.hasAttribute("aria-busy")) { confirm.disabled = invalid > 0; confirm.textContent = "Confirm " + pending + (pending === 1 ? " count" : " counts"); }
+      document.querySelectorAll("[data-next-server]").forEach(function (el) { el.hidden = pending > 0; });
+      if (hint) hint.textContent = !pending ? hint.dataset.hint : invalid ? "Check the highlighted counts first." : drafts ? "Typed counts are not saved until you confirm them." : "Players' counts are not saved until you confirm them.";
     }
     // The numpad's strip repeats the running total while a count is typed (numpad.js).
     var note = document.querySelector("[data-numpad-note]");
-    if (note) note.textContent = (drafts ? "Preview · " : "") + shown + " of " + format(bought, chips) + " · " + (missing && !invalid ? missing + " to count" : status);
+    if (note) note.textContent = (pending ? "Preview · " : "") + shown + " of " + format(bought, chips) + " · " + (missing && !invalid ? missing + " to count" : status);
     remember(typed);
   }
   document.addEventListener("input", function (event) { if (event.target.matches("[data-count-input]")) update(); });

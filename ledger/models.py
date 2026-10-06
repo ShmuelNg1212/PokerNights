@@ -78,6 +78,36 @@ class BuyInReversal(models.Model):
         return f"Reversal of buy-in {self.buy_in_id}"
 
 
+class CountEntry(models.Model):
+    """What a player says they have at the end of a set, typed on their own phone. Not a count yet.
+
+    It is a statement for the host to confirm; it is never cashed out or added to a result
+    by itself. A change adds a row with the next version; rows are never edited.
+    ``is_current`` marks the one statement in force for a player.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.PROTECT, related_name="count_entries")
+    participant = models.ForeignKey(Participant, on_delete=models.PROTECT, related_name="count_entries")
+    amount = models.BigIntegerField()
+    version = models.PositiveIntegerField(default=1)
+    is_current = models.BooleanField(default=True)
+    request_id = models.UUIDField()
+    entered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["participant"], condition=Q(is_current=True), name="count_entry_one_current"),
+            models.UniqueConstraint(fields=["participant", "version"], name="count_entry_version_unique"),
+            models.UniqueConstraint(fields=["session", "request_id"], name="count_entry_request_once"),
+            models.CheckConstraint(condition=Q(amount__gte=0), name="count_entry_not_negative"),
+        ]
+
+    def __str__(self):
+        return f"Entered count v{self.version} of {self.amount} by participant {self.participant_id}"
+
+
 class FinalCount(models.Model):
     """A host's confirmation of what a player has at the end of a set. Not yet a cash-out.
 
@@ -93,6 +123,8 @@ class FinalCount(models.Model):
     is_current = models.BooleanField(default=True)
     request_id = models.UUIDField()
     confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    # The player's own statement that this confirmation accepted, when it came from one.
+    entry = models.ForeignKey(CountEntry, null=True, blank=True, on_delete=models.PROTECT, related_name="confirmations")
     created_at = models.DateTimeField(auto_now_add=True)
     voided_at = models.DateTimeField(null=True, blank=True)
     voided_by = models.ForeignKey(

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -151,12 +152,19 @@ def session_context(session, me) -> dict:
         "can_configure_rake": me.is_host and session.state in ("setup", "open") and not games.has_money(session),
         "can_join": session.state in games.JOINABLE_STATES,
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
+        # A player types their own final count while the set is counting up; the host confirms it.
+        "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
     }
     played, running_ids = clock.player_clocks(session)
     for line in summary.lines:
         line.play_seconds = played.get(line.participant.pk)
         line.clock_running = line.participant.pk in running_ids
         # The row offers "Cash out" only where the ledger would accept it mid-set.
+        # A host records for anyone at the table; a player records their own rebuy.
+        line.can_buy_in = (
+            context["can_buy_in"] and line.participant.status == Participant.Status.JOINED
+            or not me.is_host and line.participant.member_id == me.pk and ledger.can_rebuy_own(session, line)
+        )
         line.can_cash_out_now = (
             context["can_cash_out"] and session.state == GameSession.State.RUNNING
             and line.has_money and not line.is_cashed_out

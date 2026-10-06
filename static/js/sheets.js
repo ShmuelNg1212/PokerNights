@@ -64,6 +64,9 @@ if (error) {
 var source = find(S.key), fresh = source && Array.from(source.querySelectorAll("form")).find(function (el) { return el.getAttribute("action") === form.getAttribute("action"); });
 var id = form.querySelector("[name=request_id]"), freshId = fresh && fresh.querySelector("[name=request_id]");
 if (id && freshId) id.value = freshId.value;
+// The page now shows the player's latest buy-ins, so the next try is checked against those.
+var seen = form.querySelector("[name=seen_count]"), freshSeen = fresh && fresh.querySelector("[name=seen_count]");
+if (seen && freshSeen) seen.value = freshSeen.value;
 delete form.dataset.sent;
 form.querySelectorAll("button[type=submit]").forEach(function (button) { button.disabled = false; button.removeAttribute("aria-busy"); if (button.dataset.label) button.textContent = button.dataset.label; });
 showError(form, error.textContent);

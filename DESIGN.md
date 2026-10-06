@@ -639,6 +639,14 @@ This Operate extension inherits The Rack: no new colour, font, radius or imagery
 
 A link that is shown once sits in a read-only field with a text button in its right edge, built like the password Show button: transparent, 80 px wide at least, the field's full height (48 px), bone text at 14 px semibold. It reads "Copy", then "Copied" in the success green for two seconds; the word changes, so colour is not the only signal. The address ends in an ellipsis before the button. A refusal adds one 14 px line in the text colour under the field. Template `web/_copy_field.html`; classes `.copy-wrap`, `.copy-button`, `.copy-status`.
 
+### 2026-10-06 addendum — A player's own row
+
+- **Running set.** A player's own row carries the host's Rebuy button and sheet, unchanged. Other rows have no action.
+- **Count-up, player.** The own row holds a labelled field "Your count", right-aligned figures in the count style, beside a primary "Send to host" button, with one muted help line. After sending: one line "You entered **₱1,450**. Waiting for the host to confirm." and a "Change" disclosure with the same form.
+- **Count-up, everyone.** A row with an entered number shows a neutral badge "Entered" and "₱1,450, not confirmed yet" where "Awaiting count" was. The neutral badge keeps it apart from the amber awaiting and the blue ready states.
+- **Count-up, host.** The field stays empty with the entered number as its placeholder, and one muted line under it names the player, the number and the two choices. The dock's label reads "Preview · players' counts" until the host confirms.
+- No new token, colour, font or asset. Classes: `.own-count`, `.own-count-state`, `.own-count-change`, `.count-entered`.
+
 ## Do's and Don'ts
 
 ### Do:

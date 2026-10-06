@@ -59,7 +59,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment. Add players stays available during play even when every roster member is seated. The same page offers Add new player: enter a name to save a no-login roster identity and join them to the current set in one action. The new player’s timer starts when they join; record their buy-in separately. Duplicate names direct the host to roster selection, or back to the set if that player is already seated, and a full or ended set adds nobody.
 3. **Start play and opening buy-ins.** Start the set includes a checked option to add the set’s usual buy-in for each player at the table without an accepted buy-in. Existing buy-ins are kept, even at a different amount. Uncheck the option to start without automatic entries. Records and timers commit together; repeated confirmation creates nothing twice. Each new set uses its own current settings. Resume and late joining add no automatic buy-in. A reversed-only player qualifies again before first start; uncheck when that is intentional.
-4. **Buy-ins and rebuys.** The host records each one with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s Buy-in or Rebuy button and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
+4. **Buy-ins and rebuys.** The host records each one (a player with a login can record their own rebuy; see “Player rebuys and player-entered counts”) with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s Buy-in or Rebuy button and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
 5. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
 6. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
 7. **Balance check.** After play ends, the screen compares cash-outs plus collected rake with gross buy-ins. A difference is shown as an amount, with its direction and likely causes.
@@ -334,3 +334,29 @@ On count confirmation, a visible typed field keeps its position when the accepte
 - If the browser refuses, or has no clipboard (an http address), nothing says Copied: the address is selected in the field and a line under it says "Could not copy. The link is selected: copy it from the menu."
 - Without JavaScript the button is hidden and the field is selected by hand, as before.
 - Code: `static/js/copy.js` (a button with `data-copy="<field id>"` and a status line with `data-copy-status`), `templates/web/_copy_field.html`. Check: `web/tests/browser/copy.mjs`. [Plan](../plan/1791265490_copy_link_button.md).
+
+## Player rebuys and player-entered counts (2026-10-06)
+
+**A player's own rebuy**
+
+- A player with a login who is at the table and already has a buy-in sees **Rebuy** on their own row, and the host's sheet behind it. The rebuy is recorded at once with the set's limits and rake; the log names the player as the recorder.
+- Only for themselves. The first buy-in, a player who has left, a player with a final cash-out, and every player without a login stay with the host. Only a host reverses.
+- Every phone on the set shows it within about 5 seconds, with the brass mark and "Rebuy added".
+
+**No doubled rebuy**
+
+- Every buy-in form carries `seen_count`: how many buy-ins the page showed for that player. If that is no longer true, nothing is recorded and the sender reads "maria already has a new rebuy (₱1,000, recorded by maria at 21:40). Nothing was added. Check, then try again if this is another one." This holds for the host's sheet too. A sheet left open through a live update is refused once, takes the fresh number, and a second tap records.
+
+**A player's own final count**
+
+- While a set is counting up, a player with a buy-in who is not cashed out has a field **Your count** and **Send to host** on their own row. 0 is valid. They can change it until the host has confirmed a count for them.
+- An entered number is a statement, not a count. The player stays "awaiting": it is in no total, no balance and no cash-out. Every member sees the badge **Entered** and "₱1,450, not confirmed yet" on that row.
+- The host's field for that player stays empty, shows the number as its hint, and says "maria entered ₱1,450. Leave the field empty to accept it, or type another number." The running total counts it as a preview, and the main button reads "Confirm N counts" with entered and typed counts together. A typed number wins.
+- The host confirms the number on their screen or nothing: if the player changed it in between, nothing is saved and the page shows the new number.
+- After the confirmation the player reads "The host confirmed your count." or "The host confirmed ₱1,400. You entered ₱1,500."
+- Clearing a count, or resuming play, retires the player's statement; they can enter again.
+
+**Unchanged:** confirming and clearing counts, cash-outs, the balance check, overrides, finalizing and settle-up are host-only.
+
+- **Switch:** `PLAYER_ENTRIES=False` removes both player actions and ignores numbers already sent.
+- Code: `ledger.services.record_buy_in` (the player path and `seen_count`), `enter_count`, `confirm_counts(entries=…)`; `ledger.models.CountEntry` and `FinalCount.entry`; `PlayerLine.entered`; `templates/web/_players.html`, `_players_count.html`; `static/js/counts.js`. Check: `web/tests/browser/player_entries.mjs`. [Plan](../plan/1791266619_player_rebuys_and_counts.md).

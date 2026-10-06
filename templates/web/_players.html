@@ -30,13 +30,13 @@
         </div>
         <div class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small></div>
       </div>
-      {% if can_buy_in and p.status == 'joined' or line.can_cash_out_now %}
+      {% if line.can_buy_in or line.can_cash_out_now %}
       <div class="player-actions">
-        {% if can_buy_in and p.status == 'joined' %}<button hidden type="button" class="btn btn-small buy-opener" data-sheet-open="buy-{{ p.pk }}" aria-label="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} for {{ p.member.display_name }}">{% icon 'plus' %}{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>{% endif %}
+        {% if line.can_buy_in %}<button hidden type="button" class="btn btn-small buy-opener" data-sheet-open="buy-{{ p.pk }}" aria-label="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} for {% if me.is_host %}{{ p.member.display_name }}{% else %}yourself{% endif %}">{% icon 'plus' %}{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>{% endif %}
         {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-small btn-quiet cash-opener" data-sheet-open="cash-{{ p.pk }}" aria-label="Cash out {{ p.member.display_name }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
       </div>
       {% endif %}
-      {% if can_buy_in and p.status == 'joined' %}
+      {% if line.can_buy_in %}
       <details class="sheet-source" data-key="buy-{{ p.pk }}" data-sheet-source="buy-{{ p.pk }}" data-title="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} · {{ p.member.display_name }}">
         <summary>{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</summary><div class="sheet-content">{% include "web/_buy_in_form.html" %}</div>
       </details>{% endif %}
