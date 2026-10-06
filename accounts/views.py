@@ -1,11 +1,14 @@
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.cache import never_cache
 
+from . import services
 from . import signup as signup_gate
-from .forms import LoginForm, SignupForm
+from .forms import LoginForm, NewPasswordForm, SignupForm
 
 
 def safe_next(request, default="home"):
@@ -52,3 +55,27 @@ def signup(request):
     target = safe_next(request, "")
     context = {"form": form, "next": target, "invited_to": signup_gate.invited_to(request, target)}
     return render(request, "accounts/signup.html", context)
+
+
+@login_not_required
+@never_cache
+def password_reset(request, token):
+    """The address in a reset link. Opening it changes nothing; saving a password uses the link up."""
+    response = _password_reset(request, token)
+    # The address is a key to the account: it is not passed on to any other page or site.
+    response["Referrer-Policy"] = "no-referrer"
+    return response
+
+
+def _password_reset(request, token):
+    try:
+        link = services.usable_reset_link(token)
+        form = NewPasswordForm(link.user, request.POST or None)
+        if request.method == "POST" and form.is_valid():
+            user = services.redeem_reset_link(token, form.cleaned_data["new_password1"])
+            login(request, user)
+            messages.success(request, "Password changed. You're logged in.")
+            return redirect("home")
+    except services.ResetLinkError as error:
+        return render(request, "accounts/reset.html", {"error": str(error)}, status=404)
+    return render(request, "accounts/reset.html", {"form": form, "username": link.user.get_username()})

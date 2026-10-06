@@ -57,6 +57,28 @@ def revoke_invite(request, group_id, invite_id):
     return group_settings(group_id, "invites")
 
 
+@require_POST
+def create_password_reset(request, group_id, member_id):
+    actor = member_for(request.user, group_id)
+    created = attempt(request, services.create_password_reset, actor, member_id)
+    if created is not None:
+        member, link, token = created
+        # Shown once on the next page; only the hash is stored.
+        request.session["new_reset_link"] = {
+            "name": member.display_name,
+            "url": request.build_absolute_uri(reverse("password_reset", args=[token])),
+            "expires_at": link.expires_at.isoformat(),
+        }
+    return group_settings(group_id, "players")
+
+
+@require_POST
+def cancel_password_reset(request, group_id, member_id):
+    actor = member_for(request.user, group_id)
+    attempt(request, services.cancel_password_reset, actor, member_id, success="Reset link cancelled.")
+    return group_settings(group_id, "players")
+
+
 @login_not_required
 def accept_invite(request, token):
     """The address in an invite link. A signed-out visitor is a newcomer: they go to sign-up."""

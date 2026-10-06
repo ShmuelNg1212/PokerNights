@@ -1,5 +1,7 @@
 """Pages that compose several apps. They only read; each write is a POST view in its own app."""
 
+from datetime import datetime
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -10,6 +12,7 @@ from groups.http import take_form
 from games.forms import TableForm
 from django.utils import timezone
 
+from accounts import services as accounts
 from audit.models import AuditEvent
 
 from games import clock
@@ -112,6 +115,13 @@ def group_settings_context(request, me) -> dict:
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
         )
         context["new_invite_url"] = request.session.pop("new_invite_url", None)
+        live = accounts.live_reset_links([m.user_id for m in members if m.user_id])
+        for member in members:
+            member.reset_link = live.get(member.user_id)
+        new_link = request.session.pop("new_reset_link", None)
+        if new_link:
+            new_link["expires_at"] = datetime.fromisoformat(new_link["expires_at"])
+        context["new_reset_link"] = new_link
     return context
 
 

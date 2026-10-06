@@ -13,7 +13,7 @@
   {% if form.non_field_errors %}
   <div id="login-error">
     <div class="notice notice-bad" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
-    <p class="hint entry-forgot">Forgot your password? There is no reset yet. Tell your host, who can ask the site administrator to set a new one.</p>
+    <p class="hint entry-forgot">{% if reset_links %}Forgot your password? Ask a host of your group for a reset link.{% else %}Forgot your password? There is no reset yet. Tell your host, who can ask the site administrator to set a new one.{% endif %}</p>
   </div>
   {% endif %}
   {% include "partials/entry_field.html" with field=form.username %}

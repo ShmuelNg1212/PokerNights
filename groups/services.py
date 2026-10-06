@@ -4,11 +4,13 @@ import hashlib
 import secrets
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.db.models.functions import Lower
 from django.utils import timezone
 
+from accounts import services as accounts
 from audit import services as audit
 
 from .access import require_host
@@ -220,6 +222,56 @@ def accept_invite(user, token: str) -> Member:
         )
     Invite.objects.filter(pk=invite.pk).update(use_count=F("use_count") + 1)
     audit.record("invite.accepted", actor=user, group_id=group.pk, target=member, summary=f"{member.display_name} joined the group")
+    return member
+
+
+def _reset_target(actor: Member, member_id) -> Member:
+    """The member a host may manage a password reset link for, with the group row locked."""
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.select_related("user").filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError("That member is not in this group.")
+    if member.pk == actor.pk:
+        raise RuleError("This is for another player.")
+    if not member.has_login:
+        raise RuleError(f"{member.display_name} has no login.")
+    return member
+
+
+@transaction.atomic
+def create_password_reset(actor: Member, member_id):
+    """Create a reset link for a member's account. Returns (member, link, token); the token is shown once.
+
+    The link lets its holder become the account, so it is refused for anyone whose account
+    reaches further than this group's host already does: the admin, or another group's host powers.
+    """
+    if not settings.RESET_LINKS:
+        raise RuleError("Password reset links are turned off.")
+    member = _reset_target(actor, member_id)
+    if member.user.is_staff or member.user.is_superuser:
+        raise RuleError("A site administrator's password is set in the admin.")
+    hosts_elsewhere = Member.objects.filter(
+        user=member.user, role=Member.Role.HOST, status=Member.Status.ACTIVE
+    ).exclude(group_id=member.group_id)
+    if hosts_elsewhere.exists():
+        raise RuleError(f"{member.display_name} hosts another group. The site administrator resets their password.")
+    link, token = accounts.issue_reset_link(member.user, created_by=actor.user, group_id=member.group_id)
+    audit.record(
+        "password_reset.issued", actor=actor.user, group_id=member.group_id, target=member,
+        summary=f"Created a password reset link for {member.display_name}",
+    )
+    return member, link, token
+
+
+@transaction.atomic
+def cancel_password_reset(actor: Member, member_id) -> Member:
+    member = _reset_target(actor, member_id)
+    if accounts.revoke_reset_links(member.user):
+        audit.record(
+            "password_reset.cancelled", actor=actor.user, group_id=member.group_id, target=member,
+            summary=f"Cancelled the password reset link for {member.display_name}",
+        )
     return member
 
 

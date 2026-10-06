@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Reset password · PokerNights{% endblock %}
+{% block header %}{% endblock %}
+{% block page_class %}entry-page{% endblock %}
+{% block content %}
+{% include "partials/entry_head.html" %}
+{% if error %}
+<h1>This reset link doesn't work</h1>
+<div class="notice notice-bad" role="alert">{{ error }} Ask a host of your group for a new one.</div>
+<p class="entry-alt">Remember your password? <a href="{% url 'login' %}">Log in</a></p>
+{% else %}
+<h1>Set a new password</h1>
+<p class="entry-invite">Your username is <strong>{{ username }}</strong>.</p>
+<form method="post" class="form-section stack">
+  {% csrf_token %}
+  {% if form.errors %}<div class="notice notice-bad" role="alert">Check the highlighted field{{ form.errors|length|pluralize }}.{% for error in form.non_field_errors %} {{ error }}{% endfor %}</div>{% endif %}
+  {% include "partials/entry_field.html" with field=form.new_password1 toggle=True %}
+  {% include "partials/entry_field.html" with field=form.new_password2 %}
+  <button type="submit" class="btn btn-primary btn-block" data-busy="Saving…">Save and log in</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -12,7 +12,8 @@
   <input type="hidden" name="next" value="{{ next }}">
   {% if form.errors %}<div class="notice notice-bad" role="alert">Check the highlighted field{{ form.errors|length|pluralize }}.{% for error in form.non_field_errors %} {{ error }}{% endfor %}</div>{% endif %}
   {% include "partials/entry_field.html" with field=form.username %}
-  {% include "partials/entry_field.html" with field=form.password1 toggle=True note_strong="There is no password reset yet." note="Save it in your phone's password manager." %}
+  {% if reset_links %}{% include "partials/entry_field.html" with field=form.password1 toggle=True note="Forgot it later? A host of your group can send you a reset link." %}
+  {% else %}{% include "partials/entry_field.html" with field=form.password1 toggle=True note_strong="There is no password reset yet." note="Save it in your phone's password manager." %}{% endif %}
   {% include "partials/entry_field.html" with field=form.password2 %}
   <button type="submit" class="btn btn-primary btn-block" data-busy="Creating account…">Create account</button>
 </form>
