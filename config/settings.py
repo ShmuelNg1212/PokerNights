@@ -185,6 +185,8 @@ NUMPAD = env.bool("NUMPAD", default=True)
 ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
 # Turn off to hide password reset links and refuse every one already sent (see accounts/services.py).
 RESET_LINKS = env.bool("RESET_LINKS", default=True)
+# Turn off to make rebuys and final counts host-only again (see ledger/services.py).
+PLAYER_ENTRIES = env.bool("PLAYER_ENTRIES", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

@@ -337,6 +337,14 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .count-entry label { margin: 0; color: var(--muted); font-weight: 500; }
 .count-entry input[data-count-input] { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .count-entry .error { grid-column: 1 / -1; margin-top: var(--s-1); }
+/* A player's own number: the host's hint under the field, and the player's own field on their row. */
+.count-entry .count-entered { grid-column: 1 / -1; margin-top: var(--s-1); }
+.own-count { margin-top: var(--s-2); }
+.own-count p { margin: 0 0 var(--s-1); }
+.own-count .form-row { flex-wrap: nowrap; }
+.own-count input { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.own-count-change > summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
+.own-count-state { margin: var(--s-1) 0 0; }
 .result-row > details { margin-top: 6px; }
 .count-row:not(:has(details)) { padding-bottom: 12px; }
 .count-row .form-row, .result-row .form-row { flex-wrap: wrap; }

@@ -7,6 +7,7 @@ Each amount is an integer in the session's unit (pesos or chips).
 
 import uuid
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
@@ -14,12 +15,13 @@ from audit import services as audit
 from games import services as games
 from games.models import GameSession, Participant
 from groups.access import require_host
-from groups.errors import RuleError
+from groups.errors import NotAllowed, RuleError
 from groups.models import Member
 
 from . import money, queries
 from .models import (
-    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, FinalCount, Finalization,
+    BalanceAdjustment, BuyIn, BuyInReversal, CashOut, CashOutBatch, CashOutReversal, CountEntry, FinalCount,
+    Finalization,
     PlayerResult, RakeEntry,
 )
 
@@ -72,19 +74,74 @@ def _accepted_buy_ins(session):
     return BuyIn.objects.filter(session=session, reversal__isnull=True)
 
 
+def _recorder_name(session, user) -> str:
+    member = Member.objects.filter(group_id=session.group_id, user=user).first()
+    return member.display_name if member else user.get_username()
+
+
+def _check_seen(session, participant, seen_count) -> None:
+    """Refuse a buy-in sent from a page that does not show the player's latest buy-ins.
+
+    Two phones can record the same rebuy: the host's and the player's. Each form says how
+    many buy-ins it showed; when that is no longer true, the sender must look again.
+    """
+    accepted = list(_accepted_buy_ins(session).filter(participant=participant).select_related("recorded_by"))
+    if seen_count is None or len(accepted) == seen_count:
+        return
+    name = participant.member.display_name
+    if len(accepted) < seen_count:
+        raise RuleError(f"{name}'s buy-ins changed since this page was drawn. Nothing was added. Check, then try again.")
+    latest = accepted[-1]
+    raise RuleError(
+        f"{name} already has a new {'rebuy' if len(accepted) > 1 else 'buy-in'} "
+        f"({money.format_amount(latest.amount, session.unit)}, recorded by {_recorder_name(session, latest.recorded_by)} "
+        f"at {timezone.localtime(latest.created_at):%H:%M}). Nothing was added. Check, then try again if this is another one."
+    )
+
+
+def _own_participant(session, actor: Member, participant_id=None) -> Participant:
+    """The actor's own place in the set. A player acts for themselves and for nobody else."""
+    participant = Participant.objects.select_related("member").filter(session=session, member=actor).first()
+    if participant_id not in (None, "") and (participant is None or str(participant.pk) != str(participant_id)):
+        raise NotAllowed("Only a host can do this for another player.")
+    if participant is None:
+        raise RuleError("You are not in this set.")
+    return participant
+
+
+def can_rebuy_own(session, line) -> bool:
+    """Whether the set page offers a player their own Rebuy. ``record_buy_in`` applies the same rule."""
+    return (
+        settings.PLAYER_ENTRIES and session.state in BUY_IN_STATES and line.has_money and not line.is_cashed_out
+        and line.participant.status == Participant.Status.JOINED and line.participant.member.user_id is not None
+    )
+
+
 @transaction.atomic
-def record_buy_in(session_id, actor: Member, participant_id, amount: int, request_id) -> BuyIn:
-    """Record a buy-in or rebuy, in the session's unit."""
-    require_host(actor)
+def record_buy_in(session_id, actor: Member, participant_id, amount: int, request_id, *, seen_count=None) -> BuyIn:
+    """Record a buy-in or rebuy, in the session's unit.
+
+    A host records for anyone. A player records a rebuy for themselves only: the first
+    buy-in stays with the host. ``seen_count`` is the number of buy-ins the sender's page
+    showed for the player; a different number means the page was stale and nothing is recorded.
+    """
+    if not actor.is_host and not settings.PLAYER_ENTRIES:
+        require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     repeated = BuyIn.objects.filter(session=session, request_id=request_id).first()
     if repeated is not None:
         return repeated
     if session.state not in BUY_IN_STATES:
         raise RuleError("Buy-ins can be recorded only while the set is open or running.")
-    participant = _participant(session, participant_id)
+    participant = _participant(session, participant_id) if actor.is_host else _own_participant(session, actor, participant_id)
     if participant.status != Participant.Status.JOINED:
         raise RuleError(f"{participant.member.display_name} is not at the table.")
+    if not actor.is_host:
+        if not _accepted_buy_ins(session).filter(participant=participant).exists():
+            raise RuleError("The host records your first buy-in. After that you can rebuy here.")
+        if _final_cash_outs(participant).exists():
+            raise RuleError("You are cashed out. Ask the host to record this rebuy.")
+    _check_seen(session, participant, seen_count)
     if not _is_amount(amount):
         raise RuleError("Enter the buy-in amount.")
     current = games.current_settings(session)
@@ -214,19 +271,20 @@ def _check_countable(session, participant, amount) -> None:
         raise RuleError(f"{name} is already cashed out. Reverse that cash-out to count again.")
 
 
-def _write_count(session, actor, participant, amount, request_id) -> FinalCount:
+def _write_count(session, actor, participant, amount, request_id, entry=None) -> FinalCount:
     """Store a confirmed count as the player's current one, with the next version."""
     latest = FinalCount.objects.filter(participant=participant).order_by("-version").first()
     FinalCount.objects.filter(participant=participant, is_current=True).update(is_current=False)
     count = FinalCount.objects.create(
         session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
-        request_id=request_id, confirmed_by=actor.user,
+        request_id=request_id, confirmed_by=actor.user, entry=entry,
     )
     audit.record(
         "count.confirmed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=count,
         summary=f"Confirmed {participant.member.display_name}'s final count: "
-        f"{money.format_amount(amount, session.unit)}" + (f" (version {count.version})" if count.version > 1 else ""),
-        data={"amount": amount, "version": count.version},
+        f"{money.format_amount(amount, session.unit)}" + (f" (version {count.version})" if count.version > 1 else "")
+        + (", as the player entered it" if entry is not None else ""),
+        data={"amount": amount, "version": count.version, **({"entry": entry.pk} if entry is not None else {})},
     )
     return count
 
@@ -252,20 +310,27 @@ def confirm_count(session_id, actor: Member, participant_id, amount: int, reques
 
 
 @transaction.atomic
-def confirm_counts(session_id, actor: Member, amounts: dict, request_id) -> list:
+def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entries=None) -> list:
     """Confirm several players' final counts in one action: all of them, or none.
 
-    ``amounts`` maps a participant id to an integer amount. Only the players in
-    it are touched; anyone left out stays as they are and is never read as
-    zero. A player whose current count already equals the amount is skipped, so
-    no needless version is written. Returns the counts that were written.
+    ``amounts`` maps a participant id to an integer amount the host typed. ``entries`` maps a
+    participant id to the id of the player's own entered count that the host's page showed;
+    a typed amount for the same player wins. Only these players are touched; anyone left out
+    stays as they are and is never read as zero. A player whose current count already equals
+    the amount is skipped, so no needless version is written. Returns the counts that were written.
+
+    An entry is accepted only while it is still the player's current one, so the host confirms
+    the number that was on their screen or nothing at all.
     """
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
-    if not amounts:
+    entries = {pid: entry_id for pid, entry_id in (entries or {}).items() if pid not in amounts}
+    if not settings.PLAYER_ENTRIES:
+        entries = {}
+    if not amounts and not entries:
         raise RuleError("Type at least one final count. Type 0 for a player who has nothing left.")
     # One submission writes several rows; each gets its own id derived from the form's.
-    ids = {participant_id: uuid.uuid5(request_id, str(participant_id)) for participant_id in amounts}
+    ids = {participant_id: uuid.uuid5(request_id, str(participant_id)) for participant_id in [*amounts, *entries]}
     if FinalCount.objects.filter(session=session, request_id__in=ids.values()).exists():
         return list(FinalCount.objects.filter(session=session, request_id__in=ids.values()))  # a repeated submission
     if session.state != State.RECONCILIATION:
@@ -276,12 +341,65 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id) -> list
         _check_countable(session, participant, amount)
         current = FinalCount.objects.filter(participant=participant, is_current=True).first()
         if current is None or current.amount != amount:
-            checked.append((participant, amount, ids[participant_id]))
+            checked.append((participant, amount, ids[participant_id], None))
+    for participant_id, entry_id in entries.items():
+        participant = _participant(session, participant_id)
+        if FinalCount.objects.filter(participant=participant, is_current=True).exists() or _final_cash_outs(participant).exists():
+            continue  # confirmed or cashed out since the page was drawn: nothing left to accept
+        entry = CountEntry.objects.filter(participant=participant, is_current=True).first()
+        name = participant.member.display_name
+        if entry is None:
+            raise RuleError(f"{name}'s entered count is no longer there.")
+        if str(entry.pk) != str(entry_id):
+            raise RuleError(f"{name} changed their count to {money.format_amount(entry.amount, session.unit)}.")
+        _check_countable(session, participant, entry.amount)
+        checked.append((participant, entry.amount, ids[participant_id], entry))
     # Every value passed. Only now is anything written.
-    written = [_write_count(session, actor, participant, amount, rid) for participant, amount, rid in checked]
+    written = [_write_count(session, actor, participant, amount, rid, entry) for participant, amount, rid, entry in checked]
     if written:
         games.touch(session)
     return written
+
+
+@transaction.atomic
+def enter_count(session_id, actor: Member, amount: int, request_id) -> CountEntry:
+    """A player states what they have left at the end of the set. The host confirms it, or types another number.
+
+    This is not a count: nothing is cashed out and no total changes. Entering again replaces
+    the statement with the next version, until the host has confirmed a count for the player.
+    """
+    if not settings.PLAYER_ENTRIES:
+        raise NotAllowed("Only a host can do this.")
+    session = games.lock_session(session_id, actor.group_id)
+    repeated = CountEntry.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if session.state != State.RECONCILIATION:
+        raise RuleError("You can enter your count after the host ends play.")
+    participant = _own_participant(session, actor)
+    if not _is_amount(amount) or amount < 0:
+        raise RuleError("Enter your count, 0 or more.")
+    if not _accepted_buy_ins(session).filter(participant=participant).exists():
+        raise RuleError("You have no buy-in, so there is nothing to count.")
+    if _final_cash_outs(participant).exists():
+        raise RuleError("You are already cashed out.")
+    if FinalCount.objects.filter(participant=participant, is_current=True).exists():
+        raise RuleError("The host has confirmed your count. Ask the host to change it.")
+    latest = CountEntry.objects.filter(participant=participant).order_by("-version").first()
+    # The old statement is retired before the new one is written: one current row per player.
+    CountEntry.objects.filter(participant=participant, is_current=True).update(is_current=False)
+    entry = CountEntry.objects.create(
+        session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
+        request_id=request_id, entered_by=actor.user,
+    )
+    audit.record(
+        "count.entered", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=entry,
+        summary=f"{participant.member.display_name} entered their final count: "
+        f"{money.format_amount(amount, session.unit)}" + (f" (version {entry.version})" if entry.version > 1 else ""),
+        data={"amount": amount, "version": entry.version},
+    )
+    games.touch(session)
+    return entry
 
 
 @transaction.atomic
@@ -294,6 +412,8 @@ def clear_count(session_id, actor: Member, participant_id) -> None:
     participant = _participant(session, participant_id)
     if FinalCount.objects.filter(participant=participant, is_current=True).exists():
         _void_count(participant, actor.user)
+        # A cleared count starts again from nothing: the player's own statement goes with it.
+        CountEntry.objects.filter(participant=participant, is_current=True).update(is_current=False)
         audit.record(
             "count.cleared", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
             summary=f"Cleared {participant.member.display_name}'s final count",
@@ -371,6 +491,7 @@ def cash_out_counted(session_id, actor: Member, count_ids, request_id) -> CashOu
 
 def void_counts_on_resume(session: GameSession, actor: Member) -> None:
     """Play resumes, so stacks will change: confirmed counts that are not cashed out are void."""
+    CountEntry.objects.filter(session=session, is_current=True).update(is_current=False)
     count = FinalCount.objects.filter(session=session, is_current=True).update(
         is_current=False, voided_at=timezone.now(), voided_by=actor.user
     )

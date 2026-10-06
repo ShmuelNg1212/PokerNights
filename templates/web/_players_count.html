@@ -6,11 +6,11 @@
   {% if summary.lines %}
   <ul class="player-list">
     {% for line in summary.lines %}{% with p=line.participant %}
-    <li class="count-row" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}">
+    <li class="count-row" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
       <div class="count-identity">
         {% player_token p participants %}
         <span class="grow"><span class="count-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}{% if p.status == 'left' %} <span class="badge">Left</span>{% endif %}</span>
-          {% if session.state == 'reconciliation' and line.has_money %}<span class="count-state small"><span class="badge {% if line.status == 'cashed_out' %}badge-good{% elif line.status == 'ready' %}badge-live{% else %}badge-warn{% endif %}" data-status="{{ line.status }}">{{ line.status_label }}</span>{% if line.status == 'ready' %} <span class="num">Counted {{ line.count.amount|amount:unit }}</span>{% endif %}{% if line.has_cash_out %} <span class="muted num">Cashed out {{ line.cashed_out|amount:unit }}</span>{% endif %}</span>
+          {% if session.state == 'reconciliation' and line.has_money %}<span class="count-state small">{% if line.entered %}<span class="badge" data-status="entered">Entered</span> <span class="num">{{ line.entered.amount|amount:unit }}, not confirmed yet</span>{% else %}<span class="badge {% if line.status == 'cashed_out' %}badge-good{% elif line.status == 'ready' %}badge-live{% else %}badge-warn{% endif %}" data-status="{{ line.status }}">{{ line.status_label }}</span>{% endif %}{% if line.status == 'ready' %} <span class="num">Counted {{ line.count.amount|amount:unit }}</span>{% endif %}{% if line.has_cash_out %} <span class="muted num">Cashed out {{ line.cashed_out|amount:unit }}</span>{% endif %}</span>
           {% elif not line.has_money %}<span class="count-state small muted">No buy-in yet</span>{% endif %}
         </span>
         <span class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>Bought in</small></span>
@@ -19,9 +19,33 @@
       {# These fields belong to the one counts form below, so one tap sends every typed count. A confirmed count shows as the field's placeholder. #}
       <div class="count-entry">
         <label class="small" for="count-{{ p.pk }}">Final count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
-        <input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="{% if line.count %}{{ line.count.amount|plain:unit }}{% endif %}" aria-label="Final count of {{ p.member.display_name }}">
+        <input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" data-entered="{% if line.entered %}{{ line.entered.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}{% if line.entered %} count-entered-{{ p.pk }}{% endif %}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="{% if line.count %}{{ line.count.amount|plain:unit }}{% elif line.entered %}{{ line.entered.amount|plain:unit }}{% endif %}" aria-label="Final count of {{ p.member.display_name }}">
         <span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span>
+        {% if line.entered %}
+        {# The player's own number. It is confirmed with the typed counts unless the host types another here. #}
+        <input type="hidden" form="counts-form" name="entry_{{ p.pk }}" value="{{ line.entered.pk }}">
+        <span class="small muted count-entered" id="count-entered-{{ p.pk }}">{{ p.member.display_name }} entered {{ line.entered.amount|amount:unit }}. Leave the field empty to accept it, or type another number.</span>
+        {% endif %}
       </div>
+      {% endif %}
+      {% if can_enter_count and p.member_id == me.pk and line.has_money %}
+      {% if line.status == 'awaiting' %}
+      <div class="own-count">
+        {% if line.entered %}<p class="small own-count-state">You entered <strong class="num">{{ line.entered.amount|amount:unit }}</strong>. Waiting for the host to confirm.</p>
+        <details class="own-count-change" data-key="own-count"><summary class="small">Change</summary>{% endif %}
+        <form method="post" data-turbo="true" action="{% url 'count_enter' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
+          <div class="grow">
+            <label class="small" for="own-count">Your count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
+            <input type="text" name="amount" id="own-count" data-keep="own-count" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" inputmode="decimal" autocomplete="off" required aria-describedby="own-count-help">
+          </div>
+          <button type="submit" class="btn btn-primary">Send to host</button>
+        </form>
+        <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.</p>
+        {% if line.entered %}</details>{% endif %}
+      </div>
+      {% elif line.status == 'ready' and line.entry %}
+      <p class="small muted own-count-state">{% if line.entry.amount == line.count.amount %}The host confirmed your count.{% else %}The host confirmed {{ line.count.amount|amount:unit }}. You entered {{ line.entry.amount|amount:unit }}.{% endif %}</p>
+      {% endif %}
       {% endif %}
 
       {% if can_buy_in and p.status == 'joined' %}

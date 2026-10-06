@@ -24,13 +24,14 @@ def _amount(request, session, name="amount"):
 
 @require_POST
 def buy_in_add(request, session_id):
+    """A host's buy-in for any player, or a player's own rebuy. The service decides which is allowed."""
     session, actor = session_for(request.user, session_id)
-    require_host(actor)
     amount = _amount(request, session)
     if amount is not None:
+        seen = request.POST.get("seen_count", "")
         attempt(
             request, services.record_buy_in, session.pk, actor, request.POST.get("participant_id"), amount,
-            request_id_from(request),
+            request_id_from(request), seen_count=int(seen) if seen.isdecimal() else None,
         )
     return redirect("session", session_id=session.pk)
 
@@ -106,9 +107,14 @@ def count_confirm(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
     typed = _typed_counts(request)
+    # A player's own entered count that this page showed; a typed count for the same player wins.
+    entries = {
+        int(name[6:]): value for name, value in request.POST.items()
+        if name.startswith("entry_") and name[6:].isdecimal() and value.isdecimal() and int(name[6:]) not in typed
+    }
     names = dict(session.participants.values_list("pk", "member__display_name"))
     amounts, error = {}, ""
-    if not typed:
+    if not typed and not entries:
         # An empty field is never read as zero.
         error = "Enter the final count. Type 0 for a player who has nothing left."
     for participant_id, text in typed.items():
@@ -119,7 +125,7 @@ def count_confirm(request, session_id):
             break
     if not error:
         try:
-            written = services.confirm_counts(session.pk, actor, amounts, request_id_from(request))
+            written = services.confirm_counts(session.pk, actor, amounts, request_id_from(request), entries=entries)
         except RuleError as refused:
             error = f"{refused} Nothing was saved."
     drafts = request.session.get(DRAFTS_KEY, {})
@@ -132,6 +138,16 @@ def count_confirm(request, session_id):
         if count:
             messages.success(request, f"{count} count{'' if count == 1 else 's'} confirmed.")
     request.session[DRAFTS_KEY] = drafts
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def count_enter(request, session_id):
+    """A player sends their own final count to the host. Whose count it is comes from the login."""
+    session, actor = session_for(request.user, session_id)
+    amount = _amount(request, session)
+    if amount is not None:
+        attempt(request, services.enter_count, session.pk, actor, amount, request_id_from(request), success="Count sent to the host.")
     return redirect("session", session_id=session.pk)
 
 

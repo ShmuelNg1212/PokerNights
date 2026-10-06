@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): study and plan written 2026-10-06. **Waiting for the human's approval**; seven decisions are listed in the plan. No code written.
+
 Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
 
 Host-issued password reset ([plan](doc/plan/1791263947_host_issued_password_reset.md), [study](doc/study/1791263946_host_issued_password_reset.md)): built on branch `feat/password-reset` and merged to local `main` on 2026-10-06. A host creates a one-use, 24-hour reset link in Group settings → Players; the player sets a new password with it and is logged in. One migration (`accounts.0002`, a new table). 744 tests pass on SQLite and PostgreSQL 17; `reset.mjs` 43 of 43. `RESET_LINKS=False` in Vercel turns it off. Released 2026-10-06 as `d573ba0`, pushed by the human (previous production commit `be53e29`). Phone acceptance remains open.

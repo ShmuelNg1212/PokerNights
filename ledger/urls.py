@@ -9,6 +9,7 @@ urlpatterns = [
     path("s/<int:session_id>/cashouts/<int:cash_out_id>/reverse/", views.cash_out_reverse, name="cash_out_reverse"),
     path("s/<int:session_id>/override/", views.override_add, name="override_add"),
     path("s/<int:session_id>/override/remove/", views.override_void, name="override_void"),
+    path("s/<int:session_id>/counts/enter/", views.count_enter, name="count_enter"),
     path("s/<int:session_id>/counts/confirm/", views.count_confirm, name="count_confirm"),
     path("s/<int:session_id>/counts/<int:participant_id>/clear/", views.count_clear, name="count_clear"),
     path("s/<int:session_id>/cash-out-counted/", views.cash_out_counted, name="cash_out_counted"),

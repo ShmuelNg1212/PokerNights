@@ -76,7 +76,9 @@ class BuyInTests(TestCase):
     def test_only_a_host_records_and_only_in_open_or_running(self):
         night = Night("A", state="open")
         ben = night.add_login_player("ben")
-        with self.assertRaises(NotAllowed):
+        with self.assertRaises(NotAllowed):  # another player's row
+            services.record_buy_in(night.session.pk, ben, night.players["A"].pk, 100000, uuid.uuid4())
+        with self.assertRaises(RuleError):  # a player's own first buy-in stays with the host
             services.record_buy_in(night.session.pk, ben, night.players["ben"].pk, 100000, uuid.uuid4())
         night.buy("A", 1000)  # open: allowed
         night.go("reconciliation")
@@ -198,7 +200,10 @@ class BuyInViewTests(TestCase):
         buy_in = self.night.buy("A", 1000)
         reverse_url = reverse("buy_in_reverse", args=[self.night.session.pk, buy_in.pk])
         self.client.force_login(self.ben.user)
-        self.assertEqual(self.client.post(self.url, {"participant_id": self.night.players["ben"].pk, "amount": "1000"}).status_code, 403)
+        self.assertEqual(self.client.post(self.url, {"participant_id": self.night.players["A"].pk, "amount": "1000"}).status_code, 403)
+        # Their own first buy-in stays with the host: refused with a message, nothing recorded.
+        own = self.client.post(self.url, {"participant_id": self.night.players["ben"].pk, "amount": "1000"}, follow=True)
+        self.assertContains(own, "The host records your first buy-in.")
         self.assertEqual(self.client.post(reverse_url, {"reason": "x"}).status_code, 403)
         page = self.client.get(reverse("session", args=[self.night.session.pk]))
         self.assertNotContains(page, "buyins/add")
