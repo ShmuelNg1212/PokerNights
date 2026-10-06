@@ -6,7 +6,7 @@
 {% if new_reset_link %}
 <div class="notice notice-good">
   <p><strong>Reset link for {{ new_reset_link.name }}.</strong> Send it to {{ new_reset_link.name }} only. Whoever opens it can set the password. It works once and expires {{ new_reset_link.expires_at|date:"M j, H:i" }}.</p>
-  <input type="text" readonly value="{{ new_reset_link.url }}" aria-label="Password reset link for {{ new_reset_link.name }}" onfocus="this.select()">
+  {% include "web/_copy_field.html" with id="new-reset-link" url=new_reset_link.url label="Password reset link for "|add:new_reset_link.name %}
 </div>
 {% endif %}
 <ul class="list">
@@ -71,7 +71,7 @@
   {% if new_invite_url %}
   <div class="notice notice-good">
     <p>Send this link to your players. It is shown only once.</p>
-    <input type="text" readonly value="{{ new_invite_url }}" aria-label="Invite link" onfocus="this.select()">
+    {% include "web/_copy_field.html" with id="new-invite-link" url=new_invite_url label="Invite link" %}
   </div>
   {% endif %}
   <form method="post" action="{% url 'invite_create' group.pk %}">

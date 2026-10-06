@@ -144,3 +144,5 @@ Not verified: a physical phone, a screen reader, a chat app's in-app browser and
 Note: a development server that this cycle did not start was already listening on port 8765 (process 33989). It was left running; the checks used port 8771.
 
 Documentation synced: wiki features, architecture, deployment and journal, PRODUCT.md, DESIGN.md, roadmap, browser README, TODO.
+
+2026-10-06 release: the human pushed `d573ba0` to `main` (previous production commit `be53e29`). The live site was not checked from here. Phone acceptance remains open.

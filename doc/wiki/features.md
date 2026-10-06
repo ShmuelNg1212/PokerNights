@@ -327,3 +327,10 @@ On count confirmation, a visible typed field keeps its position when the accepte
 - **What a host can still do:** open the link themselves and log in as one of their own players. The audit log records who created the link (`password_reset.issued`), a cancel (`password_reset.cancelled`) and the use (`password.reset`).
 - **Switch:** `RESET_LINKS=False` hides the action, refuses every link and returns Log in and Sign up to the “no reset yet” wording.
 - Code: `accounts/services.py` (the link's life and the password change), `groups/services.py` (`create_password_reset`, `cancel_password_reset`: who may ask), `accounts/views.py` (`password_reset`), `templates/accounts/reset.html`. Check: `web/tests/browser/reset.mjs`. [Plan](../plan/1791263947_host_issued_password_reset.md).
+
+## Copy button on a new link (2026-10-06)
+
+- A new invite link and a new password reset link each have a **Copy** button inside the right edge of their read-only field. A tap copies the whole address; the button reads **Copied** for two seconds once the browser has confirmed it.
+- If the browser refuses, or has no clipboard (an http address), nothing says Copied: the address is selected in the field and a line under it says "Could not copy. The link is selected: copy it from the menu."
+- Without JavaScript the button is hidden and the field is selected by hand, as before.
+- Code: `static/js/copy.js` (a button with `data-copy="<field id>"` and a status line with `data-copy-status`), `templates/web/_copy_field.html`. Check: `web/tests/browser/copy.mjs`. [Plan](../plan/1791265490_copy_link_button.md).

@@ -58,5 +58,6 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Live counted total | [study](../study/1791089661_live_counted_total.md) | [plan](../plan/1791089905_live_counted_total.md) | Done, 2026-10-04 |
 | Set rake and group pool | [study](../study/1791093189_set_rake_and_group_pool.md) | [plan](../plan/1791093380_set_rake_and_group_pool.md) | Done, 2026-10-04 |
 | Default opening buy-ins | [study](../study/1791088066_default_opening_buy_ins.md) | [plan](../plan/1791088166_default_opening_buy_ins.md) | Done, 2026-10-04 |
-| Password reset by a host-issued link | [study](../study/1791263946_host_issued_password_reset.md) | [plan](../plan/1791263947_host_issued_password_reset.md) | Built 2026-10-06, not released |
+| Password reset by a host-issued link | [study](../study/1791263946_host_issued_password_reset.md) | [plan](../plan/1791263947_host_issued_password_reset.md) | Done, released 2026-10-06 as `d573ba0` |
+| Copy button on a new link | [study](../study/1791265489_copy_link_button.md) | [plan](../plan/1791265490_copy_link_button.md) | Built 2026-10-06, not released |
 | Rake setup controls | [study](../study/1791096071_rake_controls.md) | [plan](../plan/1791096125_rake_controls.md) | Done, 2026-10-04 |
