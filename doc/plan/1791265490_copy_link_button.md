@@ -79,3 +79,5 @@ Acceptance: AC1 to AC6 are met.
 Not verified: a physical phone. The clipboard was tested in desktop Chrome only; Safari on an iPhone and the installed app decide for themselves whether to allow a copy.
 
 Documentation synced: wiki features, DESIGN.md, browser README, TODO.
+
+2026-10-06 correction: the first full run after the merge had one failure, `web.tests.test_inplace.ScriptsLoadOnceTests`, which lists the scripts in `base.html` in order and did not know `copy.js`. The feature commit and the merge were made before that result was read. The test's list was updated in the next commit; the 748 figures above are from the runs after that fix, on both engines.
