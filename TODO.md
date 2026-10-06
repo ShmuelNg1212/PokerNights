@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. **Not pushed, so not released.**
+Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
 
 Host-issued password reset ([plan](doc/plan/1791263947_host_issued_password_reset.md), [study](doc/study/1791263946_host_issued_password_reset.md)): built on branch `feat/password-reset` and merged to local `main` on 2026-10-06. A host creates a one-use, 24-hour reset link in Group settings → Players; the player sets a new password with it and is logged in. One migration (`accounts.0002`, a new table). 744 tests pass on SQLite and PostgreSQL 17; `reset.mjs` 43 of 43. `RESET_LINKS=False` in Vercel turns it off. Released 2026-10-06 as `d573ba0`, pushed by the human (previous production commit `be53e29`). Phone acceptance remains open.
 
@@ -70,8 +70,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Say when to push the copy button** (or push it: `git push origin main`). No migration.
-- [ ] **After the copy button is released, on your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
+- [ ] **The copy button is live. On your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
 - [ ] **After it is released, try it on two phones:** as a host open Group settings → Players → Manage a player → Create password reset link, and send yourself the link. Open it signed out on the other phone, try a short password, then a good one. Check you land on Your groups, that the old password no longer works, and that the same link then says it has been used. Create another link and tap Cancel link. If anything misbehaves, `RESET_LINKS=False` in Vercel turns it off.
 - [ ] `SPEC.md` does not mention password reset. Add it if the spec should match the app.
 

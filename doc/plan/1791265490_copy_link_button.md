@@ -81,3 +81,5 @@ Not verified: a physical phone. The clipboard was tested in desktop Chrome only;
 Documentation synced: wiki features, DESIGN.md, browser README, TODO.
 
 2026-10-06 correction: the first full run after the merge had one failure, `web.tests.test_inplace.ScriptsLoadOnceTests`, which lists the scripts in `base.html` in order and did not know `copy.js`. The feature commit and the merge were made before that result was read. The test's list was updated in the next commit; the 748 figures above are from the runs after that fix, on both engines.
+
+2026-10-06 release: pushed `7639c8f` to `main` on the human's instruction (previous production commit `d573ba0`). About three minutes later the live site answered `/static/js/copy.js` 200, `/healthz` 200, Log in 200 and an unknown reset link 404. The buttons were not exercised on the live site. Phone acceptance remains open.
