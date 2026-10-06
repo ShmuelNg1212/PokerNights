@@ -27,6 +27,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `VERCEL`, `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | Vercel | Turn on the HTTPS settings, invite-only sign-up, and add the deployment's host names to `ALLOWED_HOSTS` |
 | `SIGNUP_REQUIRES_INVITE` | optional | Defaults to on at Vercel. Set `False` to open sign-up to everyone |
 | `ANSWER_IN_PLACE` | optional | Defaults to on. Set `False` to answer every in-place action with a redirect again (two trips instead of one), without a release (`config/inplace.py`). Redeploy for it to take effect |
+| `PLAYER_ENTRIES` | optional | Defaults to on. Set `False` to make rebuys and final counts host-only again and to ignore counts players already sent, without a release (`ledger/services.py`). Redeploy for it to take effect |
 | `RESET_LINKS` | optional | Defaults to on. Set `False` to hide password reset links and refuse every one already sent, without a release (`accounts/services.py`). Redeploy for it to take effect |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |

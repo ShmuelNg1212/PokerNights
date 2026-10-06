@@ -78,3 +78,7 @@ Ending a set is arranged around the host's task. The players' count fields come 
 ## 2026-10-06 addendum — Password reset link
 
 A person who forgot their password asks a host of their group. The host creates a reset link in Group settings and sends it; the person opens it, chooses a new password and is logged in. The link works once, lasts 24 hours and can be cancelled. The app sends nothing itself. A host cannot create one for a site administrator or for a person who hosts another group; those accounts, and a group's only host, still go to the site administrator. A host could use a link to log in as one of their own players; the audit log records who created and who used each link. [Plan](doc/plan/1791263947_host_issued_password_reset.md).
+
+## 2026-10-06 addendum — Players record their own rebuy and count
+
+A player with a login records their own rebuy from their phone; it is accepted at once, as a host's is, and the host can reverse it. After the host ends play, each player types their own final count. That number is a statement: the host confirms it or types another, and only a confirmed count is cashed out or enters a result. Everyone on the set sees both within seconds. A rebuy sent from a screen that does not show the player's latest buy-ins is refused, so the host and the player cannot record one rebuy twice. The first buy-in, cash-outs, corrections, the balance and finalizing stay with the host. [Plan](doc/plan/1791266619_player_rebuys_and_counts.md).

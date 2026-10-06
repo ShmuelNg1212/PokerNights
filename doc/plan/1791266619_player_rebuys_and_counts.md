@@ -107,3 +107,31 @@ Set `PLAYER_ENTRIES=False` in Vercel for an immediate stop. To remove the code, 
 ## Progress and blockers
 
 2026-10-06: Study and plan complete. Waiting for the human's approval. No code written.
+
+2026-10-06: The human approved: chip count means the final count after End play; rebuys are recorded at once; rebuys only; one button confirms; everyone sees an entered number; no per-group setting; wording accepted.
+
+2026-10-06 execution on `feat/player-entries`.
+
+Changes from the plan:
+
+- **No fourth status.** A player with an entered number stays `awaiting` in `PlayerLine.status`; "Entered" is `PlayerLine.entered`, used for display and for the host's preview only. Every total, the balance, the batch cash-out and finalization therefore read exactly what they read before (AC5, AC10). The plan proposed a status between awaiting and ready.
+- **Words on the row:** the badge reads "Entered" and the text beside it "₱1,450, not confirmed yet", instead of "Entered ₱1,450" twice.
+- **After a confirmation** the player reads "The host confirmed your count." or the two numbers when they differ. The existing "Counted ₱1,450" stays on the row for everyone.
+- **A player back at the table after a final cash-out** asks the host for the rebuy, because that buy-in reclassifies the cash-out.
+- **A cleared count retires the player's statement** with it, so the row returns to "Awaiting count". The plan said only that the player can enter again.
+- **Two older tests pinned "a player's buy-in post is 403".** They now post for another player's row (still 403) and check the first-buy-in refusal. `ledger/tests/test_buy_ins.py`, `web/tests/test_acceptance.py`.
+- **`sheets.js`** takes the fresh `seen_count` with the fresh request id after a refusal; without it a sheet could never retry.
+- The tests and the code were written together, not tests first.
+
+2026-10-06 verification:
+
+- 789 tests pass on SQLite (fifteen PostgreSQL-only skips) and all 789 on local PostgreSQL 17, started for the run and stopped after. 41 new tests in `ledger/tests/test_player_entries.py`. The three race tests (host and player record one rebuy; a player changes their count while the host confirms; two entries at once) passed six times on PostgreSQL.
+- `player_entries.mjs`: 48 of 48 on a fresh temporary database, with three browsers and one without JavaScript.
+- Neighbouring checks, each on a fresh temporary database: `count_flow.mjs` 89, `numpad.mjs` 87, `flow.mjs` 52, `marks.mjs` 18, `inplace.mjs` 39, all passing.
+- Captures inspected at 390px: the player's running row, the player's count field, the entered state, and the host's rows before confirming.
+
+Acceptance: AC1 to AC10 are met. AC2 and AC4 were measured in the browser check against the page's own polling, with a nine-second limit per step; the interval itself was not timed.
+
+Not verified: physical phones, a screen reader, mobile data, and more than three people on one set.
+
+Documentation synced: wiki features, architecture, deployment and journal, PRODUCT.md, DESIGN.md, browser README, TODO.
