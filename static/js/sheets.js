@@ -16,6 +16,33 @@ if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translat
 var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
 }
+// Puts a sheet's content back where it came from, so the page holds it again.
+function putBack(sheet) {
+var current = sheet.region.querySelector('[data-sheet-source="' + sheet.key + '"]'), content = sheet.body.querySelector(".sheet-content");
+if (sheet.discard) { content = null; sheet.discard = false; }
+if (content && current) {
+var replacement = current.querySelector(".sheet-content");
+if (replacement) replacement.replaceWith(content); else current.appendChild(content);
+}
+sheet.body.replaceChildren();
+}
+// One sheet gives way to another without closing: a player's sheet to their cash-out. Focus still
+// returns to the row that opened the first one.
+function swap(id) {
+var source = find(id); if (!source || !S.dialog.open) return;
+putBack(S);
+S.key = id;
+S.dialog.querySelector("h2").textContent = source.dataset.title;
+S.body.appendChild(source.querySelector(".sheet-content"));
+if (window.pokerNumpad) window.pokerNumpad.prepare(S.body);
+if (window.pokerMotion && window.pokerMotion.on()) {
+// The first keyframe is written before Motion starts (footgun: motion starts a frame late).
+S.body.style.opacity = "0"; S.body.style.transform = "translateY(8px)";
+window.pokerMotion.settle(S.body, window.pokerMotion.run(S.body, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift"), ["opacity", "transform"]);
+}
+var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
+if (field) { field.focus(); if (field.select) field.select(); }
+}
 function close() {
 var dialog = S.dialog;
 if (!dialog.open || dialog.classList.contains("closing")) return;
@@ -42,6 +69,8 @@ if (field) { field.setAttribute("aria-invalid", "true"); field.setAttribute("ari
 document.addEventListener("click", function (event) {
 var trigger = event.target.closest("[data-sheet-open]");
 if (trigger && S) open(trigger.dataset.sheetOpen, trigger);
+var next = event.target.closest("[data-sheet-swap]");
+if (next && S && S.dialog.contains(next)) swap(next.dataset.sheetSwap);
 if (S && event.target.closest("[data-sheet-close]") && S.dialog.contains(event.target)) close();
 var quick = event.target.closest("[data-amount]");
 if (quick) { var field = quick.closest("form").querySelector("[name=amount]"); field.value = quick.dataset.amount; field.focus(); }
@@ -97,13 +126,7 @@ var box = dialog.getBoundingClientRect();
 if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close();
 });
 dialog.addEventListener("close", function () {
-var current = me.region.querySelector('[data-sheet-source="' + me.key + '"]'), content = me.body.querySelector(".sheet-content");
-if (me.discard) { content = null; me.discard = false; }
-if (content && current) {
-var replacement = current.querySelector(".sheet-content");
-if (replacement) replacement.replaceWith(content); else current.appendChild(content);
-}
-me.body.replaceChildren();
+putBack(me);
 if (S !== me) return; // the page is being left; there is nothing to focus
 var target = me.opener && me.opener.isConnected ? me.opener : me.region.querySelector('[data-sheet-open="' + me.key + '"]');
 if (target) target.focus(); else me.region.querySelector("h1")?.focus();

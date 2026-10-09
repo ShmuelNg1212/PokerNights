@@ -1240,3 +1240,60 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 [data-welcome] .home-first > :nth-child(n+5) { animation-delay: 340ms; }
 /* The chip lands in the top bar: the mark sinks and comes back, as a pressed button does. */
 body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
+
+/* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2, so the
+   classic templates kept behind TABLE_REVAMP are untouched. */
+/* The lead panel: the figure, the timer and the blinds; the rest is one line with the facts behind it. */
+.table-v2 .felt .pot { margin-top: var(--s-3); }
+.set-facts { margin-top: var(--s-3); border-top: 1px solid var(--line); }
+.felt.hero .set-facts { border-top-color: var(--rule); }
+.set-facts > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: var(--tap); list-style: none; cursor: pointer; color: var(--felt-ink); font-size: .875rem; border-radius: var(--r-bar); }
+.set-facts > summary::-webkit-details-marker { display: none; }
+.set-facts > summary:active { background: var(--pressed); }
+.facts-line { min-width: 0; overflow-wrap: anywhere; }
+.facts-line strong { color: var(--bone); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.facts-more { display: inline-flex; align-items: center; gap: var(--s-1); flex: none; font-weight: 600; }
+.facts-more .icon { width: 1rem; height: 1rem; transition: transform var(--t-fast) var(--ease-out); }
+.set-facts[open] .facts-more .icon { transform: rotate(180deg); }
+/* Open, the list says the same and more, so the line gives way to it. */
+.set-facts[open] .facts-line { visibility: hidden; }
+.set-facts .set-totals { margin-top: 0; padding-top: 0; border-top: 0; }
+.set-facts .where { margin: var(--s-2) 0 0; }
+.table-v2 .felt > .felt-hint { margin-top: var(--s-2); }
+@media (min-width: 900px) {
+  /* The column has the room: dock.js opens the facts and the line is not needed. */
+  .set-facts[open] > summary { display: none; }
+  .set-facts[open] .facts-body { padding-top: var(--s-3); }
+}
+/* A player's row: one line. The whole row opens the player's sheet; the one written action sits on top of it. */
+.table-v2 .player-row { padding: var(--s-2) 0; }
+.sheets-enabled .table-v2 .player-opener::after { content: ""; position: absolute; inset: 0 calc(var(--s-2) * -1); border-radius: var(--r-row); }
+.sheets-enabled .table-v2 .player-opener:hover { text-decoration: none; }
+.sheets-enabled .table-v2 .player-row:has(.player-opener:active) { background: var(--pressed); box-shadow: calc(var(--s-2) * -1) 0 0 var(--pressed), var(--s-2) 0 0 var(--pressed); }
+.sheets-enabled .table-v2 .player-opener:focus-visible { outline: none; }
+.sheets-enabled .table-v2 .player-opener:focus-visible::after { outline: 3px solid var(--warn); outline-offset: -1px; }
+.table-v2 .player-actions { position: relative; z-index: 1; }
+.player-opens { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; }
+.player-opens .icon { width: 1rem; height: 1rem; color: var(--muted); }
+.table-v2 .fallback-name .icon, html:not(.sheets-enabled) .player-opens .icon { display: none; }
+@media (max-width: 899px) {
+  .sheets-enabled .table-v2 .player-row:has(.player-actions) { display: grid; grid-template-columns: minmax(0,1fr) auto; column-gap: var(--s-2); align-items: center; }
+  .sheets-enabled .table-v2 .player-row > details { grid-column: 1 / -1; }
+  .sheets-enabled .table-v2 .player-actions { margin: 0; grid-auto-columns: auto; }
+  /* Cash out is in the player's sheet here; from 900px it is written on the row as well. */
+  .sheets-enabled .table-v2 .player-actions .cash-opener { display: none !important; }
+  .table-v2 .player-figure small { max-width: 7rem; }
+}
+@media (max-width: 359px) {
+  /* The button keeps its size; the amount goes under the name. */
+  .table-v2 .player-main { grid-template-columns: 36px minmax(0,1fr); }
+  .table-v2 .player-figure { grid-column: 2; text-align: left; }
+  .table-v2 .player-figure small { display: inline; margin-left: var(--s-1); max-width: none; }
+}
+.join-row-quiet { padding: var(--s-2) 0; }
+.join-row-quiet form { display: flex; align-items: center; gap: var(--s-1); margin: 0; }
+.join-row .btn-primary { margin: var(--s-2) 0; }
+/* Inside a player's sheet. */
+.sheets-enabled .sheet-swap { display: flex !important; margin-bottom: var(--s-3); }
+.sheet-summary { margin: 0 0 var(--s-2); color: var(--muted); }
+.sheet-summary strong { color: var(--text); font-variant-numeric: tabular-nums; }

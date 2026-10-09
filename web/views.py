@@ -202,6 +202,7 @@ def session_context(session, me) -> dict:
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
+        "table_revamp": settings.TABLE_REVAMP,
     }
     played, running_ids = clock.player_clocks(session)
     for line in summary.lines:
