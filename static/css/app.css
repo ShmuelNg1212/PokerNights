@@ -1322,3 +1322,13 @@ body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-o
 .prep-facts { margin-top: var(--s-3); border-top-color: var(--rule); }
 .prep-facts dt { color: var(--muted); }
 @media (min-width: 900px) { .prep { margin: 0; padding: 20px; border: 1px solid var(--rule); border-radius: var(--r-sheet); } }
+
+/* After the critique of 2026-10-09: the pot stays on one line on a narrow phone, a finished step of an
+   open set takes one line so a player row is in view, and a hint on the rail is not felt-coloured. */
+.table-v2 .felt .display-amount { white-space: nowrap; overflow-wrap: normal; }
+.table-v2 .felt .display-amount.amount-long { font-size: 2.75rem; }
+@media (max-width: 359px) { .table-v2 .felt .display-amount { font-size: 3rem; } .table-v2 .felt .display-amount.amount-long { font-size: 2rem; } }
+.prep .felt-hint { color: var(--muted); }
+.prep-open .prep-step[data-state=done] { min-height: 0; padding: var(--s-1) 0; }
+.prep-open .prep-step[data-state=done] .prep-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.row-hint { margin: var(--s-3) 0 0; text-align: center; }

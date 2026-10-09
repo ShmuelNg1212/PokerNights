@@ -337,7 +337,7 @@ class PreparationTests(TestCase):
         page = self.page()
         self.assertIn("rake off", page)
         self.assertIn("buy-in ₱", page)
-        self.assertIn('href="%s" aria-label="Choose rake before buy-ins">Change</a>' % reverse("session_settings", args=[self.session.pk]), page)
+        self.assertIn('href="%s" aria-label="Choose rake before buy-ins">Choose rake</a>' % reverse("session_settings", args=[self.session.pk]), page)
         self.assertEqual(page.count("Choose rake before buy-ins"), 1)
 
     def test_every_step_says_its_state_in_words(self):

@@ -133,7 +133,7 @@ class NeutralStateTests(TestCase):
         url = reverse('session', args=[night.session.pk])
         # An open set is being prepared: a checklist on the neutral surface, and no felt.
         page = self.client.get(url)
-        self.assertContains(page, '<section class="prep" data-unit')
+        self.assertContains(page, '<section class="prep prep-open" data-unit')
         self.assertNotContains(page, 'class="felt')
         night.go('running')
         page = self.client.get(url)

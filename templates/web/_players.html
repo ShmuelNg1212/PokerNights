@@ -21,5 +21,6 @@
       <form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<span class="muted">Playing too?</span> <button class="link-button" type="submit">Join this set</button></form>
     </li>{% endif %}
   </ul>
+  {% if me.is_host and session.state == 'running' and summary.player_count %}<p class="row-hint muted small">Tap a player to cash out or correct an entry.</p>{% endif %}
 </section>
 {% endif %}

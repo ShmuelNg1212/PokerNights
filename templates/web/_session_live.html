@@ -7,7 +7,7 @@
     <section class="felt" data-unit="{{ unit }}" aria-label="Set overview">
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge badge-live">{{ session.state|state_word }}</span></div>
       <div class="pot">
-        <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div><div class="display-amount">{{ summary.in_play|display_amount:unit }}</div></div>
+        <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div>{% with shown=summary.in_play|amount:unit %}<div class="display-amount{% if unit == 'chips' and shown|length > 14 or unit != 'chips' and shown|length > 8 %} amount-long{% endif %}">{{ summary.in_play|display_amount:unit }}</div>{% endwith %}</div>
         <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
       </div>
       {# One line while play goes on; the rest is one tap away. From 900px dock.js opens it, where the column has room. #}
@@ -25,7 +25,7 @@
     </section>
     {% else %}
     {# Preparing: what is done and what is next. Money appears when there is money. #}
-    <section class="prep" data-unit="{{ unit }}" aria-label="Set overview">
+    <section class="prep{% if session.state == 'open' %} prep-open{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">{{ session.state|state_word }}</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
       {% if prep %}
@@ -39,7 +39,7 @@
         <li class="prep-step" data-step="stakes" data-state="{{ prep.stakes }}">
           {% include "web/_prep_mark.html" with state=prep.stakes number=2 %}
           <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} · {% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></div>
-          <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Choose rake before buy-ins{% else %}Change set settings{% endif %}">Change</a>
+          <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Choose rake before buy-ins{% else %}Change set settings{% endif %}">{% if can_configure_rake and settings.rake_mode == 'off' %}Choose rake{% else %}Change{% endif %}</a>
         </li>
         <li class="prep-step" data-step="open" data-state="{{ prep.open }}">
           {% include "web/_prep_mark.html" with state=prep.open number=3 %}
@@ -47,7 +47,7 @@
         </li>
         <li class="prep-step" data-step="start" data-state="{{ prep.start }}">
           {% include "web/_prep_mark.html" with state=prep.start number=4 %}
-          <div class="prep-text"><span class="prep-name">Start the set</span><span class="prep-line">{% if session.state == 'open' %}The timer starts. Existing buy-ins stay unchanged.{% else %}After the set is open.{% endif %}</span></div>
+          <div class="prep-text"><span class="prep-name">Start the set</span><span class="prep-line">{% if session.state == 'open' %}The timer starts for everyone at the table.{% else %}After the set is open.{% endif %}</span></div>
         </li>
       </ol>
       {% else %}
