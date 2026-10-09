@@ -9,3 +9,7 @@
   - When a screen is swapped for another state of the same screen, put the page and each sideways row back (`scrollLeft`) **before** measuring or animating, inside the start function, not only on `turbo:load`.
   - Check the first frame, not only that an animation ran and cleaned up.
 - **Not changed:** `pokerMotion.run` itself. Its other callers start from where the element already is (a pressed button, a nudge), where the first keyframe equals the current state.
+
+## 2026-10-09 addendum: a later movement on the same element
+
+`pokerMotion.settle` clears inline styles only when its animation is still the element's latest. A numpad key pressed while it was rising had the press as its latest movement, so the rise's own `opacity` and `transform` stayed on the key. Where an element can be touched while it arrives, the script clears what it wrote itself when its animation ends (`go` in `numpad.js`), instead of relying on `settle`.

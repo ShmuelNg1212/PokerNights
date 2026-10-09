@@ -409,3 +409,7 @@ A player who was only a name on the roster gets their own login and keeps their 
 - **Changing period, unit or order** stays on the screen where it was scrolled, moves the chosen pill and the rows to their new places, and does not add a step to the Back button.
 - **Switch:** `STATS_PAGES=False` returns the tab to the single ranked list and makes player pages not found.
 - Code: `settlement/stats.py` (the figures), `web/charts.py` (the geometry), `web/stats.py` (what the pages show), `templates/web/_group_stats.html`, `player.html`, `_running_chart.html`, `static/js/stats.js`.
+
+## Numpad motion (2026-10-09)
+
+The app's number keys answer a tap ([plan](../plan/1791533332_numpad_motion.md)): a hit key lights and the amount pulses once; Delete nudges the field; holding Delete shows a fill across the key for the half second before the field clears, and letting go early clears nothing; a refused key shakes and turns its border red along with the field; the keys rise into a Buy-in, Rebuy or Cash out sheet; and Next in the bottom panel brings the next field's name in. Typing is as fast as before, digits appear whole, and nothing moves under reduced motion. Code: `static/js/numpad.js` (`go`, `lit`, `tick`, `rise`, `held`).

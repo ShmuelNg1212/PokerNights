@@ -8,6 +8,7 @@
   var pad = null, target = null, native = new WeakMap(); // the keys, the field they write to, each field's own inputmode
   var panel = null, leaving = null; // the bottom panel for a page with several number fields, and its exit
   var downAt = 0, downKey = null, hold = 0, broken = false;
+  var HOLD = 500; // how long Delete is held to clear the field; the stylesheet's fill takes the same time
   var MAX = 100000000000; // ledger/money.py MAX_CENTAVOS: ₱1 billion in centavos, or that many chips
   var RULES = {
     pesos: { point: true, shape: /^\d{0,10}(\.\d{0,2})?$/, fits: function (v) { return Math.round(Number(v || 0) * 100) <= MAX; } },
@@ -58,10 +59,57 @@
     var later = all.slice(all.indexOf(field) + 1);
     return later.filter(function (el) { return !el.value && el.dataset.saved === ""; })[0] || later[0] || null;
   }
+  // --- Movement. It only adds, and nothing waits for it: a key has already acted when any of this
+  // starts. Without Motion, or under reduced motion, go() does nothing and every key works as before.
+  // Motion begins a frame late, so the starting point is written first (footgun: motion_starts_a_frame_late).
+  // A key can be pressed while it is still rising, and the press is then the element's latest movement.
+  // So each movement here clears what it wrote itself when it ends, unless a later one of these took over.
+  var moving = new WeakMap();
+  function go(el, keyframes, preset, extra) {
+    var M = window.pokerMotion;
+    if (!el || !M || !M.on()) return;
+    var names = Object.keys(keyframes);
+    names.forEach(function (name) { el.style[name] = keyframes[name][0]; });
+    var controls = M.run(el, keyframes, preset, extra);
+    moving.set(el, controls);
+    M.after(controls, function () {
+      // Motion writes the final value once more on the frame after it reports the end.
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        if (moving.get(el) !== controls) return;
+        names.forEach(function (name) { el.style[name] = ""; });
+        if (!el.getAttribute("style")) el.removeAttribute("style");
+      }); });
+    });
+  }
+  // A key shows that it was hit, or refused. The stylesheet fades the mark out once it is taken off.
+  var marks = new WeakMap();
+  function lit(key, name, time) {
+    if (!key) return;
+    clearTimeout(marks.get(key));
+    key.classList.remove("is-hit", "is-refused");
+    key.classList.add(name);
+    marks.set(key, setTimeout(function () { key.classList.remove(name); }, time));
+  }
+  // The figure in the field answers an accepted key, so an eye on the keys still sees it change.
+  // The digit itself is already there, whole: nothing rolls or counts.
+  function tick(field, deleted) {
+    go(field, deleted ? { transform: ["translateX(-3px)", "translateX(0px)"] } : { transform: ["scale(1.02)", "scale(1)"] }, "pulse", { duration: 0.14 });
+  }
+  // The four rows of keys rise into a sheet, one after another. A key can be tapped before it lands.
+  function rise() {
+    Array.prototype.forEach.call(pad.children, function (key, at) {
+      go(key, { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0px)"] }, "shift", { delay: Math.floor(at / 3) * 0.03 });
+    });
+  }
+  function held(key, yes) { if (key) key.classList.toggle("is-holding", !!yes); }
+
   function openPanel(field) {
     if (leaving) { leaving.cancel(); leaving = null; }
     if (pad.parentNode !== panel) panel.appendChild(pad);
-    panel.querySelector("[data-numpad-label]").textContent = name(field);
+    var label = panel.querySelector("[data-numpad-label]"), moved = panel.isConnected && label.textContent !== name(field);
+    label.textContent = name(field);
+    // Next: the keys now belong to another field, and its name comes in from below.
+    if (moved) go(label.parentNode, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "fade", { duration: 0.16 });
     panel.querySelector("[data-numpad-next]").hidden = !following(field);
     var arriving = !panel.isConnected;
     if (arriving) {
@@ -109,10 +157,10 @@
     var place = slot(field);
     if (!place) { openPanel(field); return; }
     closePanel();
-    if (pad.parentNode !== place) place.appendChild(pad);
+    if (pad.parentNode !== place) { place.appendChild(pad); rise(); }
   }
   function hide(atOnce) {
-    clearTimeout(hold);
+    clearTimeout(hold); held(pad && pad.querySelector(".is-holding"), false);
     if (panel && panel.isConnected) closePanel(atOnce); else if (pad) pad.remove();
     target = null;
   }
@@ -125,7 +173,10 @@
     setTimeout(function () { throw error; }, 0);
   }
 
-  function refuse(field) {
+  function refuse(field, key) {
+    // The finger is on the key, so the refusal shows there as well as on the field.
+    lit(key, "is-refused", 260);
+    go(key, { transform: ["translateX(0px)", "translateX(-4px)", "translateX(4px)", "translateX(-2px)", "translateX(0px)"] }, "nudge");
     field.classList.add("numpad-refused");
     setTimeout(function () { field.classList.remove("numpad-refused"); }, 260);
     var M = window.pokerMotion, moving = M && M.run(field, { transform: ["translateX(0px)", "translateX(-5px)", "translateX(5px)", "translateX(-2px)", "translateX(0px)"] }, "nudge");
@@ -136,14 +187,14 @@
     if (document.activeElement === field) { try { field.setSelectionRange(caret, caret); } catch (_) {} }
     field.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  function press(key) {
+  function press(key, button) {
     var field = target;
     if (!field || !field.isConnected) { hide(); return; }
     var value = field.value, from = value.length, to = value.length;
     if (document.activeElement === field && field.selectionStart !== null) { from = field.selectionStart; to = field.selectionEnd; }
     if (key === "del") {
       if (from === to) from = Math.max(0, from - 1);
-      if (from !== to) write(field, value.slice(0, from) + value.slice(to), from);
+      if (from !== to) { write(field, value.slice(0, from) + value.slice(to), from); tick(field, true); }
       return;
     }
     var text = key === "alt" ? (rule(field).point ? "." : "00") : key;
@@ -151,10 +202,11 @@
     var next = value.slice(0, from) + text + value.slice(to), caret = from + text.length;
     var zeros = /^0+(?=\d)/.exec(next); // "05" is 5, and "00" on an empty field is 0
     if (zeros) { next = next.slice(zeros[0].length); caret = Math.max(0, caret - zeros[0].length); }
-    if (!rule(field).shape.test(next) || !rule(field).fits(next)) { refuse(field); return; }
+    if (!rule(field).shape.test(next) || !rule(field).fits(next)) { refuse(field, button); return; }
     write(field, next, caret);
+    tick(field);
   }
-  function act(key) { try { press(key); } catch (error) { giveUp(error); } }
+  function act(key, button) { try { press(key, button); } catch (error) { giveUp(error); } }
   // Next goes to the following field; Done puts the keys away.
   function move(step) {
     try {
@@ -178,12 +230,19 @@
     if (!key || !pad.contains(key)) return;
     event.preventDefault();
     downAt = Date.now(); downKey = key;
-    act(key.dataset.key);
-    if (key.dataset.key === "del") hold = setTimeout(function () { // held: clear the field
-      if (target && target.isConnected && target.value) { try { write(target, "", 0); } catch (error) { giveUp(error); } }
-    }, 500);
+    lit(key, "is-hit", 70);
+    act(key.dataset.key, key);
+    if (key.dataset.key === "del" && target && target.value) {
+      held(key, true); // a fill runs across the key for as long as the hold takes
+      hold = setTimeout(function () { // held: clear the field
+        held(key, false);
+        if (target && target.isConnected && target.value) {
+          try { write(target, "", 0); go(target, { opacity: [0.4, 1] }, "fade"); } catch (error) { giveUp(error); }
+        }
+      }, HOLD);
+    }
   }, true);
-  function lift() { clearTimeout(hold); }
+  function lift() { clearTimeout(hold); held(pad && pad.querySelector(".is-holding"), false); }
   window.addEventListener("pointerup", lift);
   window.addEventListener("pointercancel", lift);
   // A key reached without a pointer (a physical keyboard, a screen reader) acts on its click.
@@ -191,7 +250,7 @@
     var key = pad && event.target.closest && event.target.closest(".numpad-key, [data-numpad-next], [data-numpad-done]");
     if (!key || !(pad.contains(key) || (panel && panel.contains(key)))) return;
     if (key === downKey && Date.now() - downAt < 700) return; // the pointer already acted
-    if (key.dataset.key) act(key.dataset.key); else move(key);
+    if (key.dataset.key) { lit(key, "is-hit", 70); act(key.dataset.key, key); } else move(key);
   });
   // The panel goes when its field loses focus to anything but another number field or the panel itself.
   document.addEventListener("focusout", function (event) {
