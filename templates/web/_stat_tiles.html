@@ -1,0 +1,9 @@
+{% load money_tags %}<dl class="stat-tiles">
+  {% for tile in tiles %}
+  <div class="stat-tile">
+    <dt>{{ tile.label }}</dt>
+    <dd class="stat-tile-figure {{ tile.sign|sign_class }}">{{ tile.text }}</dd>
+    {% if tile.note %}<dd class="stat-tile-note">{{ tile.note }}</dd>{% endif %}
+  </div>
+  {% endfor %}
+</dl>

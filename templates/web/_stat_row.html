@@ -1,0 +1,9 @@
+{% load table_tags %}<li class="stat-row{% if line.record.pk == me.pk %} is-me{% endif %}" data-member="{{ line.record.pk }}">
+  <a class="stat-link" href="{{ line.url }}">
+    <span class="stat-rank num">{% if line.place %}<span class="visually-hidden">Place </span>{{ line.place }}{% endif %}{% if line.move_dir == 'new' %}<span class="stat-move">New</span>{% elif line.move_dir %}<span class="stat-move"><span class="visually-hidden">{{ line.move_text }} place{{ line.move_count|pluralize }}</span><span aria-hidden="true">{% if line.move_dir == 'up' %}{% icon 'arrow-up' %}{% else %}{% icon 'arrow-down' %}{% endif %}{{ line.move_count }}</span></span>{% endif %}</span>
+    {% member_token line.record.member stat_members %}
+    <span class="grow"><strong>{{ line.record.member.display_name }}</strong>{% if line.record.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
+      <span class="stat-facts">{{ line.record.sessions }} session{{ line.record.sessions|pluralize }} · won {{ line.record.win_percent }}%{% if line.left %} · Left the group{% endif %}</span></span>
+    <span class="stat-figure">{% include "web/_stat_figure.html" with figure=line.figure class="stat-net" %}{% if line.profit %}<span class="stat-profit">{{ line.profit.text }}</span>{% endif %}</span>
+  </a>
+</li>

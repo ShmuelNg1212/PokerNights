@@ -88,6 +88,9 @@
     if (a === null || b === null) return;
     if (b > a) go = "deeper"; else if (b < a) go = "back";
     else if (from.dataset.tab && to.dataset.tab && from.dataset.tab !== to.dataset.tab) go = Number(to.dataset.tab) > Number(from.dataset.tab) ? "next" : "prev";
+    // The same stats screen with another period, unit or order is not a change of screen. It is
+    // swapped at once and stats.js moves what changed.
+    else if (from.dataset.stats && from.dataset.stats === to.dataset.stats) { root.dataset.go = "filter"; return; }
     if (!go) return;
     root.dataset.go = go;
     var was = (go === "deeper" && source(link)) || from.querySelector("[data-carry=title]");
@@ -108,7 +111,7 @@
     if (morph) { if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true })); }
     else direct(event.detail.newBody);
     var leave = function () { if (!morph) window.pokerPage.stop(); };
-    if (!document.startViewTransition || still.matches) { leave(); settle(); return; }
+    if (!document.startViewTransition || still.matches || root.dataset.go === "filter") { leave(); settle(); return; }
     event.preventDefault();
     var shown = new Promise(function (done) { drawn = done; setTimeout(done, 2000); });
     // The markers stay until the browser reports the whole change finished. Its layers are on

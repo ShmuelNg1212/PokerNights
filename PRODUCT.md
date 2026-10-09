@@ -90,3 +90,7 @@ A host keeps the player list in order. Removing a player is asked first, on a pa
 ## 2026-10-09 addendum — Claim links
 
 A host gives a roster player a login of their own by sending a claim link. Whoever opens it first becomes that player in the group, with the player's history; the link works once, lasts 7 days and can be cancelled. A newcomer signs up and is in at once; a person with an account confirms on one page. An account that already has games recorded in the group cannot claim, because two records cannot be joined yet. A claim moves no money record and cannot be undone in the app. [Plan](doc/plan/1791527506_claim_links.md).
+
+## 2026-10-09 addendum — Stats board and player pages
+
+Stats opens with the viewer's own profit or loss, rank and last result. The board can be ordered by profit, average, return, per hour or sessions, over all time, this year, the last three months or one month, and a player needs a few sessions before holding a place. Each player has a page with a running profit chart, a bar for each session, figures that explain the result (average, return on buy-ins, per hour, rebuys, rake paid) and their best and worst nights. Every member of a group can open every player's page. All of it is read from closed sessions; nothing new is stored, pesos and chips never mix, and money never animates through other values. [Plan](doc/plan/1791528961_stats_revamp.md).

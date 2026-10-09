@@ -3,7 +3,7 @@
 import datetime
 import uuid
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from games import services as games
@@ -151,7 +151,10 @@ class RosterActivityTests(TestCase):
             self.assertEqual(queries.roster_activity([]), {})
 
 
+@override_settings(STATS_PAGES=False)
 class GroupStatsPageTests(TestCase):
+    """The single ranked list that ``STATS_PAGES=False`` returns to. The board is in web.tests.test_stats_pages."""
+
     def setUp(self):
         self.club = Club()
         self.url = reverse("group", args=[self.club.group.pk])

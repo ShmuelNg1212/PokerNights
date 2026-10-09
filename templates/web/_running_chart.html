@@ -1,0 +1,25 @@
+{% load l10n %}{% localize off %}
+<section class="panel chart" aria-labelledby="chart-heading" data-chart tabindex="0" role="group" aria-describedby="chart-help">
+  <h2 id="chart-heading" class="chart-head">Running profit</h2>
+  <p id="chart-help" class="visually-hidden">The running total after each of {{ chart.points|length }} sessions, and each session's result beneath. Every figure is also in the Sessions list. With the chart in focus, the left and right arrow keys step through the sessions.</p>
+  <div class="chart-plot" data-chart-plot>
+    <div class="chart-line">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <line class="chart-zero" x1="0" x2="100" y1="{{ chart.zero }}" y2="{{ chart.zero }}" />
+        <path class="chart-path" d="{{ chart.path }}" />
+      </svg>
+      {% for y, text in chart.labels %}<span class="chart-y" style="top:{{ y }}%" aria-hidden="true">{{ text }}</span>{% endfor %}
+      <span class="chart-end" style="left:{{ chart.end.x }}%;top:{{ chart.end.y }}%" aria-hidden="true"></span>
+      <span class="chart-dot" data-chart-dot hidden aria-hidden="true"></span>
+    </div>
+    <h3 class="chart-sub">Each session</h3>
+    <div class="chart-bars" style="--n:{{ chart.points|length }}" aria-hidden="true">
+      <span class="chart-base" style="top:{{ chart.bar_zero }}%"></span>
+      {% for p in chart.points %}<span class="chart-bar {% if p.up %}up{% elif p.net %}down{% else %}flat{% endif %}" style="left:{{ p.x }}%;top:{{ p.bar_top }}%;height:{{ p.bar_height }}%;--i:{{ forloop.counter0 }}" data-x="{{ p.x }}" data-y="{{ p.y }}" data-say="{{ p.date|date:'M j, Y' }} · {{ p.table }} · {{ p.net_text }} that night · running total {{ p.total_text }}"></span>{% endfor %}
+    </div>
+    <span class="chart-cross" data-chart-cross hidden aria-hidden="true"></span>
+  </div>
+  <p class="chart-x" aria-hidden="true"><span>{{ chart.first_label }}</span><span>{{ chart.last_label }}</span></p>
+  <p class="chart-say" data-chart-say aria-live="polite">{% if chart.clipped %}The latest {{ chart.points|length }} sessions. {% endif %}Touch the chart to read a session.</p>
+</section>
+{% endlocalize %}

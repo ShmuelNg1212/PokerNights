@@ -1,32 +1,51 @@
 {% load money_tags table_tags %}
 <section class="group-stats" aria-labelledby="stats-heading">
-<h2 id="stats-heading">Player stats</h2>
+<h2 id="stats-heading" class="visually-hidden">Player stats</h2>
 {% if stat_months %}
-{% if stat_units|length > 1 %}
-<nav class="pills" aria-label="Unit">
-  {% for u in stat_units %}<a href="?view=stats&amp;unit={{ u }}" {% if u == stat_unit %}aria-current="true"{% endif %}>{% if u == 'chips' %}Chips games{% else %}Pesos games{% endif %}</a>{% endfor %}
+{% include "web/_stat_controls.html" with board=True %}
+<div data-stat-body>
+<section class="panel stat-you" aria-labelledby="stat-you-heading">
+  <h3 id="stat-you-heading" class="stat-label">You · {{ stat_period.label }}</h3>
+  {% if stat_mine %}
+  <p class="stat-you-net">{% include "web/_stat_figure.html" with figure=stat_mine.profit|default:stat_mine.figure class="stat-you-figure" %}</p>
+  <dl class="stat-you-facts">
+    <div><dt>Rank</dt><dd>{{ stat_mine_rank }}</dd></div>
+    <div><dt>Last result</dt><dd>{% include "web/_stat_figure.html" with figure=stat_mine_last class="" %} <span class="muted small">{{ stat_mine.record.last.date|date:"M j" }}</span></dd></div>
+  </dl>
+  <p><a class="btn btn-block" href="{{ stat_mine.url }}">Your stats</a></p>
+  {% else %}
+  <p class="muted">You have no closed session {{ stat_where }}.</p>
+  {% endif %}
+</section>
+{% if stat_ranked or stat_unranked %}
+<nav class="pills stat-sort" aria-label="Order by" data-stat-nav data-stat-pills="sort">
+  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{% if slug == stat_sort %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ label }}</a>{% endfor %}
 </nav>
-{% endif %}
-<nav class="pills" aria-label="Period">
-  <a href="?view=stats&amp;unit={{ stat_unit }}" {% if not stat_month %}aria-current="true"{% endif %}>All time</a>
-  {% for m in stat_months %}<a href="?view=stats&amp;unit={{ stat_unit }}&amp;month={{ m|date:'Y-m' }}" {% if m == stat_month %}aria-current="true"{% endif %}>{{ m|date:"M Y" }}</a>{% endfor %}
-</nav>
-<p class="small muted">{% if stat_month %}Sessions dated {{ stat_month|date:"F Y" }}{% else %}Every closed session{% endif %} in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %}. Pesos and chips are never added together.</p>
-<ol class="stat-list">
-  {% for line in stats %}
-  <li class="stat-row">
-    <span class="stat-rank num" aria-hidden="true">{{ forloop.counter }}</span>
-    {% member_token line.member stat_members %}
-    <span class="grow"><strong>{{ line.member.display_name }}</strong>{% if line.member.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
-      <span class="muted small stat-facts">{{ line.sessions }} session{{ line.sessions|pluralize }} · won {{ line.wins }} · {{ line.win_percent }}% win rate</span></span>
-    <span class="amount stat-net {{ line.net|sign_class }}">{% if line.net > 0 %}{% icon 'arrow-up-right' %}{% elif line.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ line.net|signed_amount:stat_unit }}</span>
-  </li>
-  {% endfor %}
+{% if stat_ranked %}
+<ol class="stat-list" data-stat-board>
+  {% for line in stat_ranked %}{% include "web/_stat_row.html" %}{% endfor %}
 </ol>
-<div class="panel stat-notes small muted">
-  <p><strong>Profit / loss</strong> is each player's result after rake, added over the sessions shown. It is not what is still owed.</p>
-  <p><strong>Sessions</strong> counts closed sessions the player has a result in. Several sets in one session count once.</p>
-  <p><strong>Win rate</strong> is the share of those sessions that ended in profit. A break-even session counts as played, not won. It is not a rate of hands won.</p>
+{% endif %}
+{% if stat_unranked %}
+<h3 class="stat-heading">Not ranked yet</h3>
+<p class="small muted">{{ stat_board.minimum }} session{{ stat_board.minimum|pluralize }} put{% if stat_board.minimum == 1 %}s{% endif %} a player on this board.</p>
+<ul class="stat-list stat-list-rest">
+  {% for line in stat_unranked %}{% include "web/_stat_row.html" %}{% endfor %}
+</ul>
+{% endif %}
+{% else %}
+<div class="panel empty-state"><p class="muted">No closed session {{ stat_where }} in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %} games.</p></div>
+{% endif %}
+<details class="stat-notes">
+  <summary class="small">How these are worked out</summary>
+  <div class="small muted">
+    <p>Everything comes from closed sessions, in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %} only. Pesos and chips are never added together. Several sets in one session count once.</p>
+    <p><strong>Profit</strong> is each player's result after rake, added up. It is not what is still owed.</p>
+    <p><strong>Average</strong> is profit or loss for each session played. <strong>Return</strong> is profit or loss as a percent of the money bought in. <strong>Per hour</strong> uses only sessions where time at the table was recorded.</p>
+    <p><strong>Won</strong> is the share of sessions that ended in profit. A break-even session counts as played, not won.</p>
+    <p>Averages, percents and hourly figures are rounded toward zero. The mark beside a place compares it with {% if stat_period.kind == 'all' %}the board before the latest session{% else %}the period before{% endif %}.</p>
+  </div>
+</details>
 </div>
 {% else %}
 <div class="panel empty-state">

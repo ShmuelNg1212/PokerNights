@@ -1002,3 +1002,109 @@ input.numpad-refused { border-color: var(--down); }
 .claim-who p + p { margin-top: var(--s-2); color: var(--muted); }
 .claim-logout { margin-top: 0; }
 .link-button { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap); min-width: var(--tap); padding: 0 var(--s-1); border: 0; background: none; color: var(--text); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* Stats (the Stats tab, a player's page, stats.js). The viewer's own answer leads; the board is rows
+   that open a player; charts are drawn by the server and read without colour or script. */
+.stat-periods { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0 0 var(--s-4); }
+.stat-periods .pills { margin: 0; padding: 0; flex: 0 1 auto; min-width: 0; }
+.stat-month { display: flex; gap: var(--s-2); align-items: center; flex: 1 1 10rem; }
+.stat-month select { min-height: var(--tap); border-radius: var(--r-pill); padding: 0 var(--s-4); color: var(--muted); font-weight: 600; font-size: .9rem; background: transparent; }
+.stat-month select[data-chosen] { background: var(--bone); border-color: var(--bone); color: var(--ink); }
+.stat-month.is-auto .btn { display: none; }
+.pills a { transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast); }
+
+.stat-you { display: grid; gap: var(--s-3); padding: var(--s-5) var(--s-4) var(--s-4); }
+.stat-you > * { margin: 0; }
+.stat-label { margin: 0; color: var(--muted); font-size: .8125rem; font-weight: 600; letter-spacing: .01em; }
+.stat-you-figure, .player-net-figure { display: inline-flex; align-items: center; gap: var(--s-2); font-size: clamp(2.25rem, 11vw, 3.25rem); font-weight: 800; font-stretch: 85%; line-height: 1.05; letter-spacing: -.02em; white-space: nowrap; }
+.stat-you-figure .icon, .player-net-figure .icon { width: .55em; height: .55em; stroke-width: 2.5; }
+.stat-you-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); }
+.stat-you-facts dt, .player-highlights dt, .stat-tile dt { color: var(--muted); font-size: .8125rem; }
+.stat-you-facts dd, .player-highlights dd { margin: 2px 0 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-you-facts .amount, .player-highlights .amount, .player-sessions .amount { display: inline-flex; align-items: center; gap: var(--s-1); white-space: nowrap; }
+.stat-you-facts .icon, .player-highlights .icon, .player-sessions .icon { width: .9rem; height: .9rem; }
+
+.stat-sort { margin-top: var(--s-5); }
+.stat-heading { margin: var(--s-5) 0 var(--s-1); font-size: 1rem; }
+.stat-list { position: relative; }
+.stat-row { display: block; padding: 0; border-radius: var(--r-row); }
+.stat-link { display: flex; align-items: center; gap: var(--s-3); min-height: 64px; padding: var(--s-3) var(--s-2); margin: 0 calc(var(--s-2) * -1); border-radius: var(--r-row); color: inherit; text-decoration: none; min-width: 0; transition: background var(--t-fast); }
+.stat-link:hover, .stat-link:active { background: var(--pressed); }
+.stat-row.is-me .stat-link { background: var(--surface-2); }
+.stat-rank { display: grid; justify-items: center; gap: 1px; width: 1.75rem; line-height: 1.1; }
+.stat-list-rest .stat-rank { display: none; }
+.stat-move { display: inline-flex; align-items: center; color: var(--muted); font-size: .6875rem; font-weight: 600; white-space: nowrap; }
+.stat-move .icon { width: .7rem; height: .7rem; stroke-width: 2.5; }
+.stat-facts { display: block; color: var(--muted); font-size: .8125rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat-figure { flex: none; display: grid; justify-items: end; gap: 1px; }
+.stat-net > span, .amount > span { min-width: 0; }
+.stat-profit { color: var(--muted); font-size: .75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat-notes { margin-top: var(--s-5); border-top: 1px solid var(--rule); }
+.stat-notes > summary { color: var(--muted); }
+.stat-notes p { margin: 0 0 var(--s-2); }
+
+.player-head { display: flex; align-items: center; gap: var(--s-3); margin: var(--s-2) 0 var(--s-4); min-width: 0; }
+.player-head .chip { flex: none; width: 56px; height: 56px; font-size: 1.25rem; }
+.player-head h1 { margin: 0; font-size: 1.5rem; overflow-wrap: anywhere; }
+.player-head p { margin: 2px 0 0; }
+.player-lead { display: grid; gap: var(--s-2); padding: var(--s-5) var(--s-4); }
+.player-lead > * { margin: 0; }
+.player-rank { color: var(--muted); font-weight: 600; }
+.chart-none { margin: var(--s-3) 0 0; }
+
+.stat-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 0; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--rule); overflow: hidden; }
+.stat-tile { display: grid; align-content: start; gap: 2px; padding: var(--s-3) var(--s-4); background: var(--surface); min-width: 0; }
+.stat-tile dd { margin: 0; }
+.stat-tile-figure { font-size: 1.25rem; font-weight: 750; font-stretch: 88%; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat-tile-note { color: var(--muted); font-size: .75rem; }
+.player-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4) var(--s-3); margin: var(--s-3) 0; }
+.player-highlights a { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); min-height: var(--tap); align-content: center; color: inherit; text-decoration: none; }
+.player-highlights a:hover .muted { text-decoration: underline; }
+.player-sessions > li { padding: 0; }
+.player-sessions a.row { flex-wrap: nowrap; min-height: 64px; padding: var(--s-3) var(--s-2); margin: 0 calc(var(--s-2) * -1); border-radius: var(--r-row); color: inherit; text-decoration: none; transition: background var(--t-fast); }
+.player-sessions a.row:hover, .player-sessions a.row:active { background: var(--pressed); }
+.player-sessions .grow { min-width: 0; }
+
+/* Charts. Positions come from web/charts.py as percentages of the box. */
+.chart { padding: var(--s-4); outline-offset: 2px; }
+.chart-head { margin: 0 0 var(--s-3); font-size: 1.0625rem; }
+.chart-plot { position: relative; touch-action: pan-y; cursor: crosshair; }
+.chart-line { position: relative; height: 176px; }
+.chart-line svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; animation: chart-draw var(--t-focal) var(--ease-out) both; }
+.chart-path { fill: none; stroke: var(--bone); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.chart-zero { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.chart-y { position: absolute; left: 0; transform: translateY(-50%); padding: 0 6px 0 0; background: var(--surface); color: var(--muted); font-size: .6875rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; }
+.chart-end, .chart-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--bone); box-shadow: 0 0 0 2px var(--surface); }
+.chart-end { animation: chart-pop 240ms var(--ease-out) 480ms both; }
+.chart-dot { background: var(--brass); }
+.chart-sub { margin: var(--s-4) 0 var(--s-2); color: var(--muted); font-size: .8125rem; font-weight: 600; }
+.chart-bars { position: relative; height: 72px; }
+.chart-base { position: absolute; left: 0; right: 0; height: 1px; background: var(--rule); }
+.chart-bar { position: absolute; width: calc(100% / var(--n) - 2px); min-width: 2px; max-width: 16px; transform: translateX(-50%); animation: chart-rise 360ms var(--ease-out) both; animation-delay: calc(min(var(--i), 30) * 12ms + 180ms); }
+.chart-bar.up { background: var(--good); border-radius: var(--r-bar) var(--r-bar) 0 0; transform-origin: 50% 100%; }
+/* Up and Down sit close together for red-green colour-blind readers (dataviz validator: 6.0), so a
+   loss is also below the baseline and hatched. */
+.chart-bar.down { background: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in oklch, var(--ink) 45%, transparent) 3px 4.5px), var(--danger); border-radius: 0 0 var(--r-bar) var(--r-bar); transform-origin: 50% 0; }
+.chart-bar.flat { height: 2px !important; margin-top: -1px; background: var(--line); }
+.chart-bar.is-on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brass); z-index: 1; }
+.chart-cross { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--brass); pointer-events: none; }
+.chart-x { display: flex; justify-content: space-between; margin: var(--s-2) 0 0; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.chart-say { min-height: 2.6em; margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); color: var(--muted); font-size: .875rem; font-variant-numeric: tabular-nums; }
+.chart-say.is-on { color: var(--text); }
+@keyframes chart-draw { from { clip-path: inset(-10% 100% -10% 0); } to { clip-path: inset(-10% -2% -10% 0); } }
+@keyframes chart-pop { from { opacity: 0; transform: scale(.4); } }
+@keyframes chart-rise { from { transform: translateX(-50%) scaleY(0); } }
+
+@media (min-width: 900px) {
+  .player-page .chart-line { height: 220px; }
+  .chart-bar { max-width: 24px; }
+  .stat-tiles { grid-template-columns: repeat(4, 1fr); }
+  .player-highlights { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 359px) { .stat-link { gap: var(--s-2); } .stat-you-facts { grid-template-columns: 1fr; } }
+
+/* The chosen pill on a stats screen is a marker behind its words, so stats.js can slide it from the
+   pill that was chosen before. Without the script it simply sits there. */
+.pills a { position: relative; isolation: isolate; }
+.pill-marker { position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: var(--bone); transform-origin: 0 50%; }
+.pills a[aria-current]:has(.pill-marker) { background: transparent; border-color: transparent; }

@@ -1,0 +1,38 @@
+{% load money_tags table_tags %}
+<section class="group-stats" aria-labelledby="stats-heading">
+<h2 id="stats-heading">Player stats</h2>
+{% if stat_months %}
+{% if stat_units|length > 1 %}
+<nav class="pills" aria-label="Unit">
+  {% for u in stat_units %}<a href="?view=stats&amp;unit={{ u }}" {% if u == stat_unit %}aria-current="true"{% endif %}>{% if u == 'chips' %}Chips games{% else %}Pesos games{% endif %}</a>{% endfor %}
+</nav>
+{% endif %}
+<nav class="pills" aria-label="Period">
+  <a href="?view=stats&amp;unit={{ stat_unit }}" {% if not stat_month %}aria-current="true"{% endif %}>All time</a>
+  {% for m in stat_months %}<a href="?view=stats&amp;unit={{ stat_unit }}&amp;month={{ m|date:'Y-m' }}" {% if m == stat_month %}aria-current="true"{% endif %}>{{ m|date:"M Y" }}</a>{% endfor %}
+</nav>
+<p class="small muted">{% if stat_month %}Sessions dated {{ stat_month|date:"F Y" }}{% else %}Every closed session{% endif %} in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %}. Pesos and chips are never added together.</p>
+<ol class="stat-list">
+  {% for line in stats %}
+  <li class="stat-row">
+    <span class="stat-rank num" aria-hidden="true">{{ forloop.counter }}</span>
+    {% member_token line.member stat_members %}
+    <span class="grow"><strong>{{ line.member.display_name }}</strong>{% if line.member.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
+      <span class="muted small stat-facts">{{ line.sessions }} session{{ line.sessions|pluralize }} · won {{ line.wins }} · {{ line.win_percent }}% win rate</span></span>
+    <span class="amount stat-net {{ line.net|sign_class }}">{% if line.net > 0 %}{% icon 'arrow-up-right' %}{% elif line.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ line.net|signed_amount:stat_unit }}</span>
+  </li>
+  {% endfor %}
+</ol>
+<div class="panel stat-notes small muted">
+  <p><strong>Profit / loss</strong> is each player's result after rake, added over the sessions shown. It is not what is still owed.</p>
+  <p><strong>Sessions</strong> counts closed sessions the player has a result in. Several sets in one session count once.</p>
+  <p><strong>Win rate</strong> is the share of those sessions that ended in profit. A break-even session counts as played, not won. It is not a rate of hands won.</p>
+</div>
+{% else %}
+<div class="panel empty-state">
+  <h3>No stats yet</h3>
+  <p class="muted">Stats come from closed sessions. Close a session after its sets are finalized and the players appear here.</p>
+  <p><a class="btn btn-block" href="{% url 'group' group.pk %}">Go to sessions</a></p>
+</div>
+{% endif %}
+</section>
