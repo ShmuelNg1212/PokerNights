@@ -144,3 +144,13 @@ Still to do in stage 3:
 4. One `/impeccable critique` of the page in both jobs, and one fix batch.
 5. Sync docs: DESIGN.md, PRODUCT.md, wiki features and deployment (`TABLE_REVAMP`), browser README, TODO with the phone checklist.
 6. State words on the session page's and the group's lists of sets (decision 3) are not done yet; only the set page uses them.
+
+2026-10-09, finished:
+
+- All six remaining steps are done. Commits on `feat/set-page-revamp`: `7f73722`, `cd39b39`, `36797c8`, `40c929c` (state words), `a9f1918` (regression fix), then the critique's fix batch and the docs. Not merged, not pushed.
+- **A fault the regression run found:** on a screen 900px or wider the facts faded in on first sight of the page. Fixed in `table.js`.
+- **Browser checks:** `table` 63 of 63, `flow` 52, `numpad` 120, `dock` 228, `motion` 34, `inplace` 39, `navigate` 52, `screens` 46, `lifetime` 22, `session_form` 69, `player_entries` 48, `rake_controls` 25: all pass. Five were updated to follow the new page (browser README). `opening`, `opening_drafts`, `rake` and `late_player` fail the same way with the switch off, so they were already out of date.
+- **Suites:** 934 pass on SQLite and on PostgreSQL 17.
+- **Critique:** 28 of 40, no P0. One fix batch: the pot on one line at 320px, finished steps of an open set on one line, "Choose rake" on the stakes step, a line telling the host a tap reaches cash-out, the hint colour on the rail. Left open (P3): ragged amounts on rows without a button, the lone Details line when open, an action in the draft's empty list.
+- **Differs from the plan:** AC8 said no model or service change. Decision 3 (one set of words) needed `GameSession.state_word`, a property with no migration, and four refusal messages now say "in play" and "draft" where they said "running" and "setup". A sheet cannot open a second sheet, so Cash out swaps the content of the open one.
+- **Acceptance:** AC1 to AC10 met as measured above, with AC8 as noted. The phone checks in TODO.md are the human's.

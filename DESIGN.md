@@ -790,6 +790,38 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 
 **Measured.** `welcome.mjs`, 36 checks at 320 × 568, 390 × 844 and 1280 × 800: the first frame, every figure's text on that frame against its text at rest, the order of the cards, the end within 900ms, a tap and a key ending it, a tap on a card's button during it, one card and five, a group page, a newcomer, a reload, Back, a second login, reduced motion, no JavaScript, Motion blocked and the switch. With the processor slowed four times the arrival had one late frame (50ms) where a plain visit had none.
 
+### Set page (2026-10-09)
+
+[Plan](doc/plan/1791549025_set_page_revamp.md). The set page while a set is prepared and in play. No new colour, font or asset. It replaces three earlier lines: "Player rows" (two written actions on every row), "Start controls" (the rake button beside the start controls) and "Collapsible host dock" (always unfolded on first sight).
+
+**In play.**
+
+| Part | Rule |
+|---|---|
+| Felt panel | The pot, the timer and the blinds, then one line: "₱X bought in · ₱Y cashed out" with **Details**. Details holds the totals, the rake rows (only when rake is on), the rake rule and the place. Open from 900px |
+| The pot | One line always: 4rem, 3rem under 360px, smaller again for a long figure |
+| Player row | One line: token, name with a chevron, figure, and **Rebuy** (or Buy-in). The whole row opens the player's sheet. Under 360px the figure sits under the name. From 900px Cash out is written on the row too |
+| Player's sheet | **Cash out** first, then the summary and the corrections. Cash out replaces the sheet's content inside the same open sheet (`sheets.js`, swap); a sheet never opens a second sheet |
+| Order | A player sees their own row first, and Join first when they are not seated. A host sees the order of joining, with a quiet "Playing too? Join this set" after the list and the line "Tap a player to cash out or correct an entry." |
+| Host menu | Folded on first sight of a set in play, unfolded in every other state. A choice the host makes is kept either way (`rack-dock`: `open` or `collapsed`) |
+
+**Preparing.** A draft and an open set show a Rail panel, never felt: "Get this set ready" and four steps (Players, Stakes and rake, Open for players, Start the set). A step is Done (Bone disc with a tick), Next (Brass ring with its number) or Later (rule ring, muted name); each says its state in words for a screen reader. The menu's one main button is the Next step. Stakes count as done from the start; the step's button reads "Choose rake" until a rule is chosen. Once the set is open, finished steps take one line each so the first player is in view. Totals appear only when there is money.
+
+**Words.** A set is Draft, Open, In play, Counting up, Finalized or Canceled on every page and in every message (`GameSession.state_word`). The stored names stay.
+
+**Movement** (`static/js/table.js`).
+
+| Moment | Movement |
+|---|---|
+| A step is completed | Its mark arrives with the tick (`arrive`); the new Next mark pulses once |
+| The set starts | Felt sweeps across the panel from the left in 500ms and the timer side rises, once, 780ms in all. The pot is at its value on the first frame |
+| Details opened by a tap | The facts fade in over 6px (`fade`). Opened by a live update or a wide screen: nothing |
+| Cash out in the sheet | The sheet's content fades to the form (`shift`) |
+
+Reduced motion and a missing Motion file move nothing; the page is complete either way. `TABLE_REVAMP=False` returns the earlier page.
+
+**Measured.** `table.mjs`, 63 checks. At 390 × 844 with eight players: panel 223px (was 351), row 65px (was 142), six whole rows on the first screen, page 1,114px (was 1,758). No late frame at the start with the processor slowed four times. Critique 28 of 40, then one fix batch (`.impeccable/critique/`).
+
 ## Do's and Don'ts
 
 ### Do:
