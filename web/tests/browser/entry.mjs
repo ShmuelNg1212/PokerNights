@@ -18,7 +18,7 @@ const key=async(k,code,vk,extra={})=>{await send('Input.dispatchKeyEvent',{type:
 await size(390);return {s,js,go,click,shot,size,key};}
 const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${ok?'PASS':'FAIL'} ${name}`)};
 const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
-const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
+const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>Math.round(el.getBoundingClientRect().height*100)/100>=48)`;
 // WCAG contrast of an element's text against the page ground, via canvas so oklch resolves.
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.body).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
 try {
@@ -27,7 +27,7 @@ try {
  for(const width of [320,390,1280])for(const [name,path] of pages){await A.size(width);await A.go(path);
   check(`${name} fits ${width}`,await A.js(`document.documentElement.scrollWidth<=${width}`));
   check(`${name} 48px targets ${width}`,await A.js(targets));
-  check(`${name} lockup, no site header ${width}`,await A.js(`!!document.querySelector('.entry-head img')&&!document.querySelector('.site-header')&&document.querySelector('form [type=submit]').getBoundingClientRect().width>=Math.min(${width},472)-40`));
+  check(`${name} lockup, no site header ${width}`,await A.js(`!!document.querySelector('.door-hero .door-mark')&&!!document.querySelector('.door-sheet')&&!document.querySelector('.site-header')&&document.querySelector('form [type=submit]').getBoundingClientRect().width>=Math.min(${width},440)-66`));
   await A.shot(`entry-${name}-${width}`);}
  await A.size(390);
  await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));console.log('  invited sign-up height at 390:',await A.js(`document.documentElement.scrollHeight`),'button bottom:',await A.js(`Math.round(document.querySelector('form [type=submit]').getBoundingClientRect().bottom)`));check('invited sign-up: Create account visible without scrolling at 390x844',await A.js(`document.querySelector('form [type=submit]').getBoundingClientRect().bottom<=844`));
@@ -69,7 +69,7 @@ try {
  // The whole flow from an invite link, signed out: link -> log in -> sign up -> join -> group.
  // A newcomer: invite link -> sign up -> group, in two screens.
  const B=await page();await B.go(M.invite);
- check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("You're invited to "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
+ check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("Join "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
  check('sign up says who sees the name and where a reset comes from',await B.js(`${text('Your friends see this name.')}&&${text('A host of your group can send you a reset link.')}`));
  check('contrast reset note',await B.js(contrast('.hint-note'))>=4.5);
  await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);

@@ -1,5 +1,5 @@
 {% load static %}<!doctype html>
-<html lang="en"{% if service_worker %} data-sw="on"{% endif %}{% if numpad %} data-numpad="on"{% endif %}{% if answer_in_place %} data-in-place="on"{% endif %}>
+<html lang="en"{% if service_worker %} data-sw="on"{% endif %}{% if numpad %} data-numpad="on"{% endif %}{% if answer_in_place %} data-in-place="on"{% endif %}{% if door.on %} data-door="on"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -36,6 +36,7 @@
   <script src="{% static 'js/dock.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/pick.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/password.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/door.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/copy.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/roster.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/stats.js' %}" defer data-turbo-track="reload"></script>

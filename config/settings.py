@@ -81,6 +81,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "config.prefetch.PrefetchLeavesOneTimeState",
     "config.inplace.AnswerInPlace",
+    "config.door.DoorCookie",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -97,6 +98,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "config.pwa.flags",
+                "config.door.door",
             ],
         },
     },
@@ -193,6 +195,8 @@ STATS_PAGES = env.bool("STATS_PAGES", default=True)
 CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 # Turn off to return Group settings → Players to add, rename and remove only (see groups/services.py).
 ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
+# Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
+DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

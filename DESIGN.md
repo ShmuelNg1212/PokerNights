@@ -724,6 +724,46 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 - **Fail safe.** No copy is made when the text is wider than the field, under reduced motion, or without Motion. An update from the server, typing that is not from the keys, another field, and leaving the sheet all remove it at once. An error gives the copy up for the page and the keys keep working.
 - **Measured.** `numpad.mjs`, 120 checks. A capture of the field with the copy up and one with the field's own text differ by at most 1 shade in 255 on any pixel, for a left-aligned sheet amount and a right-aligned field: the copy sits exactly on the text.
 
+### Front door (2026-10-09)
+
+[Plan](doc/plan/1791542366_front_door_revamp.md). This supersedes the frame in "Entry pages" and "Entry flow after the critique"; their words, help, errors and Show button stand. No new colour, font or raster asset.
+
+**Frame.** Log in, Sign up, "Sign-up needs an invite", Set a new password, Join group, Claim and their dead-link pages share `templates/entry.html`.
+
+- **Two surfaces.** The hero sits on Ground: the mark and the name. Below it the task sits in a raised sheet: Rail, a Rule edge, the sheet radius (26px), the sheet's shadow. Under 520px the sheet runs edge to edge and to the bottom of the screen, with top corners only. From 520px it is a centred 440px card with 32px padding.
+- **The mark is drawn in the page** (`partials/mark.html`), in the tokens Ink, Bone and Brass, so its ring and its crescent are separate parts. Under the ring is a second ring 3 units lower in the primary button's underside colour (`--door-under`): the chip has the thickness the buttons have. It is decoration; the name beside it is text.
+- **Hero sizes.** Log in, "needs an invite" and signed-out link pages: the mark at 96px (72px on a screen under 700px high) over "PokerNights" at 2rem. Sign up and Set a new password: one row, the mark at 56px beside the name. Signed in (Join, Claim): the 48px mark alone, or the player's own token on the claim page, under the site header.
+- **The description** stays under the name on Log in and "needs an invite". On Sign up it is the sheet's foot, under a Rule line, word for word.
+- **An invited Sign up** is headed "Join {group}", then "Create your account to get in." and "Already have an account? Log in" before the first field.
+- The return key on a phone keyboard reads Next until the last field, then Go.
+
+**Movement.** The one exception to the 900ms limit for a signature moment: the full arrival may take up to 1.1 seconds, on the front door only, once per browser session.
+
+| Moment | Movement |
+|---|---|
+| First visit in a browser session (`data-arrival="full"`) | The mark drops 28px from 86% size with the `arrive` spring while its ring turns a third of a turn into place; the crescent rises 140ms later; the name widens from 62% to 88% width as it fades in; the sheet rises 24px with the `sheet` spring and its heading, fields and button follow 40ms apart with `shift`; the description fades in last. 780ms as built |
+| Later visits (`data-arrival="short"`) | The hero and the sheet fade in and rise 8px together in 240ms |
+| A key or a tap during an arrival | The arrival ends at once. The username field has focus from the first frame |
+| A key is typed in any field | The ring and its underside turn 20° (a spring, 300ms, bounce 0.25); a delete turns them back. The crescent is still |
+| Show / Hide | The crescent tips 32° and back with `release` |
+| A form is sent | The ring spins, one turn in 900ms, until the next page comes. The button keeps its busy line and words |
+| A refused page | No arrival. The mark shakes once with `nudge`, as the refused field does |
+| Log in ⇄ Sign up | The mark, the name and the sheet are the same things on both screens (`brand-mark`, `door-name`, `door-sheet`): the mark changes size and place, the sheet changes height without stretching its content, the rest cross-fades |
+| Getting in, logging out | The mark and the top bar's mark share `brand-mark`, so the browser carries the chip into the top bar and back (420ms). Inside the app the top bar gives the name up (`data-door-done`), so screens there change as before |
+
+**Rules.**
+
+1. The arrival is CSS, not Motion, so it starts on the first paint. Every keyframe runs from a start state to the element's ordinary state: a page where nothing runs is complete. The springs are the app's own, sampled into `linear()` curves (`--spring-sheet`, `--spring-arrive`, `--spring-shift`, `--spring-turn`); a browser without `linear()` gets the ease-out curve.
+2. The server chooses the arrival (`config/door.py`) from a cookie that lasts the browser session and holds nothing. A page that answers a POST gets none.
+3. Nothing loops while the page is idle.
+4. Only transform and opacity move, with one measured exception: the name's width during the full arrival. It added no late frame with the processor slowed four times.
+5. Motion (`static/js/door.js`) is used only for what a person causes. A screen with a top bar has two marks, and only the top bar's may hold the carried name.
+6. `DOOR_MOTION=False` removes every movement above and the carried names; the frame stays.
+
+**Measured.** `door.mjs`, 134 checks at 320 × 568, 390 × 844 and 1280 × 800: the frame, fit and 48px targets on eight screens, contrast on both surfaces, the first frame of each arrival, the key and the tap that end it, each answer of the chip and its centre of turning, ten changes between Log in and Sign up, the carry in and out, late frames, reduced motion, no JavaScript, Motion blocked and the switch. The empty Sign up ends its button at 620px on a 390 × 844 screen, and the invited one at 675px (800px before).
+
+**Critique.** 29 of 40 (24, then 25 before). Open: where the description belongs, naming who invited, and whether a phone's keyboard hides the chip.
+
 ## Do's and Don'ts
 
 ### Do:

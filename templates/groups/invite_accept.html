@@ -1,9 +1,10 @@
-{% extends "base.html" %}
+{% extends "entry.html" %}
 {% block title %}Invite · PokerNights{% endblock %}
 {% block header %}{% if user.is_authenticated %}{{ block.super }}{% endif %}{% endblock %}
-{% block page_class %}entry-page{% endblock %}
-{% block content %}
+{% block hero %}
 {% if user.is_authenticated %}{% include "partials/entry_head.html" with compact=True %}{% else %}{% include "partials/entry_head.html" %}{% endif %}
+{% endblock %}
+{% block sheet %}
 {% if error %}
 <h1>This invite link doesn't work</h1>
 <div class="notice notice-bad" role="alert">{{ error }}</div>

@@ -1,5 +1,5 @@
-{% load static %}<div class="entry-head{% if compact %} entry-head-compact{% endif %}">
-  <img src="{% static 'branding/logo-mark.svg' %}" alt="" width="{% if compact %}48{% else %}72{% endif %}" height="{% if compact %}48{% else %}72{% endif %}">
+<div class="door-hero{% if row %} door-hero-row{% endif %}{% if compact %} door-hero-compact{% endif %}">
+  {% include "partials/mark.html" %}
   {% if not compact %}<p class="entry-name">PokerNights</p>{% endif %}
   {% if line %}<p class="entry-line">Keeps the books for your home poker game: buy&#8209;ins, cash&#8209;outs and who pays whom. It records the game. It never moves money.</p>{% endif %}
 </div>
