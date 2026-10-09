@@ -23,7 +23,7 @@ class RemainingFormsTests(TestCase):
         first = services.add_roster_player(self.host, 'Ada')
         second = services.add_roster_player(self.host, 'Bea')
         page = self.client.post(reverse('member_add', args=[self.group.pk]), {'name': 'Ada'}, follow=True)
-        self.assertEqual(page.context['add_form']['name'].value(), 'Ada')
+        self.assertEqual(page.context['add_form']['names'].value(), 'Ada')
         self.assertIn('already', str(page.context['add_form'].errors))
         page = self.client.post(reverse('member_rename', args=[self.group.pk, second.pk]), {'name': 'Ada'}, follow=True)
         member = next(m for m in page.context['members'] if m.pk == second.pk)

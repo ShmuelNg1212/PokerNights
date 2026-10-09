@@ -9,47 +9,64 @@
   {% include "web/_copy_field.html" with id="new-reset-link" url=new_reset_link.url label="Password reset link for "|add:new_reset_link.name %}
 </div>
 {% endif %}
-<ul class="list">
+<ul class="list roster" data-roster>
   {% for m in members %}
-  <li>
+  <li class="roster-row"{% if m.arrived %} data-arrived{% endif %}>
     <div class="row">
-      <span class="roster-person grow">{% member_token m members %}<span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span></span>
+      <span class="roster-person grow">{% member_token m members %}<span class="roster-name"><span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>{% if roster_tools %}<span class="roster-activity">{{ m.activity_label }}</span>{% endif %}</span></span>
       {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
       {% if not m.has_login %}<span class="badge">No login</span>{% endif %}
     </div>
-    {% if me.is_host and m.pk != me.pk %}
+    {% if roster_tools and m.pk == me.pk %}
+    <details {% if m.own_form.errors %}open{% endif %}>
+      <summary class="small">Change your name</summary>
+      <form method="post" action="{% url 'member_rename_self' group.pk %}" class="stack roster-form" data-once>
+        {% csrf_token %}
+        {% include "partials/form_fields.html" with form=m.own_form %}
+        <p class="hint">This is your name in {{ group.name }}. You still log in as <strong>{{ request.user.get_username }}</strong>.</p>
+        <button type="submit" class="btn btn-block">Save</button>
+      </form>
+    </details>
+    {% elif me.is_host and m.pk != me.pk %}
     <details {% if m.rename_form.errors %}open{% endif %}>
       <summary class="small">Manage {{ m.display_name }}</summary>
-      <div class="stack">
+      <div class="stack roster-manage">
+        {% if roster_tools %}
+        <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="stack roster-form" data-once>
+          {% csrf_token %}
+          {% include "partials/form_fields.html" with form=m.rename_form %}
+          <button type="submit" class="btn btn-block">Save</button>
+        </form>
+        {% else %}
         <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="form-row">
           {% csrf_token %}
           <div class="grow">{% include "partials/form_fields.html" with form=m.rename_form %}</div>
           <button type="submit" class="btn btn-small">Rename</button>
         </form>
+        {% endif %}
         {% if m.has_login %}
+        <div class="roster-actions">
         <form method="post" action="{% url 'member_role' group.pk m.pk %}">
           {% csrf_token %}
           <input type="hidden" name="role" value="{% if m.is_host %}player{% else %}host{% endif %}">
-          <button type="submit" class="btn btn-small">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
+          <button type="submit" class="btn btn-block">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
         </form>
-        {% endif %}
-        {% if reset_links and m.has_login %}
+        {% if reset_links %}
         {% if m.reset_link %}
         <p class="small muted">Reset link active until {{ m.reset_link.expires_at|date:"M j, H:i" }}.</p>
         <form method="post" action="{% url 'member_reset_link_cancel' group.pk m.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-small">Cancel link</button>
+          <button type="submit" class="btn btn-block">Cancel link</button>
         </form>
         {% endif %}
         <form method="post" action="{% url 'member_reset_link' group.pk m.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-small">{% if m.reset_link %}Create a new reset link{% else %}Create password reset link{% endif %}</button>
+          <button type="submit" class="btn btn-block">{% if m.reset_link %}Create a new reset link{% else %}Create password reset link{% endif %}</button>
         </form>
         {% endif %}
-        <form method="post" action="{% url 'member_remove' group.pk m.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-small btn-danger">Remove from group</button>
-        </form>
+        </div>
+        {% endif %}
+        <p class="roster-leave"><a class="btn btn-quiet btn-danger btn-block" href="{% url 'member_remove' group.pk m.pk %}">Remove from group</a></p>
       </div>
     </details>
     {% endif %}
@@ -57,9 +74,33 @@
   {% endfor %}
 </ul>
 {% if me.is_host %}
+{% if roster_tools %}
+<details {% if add_form.errors %}open{% endif %}><summary>Add players without a login</summary>
+<form method="post" action="{% url 'member_add' group.pk %}" class="stack roster-form" data-once>{% csrf_token %}
+{% include "partials/form_fields.html" with form=add_form %}
+<p class="hint roster-tally" data-names-tally="{{ add_form.names.id_for_label }}" aria-live="polite" hidden></p>
+<button type="submit" class="btn btn-block">Add to roster</button></form></details>
+{% else %}
 <details {% if add_form.errors %}open{% endif %}><summary>Add a player without a login</summary>
 <form method="post" action="{% url 'member_add' group.pk %}" class="stack">{% csrf_token %}
 {% include "partials/form_fields.html" with form=add_form %}<button type="submit" class="btn btn-block">Add to roster</button></form></details>
+{% endif %}
+{% if removed_members %}
+<details class="roster-removed"{% if roster_left %} data-changed{% endif %}>
+  <summary class="small">Removed players ({{ removed_members|length }})</summary>
+  <ul class="list roster">
+    {% for m in removed_members %}
+    <li class="roster-row row">
+      <span class="roster-person grow">{% member_token m removed_members %}<span class="roster-name"><span>{{ m.display_name }}</span><span class="roster-activity">{% if not m.has_login %}No login · {% endif %}{{ m.activity_label }}</span></span></span>
+      <form method="post" action="{% url 'member_restore' group.pk m.pk %}" data-once>
+        {% csrf_token %}
+        <button type="submit" class="btn btn-small" aria-label="Bring back {{ m.display_name }}">Bring back</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
 {% endif %}
 </div>
 </section>

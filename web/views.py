@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from groups.access import member_for
-from groups.forms import GroupForm, NameForm
+from groups.forms import GroupForm, MemberForm, NameForm, NamesForm
 from groups.http import take_form
 from games.forms import TableForm
 from django.utils import timezone
@@ -95,23 +95,50 @@ def group_stats_context(request, me, periods) -> dict:
     }
 
 
+def activity_label(found, today) -> str:
+    """"12 sessions · last played Oct 1" from ``settlement.queries.roster_activity``; the year when it is not this one."""
+    if not found:
+        return "No sessions yet"
+    sessions, last = found
+    when = f"{last:%b} {last.day}" + (f", {last.year}" if last.year != today.year else "")
+    return f"{sessions} session{'' if sessions == 1 else 's'} · last played {when}"
+
+
 def group_settings_context(request, me) -> dict:
     """Roster, invites, tables, presets and the rake account. Kept forms are taken only here, so they are not lost on another tab."""
     group_id = me.group_id
+    tools = settings.ROSTER_TOOLS
     members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
+    removed = list(Member.objects.filter(group=me.group, status=Member.Status.REMOVED)) if tools and me.is_host else []
+    # By name whatever its capitals; the database puts "Zed" before "ana".
+    for people in (members, removed):
+        people.sort(key=lambda member: (member.display_name.lower(), member.pk))
+    if tools:
+        activity = settlement_queries.roster_activity([m.pk for m in members + removed])
+        today = timezone.localdate()
+        arrived = set(request.session.pop("roster_arrived", []))
+        for member in members + removed:
+            member.activity_label = activity_label(activity.get(member.pk), today)
+            member.arrived = member.pk in arrived
+            if member.pk == me.pk:
+                member.own_form = take_form(request, f"{group_id}:me", NameForm,
+                    initial={"name": member.display_name}, auto_id="me_%s")
     rake_totals, rake_sets = ledger_queries.group_rake(me.group)
     context = {
         "members": members,
+        "removed_members": removed,
+        "roster_tools": tools,
+        "roster_left": request.session.pop("roster_left", False),
         "rake_totals": rake_totals,
         "rake_sets": rake_sets,
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
     if me.is_host:
-        context["add_form"] = take_form(request, f"{group_id}:add", NameForm, auto_id="add_%s")
+        context["add_form"] = take_form(request, f"{group_id}:add", NamesForm if tools else NameForm, auto_id="add_%s")
         context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
         for member in members:
-            member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", NameForm,
-                initial={"name": member.display_name}, auto_id=f"rename_{member.pk}_%s")
+            member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", MemberForm if tools else NameForm,
+                initial={"name": member.display_name, "contact": member.contact}, auto_id=f"rename_{member.pk}_%s")
         context["invites"] = Invite.objects.filter(
             group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
         )

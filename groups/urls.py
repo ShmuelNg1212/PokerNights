@@ -5,7 +5,8 @@ from . import views
 urlpatterns = [
     path("g/new/", views.create_group, name="group_create"),
     path("g/<int:group_id>/members/<int:member_id>/role/", views.set_role, name="member_role"),
-    path("g/<int:group_id>/members/<int:member_id>/remove/", views.remove_member, name="member_remove"),
+    path("g/<int:group_id>/members/<int:member_id>/restore/", views.restore_member, name="member_restore"),
+    path("g/<int:group_id>/me/name/", views.rename_self, name="member_rename_self"),
     path("g/<int:group_id>/members/add/", views.add_roster_player, name="member_add"),
     path("g/<int:group_id>/members/<int:member_id>/rename/", views.rename_member, name="member_rename"),
     path("g/<int:group_id>/members/<int:member_id>/reset-link/", views.create_password_reset, name="member_reset_link"),

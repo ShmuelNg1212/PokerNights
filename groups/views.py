@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.views import redirect_to_login
@@ -11,7 +12,7 @@ from . import services
 from .access import member_for
 from .errors import RuleError
 from .http import attempt, attempt_bound, group_settings, keep_form
-from .forms import GroupForm, NameForm
+from .forms import GroupForm, MemberForm, NameForm, NamesForm
 from .access import require_host
 from .models import Member
 
@@ -34,9 +35,27 @@ def set_role(request, group_id, member_id):
 
 
 @require_POST
-def remove_member(request, group_id, member_id):
+def restore_member(request, group_id, member_id):
     actor = member_for(request.user, group_id)
-    attempt(request, services.remove_member, actor, member_id, success="Member removed.")
+    restored = attempt(request, services.restore_member, actor, member_id)
+    if restored is not None:
+        member, old = restored
+        request.session["roster_arrived"] = [member.pk]
+        if member.display_name == old:
+            messages.success(request, f"{old} is back in the group.")
+        else:
+            messages.success(request, f"{old} is back as {member.display_name}, because another {old} is in the group. Rename either one.")
+    return group_settings(group_id, "players")
+
+
+@require_POST
+def rename_self(request, group_id):
+    actor = member_for(request.user, group_id)
+    form = NameForm(request.POST)
+    if not form.is_valid() or attempt_bound(request, form, services.rename_self, actor, form.cleaned_data["name"]) is None:
+        keep_form(request, f"{group_id}:me", form)
+    else:
+        messages.success(request, f"Your name is now {' '.join(form.cleaned_data['name'].split())}.")
     return group_settings(group_id, "players")
 
 
@@ -102,21 +121,35 @@ def accept_invite(request, token):
 
 @require_POST
 def add_roster_player(request, group_id):
+    """One name per line. A form that sends ``name`` (the section with the roster tools off) adds that one."""
     actor = member_for(request.user, group_id)
     require_host(actor)
-    form = NameForm(request.POST, prefix=None)
-    if not form.is_valid() or attempt_bound(request, form, services.add_roster_player, actor,
-            form.cleaned_data["name"], request.POST.get("contact", ""), success="Player added.") is None:
+    several = "names" in request.POST or settings.ROSTER_TOOLS
+    # A page drawn before the Names box existed still sends ``name``; its typing is kept in the box.
+    data = request.POST if "names" in request.POST else {"names": request.POST.get("name", "")}
+    form = NamesForm(data) if several else NameForm(request.POST, prefix=None)
+    added = None
+    if form.is_valid():
+        names = form.cleaned_data["names"].splitlines() if several else [form.cleaned_data["name"]]
+        added = attempt_bound(request, form, services.add_roster_players, actor, names)
+    if added is None:
         keep_form(request, f"{group_id}:add", form)
+    else:
+        request.session["roster_arrived"] = [member.pk for member in added]  # the rows that are new on the next page
+        messages.success(request, "Player added." if len(added) == 1 else f"Added {len(added)} players.")
     return group_settings(group_id, "players")
 
 
 @require_POST
 def rename_member(request, group_id, member_id):
+    """Save a member's name, and the contact note when the form sends one."""
     actor = member_for(request.user, group_id)
     require_host(actor)
-    form = NameForm(request.POST)
-    if not form.is_valid() or attempt_bound(request, form, services.rename_member, actor, member_id,
-            form.cleaned_data["name"], success="Player renamed.") is None:
+    detailed = "contact" in request.POST
+    form = MemberForm(request.POST) if detailed else NameForm(request.POST)
+    if not form.is_valid() or attempt_bound(
+            request, form, services.edit_member, actor, member_id, form.cleaned_data["name"],
+            form.cleaned_data["contact"] if detailed else None,
+            success="Saved." if detailed else "Player renamed.") is None:
         keep_form(request, f"{group_id}:rename:{member_id}", form)
     return group_settings(group_id, "players")

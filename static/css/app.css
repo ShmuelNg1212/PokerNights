@@ -964,3 +964,32 @@ input.numpad-refused { border-color: var(--down); }
   .dock-enabled .table-page:has(.table-layout .host-controls) .toast { bottom: calc(var(--dock-h, 128px) + var(--s-2)); }
 }
 .numpad-open .toast { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }
+
+/* Roster (Group settings → Players, roster.js). A row is a person: the name, then how often they
+   come. What a host can do to them is one disclosure away, and removing sits apart under a rule. */
+.roster-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.roster-activity { display: block; color: var(--muted); font-size: .8125rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.roster-row { border-radius: var(--r-row); }
+.roster-row.just-changed { outline-offset: -1px; }
+.roster-row > details { margin-top: var(--s-1); }
+#players details > summary { gap: var(--s-2); list-style: none; }
+#players details > summary::-webkit-details-marker { display: none; }
+/* The chevron is drawn, and turns when its disclosure opens. */
+#players details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+#players details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+.roster-form, .roster-manage { padding: var(--s-1) 0 var(--s-2); }
+.roster-manage > .roster-form { padding: 0; }
+.roster-actions { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
+.roster-actions > p { margin: 0; }
+.roster-leave { margin: var(--s-4) 0 0; padding-top: var(--s-4); border-top: 1px solid var(--rule); }
+.roster-form textarea { display: block; min-height: 132px; line-height: 1.45; resize: vertical; }
+.field:has(.errors) textarea { border-color: var(--down); }
+.roster-form .errors { overflow-wrap: anywhere; }
+.roster-tally { font-variant-numeric: tabular-nums; }
+.roster-tally[data-over] { color: var(--down); }
+.roster-removed { margin-top: var(--s-4); border-top: 1px solid var(--line); }
+.roster-removed > summary { border-radius: var(--r-row); }
+.roster-removed .chip { opacity: .55; }
+.roster-removed .roster-row { flex-wrap: nowrap; }
+.roster-removed .roster-row form { flex: none; }
+@media (max-width: 359px) { .roster-removed .roster-row { flex-wrap: wrap; } }
