@@ -1,0 +1,47 @@
+{% load money_tags clock_tags table_tags %}{# One player at the table: the row, and the sources of its sheets. #}
+{% with p=line.participant %}
+    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}" data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}">
+      <div class="player-main">
+        {% player_token p participants %}
+        <div class="player-identity">
+          <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
+          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
+            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+            <span class="change-label badge badge-warn" hidden>Updated</span>
+          </span></button>
+
+          <div class="player-meta fallback-meta">{% buy_in_stack line.buy_in_count %}
+            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
+            <span class="change-label badge badge-warn" hidden>Updated</span>
+          </div>
+          {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
+        </div>
+        {# "No buy-in yet" under the name says it; a zero beside it says it twice. #}
+        <div class="player-figure amount">{% if line.has_money or line.has_cash_out %}{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small>{% endif %}</div>
+      </div>
+      {% if line.can_buy_in or line.can_cash_out_now %}
+      <div class="player-actions">
+        {% if line.can_buy_in %}<button hidden type="button" class="btn btn-small buy-opener" data-sheet-open="buy-{{ p.pk }}" aria-label="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} for {% if me.is_host %}{{ p.member.display_name }}{% else %}yourself{% endif %}">{% icon 'plus' %}{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>{% endif %}
+        {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-small btn-quiet cash-opener" data-sheet-open="cash-{{ p.pk }}" aria-label="Cash out {{ p.member.display_name }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
+      </div>
+      {% endif %}
+      {% if line.can_buy_in %}
+      <details class="sheet-source" data-key="buy-{{ p.pk }}" data-sheet-source="buy-{{ p.pk }}" data-title="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} · {{ p.member.display_name }}">
+        <summary>{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</summary><div class="sheet-content">{% include "web/_buy_in_form.html" %}</div>
+      </details>{% endif %}
+      {% if line.can_cash_out_now %}
+      <details class="sheet-source" data-key="cash-{{ p.pk }}" data-sheet-source="cash-{{ p.pk }}" data-title="Cash out · {{ p.member.display_name }}">
+        <summary>Cash out</summary><div class="sheet-content">
+        <p class="muted small">Bought in {{ line.buy_in_total|amount:unit }}. Enter what {{ p.member.display_name }} takes off the table.</p>
+        {% include "web/_cash_out_form.html" %}</div>
+      </details>{% endif %}
+      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
+        <summary>Details</summary><div class="sheet-content">
+        {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-primary btn-block sheet-swap" data-sheet-swap="cash-{{ p.pk }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
+        <p class="sheet-summary">Bought in <strong>{{ line.buy_in_total|amount:unit }}</strong>{% if line.has_cash_out %} · cashed out <strong>{{ line.cashed_out|amount:unit }}</strong>{% endif %}</p>
+        <p class="muted small">{% if line.play_seconds is not None %}Played {% clock_value line.play_seconds line.clock_running %}{% else %}Play has not started.{% endif %}</p>
+        {% include "web/_player_actions.html" %}
+        </div>
+      </details>
+    </li>
+{% endwith %}

@@ -432,3 +432,11 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - The movement is the `welcome-*` keyframes at the end of `static/css/app.css`. `door.js` ends it on the first key or tap and removes the attribute.
 - `static/js/turbo-setup.js` now ignores the browser's "transition was skipped" when a link is tapped while the chip is still being carried in; the screen changes at once.
 - Switch: `DOOR_MOTION=False`. Check: `web/tests/browser/welcome.mjs`. [Plan](../plan/1791546778_arrival_after_login.md).
+
+## Set page (2026-10-09)
+
+- `templates/web/_session_live.html` chooses the page: the felt panel with `details.set-facts` in play, the `.prep` checklist for a draft or an open set, and `_session_live_classic.html` with `_players_classic.html` when `TABLE_REVAMP=False`. `web/prep.py` works out each step's state from the summary the page already has; no query is added.
+- `_player_row.html` is one row and its sheet sources. `sheets.js` can swap one sheet's content for another's inside the open dialog (`data-sheet-swap`); that is how Cash out is reached on a phone.
+- `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` holds the movement and remembers the steps in `sessionStorage` to know what changed.
+- `GameSession.state_word` gives the words Draft, Open, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
+- Switch: `TABLE_REVAMP=False`. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).

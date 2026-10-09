@@ -166,6 +166,8 @@ class GameSession(models.Model):
         CANCELED = "canceled", "Canceled"
 
     LIVE_STATES = (State.OPEN, State.RUNNING, State.RECONCILIATION)
+    # The words the screens and messages use. The stored names 'setup' and 'running' stay.
+    STATE_WORDS = {"setup": "Draft", "open": "Open", "running": "In play", "reconciliation": "Counting up", "finalized": "Finalized", "canceled": "Canceled"}
 
     night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="sets")
     set_number = models.PositiveIntegerField(default=1)
@@ -217,6 +219,10 @@ class GameSession(models.Model):
     @property
     def is_live(self):
         return self.state in self.LIVE_STATES
+
+    @property
+    def state_word(self):
+        return self.STATE_WORDS.get(self.state, self.state)
 
 
 class RakeMode(models.TextChoices):

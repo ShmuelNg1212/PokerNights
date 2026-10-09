@@ -64,7 +64,7 @@
         <button type="submit" class="btn btn-primary btn-block">Close session and settle up</button>
       </form>
       {% elif unfinished_sets %}
-      <p class="muted">To settle up, finalize or cancel every set first. Not done: {% for s in unfinished_sets %}set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+      <p class="muted">To settle up, finalize or cancel every set first. Not done: {% for s in unfinished_sets %}set {{ s.set_number }} ({{ s.state|state_word|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
       <button type="button" class="btn btn-block" disabled>Close session and settle up</button>
       {% else %}<p class="muted">No set of this session is finalized, so there is nothing to settle.</p>{% endif %}
     </section>
@@ -79,7 +79,7 @@
       {% if night.is_archived %}
         <p class="small muted">Restore the session to change it or to archive it again later.</p>
       {% elif manage.unfinished %}
-        <p class="small muted">To archive or delete, finish or cancel every set first. Not done: {% for s in manage.unfinished %}set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+        <p class="small muted">To archive or delete, finish or cancel every set first. Not done: {% for s in manage.unfinished %}set {{ s.set_number }} ({{ s.state|state_word|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</p>
       {% else %}
         <p class="small muted">Archiving hides the session and takes it out of the totals. It can be restored.</p>
         <a class="btn btn-block" href="{% url 'night_archive' night.pk %}">Archive session</a>
@@ -127,7 +127,7 @@
     </section>
     <section aria-labelledby="sets-title">
       <h2 id="sets-title">Sets</h2>
-      <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.get_state_display }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
+      <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
       {% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}. Each set has its own timer.</p>{% endif %}
     </section>
     {% if outcome.payments %}

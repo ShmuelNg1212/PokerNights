@@ -165,7 +165,8 @@
     halt();
     var collapsed = root.classList.toggle("dock-collapsed");
     slide(dock, from, collapsed);
-    try { if (collapsed) localStorage.setItem(KEY, "collapsed"); else localStorage.removeItem(KEY); } catch (_) {}
+    // "open" is remembered too: while a set is in play the dock starts folded unless the host opened it.
+    try { localStorage.setItem(KEY, collapsed ? "collapsed" : "open"); } catch (_) {}
     sync();
   });
   function keyboard0() { keyboard(); } // an event listener passes its event; it is not a reveal
@@ -176,7 +177,12 @@
     if (!region) return;
     watcher = window.ResizeObserver ? new ResizeObserver(measure) : null;
     root.classList.add("dock-enabled");
-    try { root.classList.toggle("dock-collapsed", localStorage.getItem(KEY) === "collapsed"); } catch (_) {}
+    var chosen = null;
+    try { chosen = localStorage.getItem(KEY); } catch (_) {}
+    // In play the host needs the table, and "End play" is pressed once a night: folded unless they chose otherwise.
+    root.classList.toggle("dock-collapsed", chosen === "collapsed" || (chosen === null && region.dataset.state === "running" && !!region.querySelector(".table-v2")));
+    // From 900px the panel's column has room for the facts behind "Details".
+    if (matchMedia("(min-width: 900px)").matches) region.querySelectorAll("details[data-wide-open]").forEach(function (el) { el.open = true; });
     sync();
     if (view) {
       view.addEventListener("resize", keyboard0);

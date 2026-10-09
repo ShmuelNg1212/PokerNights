@@ -69,3 +69,10 @@ ICONS.update({
     'arrow-up': '<path d="m5 12 7-7 7 7" />\n  <path d="M12 19V5" />',
     'arrow-down': '<path d="M12 5v14" />\n  <path d="m19 12-7 7-7-7" />',
 })
+
+
+@register.filter
+def state_word(state):
+    """A set's state in the words the screens use. The stored names are 'setup' and 'running'."""
+    from games.models import GameSession
+    return GameSession.STATE_WORDS.get(state, state)

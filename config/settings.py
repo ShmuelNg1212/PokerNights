@@ -195,6 +195,8 @@ STATS_PAGES = env.bool("STATS_PAGES", default=True)
 CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 # Turn off to return Group settings → Players to add, rename and remove only (see groups/services.py).
 ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
+# Turn off to return the set page (preparing and in play) to its layout before 2026-10-09 (see templates/web/_session_live_classic.html).
+TABLE_REVAMP = env.bool("TABLE_REVAMP", default=True)
 # Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 STORAGES = {

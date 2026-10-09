@@ -4,57 +4,23 @@
 {% else %}
 <section class="table-players" aria-label="Players at the table">
   <div class="section-heading"><h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
-    {% if can_manage_players %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
+    {# While a set is prepared the checklist's first step adds players; in play this is the way to seat a late arrival. #}
+    {% if can_manage_players and not prep %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
   </div>
   <ul class="player-list">
-    {% if can_join and not my_participant %}<li class="join-row">
-      {% if seats_free > 0 %}<form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<button class="btn btn-quiet" type="submit">{% icon 'plus' %} Join this set</button></form>
+    {# A player came to join; for a host who only keeps the bank it is a quiet line under the list. #}
+    {% if can_join and not my_participant and not me.is_host %}<li class="join-row">
+      {% if seats_free > 0 %}<form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">{% icon 'plus' %} Join this set</button></form>
       {% else %}<p class="muted small">The table is full ({{ session.seat_count }} seats).</p>{% endif %}
     </li>{% endif %}
-    {% for line in summary.lines %}{% with p=line.participant %}
-    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}" data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}">
-      <div class="player-main">
-        {% player_token p participants %}
-        <div class="player-identity">
-          <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
-          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span>{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
-            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
-            <span class="change-label badge badge-warn" hidden>Updated</span>
-          </span></button>
-
-          <div class="player-meta fallback-meta">{% buy_in_stack line.buy_in_count %}
-            {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
-            <span class="change-label badge badge-warn" hidden>Updated</span>
-          </div>
-          {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
-        </div>
-        <div class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small></div>
-      </div>
-      {% if line.can_buy_in or line.can_cash_out_now %}
-      <div class="player-actions">
-        {% if line.can_buy_in %}<button hidden type="button" class="btn btn-small buy-opener" data-sheet-open="buy-{{ p.pk }}" aria-label="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} for {% if me.is_host %}{{ p.member.display_name }}{% else %}yourself{% endif %}">{% icon 'plus' %}{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</button>{% endif %}
-        {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-small btn-quiet cash-opener" data-sheet-open="cash-{{ p.pk }}" aria-label="Cash out {{ p.member.display_name }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
-      </div>
-      {% endif %}
-      {% if line.can_buy_in %}
-      <details class="sheet-source" data-key="buy-{{ p.pk }}" data-sheet-source="buy-{{ p.pk }}" data-title="{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %} · {{ p.member.display_name }}">
-        <summary>{% if line.has_money %}Rebuy{% else %}Buy-in{% endif %}</summary><div class="sheet-content">{% include "web/_buy_in_form.html" %}</div>
-      </details>{% endif %}
-      {% if line.can_cash_out_now %}
-      <details class="sheet-source" data-key="cash-{{ p.pk }}" data-sheet-source="cash-{{ p.pk }}" data-title="Cash out · {{ p.member.display_name }}">
-        <summary>Cash out</summary><div class="sheet-content">
-        <p class="muted small">Bought in {{ line.buy_in_total|amount:unit }}. Enter what {{ p.member.display_name }} takes off the table.</p>
-        {% include "web/_cash_out_form.html" %}</div>
-      </details>{% endif %}
-      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
-        <summary>Details</summary><div class="sheet-content">
-        <p class="muted small">{% if line.play_seconds is not None %}Played {% clock_value line.play_seconds line.clock_running %}{% else %}Play has not started.{% endif %}</p>
-        {% include "web/_player_actions.html" %}
-        </div>
-      </details>
-    </li>
-    {% endwith %}{% empty %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this set when the host opens it.{% endif %}</p></li>{% endfor %}
+    {# A player's own row comes first for them: it holds the one thing they can do. The host's order is the order of joining. #}
+    {% if not me.is_host %}{% for line in summary.lines %}{% if line.participant.member_id == me.pk %}{% include "web/_player_row.html" %}{% endif %}{% endfor %}{% endif %}
+    {% for line in summary.lines %}{% if me.is_host or line.participant.member_id != me.pk %}{% include "web/_player_row.html" %}{% endif %}
+    {% empty %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this set when the host opens it.{% endif %}</p></li>{% endfor %}
+    {% if can_join and not my_participant and me.is_host and seats_free > 0 %}<li class="join-row join-row-quiet">
+      <form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<span class="muted">Playing too?</span> <button class="link-button" type="submit">Join this set</button></form>
+    </li>{% endif %}
   </ul>
-
+  {% if me.is_host and session.state == 'running' and summary.player_count %}<p class="row-hint muted small">Tap a player to cash out or correct an entry.</p>{% endif %}
 </section>
 {% endif %}

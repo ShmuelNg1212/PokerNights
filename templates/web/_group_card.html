@@ -15,7 +15,7 @@
   </section>
   {% elif card.kind == 'open' %}
   <section class="home-band" aria-label="Open session">
-    <div class="row"><strong class="band-title grow">{{ card.night.table.name }}</strong><span class="badge">Set {{ card.set.set_number }} · {% if card.set.state == 'setup' %}Draft{% else %}{{ card.set.get_state_display }}{% endif %}</span></div>
+    <div class="row"><strong class="band-title grow">{{ card.night.table.name }}</strong><span class="badge">Set {{ card.set.set_number }} · {{ card.set.state|state_word }}</span></div>
     <p class="band-facts">{{ card.night.game_date|date:"D, M j" }}{% if card.set.state == 'finalized' or card.set.state == 'canceled' %} · session still open{% endif %}</p>
     <a class="btn {% if card.action_primary %}btn-primary{% endif %} btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>
   </section>

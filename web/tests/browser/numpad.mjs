@@ -134,7 +134,8 @@ try {
  await A.phone();
 
  // Cash-out sheet.
- await A.go(`/s/${PESOS}/`);await A.tap(`document.querySelector('.cash-opener')`,700);
+ // Since the set page revamp a phone reaches it through the player's sheet.
+ await A.go(`/s/${PESOS}/`);await A.tap(`document.querySelector('.player-opener')`,700);await A.tap(`document.querySelector('dialog [data-sheet-swap]')`,700);
  check('cash-out sheet: the keys are in the sheet',await A.js(`${D}.open&&${D}.contains(${PAD})&&document.activeElement===${F}`));
  await type(['2','5','0']);
  check('cash-out sheet: keys write the amount',await value()==='250');

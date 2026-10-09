@@ -73,7 +73,7 @@ class CloseNightTests(TestCase):
 
     def test_refused_while_a_set_is_not_finalized_and_names_it(self):
         two = TwoSets(finalize_second=False)
-        with self.assertRaisesMessage(RuleError, "Not done: set 2 (running)"):
+        with self.assertRaisesMessage(RuleError, "Not done: set 2 (in play)"):
             services.close_night(two.night_id, two.host)
         games.transition(two.second.pk, two.host, "end")
         with self.assertRaisesMessage(RuleError, "Not done: set 2 (counting up)"):
@@ -155,7 +155,7 @@ class NightSettlePageTests(TestCase):
         page = self.client.get(url)
         self.assertContains(page, "Results so far")
         self.assertContains(page, "not final")
-        self.assertContains(page, "Not done: set 2 (running)")
+        self.assertContains(page, "Not done: set 2 (in play)")
         self.assertNotContains(page, "pays <strong>")
         self.assertEqual(self.client.post(reverse("night_close", args=[two.night_id]), follow=True).status_code, 200)
         self.assertEqual(GameNight.objects.get(pk=two.night_id).status, "open")  # refused

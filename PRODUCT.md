@@ -102,3 +102,7 @@ Logging in and signing up are one place: the chip above, the task in a raised sh
 ## 2026-10-09 addendum — Arrival after login
 
 The page a person lands on after logging in settles into place once: on Your groups the cards rise in turn, the players are set down in a row, and a set in play and money to settle are pointed out. Nothing new is shown or said, and money figures are at their value from the first frame. [Plan](doc/plan/1791546778_arrival_after_login.md).
+
+## 2026-10-09 addendum — Set page
+
+While a set is in play the page fits the table on one phone screen: the pot, then one line per player with Rebuy on it; a tap on a player reaches cash-out and corrections. While a set is prepared the host sees four steps and which one is next. A set's state reads Draft, Open or In play everywhere. What each action records, and who may do it, is unchanged. [Plan](doc/plan/1791549025_set_page_revamp.md).

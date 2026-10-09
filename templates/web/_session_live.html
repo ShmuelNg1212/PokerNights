@@ -1,21 +1,65 @@
 {% load money_tags clock_tags table_tags %}
-{% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
-<div class="table-layout">
+{% if not table_revamp %}{% include "web/_session_live_classic.html" %}
+{% elif session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
+<div class="table-layout table-v2">
   <aside class="table-left">
-    <section class="felt{% if session.state != 'running' %} hero{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
-      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge{% if session.state == 'running' %} badge-live{% endif %}">{{ session.get_state_display }}</span></div>
-      <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
+    {% if session.state == 'running' %}
+    <section class="felt" data-unit="{{ unit }}" aria-label="Set overview">
+      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge badge-live">{{ session.state|state_word }}</span></div>
       <div class="pot">
-        <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div><div class="display-amount">{{ summary.in_play|display_amount:unit }}</div></div>
+        <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div>{% with shown=summary.in_play|amount:unit %}<div class="display-amount{% if unit == 'chips' and shown|length > 14 or unit != 'chips' and shown|length > 8 %} amount-long{% endif %}">{{ summary.in_play|display_amount:unit }}</div>{% endwith %}</div>
         <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
       </div>
-      <dl class="set-totals">
-        <div><dt>Total bought in <span class="nowrap">({{ summary.buy_in_count }} buy-in{{ summary.buy_in_count|pluralize }})</span></dt><dd>{{ summary.total|amount:unit }}</dd></div>
-        <div><dt>Cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
-        {% include "web/_rake_totals.html" %}</dl>
-      <p class="felt-hint">{% include "web/_rake_rule.html" %}</p>
-      {% if session.state == 'setup' %}<p class="felt-hint">Draft · players cannot see this set yet.</p>{% endif %}
+      {# One line while play goes on; the rest is one tap away. From 900px dock.js opens it, where the column has room. #}
+      <details class="set-facts" data-key="set-facts" data-wide-open>
+        <summary><span class="facts-line"><strong>{{ summary.total|amount:unit }}</strong> bought in · <strong>{{ summary.cashed_out|amount:unit }}</strong> cashed out</span><span class="facts-more">Details{% icon 'chevron-down' %}</span></summary>
+        <div class="facts-body">
+          <dl class="set-totals">
+            <div><dt>Total bought in <span class="nowrap">({{ summary.buy_in_count }} buy-in{{ summary.buy_in_count|pluralize }})</span></dt><dd>{{ summary.total|amount:unit }}</dd></div>
+            <div><dt>Cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+            {% if settings.rake_mode != 'off' or summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}</dl>
+          <p class="felt-hint">{% include "web/_rake_rule.html" %}</p>
+          <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
+        </div>
+      </details>
     </section>
+    {% else %}
+    {# Preparing: what is done and what is next. Money appears when there is money. #}
+    <section class="prep{% if session.state == 'open' %} prep-open{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
+      <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">{{ session.state|state_word }}</span></div>
+      <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
+      {% if prep %}
+      <h2 class="prep-title">Get this set ready</h2>
+      <ol class="prep-steps">
+        <li class="prep-step" data-step="players" data-state="{{ prep.players }}">
+          {% include "web/_prep_mark.html" with state=prep.players number=1 %}
+          <div class="prep-text"><span class="prep-name">Players</span><span class="prep-line">{% if summary.player_count %}{{ summary.player_count }} added · {{ seats_free }} seat{{ seats_free|pluralize }} free{% else %}Nobody yet · {{ seats_free }} seat{{ seats_free|pluralize }}{% endif %}</span></div>
+          {% if can_manage_players %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}" aria-label="Add players to this set">Add</a>{% endif %}
+        </li>
+        <li class="prep-step" data-step="stakes" data-state="{{ prep.stakes }}">
+          {% include "web/_prep_mark.html" with state=prep.stakes number=2 %}
+          <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} · {% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></div>
+          <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Choose rake before buy-ins{% else %}Change set settings{% endif %}">{% if can_configure_rake and settings.rake_mode == 'off' %}Choose rake{% else %}Change{% endif %}</a>
+        </li>
+        <li class="prep-step" data-step="open" data-state="{{ prep.open }}">
+          {% include "web/_prep_mark.html" with state=prep.open number=3 %}
+          <div class="prep-text"><span class="prep-name">Open for players</span><span class="prep-line">{% if session.state == 'open' %}Players can see it and join.{% else %}Players cannot see this set yet.{% endif %}</span></div>
+        </li>
+        <li class="prep-step" data-step="start" data-state="{{ prep.start }}">
+          {% include "web/_prep_mark.html" with state=prep.start number=4 %}
+          <div class="prep-text"><span class="prep-name">Start the set</span><span class="prep-line">{% if session.state == 'open' %}The timer starts for everyone at the table.{% else %}After the set is open.{% endif %}</span></div>
+        </li>
+      </ol>
+      {% else %}
+      <dl class="set-totals prep-facts">
+        <div><dt>Blinds</dt><dd>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</dd></div>
+        <div><dt>Buy-in</dt><dd>{{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }}</dd></div>
+      </dl>
+      <p class="felt-hint">{% include "web/_rake_rule.html" %} The host starts the set.</p>
+      {% endif %}
+      {% if summary.buy_in_count %}<p class="prep-money" data-watch="in-play" data-value="{{ summary.in_play }}"><strong>{{ summary.total|amount:unit }}</strong> bought in · {{ summary.buy_in_count }} buy-in{{ summary.buy_in_count|pluralize }}</p>{% endif %}
+    </section>
+    {% endif %}
     {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
   </aside>
   {% include "web/_players.html" %}

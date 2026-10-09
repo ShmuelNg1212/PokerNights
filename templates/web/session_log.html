@@ -6,7 +6,7 @@
 {% block content %}
 <p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Log of set {{ session.set_number }}</h1>
-<p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.get_state_display }}</span></p>
+<p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.state|state_word }}</span></p>
 
 {% if session.unit == 'chips' %}<p class="small muted">This is a chips game. Amounts are chip counts with no peso value.</p>{% endif %}
 
