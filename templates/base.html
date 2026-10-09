@@ -56,7 +56,7 @@
     {% endif %}
   </header>{% endblock %}
   <div id="route-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true" data-turbo-permanent></div>
-  <main id="main" tabindex="-1" class="page {% block page_class %}{% endblock %}"{% block screen %}{% endblock %}>
+  <main id="main" tabindex="-1" class="page {% block page_class %}{% endblock %}"{% block screen %}{% endblock %}{% block welcome %}{% if door.welcome %} data-welcome{% endif %}{% endblock %}>
     {% if messages %}
     <ul class="messages" role="status">
       {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}

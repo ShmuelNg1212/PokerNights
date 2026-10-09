@@ -2,6 +2,8 @@
 {# The front door's frame: the brand above, the task in a raised sheet (DESIGN.md, "Front door"). Each screen says whether the top bar shows. #}
 {% block page_class %}entry-page{% endblock %}
 {% block screen %}{% with arrival=door.arrival %}{% if arrival %} data-arrival="{{ arrival }}"{% endif %}{% endwith %}{% endblock %}
+{# A front-door screen seen signed in (Join, Claim) leaves the arrival for the page behind it. #}
+{% block welcome %}{% endblock %}
 {% block content %}
 {% block hero %}{% endblock %}
 <section class="door-sheet">

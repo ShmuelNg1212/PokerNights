@@ -19,9 +19,25 @@
     if (next && document.querySelector(".entry-page")) next.removeAttribute("data-arrival");
   });
 
+  // The page after a login arrives once (app.css, "Arrival into the app"). The first key or tap ends
+  // it, and the mark is taken off when it is over so nothing added to the page later plays it again.
+  function welcome() {
+    var main = document.querySelector("main[data-welcome]");
+    if (!main) return null;
+    var life = new AbortController(), timer = setTimeout(over, 1200);
+    function over() {
+      clearTimeout(timer); life.abort();
+      document.getAnimations().forEach(function (animation) { if (/^welcome-/.test(animation.animationName || "")) animation.finish(); });
+      main.removeAttribute("data-welcome");
+    }
+    document.addEventListener("keydown", over, { signal: life.signal });
+    document.addEventListener("pointerdown", over, { signal: life.signal, capture: true });
+    return function () { clearTimeout(timer); life.abort(); };
+  }
+
   window.pokerPage.register(function () {
     var page = document.querySelector(".entry-page"), motion = window.pokerMotion;
-    if (!page) { if (enabled()) root.dataset.doorDone = "1"; return; }
+    if (!page) { if (enabled()) root.dataset.doorDone = "1"; return welcome(); }
     delete root.dataset.doorDone;
     var mark = page.querySelector(".door-mark");
     if (!enabled() || !mark) return;
