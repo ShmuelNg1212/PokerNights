@@ -1105,6 +1105,8 @@ input.numpad-refused { border-color: var(--down); }
 
 /* The chosen pill on a stats screen is a marker behind its words, so stats.js can slide it from the
    pill that was chosen before. Without the script it simply sits there. */
+/* A row that scrolls sideways must not ease or snap while it is put back after a change. */
+.pills { scroll-behavior: auto; overscroll-behavior-x: contain; }
 .pills a { position: relative; isolation: isolate; }
 .pill-marker { position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: var(--bone); transform-origin: 0 50%; }
 .pills a[aria-current]:has(.pill-marker) { background: transparent; border-color: transparent; }

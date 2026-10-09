@@ -218,3 +218,12 @@ Not merged and not pushed: features are collected locally until the human says t
 - `stats.mjs` has 70 checks. It now samples the running animations after a tap and requires the marker and the figures to be moving on a new period and unit, and the marker and the rows on a new order, and nothing left behind afterwards. A frame captured 140ms into a change was inspected: the marker was partway across and the figures partway in.
 
 2026-10-09 release: the human said "ok push this". `feat/stats-revamp` was merged to `main` as `c08d711` and pushed (previous production commit `8b51506`). 891 tests passed on PostgreSQL 17 and SQLite on the merged `main` before the push. No migration. The live site was not checked from here: that check is not permitted in this session. Phone acceptance remains open.
+
+2026-10-09 third addendum, after the release: the human reported on the phone "a weird jittering" when switching between Profit and Sessions, and "weird jumps" after scrolling the pills sideways and choosing one. Fixed on `fix/stats-pill-scroll`.
+
+- **The jumps.** On a phone the order pills scroll sideways. The new screen drew that row from its start, so the pills jumped back and the marker slid from the wrong place. Each pill row's sideways position is now held with the page's and put back before anything is drawn or measured.
+- **The jitter.** Motion applies an animation's first keyframe a frame late. For one frame the marker and the rows were drawn already arrived, then jumped back to begin. The first keyframe is now written to the element before Motion is called. The same fault was in `roster.js` for rows just added, and is fixed there too.
+- Recorded as a [footgun](../wiki/footguns/motion_starts_a_frame_late.md).
+- `stats.mjs` has 75 checks. New: with the order row scrolled sideways, the tapped pill, the row and the page do not move over the 60 frames after a tap; on the first frame of the new screen the marker is where the chosen pill was and every row is where it was. `roster.mjs` 44 of 44 again.
+- The scroll checks now use a position every board in the fixture can reach. A chips board is too short to be scrolled to the old one, and the browser then stops 3px short, which is the page's end and not a jump.
+- Not verified: an iPhone. The reproduction and the checks are in desktop Chrome emulating a phone.
