@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Arrival after login ([plan](doc/plan/1791546778_arrival_after_login.md), [study](doc/study/1791546703_arrival_after_login.md)): built on `feat/arrival-after-login` on 2026-10-09. **Not merged, not pushed.** The one page after a log in, sign up, reset link or claim settles into place: on Your groups the cards rise in turn, the players are set down in a row, the "In play" badge springs in and "To settle" is underlined once; the top bar's mark lands with the chip. No migration, no new words. 915 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 36 of 36; `door.mjs` 134, `home.mjs` 60, `screens.mjs` 46, `motion.mjs` 34, `navigate.mjs` 52 pass. `DOOR_MOTION=False` stops it. Phone acceptance is open.
+Arrival after login ([plan](doc/plan/1791546778_arrival_after_login.md), [study](doc/study/1791546703_arrival_after_login.md)): built on `feat/arrival-after-login` on 2026-10-09. Released 2026-10-09 as `f2bd882` (previous production commit `394b4f3`), with the fix for the login sheet staying over the app; the live stylesheet and `door.js` carry both. The one page after a log in, sign up, reset link or claim settles into place: on Your groups the cards rise in turn, the players are set down in a row, the "In play" badge springs in and "To settle" is underlined once; the top bar's mark lands with the chip. No migration, no new words. 915 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 36 of 36; `door.mjs` 134, `home.mjs` 60, `screens.mjs` 46, `motion.mjs` 34, `navigate.mjs` 52 pass. `DOOR_MOTION=False` stops it. Phone acceptance is open.
 
 Front door revamp ([plan](doc/plan/1791542366_front_door_revamp.md), [study](doc/study/1791542264_front_door_revamp.md)): built on `feat/front-door` on 2026-10-09. Released 2026-10-09 as `394b4f3` (previous production commit `6119dd4`); the live login page serves the new frame, `door.js` and the arrival styles. Log in, Sign up and the other entry screens share a new frame: the chip above, the task in a raised sheet. The chip arrives once per browser session, turns as you type, spins while a form is sent, shakes on a refusal and travels into the top bar on getting in. An invited Sign up is headed "Join {group}". No migration. 905 tests pass on SQLite and PostgreSQL 17. `door.mjs` 134 of 134; `entry.mjs` 91, `reset.mjs` 43, `claim.mjs` 30, `motion.mjs` 34, `screens.mjs` 46, `navigate.mjs` 52 pass. Critique 29 of 40 (was 25). `DOOR_MOTION=False` in Vercel stops the movement. Phone acceptance is open.
 
@@ -89,12 +89,13 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 2026-10-09: the human reported that all checks in this file are done. Every phone and try-it check here, and the five phone checks under Next, were ticked on that word. The `SPEC.md` updates, the decisions and the superuser step are not checks and stay open.
 
-- [ ] **The arrival after login is built on `feat/arrival-after-login` and not released.** After it is released, on your phone:
+- [ ] **The arrival after login was released on 2026-10-09 (`f2bd882`).** On your phone, after closing and reopening the app:
   1. Log out and log in. On Your groups the cards should rise one after another and the players should slide into their row. Check your figures are readable at once and no number changes.
   2. With a set in play, look for the "In play" badge springing in; with money owed, the line under "To settle".
   3. Log in and tap a card's button straight away: it should open without waiting.
   4. Pull to reload, and come back with Back: nothing should move.
-  5. Say whether it reads as one movement with the chip's flight or as two, and whether it is too much on the tenth login.
+  5. Watch the moment of getting in: nothing of the login screen should stay over the new one.
+  6. Say whether it reads as one movement with the chip's flight or as two, and whether it is too much on the tenth login.
 
 - [ ] **The front door was released on 2026-10-09 (`394b4f3`).** On your phone, after closing and reopening the app:
   1. Log out. The chip should travel from the top bar to the middle of the screen.
