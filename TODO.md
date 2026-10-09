@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09, not merged and not pushed. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
+Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
 
 Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09. Released 2026-10-09 as `c08d711` (previous production commit `8b51506`); the live site was not checked from here. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 75 of 75. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
 
@@ -80,7 +80,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Numpad motion is built on `feat/numpad-motion` and not released.** After it is live, on your phone:
+- [ ] **Numpad motion was released on 2026-10-09 (`ee18667`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set: the keys should rise in with the sheet.
   2. Type an amount fast. Every digit should land, each key should light, and the amount should give a small pulse.
   3. Hold Delete: a fill should run across the key and the amount should clear when it reaches the end. Hold again and let go early: nothing should clear.

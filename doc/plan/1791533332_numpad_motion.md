@@ -116,3 +116,5 @@ A fresh reviewer did not read the branch; the author's own read of the diff is t
 Documentation synced: DESIGN.md, wiki features and the footgun, browser README, TODO.
 
 Not merged and not pushed.
+
+2026-10-09 release: the human said "go push". `feat/numpad-motion` was merged to `main` as `ee18667` and pushed (previous production commit `455faab`). 891 tests passed on PostgreSQL 17 and SQLite on the merged `main` before the push. No migration. The live site was not checked from here. Phone acceptance remains open.
