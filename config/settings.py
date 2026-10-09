@@ -187,6 +187,8 @@ ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
 RESET_LINKS = env.bool("RESET_LINKS", default=True)
 # Turn off to make rebuys and final counts host-only again (see ledger/services.py).
 PLAYER_ENTRIES = env.bool("PLAYER_ENTRIES", default=True)
+# Turn off to return the Stats tab to one ranked list and make player pages not found (see web/stats.py).
+STATS_PAGES = env.bool("STATS_PAGES", default=True)
 # Turn off to hide claim links and refuse every one already sent (see groups/services.py).
 CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 # Turn off to return Group settings → Players to add, rename and remove only (see groups/services.py).

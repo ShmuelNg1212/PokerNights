@@ -1,0 +1,21 @@
+{# Unit and period for the board and for a player's page. ``board`` keeps the tab and the order in each link. #}
+{% if stat_units|length > 1 %}
+<nav class="pills" aria-label="Unit">
+  {% for u in stat_units %}<a href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ u }}&amp;period={{ stat_period.slug }}" {% if u == stat_unit %}aria-current="true"{% endif %}>{% if u == 'chips' %}Chips games{% else %}Pesos games{% endif %}</a>{% endfor %}
+</nav>
+{% endif %}
+<div class="stat-periods">
+<nav class="pills" aria-label="Period">
+  {% for p in stat_periods %}<a href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ stat_unit }}&amp;period={{ p.slug }}" {% if p.slug == stat_period.slug %}aria-current="true"{% endif %}>{{ p.label }}</a>{% endfor %}
+</nav>
+<form method="get" class="stat-month" data-stat-month>
+  {% if board %}<input type="hidden" name="view" value="stats"><input type="hidden" name="sort" value="{{ stat_sort }}">{% endif %}
+  <input type="hidden" name="unit" value="{{ stat_unit }}">
+  <label for="stat-month" class="visually-hidden">Month</label>
+  <select id="stat-month" name="period"{% if stat_period.kind == 'month' %} data-chosen{% endif %}>
+    <option value="all">One month…</option>
+    {% for slug, label in stat_months %}<option value="{{ slug }}"{% if slug == stat_period.slug %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn btn-small">Show</button>
+</form>
+</div>

@@ -20,7 +20,7 @@ def toward_zero(value: int, by: int) -> int:
     return whole if value >= 0 else -whole
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class SessionResult:
     """One player's result in one closed session, its sets added together."""
 

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load money_tags clock_tags table_tags %}
+{% block title %}{{ member.display_name }} · {{ group.name }}{% endblock %}
+{% block page_class %}hub-page player-page{% endblock %}
+{% block screen %} data-depth="2"{% endblock %}
+{% block content %}
+<p class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %} {{ group.name }} stats</a></p>
+<header class="player-head">
+  {% member_token member members_one %}
+  <div>
+    <h1>{{ member.display_name }}{% if is_me %} <span class="muted small">(you)</span>{% endif %}</h1>
+    <p class="muted small">{{ since|default:"No closed session yet" }}{% if left %} · Left the group{% endif %}</p>
+  </div>
+</header>
+{% if stat_months %}{% include "web/_stat_controls.html" with board=False %}{% endif %}
+{% if record.sessions %}
+<section class="panel player-lead" aria-labelledby="lead-heading">
+  <h2 id="lead-heading" class="stat-label">Profit or loss · {{ stat_period.label }}</h2>
+  <p class="player-net">{% include "web/_stat_figure.html" with figure=net class="player-net-figure" %}</p>
+  <p class="player-rank">{{ rank }}</p>
+</section>
+{% if chart %}{% include "web/_running_chart.html" %}{% else %}<p class="muted small chart-none">The chart appears after three sessions.</p>{% endif %}
+<section aria-labelledby="tiles-heading">
+  <h2 id="tiles-heading">In numbers</h2>
+  {% include "web/_stat_tiles.html" %}
+</section>
+<section aria-labelledby="highlights-heading">
+  <h2 id="highlights-heading">Highlights</h2>
+  <dl class="player-highlights panel">
+    <div><dt>Best night</dt><dd><a href="{% url 'night' best.night_id %}">{% include "web/_stat_figure.html" with figure=best_figure class="" %} <span class="muted small">{{ best.date|date:"M j, Y" }}</span></a></dd></div>
+    <div><dt>Worst night</dt><dd><a href="{% url 'night' worst.night_id %}">{% include "web/_stat_figure.html" with figure=worst_figure class="" %} <span class="muted small">{{ worst.date|date:"M j, Y" }}</span></a></dd></div>
+    <div><dt>Current run</dt><dd>{{ run }}</dd></div>
+    <div><dt>Longest winning run</dt><dd>{{ longest }} session{{ longest|pluralize }}</dd></div>
+  </dl>
+</section>
+<section aria-labelledby="sessions-heading">
+  <h2 id="sessions-heading">Sessions</h2>
+  <ul class="list player-sessions">
+    {% for s in sessions %}
+    <li><a class="row" href="{% url 'night' s.result.night_id %}">
+      <span class="grow"><strong>{{ s.result.date|date:"M j, Y" }}</strong><span class="roster-activity">{{ s.result.table }} · bought in {{ s.result.bought_in|amount:unit }}{% if s.result.seconds %} · {{ s.result.seconds|duration }}{% endif %}</span></span>
+      {% include "web/_stat_figure.html" with figure=s.figure class="" %}
+    </a></li>
+    {% endfor %}
+  </ul>
+  {% if more %}<p><a class="btn btn-block" href="{{ all_url }}">Show all {{ session_count }}</a></p>{% endif %}
+</section>
+{% else %}
+<div class="panel empty-state"><p class="muted">{{ member.display_name }} has no closed session {{ stat_where }}{% if stat_units|length > 1 %} in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %} games{% endif %}.</p></div>
+{% endif %}
+{% endblock %}

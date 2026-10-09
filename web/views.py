@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -28,6 +28,7 @@ from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
 
+from . import stats as stats_pages
 from .home import archived_groups, home_cards
 
 
@@ -65,7 +66,7 @@ def group(request, group_id):
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
     elif context["view"] == "stats":
-        context.update(group_stats_context(request, me, periods))
+        context.update(stats_pages.board_context(request, me, periods) if settings.STATS_PAGES else group_stats_context(request, me, periods))
     else:
         nights = [n for n in visible_nights(me) if n.shown_sets]
         context["open_nights"] = [n for n in nights if not n.is_closed]
@@ -76,6 +77,17 @@ def group(request, group_id):
         context["not_settled"] = sum(1 for state in states.values() if state.status != "settled")
         context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
+
+
+def player(request, group_id, member_id):
+    """One player's record in the group. Open to every member; the player may have left the group."""
+    me = member_for(request.user, group_id)
+    member = Member.objects.filter(group_id=group_id, pk=member_id).first()
+    if member is None or not settings.STATS_PAGES:
+        raise Http404("Not found")
+    periods = settlement_queries.stat_periods(me.group)
+    context = {"me": me, "group": me.group, **stats_pages.player_context(request, me, member, periods)}
+    return render(request, "web/player.html", context)
 
 
 def group_stats_context(request, me, periods) -> dict:

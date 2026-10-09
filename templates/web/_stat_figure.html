@@ -1,0 +1,1 @@
+{% load money_tags table_tags %}<span class="amount {{ class }} {{ figure.sign|sign_class }}">{% if figure.sign is not None %}{% if figure.sign > 0 %}{% icon 'arrow-up-right' %}{% elif figure.sign < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %}{% endif %}<span>{{ figure.text }}</span></span>
