@@ -90,10 +90,102 @@
     key.classList.add(name);
     marks.set(key, setTimeout(function () { key.classList.remove(name); }, time));
   }
-  // The figure in the field answers an accepted key, so an eye on the keys still sees it change.
-  // The digit itself is already there, whole: nothing rolls or counts.
-  function tick(field, deleted) {
-    go(field, deleted ? { transform: ["translateX(-3px)", "translateX(0px)"] } : { transform: ["scale(1.02)", "scale(1)"] }, "pulse", { duration: 0.14 });
+  // --- The figure. A text field cannot move one of its characters, so while keys are tapped a drawn
+  // copy of the field's text lies exactly over it and the field's own glyphs are hidden (the caret
+  // stays). Each character is put where the browser itself lays that text out. A typed digit fades
+  // and rises into its place, a deleted one fades out, and the others glide to make room. The field's
+  // box does not move. Shortly after the last key the copy goes and the field is a plain field again.
+  // What is drawn is always the field's own value: nothing rolls or counts. If the copy cannot match
+  // the field (the text is wider than the field, anything fails), the field simply shows its text.
+  var fig = null, writing = false, figureOff = false;
+  var EASE = "cubic-bezier(0.16,1,0.3,1)", EASE_IN = "cubic-bezier(0.4,0,1,1)", IN = 180, OUT = 100, REST = 300;
+  var FONT = ["fontFamily", "fontSize", "fontWeight", "fontStretch", "fontStyle", "fontVariantNumeric", "fontFeatureSettings", "fontKerning", "letterSpacing", "lineHeight", "color"];
+  function drop() {
+    if (!fig) return;
+    clearTimeout(fig.timer);
+    fig.field.classList.remove("is-figured");
+    fig.layer.remove();
+    fig = null;
+  }
+  // The copy takes the field's box, its type, and the line its text is set on.
+  function place() {
+    var field = fig.field, style = getComputedStyle(field), box = fig.layer.style, line = fig.line.style;
+    FONT.forEach(function (name) { box[name] = style[name]; });
+    ["Left", "Right", "Top", "Bottom"].forEach(function (side) {
+      line[side.toLowerCase()] = parseFloat(style["border" + side + "Width"]) + parseFloat(style["padding" + side]) + "px";
+    });
+    line.justifyContent = /right|end/.test(style.textAlign) ? "flex-end" : style.textAlign === "center" ? "center" : "flex-start";
+    box.left = field.offsetLeft + "px"; box.top = field.offsetTop + "px";
+    // offsetLeft is a whole number; the field can sit on a part of a pixel.
+    var at = field.getBoundingClientRect(), now = fig.layer.getBoundingClientRect();
+    box.left = field.offsetLeft + at.left - now.left + "px"; box.top = field.offsetTop + at.top - now.top + "px";
+    box.width = at.width + "px"; box.height = at.height + "px";
+  }
+  // Where each character of this text starts, as the browser sets it.
+  function measure(text) {
+    fig.meas.textContent = text;
+    var node = fig.meas.firstChild, base = fig.line.getBoundingClientRect().left, range = document.createRange(), xs = [];
+    for (var i = 0; i < text.length; i++) { range.setStart(node, i); range.setEnd(node, i + 1); xs.push(range.getBoundingClientRect().left - base); }
+    return xs;
+  }
+  function drawn(ch, x) {
+    var el = document.createElement("span"), glyph = document.createElement("span");
+    el.className = "numpad-figure-char"; glyph.textContent = ch; el.appendChild(glyph);
+    el.style.transform = "translateX(" + x + "px)";
+    fig.line.appendChild(el);
+    return { ch: ch, x: x, el: el, glyph: glyph };
+  }
+  function figure(field, before, after) {
+    var M = window.pokerMotion;
+    if (figureOff || !M || !M.on() || !field.animate) return;
+    try {
+      if (fig && (fig.field !== field || fig.text !== before || !fig.layer.isConnected)) drop();
+      if (!field.offsetParent || field.scrollWidth > field.clientWidth) { drop(); return; }
+      if (!fig) {
+        var layer = document.createElement("div"), line = document.createElement("div"), meas = document.createElement("span");
+        layer.className = "numpad-figure"; layer.setAttribute("aria-hidden", "true"); line.className = "numpad-figure-line"; meas.className = "numpad-figure-text";
+        line.appendChild(meas); layer.appendChild(line); field.offsetParent.appendChild(layer);
+        fig = { field: field, layer: layer, line: line, meas: meas, chars: [], text: before, timer: 0 };
+        place();
+        measure(before).forEach(function (x, i) { fig.chars.push(drawn(before[i], x)); });
+      } else place();
+      clearTimeout(fig.timer);
+      var head = 0, tail = 0, most = Math.min(before.length, after.length);
+      while (head < most && before[head] === after[head]) head++;
+      while (tail < most - head && before[before.length - 1 - tail] === after[after.length - 1 - tail]) tail++;
+      var old = fig.chars, gone = old.slice(head, old.length - tail), kept = old.slice(0, head).concat(old.slice(old.length - tail));
+      // A glide that is cut by the next key carries on from where it is drawn.
+      kept.forEach(function (c) { c.from = c.el.getAnimations().length ? new DOMMatrixReadOnly(getComputedStyle(c.el).transform).m41 : c.x; });
+      var xs = measure(after);
+      if (fig.meas.getBoundingClientRect().width > fig.line.getBoundingClientRect().width + 0.5) { drop(); return; }
+      var added = after.length - head - tail, next = [];
+      gone.forEach(function (c) {
+        // Only a plain delete is seen leaving. What a new digit replaces goes at once, so two values never overlap.
+        if (added) { c.el.remove(); return; }
+        c.glyph.animate([{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(0.12em)" }], { duration: OUT, easing: EASE_IN, fill: "forwards" })
+          .finished.then(function () { c.el.remove(); }, function () {});
+      });
+      for (var i = 0; i < after.length; i++) {
+        var c = i < head ? old[i] : i >= after.length - tail ? old[old.length - (after.length - i)] : null;
+        if (!c) {
+          c = drawn(after[i], xs[i]);
+          c.glyph.animate([{ opacity: 0, transform: "translateY(0.16em)" }, { opacity: 1, transform: "translateY(0)" }], { duration: IN, easing: EASE });
+        } else {
+          c.el.getAnimations().forEach(function (running) { running.cancel(); });
+          c.el.style.transform = "translateX(" + xs[i] + "px)";
+          if (Math.abs(c.from - xs[i]) > 0.25) c.el.animate([{ transform: "translateX(" + c.from + "px)" }, { transform: "translateX(" + xs[i] + "px)" }], { duration: IN, easing: EASE });
+          c.x = xs[i];
+        }
+        next.push(c);
+      }
+      fig.chars = next; fig.text = after;
+      field.classList.add("is-figured");
+      fig.timer = setTimeout(drop, after ? REST : OUT + 20);
+    } catch (error) {
+      // The keys must keep working: the figure is given up for this page, and the error is still reported.
+      figureOff = true; drop();
+      setTimeout(function () { throw error; }, 0);
+    }
   }
   // The four rows of keys rise into a sheet, one after another. A key can be tapped before it lands.
   function rise() {
@@ -152,6 +244,7 @@
     var alt = pad.querySelector('[data-key="alt"]'), point = rule(field).point;
     alt.textContent = point ? "." : "00";
     alt.setAttribute("aria-label", point ? "Decimal point" : "Double zero");
+    if (target !== field) drop();
     target = field;
     mark(field);
     var place = slot(field);
@@ -160,6 +253,7 @@
     if (pad.parentNode !== place) { place.appendChild(pad); rise(); }
   }
   function hide(atOnce) {
+    drop();
     clearTimeout(hold); held(pad && pad.querySelector(".is-holding"), false);
     if (panel && panel.isConnected) closePanel(atOnce); else if (pad) pad.remove();
     target = null;
@@ -179,13 +273,18 @@
     go(key, { transform: ["translateX(0px)", "translateX(-4px)", "translateX(4px)", "translateX(-2px)", "translateX(0px)"] }, "nudge");
     field.classList.add("numpad-refused");
     setTimeout(function () { field.classList.remove("numpad-refused"); }, 260);
-    var M = window.pokerMotion, moving = M && M.run(field, { transform: ["translateX(0px)", "translateX(-5px)", "translateX(5px)", "translateX(-2px)", "translateX(0px)"] }, "nudge");
+    var M = window.pokerMotion, shake = { transform: ["translateX(0px)", "translateX(-5px)", "translateX(5px)", "translateX(-2px)", "translateX(0px)"] };
+    var moving = M && M.run(field, shake, "nudge");
     if (moving) M.settle(field, moving);
+    if (fig && fig.field === field) go(fig.layer, shake, "nudge"); // the drawn figure shakes with its field
   }
   function write(field, value, caret) {
+    var before = field.value;
     field.value = value;
     if (document.activeElement === field) { try { field.setSelectionRange(caret, caret); } catch (_) {} }
-    field.dispatchEvent(new Event("input", { bubbles: true }));
+    writing = true;
+    try { field.dispatchEvent(new Event("input", { bubbles: true })); } finally { writing = false; }
+    figure(field, before, value);
   }
   function press(key, button) {
     var field = target;
@@ -194,7 +293,7 @@
     if (document.activeElement === field && field.selectionStart !== null) { from = field.selectionStart; to = field.selectionEnd; }
     if (key === "del") {
       if (from === to) from = Math.max(0, from - 1);
-      if (from !== to) { write(field, value.slice(0, from) + value.slice(to), from); tick(field, true); }
+      if (from !== to) write(field, value.slice(0, from) + value.slice(to), from);
       return;
     }
     var text = key === "alt" ? (rule(field).point ? "." : "00") : key;
@@ -204,7 +303,6 @@
     if (zeros) { next = next.slice(zeros[0].length); caret = Math.max(0, caret - zeros[0].length); }
     if (!rule(field).shape.test(next) || !rule(field).fits(next)) { refuse(field, button); return; }
     write(field, next, caret);
-    tick(field);
   }
   function act(key, button) { try { press(key, button); } catch (error) { giveUp(error); } }
   // Next goes to the following field; Done puts the keys away.
@@ -237,7 +335,7 @@
       hold = setTimeout(function () { // held: clear the field
         held(key, false);
         if (target && target.isConnected && target.value) {
-          try { write(target, "", 0); go(target, { opacity: [0.4, 1] }, "fade"); } catch (error) { giveUp(error); }
+          try { write(target, "", 0); } catch (error) { giveUp(error); }
         }
       }, HOLD);
     }
@@ -261,6 +359,8 @@
       hide();
     }, 0);
   });
+  // Typing that is not from these keys (a physical keyboard, a paste) is shown by the field itself.
+  document.addEventListener("input", function (event) { if (fig && !writing && event.target === fig.field) drop(); }, true);
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && panel && panel.isConnected && !document.querySelector("dialog[open]")) { var field = target; hide(); if (field) field.blur(); }
   });
@@ -273,6 +373,7 @@
   });
   function refreshed() {
     if (!pad) return;
+    drop();
     markAll();
     if (target && !target.isConnected) { // the field was redrawn: carry on with the same one, or put the keys away
       var again = target.dataset.keep && document.querySelector('input[data-numpad][data-keep="' + target.dataset.keep + '"]');

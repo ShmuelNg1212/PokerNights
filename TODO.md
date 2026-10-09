@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09; not merged, not pushed. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes. Not checked on a phone.
+
 Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
 
 Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09. Released 2026-10-09 as `c08d711` (previous production commit `8b51506`); the live site was not checked from here. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 75 of 75. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
@@ -82,11 +84,11 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 - [ ] **Numpad motion was released on 2026-10-09 (`ee18667`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set: the keys should rise in with the sheet.
-  2. Type an amount fast. Every digit should land, each key should light, and the amount should give a small pulse.
+  2. Type an amount fast. Every digit should land and each key should light. (The pulse of the amount is replaced by numpad digit motion, not yet released.)
   3. Hold Delete: a fill should run across the key and the amount should clear when it reaches the end. Hold again and let go early: nothing should clear.
   4. Type a third decimal place: the key and the field should both shake and turn red for a moment.
   5. On count-up or New session, tap Next: the name above the keys should slide in.
-  6. Say what is too much or too little: the pulse on the amount, the light on the keys, the speed of the rise.
+  6. Say what is too much or too little: the light on the keys, the speed of the rise.
 
 
 - [ ] **The fix for the Stats pills was released on 2026-10-09 (`455faab`).** On your phone, after closing and reopening the app: scroll the Profit … Sessions row sideways and tap Sessions, then Profit. The row should stay where you left it and the highlight should slide without a flicker. Say if any jitter remains, and on which pills.

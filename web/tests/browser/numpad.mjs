@@ -1,6 +1,7 @@
 // The in-app numpad. Run after seed.py on a fresh temporary database (set 3 is a running pesos set, set 5 a running chips set).
 import {spawn} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {inflateSync} from 'node:zlib';
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-rack-review';mkdirSync(OUT,{recursive:true});
 const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -191,7 +192,24 @@ try {
  await A.up();await closeSheet();
 
  // --- Movement of the keys (plan 1791533332). Nothing here may slow typing or show a number the field does not hold.
- const mvRest=`[...document.querySelectorAll('.numpad-key')].every(k=>!k.getAttribute('style')&&!k.classList.contains('is-hit')&&!k.classList.contains('is-refused')&&!k.classList.contains('is-holding'))&&!${F}.getAttribute('style')`;
+ // The figure (plan 1791538209): a drawn copy of the field's text, up only while keys are tapped.
+ const FIG=`document.querySelector('.numpad-figure')`,CH=`[...document.querySelectorAll('.numpad-figure-char')]`,figured=f=>`(${f}.classList.contains('is-figured')&&getComputedStyle(${f}).webkitTextFillColor==='rgba(0, 0, 0, 0)')`;
+ const hit=k=>`${key(k)}.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));window.dispatchEvent(new PointerEvent('pointerup'));`;
+ const WAIT=`const wait=ms=>new Promise(r=>setTimeout(r,ms));`;
+ const empty=async f=>{await A.js(`${f}.value='';${f}.dispatchEvent(new Event('input',{bubbles:true}))`);await sleep(350)};
+ const figShot=async f=>{const clip=await A.js(`(()=>{const r=${f}.getBoundingClientRect();return {x:r.left,y:r.top,width:r.width,height:r.height,scale:1}})()`);return (await send('Page.captureScreenshot',{format:'png',clip},A.s)).data};
+ // The same picture with the copy up and with the field's own text: the copy sits exactly on the text.
+ // apart() is the largest difference in any colour channel of any pixel, out of 255. A glyph one pixel
+ // off differs by more than 100; the copy is drawn on its own layer, which can round a shade by 1.
+ const pixels=png=>{const b=Buffer.from(png,'base64');let o=8,w,h,ct,idat=[];while(o<b.length){const len=b.readUInt32BE(o),type=b.toString('latin1',o+4,o+8),d=b.subarray(o+8,o+8+len);if(type==='IHDR'){w=d.readUInt32BE(0);h=d.readUInt32BE(4);ct=d[9]}if(type==='IDAT')idat.push(d);o+=12+len}
+  const n=ct===6?4:3,raw=inflateSync(Buffer.concat(idat)),st=w*n,out=Buffer.alloc(h*st);
+  for(let y=0;y<h;y++){const f=raw[y*(st+1)];for(let x=0;x<st;x++){const v=raw[y*(st+1)+1+x],l=x>=n?out[y*st+x-n]:0,u=y?out[(y-1)*st+x]:0,c=y&&x>=n?out[(y-1)*st+x-n]:0;let p=0;if(f===1)p=l;else if(f===2)p=u;else if(f===3)p=(l+u)>>1;else if(f===4){const q=l+u-c,pa=Math.abs(q-l),pb=Math.abs(q-u),pc=Math.abs(q-c);p=pa<=pb&&pa<=pc?l:pb<=pc?u:c}out[y*st+x]=(v+p)&255}}
+  return {w,h,n,out}};
+ const apart=(a,b)=>{const A=pixels(a),B=pixels(b);if(A.w!==B.w||A.h!==B.h||A.n!==B.n)return 255;let most=0;for(let i=0;i<A.out.length;i++)most=Math.max(most,Math.abs(A.out[i]-B.out[i]));return most};
+ const figSame=async(f,keys)=>{for(let n=0;n<3;n++){await empty(f);await A.js(`${f}.style.caretColor='transparent'`);for(const k of keys)await A.tap(key(k),0);await sleep(200);
+  const up=await A.js(`!!${FIG}&&${figured(f)}&&${FIG}.getAnimations({subtree:true}).length===0`),a=await figShot(f),still=await A.js(`!!${FIG}`);await sleep(450);
+  const gone=await A.js(`!${FIG}&&!${figured(f)}`),b=await figShot(f);await A.js(`${f}.style.caretColor=''`);if(up&&still)return gone&&apart(a,b)<=2}return false};
+ const mvRest=`!${FIG}&&!document.querySelector('.is-figured')&&`+`[...document.querySelectorAll('.numpad-key')].every(k=>!k.getAttribute('style')&&!k.classList.contains('is-hit')&&!k.classList.contains('is-refused')&&!k.classList.contains('is-holding'))&&!${F}.getAttribute('style')`;
  await A.go(`/s/${PESOS}/`);
  const mvArrival=await A.js(`(async()=>{const opener=document.querySelector('.buy-opener');opener.click();let first=null,moving=false;for(let i=0;i<40;i++){await new Promise(r=>requestAnimationFrame(r));const keys=[...document.querySelectorAll('.numpad-key')];if(!keys.length)continue;if(first===null)first=Number(getComputedStyle(keys[11]).opacity);if(keys.some(k=>k.getAnimations().length))moving=true}return {first,moving}})()`);
  check('the keys rise into the sheet: on their first frame the last row is not yet shown',mvArrival.first!==null&&mvArrival.first<0.5&&mvArrival.moving);
@@ -208,25 +226,51 @@ try {
  const mvSize=`JSON.stringify([${F}.offsetWidth,${F}.offsetHeight])`,mvBefore=await A.js(mvSize);
  await A.down(key('5'));
  check('a hit key lights at once',await A.js(`${key('5')}.classList.contains('is-hit')`));await sleep(40);
- check('the field pulses by transform only, keeps its size and its caret at the end',await A.js(`${F}.getAnimations().length===1&&${F}.getAnimations()[0].effect.getKeyframes().every(k=>Object.keys(k).filter(p=>!['offset','easing','composite','computedOffset'].includes(p)).join()==='transform')`)&&await A.js(mvSize)===mvBefore&&await value()==='5'&&await A.js(`${F}.selectionStart`)===1);
- await A.up();await sleep(900);check('the light and the pulse are gone',await A.js(mvRest));
+ check('an accepted key leaves the field\'s box still: no animation, no transform, the same size, the caret at the end',await A.js(`${F}.getAnimations().length===0&&!${F}.style.transform`)&&await A.js(mvSize)===mvBefore&&await value()==='5'&&await A.js(`${F}.selectionStart`)===1);
+ check('the digit is drawn over the field, whose own glyphs are hidden while its caret keeps its colour',await A.js(`!!${FIG}&&${FIG}.getAttribute('aria-hidden')==='true'&&${CH}.map(c=>c.textContent).join('')==='5'&&${figured(F)}&&getComputedStyle(${F}).caretColor!=='rgba(0, 0, 0, 0)'`));
+ await A.up();await sleep(900);check('the light and the figure are gone, and the field shows its own text',await A.js(mvRest)&&await A.js(`!${figured(F)}`));
+ const fgFirst=await A.js(`(async()=>{${WAIT}const box=JSON.stringify(${F}.getBoundingClientRect());${hit('7')}const c=${CH},o=e=>Number(getComputedStyle(e.firstChild).opacity);const r={text:c.map(e=>e.textContent).join(''),value:${F}.value,first:o(c[0]),fresh:o(c[1]),moving:c[1].firstChild.getAnimations().length,box:JSON.stringify(${F}.getBoundingClientRect())===box};await wait(240);const d=${CH};r.landed=d.length===2&&d.every(e=>o(e)===1)&&${FIG}.getAnimations({subtree:true}).length===0;await wait(250);r.rest=!${FIG};return r})()`);
+ check('first frame: the new digit is in place and not yet shown, the earlier one is whole, the box has not moved',fgFirst.text==='57'&&fgFirst.value==='57'&&fgFirst.first===1&&fgFirst.fresh<0.2&&fgFirst.moving===1&&fgFirst.box);
+ check('the digit has arrived within a quarter second, and the copy is gone soon after',fgFirst.landed&&fgFirst.rest);
+ check('the drawn figure sits exactly on the field\'s own text (left-aligned sheet amount)',await figSame(F,['1','2','alt','5','0']));
+ await empty(F);
+ const fgTen=await A.js(`(async()=>{${WAIT}${['1','0','0','0','0','0','0','0','0','0'].map(hit).join('')}await wait(260);const c=${CH};return c.length===10&&c.map(e=>e.textContent).join('')===${F}.value&&c.every(e=>getComputedStyle(e.firstChild).opacity==='1')})()`);
+ check('ten taps at once draw ten digits, every one fully shown',fgTen&&await value()==='1000000000');
+ const fgDel=await A.js(`(async()=>{${WAIT}${hit('del')}const r={value:${F}.value,leaving:${CH}.length};await wait(170);r.left=${CH}.map(e=>e.textContent).join('');return r})()`);
+ check('Delete: the digit is seen leaving, then only the field\'s value is drawn',fgDel.value==='100000000'&&fgDel.leaving===10&&fgDel.left==='100000000');
+ const fgSwap=await A.js(`(()=>{${F}.focus();${F}.select();${hit('5')}return ${CH}.map(e=>e.textContent).join('')+'|'+${F}.value})()`);
+ check('a digit that replaces a selection never overlaps what it replaced',fgSwap==='5|5');
+ const fgLive=await A.js(`(()=>{${hit('6')}const up=!!${FIG};document.dispatchEvent(new CustomEvent('live:updated'));return up&&!${FIG}&&!${figured(F)}&&${F}.value==='56'})()`);
+ check('a live update takes the copy away at once and keeps the value',fgLive);
+ const fgOther=await A.js(`(()=>{${hit('7')}const up=!!${FIG};${F}.value='5671';${F}.dispatchEvent(new Event('input',{bubbles:true}));return up&&!${FIG}&&!${figured(F)}})()`);
+ check('typing that is not from the keys is shown by the field itself',fgOther);
+ await empty(F);
+ const fgWide=await A.js(`(()=>{${F}.style.width='70px';${['1','2','3','4','5','6'].map(hit).join('')}const r=!${FIG}&&!${figured(F)}&&${F}.value==='123456';${F}.style.width='';return r})()`);
+ check('a figure wider than its field gets no copy and types as a plain field',fgWide);
+ await empty(F);
+ const fgRefused=await A.js(`(async()=>{${WAIT}${['1','alt','2','3','4'].map(hit).join('')}await wait(60);const r=${FIG}.getAnimations().length===1&&${F}.value==='1.23'&&${CH}.length===4;await wait(800);return r&&!${FIG}})()`);
+ check('a refused key shakes the drawn figure with its field',fgRefused);
+ await empty(F);await type(['5']);await sleep(400);
  await type(['0','0']);await sleep(300);
  await A.down(key('del'));await sleep(250);
  const mvFill=await A.js(`(()=>{const k=${key('del')};const m=new DOMMatrixReadOnly(getComputedStyle(k,'::before').transform);return {holding:k.classList.contains('is-holding'),x:m.a}})()`);
  check('holding Delete: a fill is partway across the key and only one digit is gone',mvFill.holding&&mvFill.x>0.2&&mvFill.x<0.8&&await value()==='50');
  await A.up();await sleep(120);check('letting go early clears nothing and takes the fill back',await value()==='50'&&await A.js(`!${key('del')}.classList.contains('is-holding')`));
  await A.down(key('del'));await sleep(650);
- check('held to the end, the field is empty and the fill is gone',await value()===''&&await A.js(`!${key('del')}.classList.contains('is-holding')`));await A.up();await sleep(400);
+ check('held to the end, the field is empty and the fill is gone',await value()===''&&await A.js(`!document.querySelector('.numpad-figure-char')||${CH}.every(c=>c.firstChild.getAnimations().length)`)&&await A.js(`!${key('del')}.classList.contains('is-holding')`));await A.up();await sleep(400);
  await A.down(key('del'));await sleep(80);check('Delete on an empty field starts no fill',await A.js(`!${key('del')}.classList.contains('is-holding')`));await A.up();
  await type(['1','alt','2','3']);await sleep(300);await A.down(key('4'));await sleep(40);
  check('a refused key is marked with the field, and nothing is typed',await A.js(`${key('4')}.classList.contains('is-refused')&&${F}.classList.contains('numpad-refused')&&${key('4')}.getAnimations().length>0`)&&await value()==='1.23');
  await A.up();await sleep(900);check('the refusal marks are gone',await A.js(mvRest)&&await A.js(`!${F}.classList.contains('numpad-refused')`));
  await type(['9','9']);await A.down(key('del'));await sleep(260);await A.shot('numpad-motion-hold-390');await A.up();await sleep(300);
  await A.shot('numpad-motion-rest-390');
+ await empty(F);await A.js(`(()=>{${['1','2'].map(hit).join('')}})()`);await sleep(60);await A.shot('numpad-figure-arriving-390');await sleep(400);
+ const fgFail=await A.js(`(async()=>{${WAIT}window.__ferr=0;addEventListener('error',e=>{if(/figure check/.test(e.message)){__ferr++;e.preventDefault()}});const real=document.createRange;document.createRange=()=>{throw new Error('figure check: forced failure')};${hit('8')}await wait(60);document.createRange=real;${hit('9')}await wait(60);return {typed:${F}.value==='1289',plain:!${FIG}&&!${figured(F)},keys:!!${PAD}&&${PAD}.isConnected,reported:__ferr}})()`);
+ check('the figure failing leaves a plain field and working keys, and the error is reported once',fgFail.typed&&fgFail.plain&&fgFail.keys&&fgFail.reported===1);
  await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
  await closeSheet();await A.go(`/s/${PESOS}/`);await openBuy();await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
  await A.down(key('8'));await sleep(40);
- check('reduced motion: a key types, lights, and nothing animates',await value()==='8'&&await A.js(`${key('8')}.classList.contains('is-hit')&&${F}.getAnimations().length===0&&[...document.querySelectorAll('.numpad-key')].every(k=>k.getAnimations().length===0&&!k.getAttribute('style'))`));
+ check('reduced motion: a key types, lights, and nothing animates',await value()==='8'&&await A.js(`${key('8')}.classList.contains('is-hit')&&${F}.getAnimations().length===0&&!${FIG}&&!${figured(F)}&&[...document.querySelectorAll('.numpad-key')].every(k=>k.getAnimations().length===0&&!k.getAttribute('style'))`));
  await A.up();await A.down(key('del'));await sleep(250);
  check('reduced motion: holding Delete shows no fill and still clears',await A.js(`new DOMMatrixReadOnly(getComputedStyle(${key('del')},'::before').transform).a===0`));await sleep(400);check('reduced motion: the hold cleared the field',await value()==='');await A.up();
  await send('Emulation.setEmulatedMedia',{features:[]},A.s);await closeSheet();
@@ -242,6 +286,13 @@ try {
  await A.js(`${inp('small_blind')}.select()`);await type(['2','5','alt','5']);
  check('setup form: keys write the amount',await A.js(`${inp('small_blind')}.value`)==='25.5');
  await sleep(300);await A.shot('numpad-form-390');
+ // A right-aligned field, as the final counts are: the digits already there glide to make room.
+ const SB=inp('small_blind');await A.js(`${SB}.style.textAlign='right'`);await empty(SB);
+ const fgGlide=await A.js(`(async()=>{${WAIT}const x=()=>${CH}[0].getBoundingClientRect().left;${hit('2')}await wait(260);const was=x();${hit('5')}const r={first:x()-was,count:${CH}.length};for(let t=performance.now();performance.now()-t<60;)await new Promise(f=>requestAnimationFrame(f));r.mid=x()-was;${hit('7')}r.cut=x()-was-r.mid;await wait(260);r.end=x()-was;r.still=${FIG}.getAnimations({subtree:true}).length===0;r.page=document.documentElement.scrollWidth<=390;return r})()`);
+ check('right-aligned: on the first frame the earlier digit is where it was drawn, then it glides left',fgGlide.count===2&&Math.abs(fgGlide.first)<0.5&&fgGlide.mid<-1&&fgGlide.end<fgGlide.mid&&fgGlide.still&&fgGlide.page);
+ check('right-aligned: a glide cut by the next key carries on from where it was',Math.abs(fgGlide.cut)<1);
+ check('the drawn figure sits exactly on the field\'s own text (right-aligned field under the panel)',await figSame(SB,['4','2','alt','5']));
+ await A.js(`${SB}.style.textAlign=''`);await empty(SB);await type(['2','5','alt','5']);await sleep(400);
  await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,40);
  check('setup form: Next brings the next field\'s name in',await A.js(`${PANEL}.querySelector('.numpad-about').getAnimations().length>0&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Big blind'`));
  await sleep(460);check('setup form: the name is at rest afterwards',await A.js(`!${PANEL}.querySelector('.numpad-about').getAttribute('style')`));

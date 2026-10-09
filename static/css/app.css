@@ -1119,3 +1119,11 @@ input.numpad-refused { border-color: var(--down); }
 .numpad-key::before { content: ""; position: absolute; inset: 0; background: color-mix(in oklch, var(--down) 38%, transparent); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
 .numpad-key.is-holding::before { transform: scaleX(1); transition: transform 500ms linear; }
 @media (prefers-reduced-motion: reduce) { .numpad-key.is-holding::before { transform: scaleX(0); } }
+/* The figure (numpad.js): while keys are tapped, a drawn copy of the field's text lies over the field so each
+   digit can arrive in its own place. The field keeps its caret; its glyphs come back when the copy goes. */
+input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: transparent; }
+.numpad-figure { position: absolute; overflow: hidden; pointer-events: none; -webkit-user-select: none; user-select: none; }
+.numpad-figure-line { position: absolute; display: flex; align-items: center; white-space: pre; }
+.numpad-figure-text { visibility: hidden; }
+.numpad-figure-char { position: absolute; left: 0; top: 0; bottom: 0; display: flex; align-items: center; }
+.numpad-figure-char > span { display: block; }
