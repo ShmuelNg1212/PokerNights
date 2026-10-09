@@ -97,6 +97,10 @@
 
   window.pokerPage.register(function () {
     mark();
+    // One thing a page is about arrives: [data-pop] springs in from an already-visible default.
+    document.querySelectorAll("[data-pop]").forEach(function (el) {
+      settle(el, run(el, { opacity: [0, 1], transform: ["scale(0.6)", "scale(1)"] }, "arrive"), ["opacity", "transform"]);
+    });
     // A form that came back refused by a full page load.
     if (document.body.dataset.method === "POST" && document.querySelector("#main [aria-invalid=true]")) nudge();
     return function () {

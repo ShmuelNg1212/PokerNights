@@ -284,6 +284,23 @@ def member_records(member_ids) -> dict:
     return found
 
 
+def roster_activity(member_ids) -> dict:
+    """``{member_id: (sessions played, date of the latest)}`` for the roster, in one query.
+
+    A session counts as it does in ``group_stats``, once whatever its unit. A member who
+    never played a counted session is absent.
+    """
+    from django.db.models import Count, Max
+
+    if not member_ids:
+        return {}
+    rows = counted_results().filter(member_id__in=member_ids).values("member_id").annotate(
+        sessions=Count("finalization__session__night_id", distinct=True),
+        last=Max("finalization__session__night__game_date"),
+    )
+    return {row["member_id"]: (row["sessions"], row["last"]) for row in rows}
+
+
 def unpaid_transfers(member_ids) -> list:
     """Transfers of closed sessions that these members still pay or receive, oldest session first."""
     from django.db.models import Q

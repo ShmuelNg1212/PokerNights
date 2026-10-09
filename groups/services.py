@@ -5,7 +5,10 @@ import secrets
 from datetime import timedelta
 
 from django.conf import settings
-from django.db import transaction
+from dataclasses import dataclass
+
+from django.db import router, transaction
+from django.db.models.deletion import Collector, ProtectedError
 from django.db.models import F
 from django.db.models.functions import Lower
 from django.utils import timezone
@@ -15,7 +18,7 @@ from audit import services as audit
 
 from .access import require_host
 from .errors import RuleError
-from .models import GameGroup, GroupRakeAccount, Invite, Member
+from .models import ClaimLink, GameGroup, GroupRakeAccount, Invite, Member
 
 NAME_MAX = 60
 INVITE_DAYS = 7
@@ -126,7 +129,7 @@ def set_role(actor: Member, member_id, role: str) -> Member:
     if role == Member.Role.HOST and not member.has_login:
         raise RuleError("A player without a login cannot be a host.")
     if member.role == Member.Role.HOST and _active_host_count(group) <= 1:
-        raise RuleError("A group needs at least one host.")
+        raise RuleError(LAST_HOST)
     member.role = role
     member.save(update_fields=["role"])
     audit.record(
@@ -136,15 +139,50 @@ def set_role(actor: Member, member_id, role: str) -> Member:
     return member
 
 
+# Reasons a member cannot be removed yet. An app that knows about play registers a guard:
+# guard(member) raises RuleError. This app does not import the apps that depend on it.
+REMOVE_GUARDS = []
+
+LAST_HOST = "A group needs at least one host. Make someone else a host first."
+TURNED_OFF = "This is turned off."
+NOT_IN_GROUP = "That member is not in this group."
+
+
+def _removal_block(group, member) -> str | None:
+    """Why an active member cannot be removed now, or None."""
+    if member.role == Member.Role.HOST and _active_host_count(group) <= 1:
+        return LAST_HOST
+    for guard in REMOVE_GUARDS:
+        try:
+            guard(member)
+        except RuleError as error:
+            return str(error)
+    return None
+
+
+def removal_refusal(actor: Member, member_id) -> str | None:
+    """The reason removing this member would be refused, for the page that asks first. Changes nothing."""
+    require_host(actor)
+    member = Member.objects.filter(group_id=actor.group_id, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError(NOT_IN_GROUP)
+    return _removal_block(actor.group, member)
+
+
 @transaction.atomic
 def remove_member(actor: Member, member_id) -> Member:
+    """Take a member off the roster. Their records stay theirs, and a host can bring them back."""
     require_host(actor)
     group = _lock_group(actor.group_id)
-    member = Member.objects.filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
+    # The member row is locked so that seating the same member waits for this, and this for it.
+    member = Member.objects.select_for_update().filter(group=group, pk=member_id).first()
     if member is None:
-        raise RuleError("That member is not in this group.")
-    if member.role == Member.Role.HOST and _active_host_count(group) <= 1:
-        raise RuleError("A group needs at least one host.")
+        raise RuleError(NOT_IN_GROUP)
+    if member.status == Member.Status.REMOVED:
+        return member  # a repeated tap
+    block = _removal_block(group, member)
+    if block:
+        raise RuleError(block)
     member.status = Member.Status.REMOVED
     member.save(update_fields=["status"])
     audit.record(
@@ -152,6 +190,34 @@ def remove_member(actor: Member, member_id) -> Member:
         summary=f"Removed {member.display_name} from the group",
     )
     return member
+
+
+@transaction.atomic
+def restore_member(actor: Member, member_id) -> tuple[Member, str]:
+    """Bring a removed member back as a player. Returns (member, the name they had).
+
+    The row is the same one, so every past result is still theirs. A name another active
+    player took meanwhile is settled here, before the row turns active.
+    """
+    require_host(actor)
+    if not settings.ROSTER_TOOLS:
+        raise RuleError(TURNED_OFF)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.select_for_update().filter(group=group, pk=member_id).first()
+    if member is None:
+        raise RuleError(NOT_IN_GROUP)
+    old = member.display_name
+    if member.status == Member.Status.ACTIVE:
+        return member, old  # a repeated tap
+    member.display_name = _free_name(group, old)
+    member.status = Member.Status.ACTIVE
+    member.role = Member.Role.PLAYER
+    member.save(update_fields=["display_name", "status", "role"])
+    audit.record(
+        "member.restored", actor=actor.user, group_id=group.pk, target=member,
+        summary=f"Brought {member.display_name} back to the group",
+    )
+    return member, old
 
 
 def hash_token(token: str) -> str:
@@ -275,6 +341,24 @@ def cancel_password_reset(actor: Member, member_id) -> Member:
     return member
 
 
+CONTACT_MAX = 120
+ADD_MAX = 30
+REMOVED_NAME = "Removed from this group: {names}. Bring them back from Removed players, or use a different name."
+
+
+def _removed_names(group) -> set:
+    """Lower-case names of removed members. Adding one again would split that person's history."""
+    if not settings.ROSTER_TOOLS:
+        return set()
+    return {name.lower() for name in Member.objects.filter(group=group, status=Member.Status.REMOVED).values_list("display_name", flat=True)}
+
+
+def _create_roster_player(actor, group, name, contact="") -> Member:
+    member = Member.objects.create(group=group, display_name=name, contact=contact)
+    audit.record("member.added", actor=actor.user, group_id=group.pk, target=member, summary=f"Added {name} to the roster")
+    return member
+
+
 @transaction.atomic
 def add_roster_player(actor: Member, name: str, contact: str = "") -> Member:
     """Add a player who has no login. A host acts for this player."""
@@ -283,23 +367,265 @@ def add_roster_player(actor: Member, name: str, contact: str = "") -> Member:
     name = clean_name(name, "Player name")
     if _name_taken(group, name):
         raise RuleError(f"A player named {name} is already in this group.")
-    member = Member.objects.create(group=group, display_name=name, contact=(contact or "").strip()[:120])
-    audit.record("member.added", actor=actor.user, group_id=group.pk, target=member, summary=f"Added {name} to the roster")
-    return member
+    if name.lower() in _removed_names(group):
+        raise RuleError(REMOVED_NAME.format(names=name))
+    return _create_roster_player(actor, group, name, (contact or "").strip()[:CONTACT_MAX])
 
 
 @transaction.atomic
-def rename_member(actor: Member, member_id, name: str) -> Member:
+def add_roster_players(actor: Member, names) -> list:
+    """Add several players without logins. Everyone is added, or nobody is; every problem is named at once."""
+    require_host(actor)
+    typed = [" ".join((name or "").split()) for name in names]
+    typed = [name for name in typed if name]
+    if not typed:
+        raise RuleError("Type at least one name.")
+    if len(typed) == 1:
+        return [add_roster_player(actor, typed[0])]
+    if not settings.ROSTER_TOOLS:
+        raise RuleError(TURNED_OFF)
+    if len(typed) > ADD_MAX:
+        raise RuleError(f"Add {ADD_MAX} players at most at a time.")
+    group = _lock_group(actor.group_id)
+    active = {name.lower() for name in Member.objects.filter(group=group, status=Member.Status.ACTIVE).values_list("display_name", flat=True)}
+    removed = _removed_names(group)
+    taken, twice, gone, long, seen = [], [], [], [], set()
+    for name in typed:
+        key = name.lower()
+        if len(name) > NAME_MAX:
+            long.append(f"{name[:20]}…")
+        elif key in seen:
+            twice.append(name)
+        elif key in active:
+            taken.append(name)
+        elif key in removed:
+            gone.append(name)
+        seen.add(key)
+    problems = []
+    if taken:
+        problems.append(f"Already in this group: {', '.join(taken)}.")
+    if twice:
+        problems.append(f"Typed twice: {', '.join(twice)}.")
+    if gone:
+        problems.append(REMOVED_NAME.format(names=", ".join(gone)))
+    if long:
+        problems.append(f"Too long ({NAME_MAX} characters at most): {', '.join(long)}")
+    if problems:
+        raise RuleError(" ".join(problems))
+    return [_create_roster_player(actor, group, name) for name in typed]
+
+
+def _rename(actor, group, member, name) -> bool:
+    """Give ``member`` a cleaned ``name`` under the group lock. False when it is the name they have."""
+    if _name_taken(group, name, exclude_pk=member.pk):
+        raise RuleError(f"A player named {name} is already in this group.")
+    old = member.display_name
+    if old == name:
+        return False
+    member.display_name = name
+    member.save(update_fields=["display_name"])
+    audit.record("member.renamed", actor=actor.user, group_id=group.pk, target=member, summary=f"Renamed {old} to {name}")
+    return True
+
+
+@transaction.atomic
+def edit_member(actor: Member, member_id, name: str, contact: str | None = None) -> Member:
+    """A host changes a member's name, and the contact note when one is given. Only what changed is written.
+
+    The contact note is a host's note about a person. Its text is kept out of the audit log.
+    """
     require_host(actor)
     group = _lock_group(actor.group_id)
     member = Member.objects.filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
     if member is None:
-        raise RuleError("That member is not in this group.")
+        raise RuleError(NOT_IN_GROUP)
     name = clean_name(name, "Player name")
-    if _name_taken(group, name, exclude_pk=member.pk):
-        raise RuleError(f"A player named {name} is already in this group.")
-    old = member.display_name
-    member.display_name = name
-    member.save(update_fields=["display_name"])
-    audit.record("member.renamed", actor=actor.user, group_id=group.pk, target=member, summary=f"Renamed {old} to {name}")
+    if contact is not None:
+        contact = " ".join(contact.split())
+        if len(contact) > CONTACT_MAX:
+            raise RuleError(f"Contact must be {CONTACT_MAX} characters or fewer.")
+        if contact != member.contact and not settings.ROSTER_TOOLS:
+            raise RuleError(TURNED_OFF)
+    _rename(actor, group, member, name)
+    if contact is not None and contact != member.contact:
+        member.contact = contact
+        member.save(update_fields=["contact"])
+        audit.record(
+            "member.contact_changed", actor=actor.user, group_id=group.pk, target=member,
+            summary=f"Changed {member.display_name}'s contact note",
+        )
+    return member
+
+
+def rename_member(actor: Member, member_id, name: str) -> Member:
+    return edit_member(actor, member_id, name)
+
+
+@transaction.atomic
+def rename_self(actor: Member, name: str) -> Member:
+    """Anyone changes their own name in the group. The username they log in with is another thing."""
+    if not settings.ROSTER_TOOLS:
+        raise RuleError(TURNED_OFF)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.filter(group=group, pk=actor.pk, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError(NOT_IN_GROUP)
+    _rename(actor, group, member, clean_name(name))
+    return member
+
+
+# --- Claim links ---------------------------------------------------------------
+
+CLAIM_DAYS = 7
+CLAIM_NOT_VALID = "This claim link is not valid."
+TWO_RECORDS = "You already have games recorded in this group as {name}. Two records cannot be joined yet. Ask a host of the group."
+WAS_REMOVED = "You were in this group as {name}. Ask a host to bring you back."
+
+
+def _live_claims(links):
+    return links.filter(used_at__isnull=True, revoked_at__isnull=True, expires_at__gt=timezone.now())
+
+
+def live_claim_links(member_ids) -> dict:
+    """The claim link that can still be used, by member id, for the members that have one. Read-only."""
+    if not settings.CLAIM_LINKS:
+        return {}
+    return {link.member_id: link for link in _live_claims(ClaimLink.objects.filter(member_id__in=member_ids))}
+
+
+def _claim_target(actor: Member, member_id) -> Member:
+    """The roster player a host may manage a claim link for, with the group row locked."""
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError(NOT_IN_GROUP)
+    return member
+
+
+@transaction.atomic
+def create_claim_link(actor: Member, member_id):
+    """Create a player's one live claim link. Returns (member, link, token); the token is shown once.
+
+    Whoever opens the link first becomes this player in the group, so the host sends it to that person only.
+    """
+    if not settings.CLAIM_LINKS:
+        raise RuleError("Claim links are turned off.")
+    member = _claim_target(actor, member_id)
+    if member.has_login:
+        raise RuleError(f"{member.display_name} already has a login.")
+    # The earlier link is cancelled first, so a player never has two live ones.
+    _live_claims(ClaimLink.objects.filter(member=member)).update(revoked_at=timezone.now())
+    token = secrets.token_urlsafe(32)
+    link = ClaimLink.objects.create(
+        member=member, token_hash=hash_token(token),
+        expires_at=timezone.now() + timedelta(days=CLAIM_DAYS), created_by=actor.user,
+    )
+    audit.record(
+        "claim_link.issued", actor=actor.user, group_id=member.group_id, target=member,
+        summary=f"Created a claim link for {member.display_name}",
+    )
+    return member, link, token
+
+
+@transaction.atomic
+def cancel_claim_link(actor: Member, member_id) -> Member:
+    member = _claim_target(actor, member_id)
+    if _live_claims(ClaimLink.objects.filter(member=member)).update(revoked_at=timezone.now()):
+        audit.record(
+            "claim_link.cancelled", actor=actor.user, group_id=member.group_id, target=member,
+            summary=f"Cancelled the claim link for {member.display_name}",
+        )
+    return member
+
+
+def usable_claim_link(token: str, *, lock=False, user=None) -> ClaimLink:
+    """The link for ``token`` if it can still be used, else RuleError.
+
+    A link ``user`` already used is returned to them, so their second tap finds the player they became.
+    """
+    links = ClaimLink.objects.select_for_update() if lock else ClaimLink.objects.select_related("member__group")
+    link = links.filter(token_hash=hash_token(token or "")).first()
+    if not settings.CLAIM_LINKS or link is None or link.revoked_at is not None:
+        raise RuleError(CLAIM_NOT_VALID)
+    member = link.member
+    if member.status != Member.Status.ACTIVE or member.group.is_archived:
+        raise RuleError(CLAIM_NOT_VALID)
+    if link.used_at is not None or member.user_id is not None:
+        if user is not None and member.user_id == user.pk:
+            return link
+        raise RuleError("This claim link has already been used.")
+    if link.expires_at <= timezone.now():
+        raise RuleError("This claim link has expired.")
+    return link
+
+
+def _has_records(member) -> bool:
+    """True when anything points at the member row and protects it: a seat, a result, a transfer, a payment.
+
+    The database's own delete rules answer, so this app learns nothing about the apps above it. Nothing is deleted.
+    """
+    try:
+        Collector(using=router.db_for_write(Member)).collect([member])
+    except ProtectedError:
+        return True
+    return False
+
+
+@dataclass
+class ClaimPreview:
+    """What the page that asks shows: the player, the account's own entry in the group, and why not, if not."""
+
+    link: ClaimLink
+    member: Member
+    own: Member | None = None
+    refusal: str | None = None
+    done: bool = False
+
+
+def claim_preview(user, token: str, *, lock=False) -> ClaimPreview:
+    link = usable_claim_link(token, lock=lock, user=user)
+    member = link.member
+    if member.user_id == user.pk:
+        return ClaimPreview(link, member, done=True)
+    own = Member.objects.filter(group_id=member.group_id, user=user).first()
+    refusal = None
+    if own is not None and _has_records(own):
+        text = TWO_RECORDS if own.status == Member.Status.ACTIVE else WAS_REMOVED
+        refusal = text.format(name=own.display_name)
+    return ClaimPreview(link, member, own, refusal)
+
+
+@transaction.atomic
+def claim_member(user, token: str) -> Member:
+    """Make ``user`` the roster player the link is for. The member row, and every record on it, stays as it is.
+
+    An entry the account already had in the group is deleted when nothing is recorded on it,
+    before the player takes the account: the one-row-per-account rule is not deferrable.
+    """
+    link = usable_claim_link(token, lock=True, user=user)
+    group = _lock_group(link.member.group_id)
+    member = Member.objects.select_for_update().get(pk=link.member_id)
+    preview = claim_preview(user, token)  # again, under the locks
+    if preview.done:
+        return member  # a repeated tap
+    if preview.refusal:
+        raise RuleError(preview.refusal)
+    own = preview.own
+    if own is not None:
+        if own.role == Member.Role.HOST and own.status == Member.Status.ACTIVE:
+            member.role = Member.Role.HOST
+        audit.record(
+            "member.replaced", actor=user, group_id=group.pk, target=own,
+            summary=f"{own.display_name}'s empty entry was replaced by {member.display_name}",
+        )
+        own.delete()
+    member.user = user
+    member.save(update_fields=["user", "role"])
+    link.used_at, link.used_by = timezone.now(), user
+    link.save(update_fields=["used_at", "used_by"])
+    audit.record(
+        "member.claimed", actor=user, group_id=group.pk, target=member,
+        summary=f"{user.get_username()} claimed {member.display_name}",
+    )
     return member

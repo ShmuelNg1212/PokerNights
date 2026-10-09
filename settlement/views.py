@@ -4,8 +4,13 @@ from django.views.decorators.http import require_POST
 
 from games import services as games
 from games.access import night_for, session_for
-from groups.access import require_host
-from groups.http import attempt, request_id_from
+from django.conf import settings
+from django.http import Http404
+
+from groups import services as groups
+from groups.access import member_for, require_host
+from groups.http import attempt, group_settings, request_id_from
+from groups.models import Member
 
 from . import queries, services
 
@@ -50,6 +55,32 @@ def night_archive(request, night_id):
     context = {"night": night, "mode": "archive", "unit": night.unit, "unpaid": queries.unpaid_in(night),
                "unfinished": games.unfinished_sets(night)}
     return render(request, "settlement/night_manage.html", context)
+
+
+def member_remove(request, group_id, member_id):
+    """Ask, then remove a member from the group. The page names what stops it and any transfer still unpaid.
+
+    It lives here because it reads seats and transfers, which the groups app cannot.
+    """
+    actor = member_for(request.user, group_id)
+    require_host(actor)
+    member = Member.objects.filter(group_id=group_id, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise Http404("Not found")
+    if request.method == "POST":
+        back = " Bring them back from Removed players." if settings.ROSTER_TOOLS else ""
+        if attempt(request, groups.remove_member, actor, member.pk,
+                   success=f"{member.display_name} was removed.{back}") is not None:
+            request.session["roster_left"] = True
+            return group_settings(group_id, "players")
+        return redirect("member_remove", group_id=group_id, member_id=member.pk)
+    refusal = groups.removal_refusal(actor, member.pk)
+    seated = games.sets_seating(member) if refusal else []
+    context = {
+        "group": actor.group, "member": member, "refusal": refusal, "seated": seated[0] if seated else None,
+        "unpaid": [] if refusal else queries.unpaid_transfers([member.pk]), "roster_tools": settings.ROSTER_TOOLS,
+    }
+    return render(request, "settlement/member_remove.html", context)
 
 
 @require_POST

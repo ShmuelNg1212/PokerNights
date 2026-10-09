@@ -425,3 +425,85 @@ class ConcurrentInviteSignupTests(TransactionTestCase):
         self.assertEqual(get_user_model().objects.filter(username__in=["first", "second"]).count(), 2)
         self.assertEqual(Member.objects.filter(group=group, user__username__in=["first", "second"]).count(), 1)
         self.assertEqual(Invite.objects.get(pk=invite.pk).use_count, 1)
+
+
+class ConcurrentRosterTests(TransactionTestCase):
+    """Removing a member races with seating them, bringing them back and adding names."""
+
+    def test_a_member_is_never_both_removed_and_seated(self):
+        from groups import services as groups
+        from groups.models import Member
+
+        for _ in range(4):
+            roster = Roster()
+            carlo = roster.members["Carlo"]
+            outcomes = race(
+                lambda: groups.remove_member(roster.host, carlo.pk),
+                lambda: games.add_participants(roster.session.pk, roster.host, [carlo.pk], uuid.uuid4()),
+            )
+            self.assertNotIn("error", kinds(outcomes), outcomes)
+            removed = Member.objects.get(pk=carlo.pk).status == "removed"
+            seated = Participant.objects.filter(session=roster.session, member=carlo, status="joined").exists()
+            self.assertFalse(removed and seated, outcomes)
+            self.assertTrue(removed or seated, outcomes)
+
+    def test_two_restores_and_two_adds_of_the_same_names(self):
+        from audit.models import AuditEvent
+        from groups import services as groups
+        from groups.models import Member
+
+        roster = Roster()
+        carlo = roster.members["Carlo"]
+        groups.remove_member(roster.host, carlo.pk)
+        outcomes = race(*[lambda: groups.restore_member(roster.host, carlo.pk)] * 2)
+        self.assertEqual(kinds(outcomes), ["ok", "ok"], outcomes)
+        self.assertEqual(AuditEvent.objects.filter(action="member.restored").count(), 1)
+        outcomes = race(*[lambda: groups.add_roster_players(roster.host, ["Eli", "Fe"])] * 2)
+        self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+        self.assertEqual(Member.objects.filter(group=roster.group, display_name__in=["Eli", "Fe"]).count(), 2)
+
+
+class ConcurrentClaimTests(TransactionTestCase):
+    """One claim link, used or issued from two places at once."""
+
+    def setUp(self):
+        from groups import services as groups
+        from groups.tests.helpers import make_user
+
+        self.groups, self.make_user = groups, make_user
+        self.roster = Roster()
+        self.carlo = self.roster.members["Carlo"]
+
+    def test_two_accounts_use_one_link_and_exactly_one_becomes_the_player(self):
+        from groups.models import Member
+
+        for n in range(4):
+            Member.objects.filter(pk=self.carlo.pk).update(user=None)
+            token = self.groups.create_claim_link(self.roster.host, self.carlo.pk)[2]
+            users = [self.make_user(f"one{n}"), self.make_user(f"two{n}")]
+            outcomes = race(*[lambda user=user: self.groups.claim_member(user, token) for user in users])
+            self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+            self.assertIn(Member.objects.get(pk=self.carlo.pk).user, users)
+            self.assertEqual(Member.objects.filter(group=self.roster.group, user__in=users).count(), 1)
+
+    def test_a_claim_and_a_removal_of_the_same_player(self):
+        from groups.models import Member
+
+        token = self.groups.create_claim_link(self.roster.host, self.carlo.pk)[2]
+        user = self.make_user("carlo-login")
+        outcomes = race(
+            lambda: self.groups.claim_member(user, token),
+            lambda: self.groups.remove_member(self.roster.host, self.carlo.pk),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        member = Member.objects.get(pk=self.carlo.pk)
+        self.assertEqual(member.status, "removed")  # the removal always lands; the claim lands or is refused
+
+    def test_two_issues_leave_one_live_link(self):
+        outcomes = race(*[lambda: self.groups.create_claim_link(self.roster.host, self.carlo.pk)] * 2)
+        self.assertEqual(kinds(outcomes), ["ok", "ok"], outcomes)
+        self.assertEqual(len(self.groups.live_claim_links([self.carlo.pk])), 1)
+        from groups.models import ClaimLink
+
+        live = ClaimLink.objects.filter(member=self.carlo, used_at__isnull=True, revoked_at__isnull=True)
+        self.assertEqual(live.count(), 1)

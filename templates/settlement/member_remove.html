@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block screen %} data-depth="2"{% endblock %}
+{% block title %}Remove player · {{ group.name }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' group.pk %}?view=settings#players">{{ group.name }} settings</a></p>
+<h1>Remove {{ member.display_name }} from the group?</h1>
+{% if refusal %}
+<div class="notice notice-info">{{ refusal }}</div>
+{% if seated %}<p><a class="btn btn-block" href="{% url 'session' seated.pk %}">Open {{ seated.table.name }} set {{ seated.set_number }}</a></p>{% endif %}
+<p><a class="btn btn-quiet btn-block" href="{% url 'group' group.pk %}?view=settings#players">Back to Players</a></p>
+{% else %}
+<ul class="muted manage-effects">
+  <li>{{ member.display_name }}'s results stay in past sessions and in Stats.</li>
+  <li>{{ member.display_name }} can't be added to a set.</li>
+  {% if member.has_login %}<li>{{ member.display_name }} can no longer open this group. Their account and their other groups are not touched.</li>{% endif %}
+  {% if roster_tools %}<li>You can bring {{ member.display_name }} back from Removed players.</li>{% endif %}
+</ul>
+{% if unpaid %}
+<section class="panel stack" aria-labelledby="unpaid-title">
+  <h2 id="unpaid-title">Still to pay</h2>
+  <ul class="list">{% for t in unpaid %}<li class="row"><span class="grow"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong><span class="roster-activity">{{ t.plan.night.game_date|date:"M j" }}, {{ t.plan.night.table.name }}</span></span><span class="amount">{{ t.amount|amount:t.plan.night.unit }}</span></li>{% endfor %}</ul>
+  <p class="small muted">These stay on their session pages. Removing {{ member.display_name }} does not settle them.</p>
+</section>
+{% endif %}
+<form method="post" class="form-section stack" data-once>{% csrf_token %}
+  <button type="submit" class="btn btn-danger btn-block">Remove {{ member.display_name }}</button>
+</form>
+<p><a class="btn btn-quiet btn-block" href="{% url 'group' group.pk %}?view=settings#players">Keep {{ member.display_name }}</a></p>
+{% endif %}
+{% endblock %}

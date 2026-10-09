@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load table_tags %}
+{% block title %}Claim link · PokerNights{% endblock %}
+{% block header %}{% if user.is_authenticated %}{{ block.super }}{% endif %}{% endblock %}
+{% block page_class %}entry-page{% endblock %}
+{% block content %}
+{# The confirm page leads with the player's own token; the other states keep the mark. #}
+{% if not user.is_authenticated %}{% include "partials/entry_head.html" %}{% elif error or preview.refusal %}{% include "partials/entry_head.html" with compact=True %}{% endif %}
+{% if error %}
+<h1>This claim link doesn't work</h1>
+<div class="notice notice-bad" role="alert">{{ error }} Ask a host of the group for a new one.</div>
+{% if user.is_authenticated %}<p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
+{% else %}<p class="entry-alt">Already have an account? <a href="{% url 'login' %}">Log in</a></p>{% endif %}
+{% elif preview.refusal %}
+<h1>You can't claim {{ member.display_name }}</h1>
+<div class="notice notice-info" role="alert">{{ preview.refusal }}</div>
+<p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
+{% else %}
+<div class="claim-chip" data-pop>{% member_token member one %}</div>
+<h1>Join {{ group.name }} as {{ member.display_name }}</h1>
+<p class="entry-invite">A host kept {{ member.display_name }}'s games here before you had a login. Claiming makes them yours: you will see {{ member.display_name }}'s results, and you can record your own rebuys and counts.</p>
+<div class="claim-who">
+  <p>You are logged in as <strong>{{ user.get_username }}</strong>.</p>
+  {% if preview.own %}<p>You are already in this group as {{ preview.own.display_name }}, with nothing recorded. That entry is replaced by {{ member.display_name }}.</p>{% endif %}
+</div>
+<form method="post" class="form-section">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-block" data-busy="Claiming…">Claim {{ member.display_name }}</button>
+</form>
+<p class="entry-alt"><a href="{% url 'home' %}">Not now</a></p>
+<form method="post" action="{% url 'logout' %}" class="entry-alt claim-logout">{% csrf_token %}Not {{ user.get_username }}? <button type="submit" class="link-button">Log out</button></form>
+{% endif %}
+{% endblock %}

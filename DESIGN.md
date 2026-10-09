@@ -647,6 +647,29 @@ A link that is shown once sits in a read-only field with a text button in its ri
 - **Count-up, host.** The field stays empty with the entered number as its placeholder, and one muted line under it names the player, the number and the two choices. The dock's label reads "Preview · players' counts" until the host confirms.
 - No new token, colour, font or asset. Classes: `.own-count`, `.own-count-state`, `.own-count-change`, `.count-entered`.
 
+### Roster (2026-10-09)
+
+Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No new colour, font or asset.
+
+- **A roster row** is the identity token, the name, and beneath it one muted 13px line in tabular figures: "12 sessions · last played Oct 1". Host and No login badges sit at the right.
+- **Disclosures in the Players panel** carry a drawn chevron after the summary text (two 2px borders, the summary's colour) that turns when the disclosure opens. No glyph is used.
+- **Manage a player** holds one form (Name, Contact, a full-width Save), then the role and reset-link buttons 16px below as full-width 48px buttons 8px apart, then, under a Rule line with 16px above and below, a quiet danger link "Remove from group". The destructive action never sits beside a routine one.
+- **The removal page** is a confirmation page: the question as the heading, the consequences, a "Still to pay" panel with the payer, the payee, the date and table beneath, and the exact amount at the right; then the danger "Remove {name}" and the quiet "Keep {name}". A refusal shows the reason in an info notice, a button to the set that blocks it, and no danger button.
+- **Removed players (N)** is a closed disclosure under a Line rule, hosts only. Its tokens are dimmed to 55%; names keep full contrast. "No login" is written at the start of the activity line so the row and its Bring back button stay on one line at 390px; below 360px the button wraps.
+- **Names box.** A textarea of at least 132px with the field treatment. A muted line under it counts the names from two up and turns to the Down colour with the limit when over 30.
+- **Motion.** Rows just added or brought back take the accepted-change mark for 3 seconds and rise 12px with the `shift` spring, 40ms apart, at most eight steps. After a removal the Removed players summary takes the mark and one `pulse`. An opened disclosure fades in over 6px with `fade`; closing is immediate. The chevron turns in the fast duration. Under reduced motion the mark shows and nothing moves. No inline style is left behind.
+- **Measured.** `roster.mjs`, 44 checks at 320, 390 and 1280px: no horizontal overflow, every button, link-button, summary and field at least 48px, contrast of the activity line, the summaries and the danger button at least 4.5:1, the mark removed after its hold, reduced motion, and every action present without JavaScript.
+
+### Claim link (2026-10-09)
+
+[Plan](doc/plan/1791527506_claim_links.md). No new colour, font or asset.
+
+- **The page that asks** uses the entry frame and leads with the player's own identity token at 64px, in the colour it has on the roster, in place of the brand mark. Then the heading "Join {group} as {name}", one balanced paragraph, a neutral bordered block naming the account (and, muted, an empty entry that will be replaced), the bone "Claim {name}", a quiet "Not now", and "Not {username}? Log out" as an underlined text button with a 48px target.
+- **Refused and dead links** keep the compact brand mark, a heading that says so, one notice with the reason and one button to Your groups.
+- **The host's side** repeats the reset-link pattern: a good-coloured notice with the Copy field, shown once; in "Manage", one muted line, then full-width 48px buttons.
+- **Motion.** The token springs in once with `arrive` (`[data-pop]`), from a visible default. Nothing else on the page moves.
+- **Measured.** `claim.mjs`, 30 checks at 320, 390 and 1280px: no horizontal overflow, 48px targets, contrast of the account line, the muted note and Log out at least 4.5:1, visible focus, no inline style left after the token settles, and the whole flow without JavaScript.
+
 ## Do's and Don'ts
 
 ### Do:

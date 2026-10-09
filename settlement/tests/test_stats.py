@@ -123,6 +123,34 @@ class GroupStatsTests(TestCase):
             self.assertEqual(len(queries.group_stats(club.group, "php")), 8)
 
 
+class RosterActivityTests(TestCase):
+    def activity(self, club):
+        found = queries.roster_activity([m.pk for m in club.members.values()])
+        return {name: found.get(m.pk) for name, m in club.members.items()}
+
+    def test_sessions_and_last_date_agree_with_stats_across_units(self):
+        club = Club()
+        club.session(SEP_30, {"A": (1000, 1200), "B": (1000, 800)})
+        club.session(OCT_1, {"A": (500, 400), "C": (500, 600)}, unit="chips")
+        club.session(OCT_1, {"B": (1000, 1000), "D": (1000, 1000)}, close=False)
+        club.session(OCT_1, {"A": (1000, 1000)}, cancel=True)
+        club.member("E")
+        self.assertEqual(self.activity(club), {
+            "A": (2, OCT_1), "B": (1, SEP_30), "C": (1, OCT_1), "D": None, "E": None,
+        })
+        php, chips = club.stats("php"), club.stats("chips")
+        for name, found in self.activity(club).items():
+            self.assertEqual(found[0] if found else 0, php.get(name, (0, 0, 0))[1] + chips.get(name, (0, 0, 0))[1])
+
+    def test_one_query_however_many_players(self):
+        club = Club()
+        club.session(OCT_1, {name: (1000, 1000) for name in "ABCDEFGH"})
+        with self.assertNumQueries(1):
+            self.assertEqual(len(queries.roster_activity([m.pk for m in club.members.values()])), 8)
+        with self.assertNumQueries(0):
+            self.assertEqual(queries.roster_activity([]), {})
+
+
 class GroupStatsPageTests(TestCase):
     def setUp(self):
         self.club = Club()

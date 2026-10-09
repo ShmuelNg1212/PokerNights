@@ -4,6 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09, on top of `feat/roster-management`; neither is merged. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
+
+Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09, not merged. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone acceptance remains open.
+
 Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. Released 2026-10-06 as `283ecc2` (previous production commit `7639c8f`); the live site serves the new `counts.js`. Phone acceptance remains open.
 
 Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
@@ -71,6 +75,24 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+
+- [ ] **Roster management is built on `feat/roster-management` and not released.** Say when to merge and push; a push to `main` is a release. After it is live, on your phone in Group settings → Players:
+  1. Read a few rows: the sessions and last-played line should match Stats.
+  2. Open "Change your name", try a name someone else has, then a new one.
+  3. Open "Manage" on a player, save a contact note, and check a player's phone does not show it.
+  4. Tap "Remove from group" on a player who owes money: the page should list the transfer. Tap Keep, then do it again and remove.
+  5. Try to remove someone who is at the table of a running set: it should refuse and name the set.
+  6. Open "Removed players" and tap Bring back: the row should return with the same sessions.
+  7. Add three names in one go, then a batch with one name that is already in the group: nobody should be added and the text should stay.
+  8. Say what feels wrong, including the movement of new rows. `ROSTER_TOOLS=False` in Vercel turns the new tools off without a release.
+- [ ] **Claim links are built on `feat/claim-links` and not released** (it includes roster management). After the batch is live, with two phones:
+  1. As a host open Manage on a player without a login, tap Create claim link, and Copy it into a chat to yourself.
+  2. On the other phone, signed out, open the link: it should go to Sign up and name the group. Sign up and check you land in the group as that player, with their sessions on the roster row.
+  3. Record a rebuy from that phone in a running set.
+  4. Open the same link again on a third account: it should say it has been used.
+  5. Create a link, then Cancel link, and open it: it should not work. `CLAIM_LINKS=False` in Vercel turns the feature off without a release.
+- [ ] `SPEC.md` step 4 says only "Saved player roster for fast session setup". Add removing, restoring and own names if the spec should match the app.
 
 - [ ] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
   1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
