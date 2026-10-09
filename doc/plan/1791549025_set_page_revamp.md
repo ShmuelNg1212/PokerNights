@@ -126,3 +126,21 @@ A physical phone at a table: thumb reach of the Rebuy button on the right edge, 
 ## Progress and blockers
 
 2026-10-09: Study and plan written after three questions to the human. Waiting for approval.
+
+2026-10-09: approved ("approved"), all six decisions as recommended. The human asked for the installed design and motion skills and to try apple-design; impeccable, motion, apple-design and redesign-existing-projects were loaded. Built on `feat/set-page-revamp`.
+
+Checkpoint, 2026-10-09 (the human asked to compact the conversation here):
+
+- **Stage 1 (in play)** committed as `7f73722`. **Stage 2 (preparing)** committed as `cd39b39`. **Stage 3** movement (`static/js/table.js`) and the browser check `web/tests/browser/table.mjs` are committed with this note.
+- 934 tests pass on SQLite. `table.mjs` passes 63 of 63 on a fresh seed, with the second server for the switch.
+- Measured at 390 × 844 with eight players: panel 223px (was 351), row 65px (was 142), six whole rows on the first screen, page 1,114px (was 1,758). The start of a set runs 780ms; no late frame with the processor slowed four times.
+- A sheet could not open another sheet, so `sheets.js` gained a swap: the player's sheet gives way to the cash-out form in the same open sheet.
+
+Still to do in stage 3:
+
+1. `table.mjs`: the check "open: the menu is at most 260px" measured a folded menu (the script had folded it earlier). Clear the stored choice first, then re-measure.
+2. Regression browser checks, updated where they name a class that moved: `flow`, `inplace`, `numpad`, `dock`, `player_entries`, `late_player`, `navigate`, `screens`, `motion`, `lifetime`, `rake_controls`, `session_form`, and the opening checks.
+3. The PostgreSQL suite.
+4. One `/impeccable critique` of the page in both jobs, and one fix batch.
+5. Sync docs: DESIGN.md, PRODUCT.md, wiki features and deployment (`TABLE_REVAMP`), browser README, TODO with the phone checklist.
+6. State words on the session page's and the group's lists of sets (decision 3) are not done yet; only the set page uses them.
