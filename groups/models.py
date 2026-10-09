@@ -101,3 +101,22 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"Invite to {self.group} (expires {self.expires_at:%Y-%m-%d})"
+
+
+class ClaimLink(models.Model):
+    """A link that lets one account become ``member``, a roster player without a login. Only the token's hash is stored."""
+
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="claim_links")
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+")
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self):
+        return f"Claim link for {self.member} (expires {self.expires_at:%Y-%m-%d %H:%M})"

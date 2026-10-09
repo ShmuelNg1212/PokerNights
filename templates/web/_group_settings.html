@@ -9,6 +9,12 @@
   {% include "web/_copy_field.html" with id="new-reset-link" url=new_reset_link.url label="Password reset link for "|add:new_reset_link.name %}
 </div>
 {% endif %}
+{% if new_claim_link %}
+<div class="notice notice-good">
+  <p><strong>Claim link for {{ new_claim_link.name }}.</strong> Send it to {{ new_claim_link.name }} only. Whoever opens it becomes {{ new_claim_link.name }} in this group. It works once and expires {{ new_claim_link.expires_at|date:"M j, H:i" }}.</p>
+  {% include "web/_copy_field.html" with id="new-claim-link" url=new_claim_link.url label="Claim link for "|add:new_claim_link.name %}
+</div>
+{% endif %}
 <ul class="list roster" data-roster>
   {% for m in members %}
   <li class="roster-row"{% if m.arrived %} data-arrived{% endif %}>
@@ -64,6 +70,23 @@
           <button type="submit" class="btn btn-block">{% if m.reset_link %}Create a new reset link{% else %}Create password reset link{% endif %}</button>
         </form>
         {% endif %}
+        </div>
+        {% endif %}
+        {% if claim_links and not m.has_login %}
+        <div class="roster-actions">
+        {% if m.claim_link %}
+        <p class="small muted">Claim link active until {{ m.claim_link.expires_at|date:"M j, H:i" }}.</p>
+        <form method="post" action="{% url 'member_claim_link_cancel' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-block">Cancel link</button>
+        </form>
+        {% else %}
+        <p class="small muted">Give {{ m.display_name }} a login of their own, with this history.</p>
+        {% endif %}
+        <form method="post" action="{% url 'member_claim_link' group.pk m.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-block">{% if m.claim_link %}Create a new claim link{% else %}Create claim link{% endif %}</button>
+        </form>
         </div>
         {% endif %}
         <p class="roster-leave"><a class="btn btn-quiet btn-danger btn-block" href="{% url 'member_remove' group.pk m.pk %}">Remove from group</a></p>

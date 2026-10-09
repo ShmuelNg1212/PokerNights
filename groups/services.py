@@ -5,7 +5,10 @@ import secrets
 from datetime import timedelta
 
 from django.conf import settings
-from django.db import transaction
+from dataclasses import dataclass
+
+from django.db import router, transaction
+from django.db.models.deletion import Collector, ProtectedError
 from django.db.models import F
 from django.db.models.functions import Lower
 from django.utils import timezone
@@ -15,7 +18,7 @@ from audit import services as audit
 
 from .access import require_host
 from .errors import RuleError
-from .models import GameGroup, GroupRakeAccount, Invite, Member
+from .models import ClaimLink, GameGroup, GroupRakeAccount, Invite, Member
 
 NAME_MAX = 60
 INVITE_DAYS = 7
@@ -468,4 +471,161 @@ def rename_self(actor: Member, name: str) -> Member:
     if member is None:
         raise RuleError(NOT_IN_GROUP)
     _rename(actor, group, member, clean_name(name))
+    return member
+
+
+# --- Claim links ---------------------------------------------------------------
+
+CLAIM_DAYS = 7
+CLAIM_NOT_VALID = "This claim link is not valid."
+TWO_RECORDS = "You already have games recorded in this group as {name}. Two records cannot be joined yet. Ask a host of the group."
+WAS_REMOVED = "You were in this group as {name}. Ask a host to bring you back."
+
+
+def _live_claims(links):
+    return links.filter(used_at__isnull=True, revoked_at__isnull=True, expires_at__gt=timezone.now())
+
+
+def live_claim_links(member_ids) -> dict:
+    """The claim link that can still be used, by member id, for the members that have one. Read-only."""
+    if not settings.CLAIM_LINKS:
+        return {}
+    return {link.member_id: link for link in _live_claims(ClaimLink.objects.filter(member_id__in=member_ids))}
+
+
+def _claim_target(actor: Member, member_id) -> Member:
+    """The roster player a host may manage a claim link for, with the group row locked."""
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    member = Member.objects.filter(group=group, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError(NOT_IN_GROUP)
+    return member
+
+
+@transaction.atomic
+def create_claim_link(actor: Member, member_id):
+    """Create a player's one live claim link. Returns (member, link, token); the token is shown once.
+
+    Whoever opens the link first becomes this player in the group, so the host sends it to that person only.
+    """
+    if not settings.CLAIM_LINKS:
+        raise RuleError("Claim links are turned off.")
+    member = _claim_target(actor, member_id)
+    if member.has_login:
+        raise RuleError(f"{member.display_name} already has a login.")
+    # The earlier link is cancelled first, so a player never has two live ones.
+    _live_claims(ClaimLink.objects.filter(member=member)).update(revoked_at=timezone.now())
+    token = secrets.token_urlsafe(32)
+    link = ClaimLink.objects.create(
+        member=member, token_hash=hash_token(token),
+        expires_at=timezone.now() + timedelta(days=CLAIM_DAYS), created_by=actor.user,
+    )
+    audit.record(
+        "claim_link.issued", actor=actor.user, group_id=member.group_id, target=member,
+        summary=f"Created a claim link for {member.display_name}",
+    )
+    return member, link, token
+
+
+@transaction.atomic
+def cancel_claim_link(actor: Member, member_id) -> Member:
+    member = _claim_target(actor, member_id)
+    if _live_claims(ClaimLink.objects.filter(member=member)).update(revoked_at=timezone.now()):
+        audit.record(
+            "claim_link.cancelled", actor=actor.user, group_id=member.group_id, target=member,
+            summary=f"Cancelled the claim link for {member.display_name}",
+        )
+    return member
+
+
+def usable_claim_link(token: str, *, lock=False, user=None) -> ClaimLink:
+    """The link for ``token`` if it can still be used, else RuleError.
+
+    A link ``user`` already used is returned to them, so their second tap finds the player they became.
+    """
+    links = ClaimLink.objects.select_for_update() if lock else ClaimLink.objects.select_related("member__group")
+    link = links.filter(token_hash=hash_token(token or "")).first()
+    if not settings.CLAIM_LINKS or link is None or link.revoked_at is not None:
+        raise RuleError(CLAIM_NOT_VALID)
+    member = link.member
+    if member.status != Member.Status.ACTIVE or member.group.is_archived:
+        raise RuleError(CLAIM_NOT_VALID)
+    if link.used_at is not None or member.user_id is not None:
+        if user is not None and member.user_id == user.pk:
+            return link
+        raise RuleError("This claim link has already been used.")
+    if link.expires_at <= timezone.now():
+        raise RuleError("This claim link has expired.")
+    return link
+
+
+def _has_records(member) -> bool:
+    """True when anything points at the member row and protects it: a seat, a result, a transfer, a payment.
+
+    The database's own delete rules answer, so this app learns nothing about the apps above it. Nothing is deleted.
+    """
+    try:
+        Collector(using=router.db_for_write(Member)).collect([member])
+    except ProtectedError:
+        return True
+    return False
+
+
+@dataclass
+class ClaimPreview:
+    """What the page that asks shows: the player, the account's own entry in the group, and why not, if not."""
+
+    link: ClaimLink
+    member: Member
+    own: Member | None = None
+    refusal: str | None = None
+    done: bool = False
+
+
+def claim_preview(user, token: str, *, lock=False) -> ClaimPreview:
+    link = usable_claim_link(token, lock=lock, user=user)
+    member = link.member
+    if member.user_id == user.pk:
+        return ClaimPreview(link, member, done=True)
+    own = Member.objects.filter(group_id=member.group_id, user=user).first()
+    refusal = None
+    if own is not None and _has_records(own):
+        text = TWO_RECORDS if own.status == Member.Status.ACTIVE else WAS_REMOVED
+        refusal = text.format(name=own.display_name)
+    return ClaimPreview(link, member, own, refusal)
+
+
+@transaction.atomic
+def claim_member(user, token: str) -> Member:
+    """Make ``user`` the roster player the link is for. The member row, and every record on it, stays as it is.
+
+    An entry the account already had in the group is deleted when nothing is recorded on it,
+    before the player takes the account: the one-row-per-account rule is not deferrable.
+    """
+    link = usable_claim_link(token, lock=True, user=user)
+    group = _lock_group(link.member.group_id)
+    member = Member.objects.select_for_update().get(pk=link.member_id)
+    preview = claim_preview(user, token)  # again, under the locks
+    if preview.done:
+        return member  # a repeated tap
+    if preview.refusal:
+        raise RuleError(preview.refusal)
+    own = preview.own
+    if own is not None:
+        if own.role == Member.Role.HOST and own.status == Member.Status.ACTIVE:
+            member.role = Member.Role.HOST
+        audit.record(
+            "member.replaced", actor=user, group_id=group.pk, target=own,
+            summary=f"{own.display_name}'s empty entry was replaced by {member.display_name}",
+        )
+        own.delete()
+    member.user = user
+    member.save(update_fields=["user", "role"])
+    link.used_at, link.used_by = timezone.now(), user
+    link.save(update_fields=["used_at", "used_by"])
+    audit.record(
+        "member.claimed", actor=user, group_id=group.pk, target=member,
+        summary=f"{user.get_username()} claimed {member.display_name}",
+    )
     return member

@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from audit.admin import ReadOnlyAdmin
 
-from .models import GameGroup, GroupRakeAccount, Invite, Member
+from .models import ClaimLink, GameGroup, GroupRakeAccount, Invite, Member
 
 
 @admin.register(GameGroup)
@@ -25,3 +25,9 @@ class InviteAdmin(admin.ModelAdmin):
 @admin.register(GroupRakeAccount)
 class GroupRakeAccountAdmin(ReadOnlyAdmin):
     list_display = ("group", "created_at")
+
+
+@admin.register(ClaimLink)
+class ClaimLinkAdmin(ReadOnlyAdmin):
+    list_display = ("member", "expires_at", "used_at", "used_by", "revoked_at", "created_by")
+    exclude = ("token_hash",)

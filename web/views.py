@@ -20,6 +20,7 @@ from games import clock
 from games import services as games
 from games.access import night_for, read_only, session_for
 from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
+from groups import services as groups
 from groups.models import Invite, Member
 from ledger import money
 from ledger import queries as ledger_queries
@@ -146,6 +147,14 @@ def group_settings_context(request, me) -> dict:
         live = accounts.live_reset_links([m.user_id for m in members if m.user_id])
         for member in members:
             member.reset_link = live.get(member.user_id)
+        claims = groups.live_claim_links([m.pk for m in members if not m.user_id])
+        for member in members:
+            member.claim_link = claims.get(member.pk)
+        new_claim = request.session.pop("new_claim_link", None)
+        if new_claim:
+            new_claim["expires_at"] = datetime.fromisoformat(new_claim["expires_at"])
+        context["new_claim_link"] = new_claim
+        context["claim_links"] = settings.CLAIM_LINKS
         new_link = request.session.pop("new_reset_link", None)
         if new_link:
             new_link["expires_at"] = datetime.fromisoformat(new_link["expires_at"])

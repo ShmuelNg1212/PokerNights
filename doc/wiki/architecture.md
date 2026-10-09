@@ -276,3 +276,12 @@ Two things now replace content on the set page without a reload: the 4-second po
 - **Group writes carry no `request_id`.** Each is safe to repeat: a second remove or restore changes nothing and writes no audit event, and a second add of the same names is refused by the name rule.
 - **Roster activity** is one query over `counted_results()` for active and removed members together, so the settings tab's query count does not grow with the roster.
 - **Marks after a redirect.** The add and restore views put the new member ids in the login session (`roster_arrived`), the removal view puts `roster_left`; the settings page takes them once and `roster.js` marks those rows.
+
+## Claim links
+
+- **`ClaimLink`** (`groups`, migration `0005`): the member, the token's SHA-256 hash, expiry, used time and account, cancelled time, creator. The token is never stored. One live link per member is kept by the service under the group lock, not by a constraint.
+- **A claim** (`claim_member`) locks the link row, the group, then the member row, and checks everything again. It sets `Member.user`. Nothing else about the member or its records changes.
+- **An account's own entry in the group** is deleted first when it is empty, because `member_one_per_user_per_group` is not deferrable. "Empty" is asked of the database: Django's deletion `Collector` is run on the row without deleting, and a `ProtectedError` (a seat, a result, a transfer or a payment points at it) means it has records. `groups` imports none of the apps above it.
+- **Sign-up** uses the three hook lists in `accounts/signup.py`: `claim_vouches` opens sign-up where it needs an invite, `claim_group_name` names the group on the entry pages, `claim_after_signup` makes the new account the player and returns the group's address.
+- **The page** `claim/<token>/` is exempt from the login requirement, `never_cache`, and sends `Referrer-Policy: same-origin`. GET never writes.
+- **`[data-pop]`** (`motion.js`): an element with this attribute springs in once when its page starts. The claim page uses it for the player's token. Without Motion, or under reduced motion, the element is simply there.

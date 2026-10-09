@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.views import redirect_to_login
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from . import services
@@ -153,3 +154,59 @@ def rename_member(request, group_id, member_id):
             success="Saved." if detailed else "Player renamed.") is None:
         keep_form(request, f"{group_id}:rename:{member_id}", form)
     return group_settings(group_id, "players")
+
+
+@require_POST
+def create_claim_link(request, group_id, member_id):
+    actor = member_for(request.user, group_id)
+    created = attempt(request, services.create_claim_link, actor, member_id)
+    if created is not None:
+        member, link, token = created
+        # Shown once on the next page; only the hash is stored.
+        request.session["new_claim_link"] = {
+            "name": member.display_name,
+            "url": request.build_absolute_uri(reverse("claim", args=[token])),
+            "expires_at": link.expires_at.isoformat(),
+        }
+    return group_settings(group_id, "players")
+
+
+@require_POST
+def cancel_claim_link(request, group_id, member_id):
+    actor = member_for(request.user, group_id)
+    attempt(request, services.cancel_claim_link, actor, member_id, success="Claim link cancelled.")
+    return group_settings(group_id, "players")
+
+
+@login_not_required
+@never_cache
+def claim(request, token):
+    """The address in a claim link. Opening it changes nothing; confirming makes the account that player."""
+    response = _claim(request, token)
+    # The address is a key to a player's place, so it is never passed on to another site. Not "no-referrer":
+    # the browser would then send the form with "Origin: null" and the CSRF check would refuse it.
+    response["Referrer-Policy"] = "same-origin"
+    return response
+
+
+def _claim(request, token):
+    user = request.user if request.user.is_authenticated else None
+    try:
+        link = services.usable_claim_link(token, user=user)
+    except RuleError as error:
+        return render(request, "groups/claim.html", {"error": str(error)}, status=404)
+    if user is None:
+        if request.method == "POST":
+            return redirect_to_login(request.path)
+        return redirect(f"{reverse('signup')}?{urlencode({'next': request.path})}")
+    preview = services.claim_preview(user, token)
+    group = link.member.group
+    if preview.done:
+        return redirect("group", group_id=group.pk)
+    if request.method == "POST" and not preview.refusal:
+        member = attempt(request, services.claim_member, user, token)
+        if member is not None:
+            messages.success(request, f"Welcome to {group.name}. You're in as {member.display_name}.")
+            return redirect("group", group_id=group.pk)
+        return redirect("claim", token=token)
+    return render(request, "groups/claim.html", {"group": group, "member": preview.member, "preview": preview, "one": [preview.member]})

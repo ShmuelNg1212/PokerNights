@@ -660,6 +660,16 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 - **Motion.** Rows just added or brought back take the accepted-change mark for 3 seconds and rise 12px with the `shift` spring, 40ms apart, at most eight steps. After a removal the Removed players summary takes the mark and one `pulse`. An opened disclosure fades in over 6px with `fade`; closing is immediate. The chevron turns in the fast duration. Under reduced motion the mark shows and nothing moves. No inline style is left behind.
 - **Measured.** `roster.mjs`, 44 checks at 320, 390 and 1280px: no horizontal overflow, every button, link-button, summary and field at least 48px, contrast of the activity line, the summaries and the danger button at least 4.5:1, the mark removed after its hold, reduced motion, and every action present without JavaScript.
 
+### Claim link (2026-10-09)
+
+[Plan](doc/plan/1791527506_claim_links.md). No new colour, font or asset.
+
+- **The page that asks** uses the entry frame and leads with the player's own identity token at 64px, in the colour it has on the roster, in place of the brand mark. Then the heading "Join {group} as {name}", one balanced paragraph, a neutral bordered block naming the account (and, muted, an empty entry that will be replaced), the bone "Claim {name}", a quiet "Not now", and "Not {username}? Log out" as an underlined text button with a 48px target.
+- **Refused and dead links** keep the compact brand mark, a heading that says so, one notice with the reason and one button to Your groups.
+- **The host's side** repeats the reset-link pattern: a good-coloured notice with the Copy field, shown once; in "Manage", one muted line, then full-width 48px buttons.
+- **Motion.** The token springs in once with `arrive` (`[data-pop]`), from a visible default. Nothing else on the page moves.
+- **Measured.** `claim.mjs`, 30 checks at 320, 390 and 1280px: no horizontal overflow, 48px targets, contrast of the account line, the muted note and Log out at least 4.5:1, visible focus, no inline style left after the token settles, and the whole flow without JavaScript.
+
 ## Do's and Don'ts
 
 ### Do:

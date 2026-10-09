@@ -377,3 +377,18 @@ Group settings → Players. [Plan](../plan/1791525658_roster_management.md).
 - **Said on the page.** Rows that were just added or brought back carry the brass mark for three seconds and rise into place; after a removal the Removed players line is marked. An opened disclosure eases in. Under reduced motion the mark shows and nothing moves.
 - **Switch:** `ROSTER_TOOLS=False` returns the section to one-name add, rename and remove, and the new services refuse. The removal page and its checks stay on.
 - Code: `groups/services.py` (`remove_member`, `restore_member`, `rename_self`, `edit_member`, `add_roster_players`, `REMOVE_GUARDS`), `games.services.guard_member_removal`, `settlement.queries.roster_activity`, `settlement.views.member_remove`, `static/js/roster.js`.
+
+## Claim links (2026-10-09)
+
+A player who was only a name on the roster gets their own login and keeps their history. [Plan](../plan/1791527506_claim_links.md).
+
+- **The host creates it.** Group settings → Players → "Manage {name}" on a player without a login has **Create claim link**. The link is shown once with a Copy button, with what it does: whoever opens it becomes that player in this group. It works once and lasts 7 days. While one is live the block says until when and offers **Cancel link**; a new link cancels the earlier one.
+- **A newcomer** who opens it goes to Sign up, which names the group, and is the player as soon as the account exists.
+- **A person with an account** gets one page that asks: the player's token, "Join {group} as {name}", the account they are logged in as, a **Claim {name}** button, "Not now" and a way to log out of the wrong account. Opening the link changes nothing.
+- **Already in the group with nothing recorded:** the page says that entry is replaced, and the claim deletes it. If it was a host, the claimed player is a host.
+- **Already in the group with games recorded:** refused: "Two records cannot be joined yet." A person who was removed with games recorded is told to ask a host to bring them back.
+- **What a claim changes:** only who can log in as that member. The member row is the same; no result, transfer, payment, seat or count is touched. The player keeps the roster name and can change it. From then on their own rebuys and counts are accepted.
+- **It cannot be undone in the app.** For a wrong claim, remove that player and add the right person.
+- **A dead link** (unknown, cancelled, used, expired, the player removed, the group archived) shows "This claim link doesn't work" with the reason. The account that used a link is sent to the group when it opens the link again.
+- **Switch:** `CLAIM_LINKS=False` hides the action, refuses new links and makes every link not valid.
+- Code: `groups.models.ClaimLink`, `groups/services.py` (`create_claim_link`, `cancel_claim_link`, `claim_preview`, `claim_member`), `groups/access.py` (the sign-up hooks), `groups/views.py` (`claim`), `templates/groups/claim.html`.

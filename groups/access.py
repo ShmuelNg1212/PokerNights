@@ -81,3 +81,56 @@ def join_from_invite(request, user, next_path: str):
         return None
     messages.success(request, f"Welcome to {invite.group.name}. You're in.")
     return reverse("group", args=[invite.group_id])
+
+
+def _usable_claim_at(next_path: str):
+    """(link, token) for the claim link whose address is ``next_path`` if it can still be used, else None."""
+    from urllib.parse import urlsplit
+
+    from django.urls import Resolver404, resolve
+
+    from . import services
+    from .errors import RuleError
+
+    try:
+        match = resolve(urlsplit(next_path).path)
+    except Resolver404:
+        return None
+    if match.url_name != "claim":
+        return None
+    try:
+        return services.usable_claim_link(match.kwargs["token"]), match.kwargs["token"]
+    except RuleError:
+        return None
+
+
+def claim_vouches(request, next_path: str) -> bool:
+    """True when ``next_path`` is the address of a claim link that can still be used."""
+    return _usable_claim_at(next_path) is not None
+
+
+def claim_group_name(request, next_path: str):
+    found = _usable_claim_at(next_path)
+    return found[0].member.group.name if found else None
+
+
+def claim_after_signup(request, user, next_path: str):
+    """Make a newly created account the player whose claim link it signed up from.
+
+    Returns the group's address, or None when the path is no usable claim link; the claim page then explains.
+    """
+    from django.contrib import messages
+    from django.urls import reverse
+
+    from . import services
+    from .errors import RuleError
+
+    found = _usable_claim_at(next_path)
+    if found is None:
+        return None
+    try:
+        member = services.claim_member(user, found[1])
+    except RuleError:
+        return None
+    messages.success(request, f"Welcome to {member.group.name}. You're in as {member.display_name}.")
+    return reverse("group", args=[member.group_id])

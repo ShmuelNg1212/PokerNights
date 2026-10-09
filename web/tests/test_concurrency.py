@@ -461,3 +461,49 @@ class ConcurrentRosterTests(TransactionTestCase):
         outcomes = race(*[lambda: groups.add_roster_players(roster.host, ["Eli", "Fe"])] * 2)
         self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
         self.assertEqual(Member.objects.filter(group=roster.group, display_name__in=["Eli", "Fe"]).count(), 2)
+
+
+class ConcurrentClaimTests(TransactionTestCase):
+    """One claim link, used or issued from two places at once."""
+
+    def setUp(self):
+        from groups import services as groups
+        from groups.tests.helpers import make_user
+
+        self.groups, self.make_user = groups, make_user
+        self.roster = Roster()
+        self.carlo = self.roster.members["Carlo"]
+
+    def test_two_accounts_use_one_link_and_exactly_one_becomes_the_player(self):
+        from groups.models import Member
+
+        for n in range(4):
+            Member.objects.filter(pk=self.carlo.pk).update(user=None)
+            token = self.groups.create_claim_link(self.roster.host, self.carlo.pk)[2]
+            users = [self.make_user(f"one{n}"), self.make_user(f"two{n}")]
+            outcomes = race(*[lambda user=user: self.groups.claim_member(user, token) for user in users])
+            self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+            self.assertIn(Member.objects.get(pk=self.carlo.pk).user, users)
+            self.assertEqual(Member.objects.filter(group=self.roster.group, user__in=users).count(), 1)
+
+    def test_a_claim_and_a_removal_of_the_same_player(self):
+        from groups.models import Member
+
+        token = self.groups.create_claim_link(self.roster.host, self.carlo.pk)[2]
+        user = self.make_user("carlo-login")
+        outcomes = race(
+            lambda: self.groups.claim_member(user, token),
+            lambda: self.groups.remove_member(self.roster.host, self.carlo.pk),
+        )
+        self.assertNotIn("error", kinds(outcomes), outcomes)
+        member = Member.objects.get(pk=self.carlo.pk)
+        self.assertEqual(member.status, "removed")  # the removal always lands; the claim lands or is refused
+
+    def test_two_issues_leave_one_live_link(self):
+        outcomes = race(*[lambda: self.groups.create_claim_link(self.roster.host, self.carlo.pk)] * 2)
+        self.assertEqual(kinds(outcomes), ["ok", "ok"], outcomes)
+        self.assertEqual(len(self.groups.live_claim_links([self.carlo.pk])), 1)
+        from groups.models import ClaimLink
+
+        live = ClaimLink.objects.filter(member=self.carlo, used_at__isnull=True, revoked_at__isnull=True)
+        self.assertEqual(live.count(), 1)
