@@ -64,12 +64,12 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Next (each needs its own study and plan)
 
-- [ ] After the next release, on your phone: press a few buttons, open and close a buy-in sheet (also close it while it is still rising), and open the host menu. Say what feels wrong: too bouncy, too slow, too much ([plan](doc/plan/1791186717_motion_overhaul.md)).
-- [ ] After the Your groups redesign is released: open Your groups on your phone. Say whether it now reads as finished, whether the gear is where you expect it, and whether any of the removed wording is missed (the player count, the table name beside a due or a last session) ([plan](doc/plan/1791200012_your_groups_redesign.md)).
-- [ ] Stage 3 is live. On your phone: tap Your groups → a group → a session → a set and back with the on-screen links, then with the Back gesture; tap through a group's three tabs; open a set from a closed session's results. Say whether the direction tells you where you went, whether the carried name and chips read as one thing moving, and whether anything plays twice or feels slow ([plan](doc/plan/1791194279_motion_between_screens.md)).
-- [ ] Stage 2 is live. On your phone with a second device on the same set: add a player, record a rebuy and a cash-out with Left from the other device, end play, confirm counts and balance the books. Say whether the movement helps you see what changed or gets in the way ([plan](doc/plan/1791188269_motion_live_set_page.md)).
+- [x] After the next release, on your phone: press a few buttons, open and close a buy-in sheet (also close it while it is still rising), and open the host menu. Say what feels wrong: too bouncy, too slow, too much ([plan](doc/plan/1791186717_motion_overhaul.md)).
+- [x] After the Your groups redesign is released: open Your groups on your phone. Say whether it now reads as finished, whether the gear is where you expect it, and whether any of the removed wording is missed (the player count, the table name beside a due or a last session) ([plan](doc/plan/1791200012_your_groups_redesign.md)).
+- [x] Stage 3 is live. On your phone: tap Your groups → a group → a session → a set and back with the on-screen links, then with the Back gesture; tap through a group's three tabs; open a set from a closed session's results. Say whether the direction tells you where you went, whether the carried name and chips read as one thing moving, and whether anything plays twice or feels slow ([plan](doc/plan/1791194279_motion_between_screens.md)).
+- [x] Stage 2 is live. On your phone with a second device on the same set: add a player, record a rebuy and a cash-out with Left from the other device, end play, confirm counts and balance the books. Say whether the movement helps you see what changed or gets in the way ([plan](doc/plan/1791188269_motion_live_set_page.md)).
 
-- [ ] After the next release, on your iPhone, in the home screen app: open a set that is counting up with the host menu left open. Tap the last count field: the menu should be the one-line bar on the keyboard, with the running total. Scroll up and down with the keyboard open: the bar stays a bar on the keyboard, and the page follows your finger without jumping back. If it misbehaves, add `?kb=1` to the end of the set page's address in Safari, repeat, and send a screenshot ([plan](doc/plan/1791192015_dock_keyboard_scroll.md)).
+- [x] After the next release, on your iPhone, in the home screen app: open a set that is counting up with the host menu left open. Tap the last count field: the menu should be the one-line bar on the keyboard, with the running total. Scroll up and down with the keyboard open: the bar stays a bar on the keyboard, and the page follows your finger without jumping back. If it misbehaves, add `?kb=1` to the end of the set page's address in Safari, repeat, and send a screenshot ([plan](doc/plan/1791192015_dock_keyboard_scroll.md)).
 
 - [ ] A “change my password” screen for a logged-in person, and claim links for roster players. Both were left out of the password reset cycle.
 - [ ] Entry pages: make the invitation the subject (group name as the heading, compact mark), shorten the password help, and give a new player a first step on the group page. From the repeat critique.
@@ -82,13 +82,15 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **Numpad digit motion was released on 2026-10-09 (`6119dd4`).** On your phone, after closing and reopening the app:
+2026-10-09: the human reported that all checks in this file are done. Every phone and try-it check here, and the five phone checks under Next, were ticked on that word. The `SPEC.md` updates, the decisions and the superuser step are not checks and stay open.
+
+- [x] **Numpad digit motion was released on 2026-10-09 (`6119dd4`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set and type an amount, slowly and then fast. The field's box should stay still and each digit should fade and rise into place.
   2. Tap Delete: the digit should fade out. Hold Delete: all digits should leave together.
   3. On count-up, type a final count: the digits already there should glide left as each new one arrives.
   4. Watch for a digit that shifts when the movement ends, or a caret that disappears while typing. Say where you see either. `NUMPAD=False` in Vercel returns the phone's keyboard without a release.
 
-- [ ] **Numpad motion was released on 2026-10-09 (`ee18667`).** On your phone, after closing and reopening the app:
+- [x] **Numpad motion was released on 2026-10-09 (`ee18667`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set: the keys should rise in with the sheet.
   2. Type an amount fast. Every digit should land and each key should light.
   3. Hold Delete: a fill should run across the key and the amount should clear when it reaches the end. Hold again and let go early: nothing should clear.
@@ -97,9 +99,9 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Say what is too much or too little: the light on the keys, the speed of the rise.
 
 
-- [ ] **The fix for the Stats pills was released on 2026-10-09 (`455faab`).** On your phone, after closing and reopening the app: scroll the Profit … Sessions row sideways and tap Sessions, then Profit. The row should stay where you left it and the highlight should slide without a flicker. Say if any jitter remains, and on which pills.
+- [x] **The fix for the Stats pills was released on 2026-10-09 (`455faab`).** On your phone, after closing and reopening the app: scroll the Profit … Sessions row sideways and tap Sessions, then Profit. The row should stay where you left it and the highlight should slide without a flicker. Say if any jitter remains, and on which pills.
 
-- [ ] **The stats revamp was released on 2026-10-09 (`c08d711`).** First check the Vercel build passed. Then on your phone:
+- [x] **The stats revamp was released on 2026-10-09 (`c08d711`).** First check the Vercel build passed. Then on your phone:
   1. Open a group's Stats tab. Your own figure, rank and last result should lead.
   2. Scroll down the board, then tap Average, Return, Per hour and Sessions: the page should stay where it is, the chosen pill should slide across, and rows should move to their new places.
   3. Tap This year and Last 3 months, then pick a month from the list.
@@ -110,7 +112,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 
 
-- [ ] **Roster management was released on 2026-10-09 (`8b51506`).** On your phone in Group settings → Players:
+- [x] **Roster management was released on 2026-10-09 (`8b51506`).** On your phone in Group settings → Players:
   1. Read a few rows: the sessions and last-played line should match Stats.
   2. Open "Change your name", try a name someone else has, then a new one.
   3. Open "Manage" on a player, save a contact note, and check a player's phone does not show it.
@@ -119,7 +121,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Open "Removed players" and tap Bring back: the row should return with the same sessions.
   7. Add three names in one go, then a batch with one name that is already in the group: nobody should be added and the text should stay.
   8. Say what feels wrong, including the movement of new rows. `ROSTER_TOOLS=False` in Vercel turns the new tools off without a release.
-- [ ] **Claim links were released on 2026-10-09 (`8b51506`).** First check the Vercel build passed and applied migration `groups.0005`. Then, with two phones:
+- [x] **Claim links were released on 2026-10-09 (`8b51506`).** First check the Vercel build passed and applied migration `groups.0005`. Then, with two phones:
   1. As a host open Manage on a player without a login, tap Create claim link, and Copy it into a chat to yourself.
   2. On the other phone, signed out, open the link: it should go to Sign up and name the group. Sign up and check you land in the group as that player, with their sessions on the roster row.
   3. Record a rebuy from that phone in a running set.
@@ -127,7 +129,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   5. Create a link, then Cancel link, and open it: it should not work. `CLAIM_LINKS=False` in Vercel turns the feature off without a release.
 - [ ] `SPEC.md` step 4 says only "Saved player roster for fast session setup". Add removing, restoring and own names if the spec should match the app.
 
-- [ ] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
+- [x] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
   1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
   2. Open the Rebuy sheet for that player on the host's phone and leave it open. Record another rebuy from the player's phone, then confirm on the host's phone: it should be refused and say who recorded the other one.
   3. End play. On the player's phone type a count and tap Send to host. The host's row should show "Entered" and the number, and the main button "Confirm 1 count".
@@ -136,8 +138,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Say what feels wrong. `PLAYER_ENTRIES=False` in Vercel turns it off without a release.
 - [ ] `SPEC.md` says nothing about players recording their own rebuy or count. Add it if the spec should match the app.
 
-- [ ] **The copy button is live. On your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
-- [ ] **After it is released, try it on two phones:** as a host open Group settings → Players → Manage a player → Create password reset link, and send yourself the link. Open it signed out on the other phone, try a short password, then a good one. Check you land on Your groups, that the old password no longer works, and that the same link then says it has been used. Create another link and tap Cancel link. If anything misbehaves, `RESET_LINKS=False` in Vercel turns it off.
+- [x] **The copy button is live. On your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
+- [x] **After it is released, try it on two phones:** as a host open Group settings → Players → Manage a player → Create password reset link, and send yourself the link. Open it signed out on the other phone, try a short password, then a good one. Check you land on Your groups, that the old password no longer works, and that the same link then says it has been used. Create another link and tap Cancel link. If anything misbehaves, `RESET_LINKS=False` in Vercel turns it off.
 - [ ] `SPEC.md` does not mention password reset. Add it if the spec should match the app.
 
 - [x] **Set `DB_CONN_MAX_AGE` to `60` in Vercel** (done 2026-10-06; the readout's `open` figure is still to be read) (Settings → Environment Variables → Production; it is `0`), before the next release. Afterwards the readout's `open` figure should be 0 on most taps. If anything errors, set it back to `0` and redeploy ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md)).
@@ -149,7 +151,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   3. Screenshot the readout after each few taps (it keeps five lines). Do it once on Wi-Fi and once on mobile data if you can. `?perf=0` removes it.
   4. Say whether a tap on a card or row now feels answered, whether the host menu slides cleanly (also during count-up), and whether the yellow marks and "Rebuy added" still cover anything. Have two players change at once if you can.
 
-- [ ] **Try the numpad and the new count-up on your phone** (now live; only an iPhone confirms that the phone's keyboard stays closed):
+- [x] **Try the numpad and the new count-up on your phone** (now live; only an iPhone confirms that the phone's keyboard stays closed):
   1. On a running set tap Rebuy: the amount shows with twelve keys under it and no phone keyboard. Type an amount, try a third decimal place (nothing should happen), hold delete, tap Max, confirm.
   2. Tap Cash out on a player: amount, keys, "Leaving the set", then the button.
   3. End play. The players' fields should be on the first screen. Tap the first one: the keys rise in place of the bottom bar, with the player's name and the running total. Use Next down the table, then Done, then "Confirm N counts".
@@ -160,11 +162,11 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   8. Say what feels wrong: key size, the panel's height, how Next scrolls, anything you miss from the phone's keyboard. If the phone's keyboard appears anywhere for a number, say where. `NUMPAD=False` in Vercel turns the numpad off without a release.
 - [ ] `SPEC.md` does not mention the numpad or that Finalize asks for confirmation. Add them if the spec should match the app.
 
-- [ ] **Try screen changes on your phone:** tap Your groups → a group → a session → a set and back; screens should no longer blink. Use the phone's Back gesture, in Safari and in the installed app. Leave a set page and come back a few times, then record a rebuy. Turn on Airplane Mode and tap a link: the "You're offline" page should appear.
+- [x] **Try screen changes on your phone:** tap Your groups → a group → a session → a set and back; screens should no longer blink. Use the phone's Back gesture, in Safari and in the installed app. Leave a set page and come back a few times, then record a rebuy. Turn on Airplane Mode and tap a link: the "You're offline" page should appear.
 
-- [ ] **Try actions in place on your phone:** on a running set, scroll to the last player, record a rebuy and check you stay there. During count-up, open a player's Details and type a reversal reason, then confirm a count: the reason should still be there and Details still open. Mark a transfer paid on a session page. Turn on Airplane Mode and try a rebuy: nothing should be sent.
+- [x] **Try actions in place on your phone:** on a running set, scroll to the last player, record a rebuy and check you stay there. During count-up, open a player's Details and type a reversal reason, then confirm a count: the reason should still be there and Details still open. Mark a transfer paid on a session page. Turn on Airplane Mode and try a rebuy: nothing should be sent.
 
-- [ ] **iPhone checklist for the installable app** (only you can do this):
+- [x] **iPhone checklist for the installable app** (only you can do this):
   1. Safari → Share → Add to Home Screen. The icon is the chip-and-crescent on a dark square, named PokerNights.
   2. Open it from the home screen: no address bar or toolbar.
   3. Log in (once more, inside the app).
@@ -173,47 +175,47 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Turn on Airplane Mode: the offline line appears. Tap a link: the "You're offline" page appears. Turn it off and tap Try again.
   7. Look at the top of the screen around the clock and the bottom around the home bar on the set page.
 
-- [ ] Try the new way in: create an invite, open it in a private window, sign up and check you land in the group with the welcome. Open the same link signed out as an existing player and use “Already have an account? Log in”. Say when to push.
+- [x] Try the new way in: create an invite, open it in a private window, sign up and check you land in the group with the welcome. Open the same link signed out as an existing player and use “Already have an account? Log in”. Say when to push.
 
-- [ ] **Check on your iPhone:** open New session. The Date field should be as wide and as tall as Table and Location, with its date at the left. Check the dropdowns too. Chrome on the development machine cannot show this, so yours is the only confirmation.
+- [x] **Check on your iPhone:** open New session. The Date field should be as wide and as tall as Table and Location, with its date at the left. Check the dropdowns too. Chrome on the development machine cannot show this, so yours is the only confirmation.
 
-- [ ] Try the settled indicator: open a group's Sessions tab and read the Past sessions badges; mark the last transfer of a session paid and check its row turns to Settled; undo it.
+- [x] Try the settled indicator: open a group's Sessions tab and read the Past sessions badges; mark the last transfer of a session paid and check its row turns to Settled; undo it.
 
-- [ ] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
+- [x] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
 
-- [ ] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. It is live.
+- [x] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. It is live.
 - [ ] `SPEC.md` does not mention archiving or deleting. Add it if the spec should match the app.
 
-- [ ] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons.
+- [x] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons.
 
 - [ ] Create your superuser against production (command in the [deployment page](doc/wiki/deployment.md)), then add the first host in `/admin/` → Users and play a game on the live site from a phone.
 
-- [ ] Try the new Your groups page as a host and as a player: with a set in play, with a set counting up, after closing a session with unpaid transfers, and with no session. Check “To settle” against the session page.
+- [x] Try the new Your groups page as a host and as a player: with a set in play, with a set counting up, after closing a session with unpaid transfers, and with no session. Check “To settle” against the session page.
 
-- [ ] Try the evolved UI: on a group open Sessions, Stats and Group settings. On a running set use the Rebuy and Cash out buttons on a row. End play with a wrong cash-out and read the discrepancy panel. Close a session, mark every transfer paid and check it says Settled. Check Stats for all time and one month.
+- [x] Try the evolved UI: on a group open Sessions, Stats and Group settings. On a running set use the Rebuy and Cash out buttons on a row. End play with a wrong cash-out and read the discrepancy panel. Close a session, mark every transfer paid and check it says Settled. Check Stats for all time and one month.
 
 - [ ] Decide on the logo: `static/branding/` has the chip-and-crescent mark, horizontal, app icon and one-colour versions.
 
-- [ ] Try rake: in New session choose Percentage of buy-in (5%) or Flat amount. For a later empty set, choose Choose rake before buy-ins before starting. Check each buy-in’s gross/rake/in-play split, cash out the remaining stacks, and check group totals. Equal losses from rake alone should owe no further transfer.
+- [x] Try rake: in New session choose Percentage of buy-in (5%) or Flat amount. For a later empty set, choose Choose rake before buy-ins before starting. Check each buy-in’s gross/rake/in-play split, cash out the remaining stacks, and check group totals. Equal losses from rake alone should owe no further transfer.
 
-- [ ] Try a late arrival: during play, choose Add players, enter a new name and add them. Check they appear with no buy-in, then record their buy-in.
+- [x] Try a late arrival: during play, choose Add players, enter a new name and add them. Check they appear with no buy-in, then record their buy-in.
 
-- [ ] Try the live stack counter: end play, enter counts and watch the total/difference. Include 0 and clear an unsaved field. Confirm counts, review cash-outs and check the accounted total stays the same.
+- [x] Try the live stack counter: end play, enter counts and watch the total/difference. Include 0 and clear an unsaved field. Confirm counts, review cash-outs and check the accounted total stays the same.
 
-- [ ] Try opening buy-ins: add players to an open set, start it and check one usual buy-in each. For another set, uncheck the option and confirm no opening money is added.
+- [x] Try opening buy-ins: add players to an open set, start it and check one usual buy-in each. For another set, uncheck the option and confirm no opening money is added.
 
-- [ ] Try the group and forms: open a current session, create a table, and submit a duplicate roster name. Check that the name stays beside its error. Read a set log.
+- [x] Try the group and forms: open a current session, create a table, and submit a duplicate roster name. Check that the name stays beside its error. Read a set log.
 
-- [ ] Check transfer alignment on your iPhone after release ([plan](doc/plan/1791210163_transfer_alignment.md)): open Who pays whom in Safari and the installed app with long names. Mark paid, then Undo. Check first-line chips, full amounts and right-aligned actions. Still to pay must change; Session results must stay fixed.
+- [x] Check transfer alignment on your iPhone after release ([plan](doc/plan/1791210163_transfer_alignment.md)): open Who pays whom in Safari and the installed app with long names. Mark paid, then Undo. Check first-line chips, full amounts and right-aligned actions. Still to pay must change; Session results must stay fixed.
 
-- [ ] Try the redesigned session page: close a finished session, dismiss/reopen the recap, mark a transfer paid, then Undo. Check that Still to pay changes and Session results stay fixed.
+- [x] Try the redesigned session page: close a finished session, dismiss/reopen the recap, mark a transfer paid, then Undo. Check that Still to pay changes and Session results stay fixed.
 
-- [ ] Try the new active set: tap `+`, confirm a rebuy, tap a player name for cash-out/details, and use the bottom host action.
+- [x] Try the new active set: tap `+`, confirm a rebuy, tap a player name for cash-out/details, and use the bottom host action.
 
-- [ ] Try the redesigned count-up and final results: type several counts (including 0), confirm once, review and cash out, then finalize.
+- [x] Try the redesigned count-up and final results: type several counts (including 0), confirm once, review and cash out, then finalize.
 
-- [ ] Test a session with two sets as a user: end a set, confirm counts, cash out counted players, start the next set, close the session.
-- [ ] Test a pesos game and a chips game as a user.
+- [x] Test a session with two sets as a user: end a set, confirm counts, cash out counted players, start the next set, close the session.
+- [x] Test a pesos game and a chips game as a user.
 - [ ] Decide whether to keep the leftover check data in the dev database (accounts `hana` and `ben`, group "Browser Check").
 - [ ] Update `SPEC.md` step 2 if it should match the app (cash-outs as amounts, no chip conversion).
 - [ ] Confirm or change the open product decisions in the [roadmap](doc/roadmap/README.md), mainly the settlement model and the balance override rule.
