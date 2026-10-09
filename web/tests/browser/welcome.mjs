@@ -17,7 +17,7 @@ const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765', OFF=process.en
 // Runs before every document. On the first frame on which <main> exists it records whether the page is
 // the arrival, what is hidden, every figure's text, and how long the movement is set to run.
 const PROBE=`(()=>{const t0=performance.now();let seen=false,last=0;window.__frames=[];
- addEventListener('pagereveal',e=>{window.__vt=!!e.viewTransition});
+ addEventListener('pagereveal',e=>{window.__vt=!!e.viewTransition;if(e.viewTransition)e.viewTransition.ready.then(()=>{window.__layers=[...new Set(document.getAnimations().map(a=>a.effect&&a.effect.pseudoElement).filter(Boolean))]},()=>{})});
  const figures=()=>[...document.querySelectorAll('main .amount, main .band-facts, main h2')].map(el=>el.textContent.replace(/\\s+/g,' ').trim());
  window.__figures=figures;
  const tick=now=>{const main=document.getElementById('main');
@@ -55,6 +55,8 @@ try {
    check('cards arrive in order, the fourth and fifth together',JSON.stringify(f.delays)===JSON.stringify([100,170,240,310,310]),JSON.stringify(f.delays));
    check('cards, players, the badge, the dues line, New group and the top bar mark each move',['welcome-fade','welcome-land','welcome-mark','welcome-pop','welcome-rise','welcome-token'].every(n=>f.names.includes(n)),f.names.join(' '));
    check('the chip was carried in by the browser',await P.js('window.__vt===true'));
+   const layers=await P.js('window.__layers||[]');
+   check('nothing of the login screen but the chip is carried in: its sheet fades with the rest',layers.some(n=>n.includes('(brand-mark)'))&&!layers.some(n=>n.includes('door-sheet')),layers.filter(n=>n.includes('group')).join(' '));
    await P.shot('welcome-home-390');}}
  // --- One card.
  const A=await page();await A.login('pia');let f=await A.js('window.__first');

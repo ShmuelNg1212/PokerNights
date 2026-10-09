@@ -749,7 +749,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | A form is sent | The ring spins, one turn in 900ms, until the next page comes. The button keeps its busy line and words |
 | A refused page | No arrival. The mark shakes once with `nudge`, as the refused field does |
 | Log in ⇄ Sign up | The mark, the name and the sheet are the same things on both screens (`brand-mark`, `door-name`, `door-sheet`): the mark changes size and place, the sheet changes height without stretching its content, the rest cross-fades |
-| Getting in, logging out | The mark and the top bar's mark share `brand-mark`, so the browser carries the chip into the top bar and back (420ms). Inside the app the top bar gives the name up (`data-door-done`), so screens there change as before |
+| Getting in, logging out | Only the mark is carried. The name and the sheet are carried between two front-door screens alone (`data-door-swap`, set by `door.js` for that change); into the app they fade with the rest of the old screen in 180ms. Carried there, the sheet had nothing to become and its layer covered the new screen until the chip landed (fixed 2026-10-09). The mark and the top bar's mark share `brand-mark`, so the browser carries the chip into the top bar and back (420ms). Inside the app the top bar gives the name up (`data-door-done`), so screens there change as before |
 
 **Rules.**
 
@@ -788,7 +788,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 4. It is CSS, as the front door's arrival is. `door.js` ends it on the first key or tap and takes the mark off after 1.2 seconds.
 5. `DOOR_MOTION=False` removes it with the rest of the front door's movement.
 
-**Measured.** `welcome.mjs`, 35 checks at 320 × 568, 390 × 844 and 1280 × 800: the first frame, every figure's text on that frame against its text at rest, the order of the cards, the end within 900ms, a tap and a key ending it, a tap on a card's button during it, one card and five, a group page, a newcomer, a reload, Back, a second login, reduced motion, no JavaScript, Motion blocked and the switch. With the processor slowed four times the arrival had one late frame (50ms) where a plain visit had none.
+**Measured.** `welcome.mjs`, 36 checks at 320 × 568, 390 × 844 and 1280 × 800: the first frame, every figure's text on that frame against its text at rest, the order of the cards, the end within 900ms, a tap and a key ending it, a tap on a card's button during it, one card and five, a group page, a newcomer, a reload, Back, a second login, reduced motion, no JavaScript, Motion blocked and the switch. With the processor slowed four times the arrival had one late frame (50ms) where a plain visit had none.
 
 ## Do's and Don'ts
 

@@ -1195,8 +1195,10 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 @media (prefers-reduced-motion: no-preference) {
   html[data-door] .entry-page .door-mark, html[data-door]:not([data-door-done]) .brand img { view-transition-name: brand-mark; }
   html[data-door] .site-header ~ .entry-page .door-mark { view-transition-name: none; }
-  html[data-door] .entry-page .entry-name { view-transition-name: door-name; }
-  html[data-door] .door-sheet { view-transition-name: door-sheet; }
+  html[data-door][data-door-swap] .entry-page .entry-name { view-transition-name: door-name; }
+  /* The sheet is carried only between two front-door screens (door.js sets data-door-swap for that change).
+     Carried into the app it had nothing to become, and its layer stayed over the new screen until the chip landed. */
+  html[data-door][data-door-swap] .door-sheet { view-transition-name: door-sheet; }
   ::view-transition-group(brand-mark) { animation-duration: 420ms; }
   ::view-transition-group(brand-mark), ::view-transition-group(door-name) { z-index: 3; }
   /* The sheet changes height; its content is never stretched. */
