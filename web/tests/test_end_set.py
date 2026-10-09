@@ -131,7 +131,10 @@ class NeutralStateTests(TestCase):
         night = Night('A', state='open')
         self.client.force_login(night.host.user)
         url = reverse('session', args=[night.session.pk])
-        self.assertContains(self.client.get(url), 'class="felt hero"')
+        # An open set is being prepared: a checklist on the neutral surface, and no felt.
+        page = self.client.get(url)
+        self.assertContains(page, '<section class="prep" data-unit')
+        self.assertNotContains(page, 'class="felt')
         night.go('running')
         page = self.client.get(url)
         self.assertContains(page, '<section class="felt" data-unit')

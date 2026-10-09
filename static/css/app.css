@@ -1297,3 +1297,28 @@ body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-o
 .sheets-enabled .sheet-swap { display: flex !important; margin-bottom: var(--s-3); }
 .sheet-summary { margin: 0 0 var(--s-2); color: var(--muted); }
 .sheet-summary strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* Preparing a set: a checklist where the panel of totals was. */
+.prep { margin: 0 -16px; padding: var(--s-2) var(--s-4) var(--s-4); border-bottom: 1px solid var(--rule); border-radius: 0 0 var(--r-sheet) var(--r-sheet); background: var(--rail); }
+.prep h1 { margin: 0; font-size: 1.375rem; font-stretch: 88%; line-height: 1.2; }
+.prep h1 small { color: var(--muted); font-size: .9375rem; white-space: nowrap; }
+.prep .where { margin: var(--s-1) 0 0; color: var(--muted); font-size: .84375rem; }
+.prep-title { margin: var(--s-4) 0 var(--s-1); font-size: 1.0625rem; font-weight: 650; }
+.prep-steps { list-style: none; margin: 0; padding: 0; }
+.prep-step { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; align-items: center; gap: var(--s-3); min-height: 60px; padding: var(--s-2) 0; }
+.prep-step + .prep-step { border-top: 1px solid var(--rule); }
+.prep-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rule); color: var(--muted); font-size: .8125rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.prep-mark .icon { width: 1rem; height: 1rem; stroke-width: 3; }
+.prep-step[data-state=done] .prep-mark { border-color: var(--bone); background: var(--bone); color: var(--ink); }
+.prep-step[data-state=next] .prep-mark { border: 2px solid var(--brass); color: var(--brass); }
+.prep-text { display: grid; min-width: 0; }
+.prep-name { font-weight: 650; }
+.prep-step[data-state=later] .prep-name { color: var(--muted); }
+.prep-line { color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
+.prep-step .visually-hidden { grid-column: 1; }
+.prep-step .btn { position: relative; z-index: 1; }
+.prep-money { margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); color: var(--muted); }
+.prep-money strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.prep-facts { margin-top: var(--s-3); border-top-color: var(--rule); }
+.prep-facts dt { color: var(--muted); }
+@media (min-width: 900px) { .prep { margin: 0; padding: 20px; border: 1px solid var(--rule); border-radius: var(--r-sheet); } }

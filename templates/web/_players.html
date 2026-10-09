@@ -4,7 +4,8 @@
 {% else %}
 <section class="table-players" aria-label="Players at the table">
   <div class="section-heading"><h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
-    {% if can_manage_players %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
+    {# While a set is prepared the checklist's first step adds players; in play this is the way to seat a late arrival. #}
+    {% if can_manage_players and not prep %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
   </div>
   <ul class="player-list">
     {# A player came to join; for a host who only keeps the bank it is a quiet line under the list. #}

@@ -1,25 +1,28 @@
 {% load money_tags table_tags %}
 <div class="host-controls stack">
   {% if balance.overridden %}{% firstof "Off by "|add:balance.raw_difference_text|add:", covered by an override." as covered %}{% endif %}
-  <button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}<span class="verdict" data-dock-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: Open for players{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
+  <button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}<span class="verdict" data-dock-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: {% if prep.next == 'players' %}Add players{% else %}Open for players{% endif %}{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
   <h2 class="host-controls-heading">Host controls</h2>
-  {% if can_configure_rake %}
+  {# On the new page the checklist's "Stakes and rake" step leads there. #}
+  {% if can_configure_rake and not prep %}
   <a class="btn btn-block" href="{% url 'session_settings' session.pk %}">Choose rake before buy-ins</a>
   {% endif %}
   {% if session.state == 'setup' %}
   <p class="muted small">This set is a draft. Players cannot see it yet.</p>
+  {% if prep.next == 'players' %}<a class="btn btn-primary btn-block next-action" href="{% url 'participants_add' session.pk %}">Add players</a>{% endif %}
   <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}" class="host-action">{% csrf_token %}
-    <button class="btn btn-primary btn-block next-action" name="action" value="open">Open for players</button>
+    <button class="btn {% if prep.next == 'players' %}btn-quiet{% else %}btn-primary next-action{% endif %} btn-block" name="action" value="open">Open for players</button>
   </form>
   {% elif session.state == 'open' %}
   <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}" class="stack">{% csrf_token %}{% request_id_field %}
     <label class="check" for="opening-buy-ins"><input id="opening-buy-ins" type="checkbox" name="opening_buy_ins" checked data-keep="opening-buy-ins" aria-describedby="opening-buy-ins-help"><span class="grow">Add usual buy-in ({{ settings.default_buy_in|amount:unit }}) for players without a buy-in</span></label>
-    <p id="opening-buy-ins-help" class="small muted">Existing buy-ins stay unchanged. {% include "web/_rake_rule.html" %}</p>
+    {# On the new page the checklist's last step says this where it is read; here it stays for a screen reader. #}
+    <p id="opening-buy-ins-help" class="small muted{% if prep %} visually-hidden{% endif %}">Existing buy-ins stay unchanged. {% include "web/_rake_rule.html" %}</p>
     <button class="btn btn-primary btn-block next-action" name="action" value="start">Start the set</button>
   </form>
-  <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+  {% if not prep %}<form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
     <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
-  </form>
+  </form>{% endif %}
   {% elif session.state == 'running' %}
   <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
     <button class="btn btn-primary btn-block next-action" name="action" value="end">End play and count up</button>
@@ -60,6 +63,10 @@
     <p id="batch-why" class="dock-hint small muted" data-hint="{{ hint }}">{{ hint }}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
+  {# A step back is rare: on the new page it waits here, so Start has the menu to itself. #}
+  {% if prep and session.state == 'open' %}<form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}
+    <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
+  </form>{% endif %}
   {% if session.state == 'reconciliation' %}
 
     <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button></form>

@@ -82,7 +82,10 @@ class TablePageTests(TestCase):
         games.transition(night.session.pk, night.host, 'close')
         self.client.force_login(night.host.user)
         page = self.client.get(reverse('session', args=[night.session.pk]))
-        self.assertContains(page, 'Next: Open for players', count=1)
+        # Nobody is in the set yet, so adding players is the next step and Open is offered beside it.
+        self.assertContains(page, 'Next: Add players', count=1)
+        self.assertContains(page, '<a class="btn btn-primary btn-block next-action" href="%s">Add players</a>' % reverse('participants_add', args=[night.session.pk]))
+        self.assertContains(page, 'name="action" value="open">Open for players</button>')
 
     def test_host_dock_toggle_carries_the_count_verdict(self):
         self.night.go('reconciliation')
@@ -258,3 +261,116 @@ class SetPageRevampTests(TestCase):
         with override_settings(TABLE_REVAMP=False), CaptureQueriesContext(connection) as old:
             self.client.get(self.url)
         self.assertEqual(len(new), len(old))
+
+
+class PreparationTests(TestCase):
+    """A draft or open set shows what is done and what is next, and no totals before there is money."""
+
+    def setUp(self):
+        from games.tests.helpers import make_session
+        from groups.tests.helpers import add_player, make_group
+        self.group, self.host = make_group()
+        self.ana, self.ben = add_player(self.group, "ana"), add_player(self.group, "ben")
+        self.session = make_session(self.host, state="setup")
+        self.url = reverse("session", args=[self.session.pk])
+        self.client.force_login(self.host.user)
+
+    def seat(self, *members):
+        import uuid
+        from games import services as games
+        return games.add_participants(self.session.pk, self.host, [m.pk for m in members], uuid.uuid4())
+
+    def steps(self, page):
+        import re
+        return dict(re.findall(r'data-step="(\w+)" data-state="(\w+)"', page))
+
+    def page(self):
+        return self.client.get(self.url).content.decode()
+
+    def test_an_empty_draft(self):
+        page = self.page()
+        self.assertEqual(self.steps(page), {"players": "next", "stakes": "done", "open": "later", "start": "later"})
+        self.assertIn('<span class="badge">Draft</span>', page)
+        self.assertIn("Get this set ready", page)
+        self.assertIn("Nobody yet", page)
+        self.assertIn("Players cannot see this set yet.", page)
+        # No panel of zeros.
+        for absent in ("Still in play", "Set timer", "Cashed out", "Collected rake", "prep-money"):
+            self.assertNotIn(absent, page)
+
+    def test_a_draft_with_players_makes_opening_the_next_step(self):
+        self.seat(self.ana, self.ben)
+        page = self.page()
+        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "next", "start": "later"})
+        self.assertIn("2 added ·", page)
+        self.assertIn('<button class="btn btn-primary next-action btn-block" name="action" value="open">Open for players</button>', page)
+        self.assertNotIn(">Add players</a>\n  <form", page)
+        self.assertIn("Next: Open for players", page)
+
+    def test_an_open_set_makes_starting_the_next_step(self):
+        from games import services as games
+        self.seat(self.ana)
+        games.transition(self.session.pk, self.host, "open")
+        page = self.page()
+        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "done", "start": "next"})
+        self.assertIn('<span class="badge">Open</span>', page)
+        self.assertIn("Players can see it and join.", page)
+        self.assertIn("Next: Start the set", page)
+        self.assertIn('name="opening_buy_ins"', page)
+
+    def test_an_open_set_with_nobody_still_asks_for_players(self):
+        from games import services as games
+        games.transition(self.session.pk, self.host, "open")
+        self.assertEqual(self.steps(self.page()), {"players": "next", "stakes": "done", "open": "done", "start": "later"})
+
+    def test_money_appears_when_there_is_money(self):
+        import uuid
+        from games import services as games
+        from ledger import services as ledger
+        seat = self.seat(self.ana)[0]
+        games.transition(self.session.pk, self.host, "open")
+        ledger.record_buy_in(self.session.pk, self.host, seat.pk, 100000, uuid.uuid4())
+        page = self.page()
+        self.assertIn('<p class="prep-money" data-watch="in-play" data-value="100000"><strong>₱1,000</strong> bought in · 1 buy-in</p>', page)
+
+    def test_the_stakes_step_states_the_stakes_and_leads_to_the_settings(self):
+        page = self.page()
+        self.assertIn("rake off", page)
+        self.assertIn("buy-in ₱", page)
+        self.assertIn('href="%s" aria-label="Choose rake before buy-ins">Change</a>' % reverse("session_settings", args=[self.session.pk]), page)
+        self.assertEqual(page.count("Choose rake before buy-ins"), 1)
+
+    def test_every_step_says_its_state_in_words(self):
+        page = self.page()
+        for words in ("Next:</span>", "Done:</span>", "Later:</span>"):
+            self.assertIn(words, page)
+
+    def test_a_player_sees_the_stakes_and_no_checklist(self):
+        from games import services as games
+        self.seat(self.ana)
+        games.transition(self.session.pk, self.host, "open")
+        self.client.force_login(self.ben.user)
+        page = self.page()
+        self.assertNotIn("Get this set ready", page)
+        self.assertNotIn("prep-step", page)
+        self.assertIn("The host starts the set.", page)
+        self.assertIn("<dt>Blinds</dt>", page)
+        self.assertIn('class="btn btn-primary" type="submit">', page)  # Join this set, first
+
+    def test_starting_brings_the_felt(self):
+        from games import services as games
+        self.seat(self.ana)
+        games.transition(self.session.pk, self.host, "open")
+        games.transition(self.session.pk, self.host, "start", opening_buy_ins=False)
+        page = self.page()
+        self.assertIn('<section class="felt" data-unit', page)
+        self.assertNotIn("prep-step", page)
+
+    def test_the_switch_returns_the_panel_and_the_rake_button(self):
+        from django.test import override_settings
+        with override_settings(TABLE_REVAMP=False):
+            page = self.page()
+        self.assertNotIn("prep-step", page)
+        self.assertIn('class="felt hero"', page)
+        self.assertIn('<a class="btn btn-block" href="%s">Choose rake before buy-ins</a>' % reverse("session_settings", args=[self.session.pk]), page)
+        self.assertIn("Next: Open for players", page)

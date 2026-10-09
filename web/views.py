@@ -29,6 +29,7 @@ from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from settlement import queries as settlement_queries
 
 from . import stats as stats_pages
+from . import prep
 from .home import archived_groups, home_cards
 
 
@@ -203,6 +204,7 @@ def session_context(session, me) -> dict:
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
         "table_revamp": settings.TABLE_REVAMP,
+        "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
     }
     played, running_ids = clock.player_clocks(session)
     for line in summary.lines:

@@ -16,7 +16,8 @@
           </div>
           {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
         </div>
-        <div class="player-figure amount">{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small></div>
+        {# "No buy-in yet" under the name says it; a zero beside it says it twice. #}
+        <div class="player-figure amount">{% if line.has_money or line.has_cash_out %}{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small>{% endif %}</div>
       </div>
       {% if line.can_buy_in or line.can_cash_out_now %}
       <div class="player-actions">

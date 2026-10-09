@@ -1,0 +1,1 @@
+{% load table_tags %}<span class="prep-mark" aria-hidden="true">{% if state == 'done' %}{% icon 'check' %}{% else %}{{ number }}{% endif %}</span><span class="visually-hidden">{% if state == 'done' %}Done:{% elif state == 'next' %}Next:{% else %}Later:{% endif %}</span>
