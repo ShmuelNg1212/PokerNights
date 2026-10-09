@@ -3,6 +3,7 @@
 <h2 id="stats-heading" class="visually-hidden">Player stats</h2>
 {% if stat_months %}
 {% include "web/_stat_controls.html" with board=True %}
+<div data-stat-body>
 <section class="panel stat-you" aria-labelledby="stat-you-heading">
   <h3 id="stat-you-heading" class="stat-label">You · {{ stat_period.label }}</h3>
   {% if stat_mine %}
@@ -18,7 +19,7 @@
 </section>
 {% if stat_ranked or stat_unranked %}
 <nav class="pills stat-sort" aria-label="Order by" data-stat-nav data-stat-pills="sort">
-  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{% if slug == stat_sort %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ label }}</a>{% endfor %}
 </nav>
 {% if stat_ranked %}
 <ol class="stat-list" data-stat-board>
@@ -45,6 +46,7 @@
     <p>Averages, percents and hourly figures are rounded toward zero. The mark beside a place compares it with {% if stat_period.kind == 'all' %}the board before the latest session{% else %}the period before{% endif %}.</p>
   </div>
 </details>
+</div>
 {% else %}
 <div class="panel empty-state">
   <h3>No stats yet</h3>

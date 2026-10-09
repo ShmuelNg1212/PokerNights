@@ -50,17 +50,27 @@ try {
  await A.go(board+'&period=2020-01');check('an empty period says so',await A.js(text('No closed session in January 2020')));
 
  // A change of period, unit or order keeps the page where it was scrolled.
- const stays=async(P,label,act)=>{await P.js(`window.scrollTo(0,420)`);await sleep(150);const y=await P.js(`window.scrollY`);const steps=await P.js(`history.length`);await act();await sleep(900);check(`${label}: the page stays where it was scrolled`,y>300&&Math.abs(await P.js(`window.scrollY`)-y)<=2);check(`${label}: Back still leaves Stats in one step`,await P.js(`history.length`)===steps);check(`${label}: nothing is left marked`,await P.js(`!document.documentElement.hasAttribute('data-go')&&[...document.querySelectorAll('.stat-row,.pills a,#stat-month')].every(e=>!e.getAttribute('style'))`));};
+ const stays=async(P,label,act)=>{await P.js(`window.scrollTo(0,420)`);await sleep(150);const y=await P.js(`window.scrollY`);const steps=await P.js(`history.length`);await act();await sleep(900);check(`${label}: the page stays where it was scrolled`,y>300&&Math.abs(await P.js(`window.scrollY`)-y)<=2);check(`${label}: Back still leaves Stats in one step`,await P.js(`history.length`)===steps);check(`${label}: nothing is left marked`,await P.js(`!document.documentElement.hasAttribute('data-go')&&[...document.querySelectorAll('.stat-row,.pills a,.pill-marker,[data-stat-body],#stat-month')].every(e=>!e.getAttribute('style'))`));};
  await A.size(390);await A.go(board);
- await stays(A,'period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent==='This year').click()`));
+ await stays(A,'period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent.trim()==='This year').click()`));
  check('the period changed',await A.js(`location.search.includes('period=year')&&document.querySelector('[data-stat-pills=period] [aria-current]').textContent==='This year'`));
- await stays(A,'order',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent==='Return').click()`));
- await stays(A,'unit',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=unit] a')].find(a=>a.textContent==='Chips games').click()`));
+ await stays(A,'order',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent.trim()==='Return').click()`));
+ await stays(A,'unit',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=unit] a')].find(a=>a.textContent.trim()==='Chips games').click()`));
  await stays(A,'month',()=>A.js(`(()=>{const s=document.querySelector('#stat-month');s.value=s.options[1].value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`));
+ await A.go(board);await A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent.trim()==='Last 3 months').click()`);await sleep(140);
+ {const{data}=await send('Page.captureScreenshot',{format:'png'},A.s);writeFileSync(`${OUT}/stats-mid-switch-390.png`,Buffer.from(data,'base64'));}
+ // What moves: sampled over the first half second after a tap.
+ const moving=(P,tap)=>P.js(`(async()=>{setTimeout(()=>{${tap}},20);const seen=new Set();for(let i=0;i<40;i++){document.getAnimations().forEach(a=>{const t=a.effect&&a.effect.target;if(!t||a.effect.pseudoElement)return;if(t.matches('.pill-marker'))seen.add('marker');if(t.matches('[data-stat-body]'))seen.add('body');if(t.matches('.stat-row'))seen.add('row')});await new Promise(r=>setTimeout(r,15))}return [...seen].sort().join(',')})()`);
+ const pill=(group,label)=>`[...document.querySelectorAll('[data-stat-pills=${group}] a')].find(a=>a.textContent.trim()==='${label}').click()`;
+ await A.go(board);
+ check('a new period slides the marker over and brings the figures in from the side',await moving(A,pill('period','This year'))==='body,marker');
+ await sleep(500);check('a new order slides the marker and moves the rows, and the summary stays still',await moving(A,pill('sort','Sessions'))==='marker,row');
+ await sleep(500);check('a new unit slides the marker and brings the figures in',await moving(A,pill('unit','Chips games'))==='body,marker');
+ await sleep(700);check('everything is at rest afterwards with no inline style left',await A.js(`[...document.querySelectorAll('.pill-marker,[data-stat-body],.stat-row')].every(e=>!e.getAttribute('style'))`));
  await A.go(board);await A.js(`window.scrollTo(0,420)`);await sleep(150);
  await A.click(`[...document.querySelectorAll('[data-stat-board] .stat-link')].find(a=>a.querySelector('strong').textContent==='Ana')`);
  check('opening a player still starts at the top',await A.js(`window.scrollY`)<5);
- await stays(A,'player period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent==='Last 3 months').click()`));
+ await stays(A,'player period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent.trim()==='Last 3 months').click()`));
 
  // A player's page.
  await A.go(board);await A.click(`[...document.querySelectorAll('[data-stat-board] .stat-link')].find(a=>a.querySelector('strong').textContent==='Ana')`);

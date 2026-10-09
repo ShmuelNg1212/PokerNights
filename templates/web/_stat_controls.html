@@ -1,12 +1,12 @@
 {# Unit and period for the board and for a player's page. ``board`` keeps the tab and the order in each link. #}
 {% if stat_units|length > 1 %}
 <nav class="pills" aria-label="Unit" data-stat-nav data-stat-pills="unit">
-  {% for u in stat_units %}<a data-turbo-action="replace" href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ u }}&amp;period={{ stat_period.slug }}" {% if u == stat_unit %}aria-current="true"{% endif %}>{% if u == 'chips' %}Chips games{% else %}Pesos games{% endif %}</a>{% endfor %}
+  {% for u in stat_units %}<a data-turbo-action="replace" href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ u }}&amp;period={{ stat_period.slug }}" {% if u == stat_unit %}aria-current="true"{% endif %}>{% if u == stat_unit %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{% if u == 'chips' %}Chips games{% else %}Pesos games{% endif %}</a>{% endfor %}
 </nav>
 {% endif %}
 <div class="stat-periods" data-stat-nav data-stat-pills="period">
 <nav class="pills" aria-label="Period">
-  {% for p in stat_periods %}<a data-turbo-action="replace" href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ stat_unit }}&amp;period={{ p.slug }}" {% if p.slug == stat_period.slug %}aria-current="true"{% endif %}>{{ p.label }}</a>{% endfor %}
+  {% for p in stat_periods %}<a data-turbo-action="replace" href="?{% if board %}view=stats&amp;sort={{ stat_sort }}&amp;{% endif %}unit={{ stat_unit }}&amp;period={{ p.slug }}" {% if p.slug == stat_period.slug %}aria-current="true"{% endif %}>{% if p.slug == stat_period.slug %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ p.label }}</a>{% endfor %}
 </nav>
 <form method="get" class="stat-month" data-stat-month data-turbo="true" data-turbo-action="replace">
   {% if board %}<input type="hidden" name="view" value="stats"><input type="hidden" name="sort" value="{{ stat_sort }}">{% endif %}

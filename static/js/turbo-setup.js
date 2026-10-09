@@ -79,22 +79,6 @@
       carry(a, b, "chip-" + m); count += 1;
     });
   }
-  function chosen(main, group) {
-    var within = '[data-stat-pills="' + group + '"] ';
-    return main.querySelector(within + "[aria-current], " + within + "select[data-chosen]");
-  }
-  function filter(from, to) {
-    ["unit", "period", "sort"].forEach(function (group) {
-      var was = chosen(from, group), now = chosen(to, group);
-      if (was && now) carry(was, now, "pill-" + group);
-    });
-    var count = 0;
-    from.querySelectorAll(".stat-row[data-member]").forEach(function (row) {
-      var next = to.querySelector('.stat-row[data-member="' + row.dataset.member + '"]'), box = row.getBoundingClientRect();
-      if (!next || count >= 24 || box.bottom < 0 || box.top > window.innerHeight) return;
-      carry(row, next, "row-" + row.dataset.member); count += 1;
-    });
-  }
   function direct(newBody) {
     settle(); change += 1;
     var link = tapped, from = document.getElementById("main"), to = newBody.querySelector("#main");
@@ -104,9 +88,9 @@
     if (a === null || b === null) return;
     if (b > a) go = "deeper"; else if (b < a) go = "back";
     else if (from.dataset.tab && to.dataset.tab && from.dataset.tab !== to.dataset.tab) go = Number(to.dataset.tab) > Number(from.dataset.tab) ? "next" : "prev";
-    // The same stats screen with another period, unit or order: nothing slides away. The chosen
-    // pill moves to its new place and each row to its new position.
-    else if (from.dataset.stats && from.dataset.stats === to.dataset.stats) { root.dataset.go = "filter"; filter(from, to); return; }
+    // The same stats screen with another period, unit or order is not a change of screen. It is
+    // swapped at once and stats.js moves what changed.
+    else if (from.dataset.stats && from.dataset.stats === to.dataset.stats) { root.dataset.go = "filter"; return; }
     if (!go) return;
     root.dataset.go = go;
     var was = (go === "deeper" && source(link)) || from.querySelector("[data-carry=title]");
@@ -127,7 +111,7 @@
     if (morph) { if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true })); }
     else direct(event.detail.newBody);
     var leave = function () { if (!morph) window.pokerPage.stop(); };
-    if (!document.startViewTransition || still.matches) { leave(); settle(); return; }
+    if (!document.startViewTransition || still.matches || root.dataset.go === "filter") { leave(); settle(); return; }
     event.preventDefault();
     var shown = new Promise(function (done) { drawn = done; setTimeout(done, 2000); });
     // The markers stay until the browser reports the whole change finished. Its layers are on

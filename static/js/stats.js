@@ -1,10 +1,10 @@
 // The Stats tab and a player's page. It only adds: a session can be read off the chart by touch,
-// pointer or arrow keys; the Month list shows its month as soon as one is picked; and rows glide to
-// their new places when the period, unit or order changes, with the page staying where it was
-// scrolled. Every page is complete without it.
+// pointer or arrow keys; the Month list shows its month as soon as one is picked; and a change of
+// period, unit or order keeps the page where it was scrolled and shows what changed: the chosen
+// pill's marker slides over, new figures slide in from the side that was tapped toward, and rows
+// glide to their new places. Every page is complete without it.
 (function () {
   "use strict";
-  var KEY = "stats:places";
 
   function chart(root, life) {
     var plot = root.querySelector("[data-chart-plot]"), bars = Array.from(root.querySelectorAll(".chart-bar"));
@@ -40,36 +40,34 @@
     }, { signal: life.signal });
   }
 
-  // Where each ranked row sat, taken as the order is about to change and spent on the next board.
+  // --- A change of period, unit or order. It is a new address, and the same screen.
+  // What the screen looked like when a pill was tapped is held until the new one is in.
+  var held = null;
+  function choices(group) { return Array.from(group.querySelectorAll("a, select")); }
+  function chosen(group) { return group.querySelector("[aria-current], select[data-chosen]"); }
   function places(list) {
     var top = list.getBoundingClientRect().top, found = {};
     list.querySelectorAll("[data-member]").forEach(function (row) { found[row.dataset.member] = Math.round(row.getBoundingClientRect().top - top); });
     return found;
   }
-  function glide(list) {
-    var M = window.pokerMotion, before;
-    try { before = JSON.parse(sessionStorage.getItem(KEY) || "null"); sessionStorage.removeItem(KEY); } catch (_) { return; }
-    // Where the browser carries rows between screens itself (turbo-setup.js), it has already moved them.
-    if (!before || !M || !M.on() || document.startViewTransition) return;
-    var now = places(list);
-    list.querySelectorAll("[data-member]").forEach(function (row) {
-      var was = before[row.dataset.member], delta = was == null ? 0 : was - now[row.dataset.member];
-      if (delta) M.settle(row, M.run(row, { transform: ["translateY(" + delta + "px)", "translateY(0px)"] }, "shift"));
-      else if (was == null) M.settle(row, M.run(row, { opacity: [0, 1] }, "fade"), ["opacity"]);
-    });
+  function hold(control) {
+    var group = control.closest("[data-stat-pills]"), was = group && chosen(group), list = document.querySelector("[data-stat-board]");
+    var box = was && was.getBoundingClientRect();
+    held = {
+      path: location.pathname, y: window.scrollY, group: group ? group.dataset.statPills : "",
+      from: was ? choices(group).indexOf(was) : -1, to: group ? choices(group).indexOf(control) : -1,
+      box: box ? { left: box.left, top: box.top, width: box.width } : null, places: list ? places(list) : null
+    };
   }
-
-  // A change of period, unit or order is the same screen, so the page stays where it was scrolled.
-  // Turbo starts every new address at the top; for these visits it is told the scrolling is done,
-  // and the place is set again once the screen is in, in case the new one is shorter.
-  var held = null;
-  function hold() { held = { path: location.pathname, y: window.scrollY }; }
   document.addEventListener("turbo:click", function (event) {
-    if (event.target.closest && event.target.closest("[data-stat-nav] a")) hold(); else held = null;
+    var link = event.target.closest && event.target.closest("[data-stat-nav] a");
+    if (link) hold(link); else held = null;
   });
   document.addEventListener("turbo:submit-start", function (event) {
-    if (event.target.matches && event.target.matches("[data-stat-month]")) hold();
+    if (event.target.matches && event.target.matches("[data-stat-month]")) hold(event.target.querySelector("select"));
   });
+  // Turbo starts every new address at the top. For these visits it is told the scrolling is done,
+  // and the place is set again once the screen is in, in case the new one is shorter.
   document.addEventListener("turbo:visit", function (event) {
     if (!held) return;
     if (new URL(event.detail.url, location.href).pathname !== held.path) { held = null; return; }
@@ -81,6 +79,36 @@
     held = null;
   });
 
+  function arrived(was) {
+    var M = window.pokerMotion;
+    if (!M || !M.on()) return;
+    function move(el, keyframes, preset, extra) { if (el) M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes)); }
+    // The marker slides from the pill that was chosen to the one that is.
+    var group = document.querySelector('[data-stat-pills="' + was.group + '"]'), now = group && chosen(group);
+    var marker = now && now.querySelector(".pill-marker");
+    if (marker && was.box) {
+      var box = now.getBoundingClientRect();
+      move(marker, { transform: [
+        "translate(" + (was.box.left - box.left) + "px, " + (was.box.top - box.top) + "px) scaleX(" + (was.box.width / box.width) + ")",
+        "translate(0px, 0px) scaleX(1)"
+      ] }, "sheet");
+    }
+    var list = document.querySelector("[data-stat-board]"), body = document.querySelector("[data-stat-body]");
+    if (was.group === "sort" && list && was.places) {
+      // The same players in another order: each row travels from where it was.
+      var top = places(list);
+      list.querySelectorAll("[data-member]").forEach(function (row) {
+        var before = was.places[row.dataset.member], delta = before == null ? 0 : before - top[row.dataset.member];
+        if (delta) move(row, { transform: ["translateY(" + delta + "px)", "translateY(0px)"] }, "shift");
+        else if (before == null) move(row, { opacity: [0, 1] }, "fade");
+      });
+    } else if (body) {
+      // Other figures altogether: they come in from the side that was tapped toward.
+      var side = was.to < was.from ? -1 : 1;
+      move(body, { opacity: [0, 1], transform: ["translateX(" + side * 32 + "px)", "translateX(0px)"] }, "shift");
+    }
+  }
+
   window.pokerPage.register(function () {
     var life = new AbortController();
     document.querySelectorAll("[data-chart]").forEach(function (root) { chart(root, life); });
@@ -89,16 +117,7 @@
       month.classList.add("is-auto");
       month.querySelector("select").addEventListener("change", function () { month.requestSubmit(); }, { signal: life.signal });
     }
-    var list = document.querySelector("[data-stat-board]");
-    if (list) {
-      glide(list);
-      document.querySelectorAll("[data-stat-nav]").forEach(function (nav) {
-        nav.addEventListener("click", function (event) {
-          if (!event.target.closest("a")) return;
-          try { sessionStorage.setItem(KEY, JSON.stringify(places(list))); } catch (_) {}
-        }, { signal: life.signal });
-      });
-    }
+    if (held && held.path === location.pathname) arrived(held);
     return function () { life.abort(); };
   });
 })();

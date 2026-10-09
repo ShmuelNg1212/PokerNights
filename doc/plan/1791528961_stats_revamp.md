@@ -206,3 +206,13 @@ Not merged and not pushed: features are collected locally until the human says t
 - The Month list now changes the screen in place like the pills (it was a full page load).
 - `stats.mjs` has 66 checks: for period, order, unit, month and a player's period it checks that the page stays where it was scrolled, that history does not grow, and that no marker or inline style is left. Opening a player from the board still starts at the top.
 - Not verified: the look of the movement itself. The headless check confirms the transition starts and cleans up, not how it looks on a phone.
+
+2026-10-09 second addendum: the human reported "i dont see sliding animations."
+
+- **What a probe of a real browser found.** The pill did move in Chrome, by a view transition, but no row was ever carried: only rows on screen before the tap were named, and at the top of the page the board is below the fold. The effect also depended on view transitions, which some browsers lack, and was slight where it worked. The earlier check had confirmed only that the transition started and cleaned up.
+- **Replaced with Motion, which runs in every browser.** A stats filter change is now swapped at once with no view transition (`turbo-setup.js`), and `stats.js` moves what changed:
+  - the chosen pill is a marker behind its words (`.pill-marker`) that slides from the pill chosen before, with the `sheet` spring;
+  - on a new period or unit, the figures (the summary and the board, or a player's whole record) slide in 32px from the side that was tapped toward, with `shift`;
+  - on a new order, the summary stays still and each row travels from where it was; a row that is new fades in.
+- The scroll position is still held, and the history entry is still replaced.
+- `stats.mjs` has 70 checks. It now samples the running animations after a tap and requires the marker and the figures to be moving on a new period and unit, and the marker and the rows on a new order, and nothing left behind afterwards. A frame captured 140ms into a change was inspected: the marker was partway across and the figures partway in.

@@ -13,6 +13,7 @@
   </div>
 </header>
 {% if stat_months %}{% include "web/_stat_controls.html" with board=False %}{% endif %}
+<div data-stat-body>
 {% if record.sessions %}
 <section class="panel player-lead" aria-labelledby="lead-heading">
   <h2 id="lead-heading" class="stat-label">Profit or loss · {{ stat_period.label }}</h2>
@@ -48,4 +49,5 @@
 {% else %}
 <div class="panel empty-state"><p class="muted">{{ member.display_name }} has no closed session {{ stat_where }}{% if stat_units|length > 1 %} in {% if stat_unit == 'chips' %}chips{% else %}pesos{% endif %} games{% endif %}.</p></div>
 {% endif %}
+</div>
 {% endblock %}
