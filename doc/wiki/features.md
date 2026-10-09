@@ -392,3 +392,19 @@ A player who was only a name on the roster gets their own login and keeps their 
 - **A dead link** (unknown, cancelled, used, expired, the player removed, the group archived) shows "This claim link doesn't work" with the reason. The account that used a link is sent to the group when it opens the link again.
 - **Switch:** `CLAIM_LINKS=False` hides the action, refuses new links and makes every link not valid.
 - Code: `groups.models.ClaimLink`, `groups/services.py` (`create_claim_link`, `cancel_claim_link`, `claim_preview`, `claim_member`), `groups/access.py` (the sign-up hooks), `groups/views.py` (`claim`), `templates/groups/claim.html`.
+
+## Stats board and player pages (2026-10-09)
+
+[Plan](../plan/1791528961_stats_revamp.md). Everything is worked out when read, from the frozen results of closed, unarchived sessions, one unit at a time.
+
+- **Your summary** leads the Stats tab: your profit or loss for the unit and period, your place ("3rd of 9", or "Not ranked yet: 1 of 3 sessions"), your last result, and **Your stats**.
+- **Periods:** All time, This year, Last 3 months (this calendar month and the two before), and one month picked from a list of the months that have a closed session.
+- **Order:** Profit, Average, Return, Per hour (offered only when the period has recorded time) and Sessions. The figure at the right of a row follows the order; when it is not Profit, the profit or loss sits small beneath.
+- **Ranked and not ranked.** A player needs 3 sessions in All time and This year, 2 in Last 3 months and 1 in a month. Others are listed under "Not ranked yet" without a place.
+- **Movement.** Beside a place, "up 2", "down 1" or "New", against the same board one period earlier; All time compares with the board before the latest session date. No mark when nothing changed or there is no earlier board.
+- **A removed player** stays, with "Left the group".
+- **A player's page** (`g/<group>/players/<member>/`), open to every member of the group: the lead figure and rank; the **Running profit** line with a zero line and, beneath it on the same positions, a bar for **each session**; eight tiles (average per session, return on buy-ins, per hour, win rate, rebuys per session, total bought in, rake paid, time at the table); best and worst night, current run and longest winning run; and the last ten sessions with "Show all".
+- **Reading the chart.** A touch, a pointer or the arrow keys pick a session: a line, a dot and a ring mark it, and the line under the chart says its date, table, result and running total. The chart needs three sessions; a longer record draws its latest 60.
+- **How figures are worked out.** Average and per hour round toward zero to the centavo or chip; return and win rate to the whole percent. Per hour uses only sessions with recorded time and says how many. Rebuys are buy-ins beyond the first in each set. A run is sessions in a row with a profit, or with a loss; a break-even session ends it. Rake is already inside the profit or loss.
+- **Switch:** `STATS_PAGES=False` returns the tab to the single ranked list and makes player pages not found.
+- Code: `settlement/stats.py` (the figures), `web/charts.py` (the geometry), `web/stats.py` (what the pages show), `templates/web/_group_stats.html`, `player.html`, `_running_chart.html`, `static/js/stats.js`.

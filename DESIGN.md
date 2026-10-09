@@ -670,6 +670,24 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 - **Motion.** The token springs in once with `arrive` (`[data-pop]`), from a visible default. Nothing else on the page moves.
 - **Measured.** `claim.mjs`, 30 checks at 320, 390 and 1280px: no horizontal overflow, 48px targets, contrast of the account line, the muted note and Log out at least 4.5:1, visible focus, no inline style left after the token settles, and the whole flow without JavaScript.
 
+### Stats and charts (2026-10-09)
+
+[Plan](doc/plan/1791528961_stats_revamp.md). The app's first charts. No new colour, font or raster asset.
+
+- **Your summary** is a neutral panel: a Bone Dim label, the viewer's profit or loss as the largest figure on the page (36 to 52px, weight 800, with its sign and direction icon), then Rank and Last result under a Rule line, then one full-width button.
+- **Board rows** are links of at least 64px: place, identity token, name with a muted line of sessions and share won, and the figure for the chosen order at the right in Up or Down with its sign and icon. The viewer's own row sits on Rail 2 and says "(you)". A movement mark under the place is Bone Dim, never Up or Down, with a drawn arrow and a number, and words for a screen reader.
+- **Period and order** are pill rows. The month list is a native select in the pill shape; it takes the selected treatment while a month is chosen.
+- **Stat tiles** are a two-column grid (four from 900px) with hairline Rule gaps: a Bone Dim label, a 20px figure in tabular numerals, and a small note where a figure covers only some sessions.
+- **Charts** sit on a neutral panel.
+  - Running profit is one Bone line, 2px, with a Line-coloured zero line, the highest and lowest totals and zero written at the left in Bone Dim, and a ringed Bone dot on the latest point. One series, so no legend; the heading names it and the lead figure above states its value.
+  - Each session is a thin bar from a Rule baseline, 4px rounded at its far end, with at least 2px between bars. Up bars are Up; Down bars are Down with a diagonal hatch.
+  - The two charts share horizontal positions and never an axis. Position is the order of sessions, evenly spaced, with the first and last dates beneath.
+  - Text is always Bone or Bone Dim. No gradient, glow or fill under the line.
+  - The chosen session is marked in Brass: a hairline through both charts, a dot on the line and a ring on the bar. The line beneath the chart states it in words.
+- **Colour check.** The dataviz validator, on Up `#6fdea7` and Down `#fe8b83` against Rail `#1e1813`: contrast with the surface passes; separation for normal vision 25.7; for red-green colour blindness 6.0, which is allowed only with a second cue. A loss is therefore also below the baseline, hatched, and written with its sign. The validator's lightness band is for categorical series and does not apply to these two status colours.
+- **Motion.** The line is revealed left to right in 600ms and its end dot follows; bars rise from the baseline, 12ms apart, at most thirty steps; rows glide to their new places with `shift` when the order changes. The readout follows the finger with no easing. Money never counts up. Under reduced motion everything is in place at once.
+- **Measured.** `stats.mjs`, 49 checks at 320, 390 and 1280px: no horizontal overflow, 48px targets, contrast of every text style at least 4.5:1, bars meeting the baseline, the end mark inside the chart, the readout by pointer and by keyboard, visible focus on the chart, reduced motion, no JavaScript, and no script error.
+
 ## Do's and Don'ts
 
 ### Do:

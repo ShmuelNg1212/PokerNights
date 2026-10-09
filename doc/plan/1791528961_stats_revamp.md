@@ -167,3 +167,33 @@ Set `STATS_PAGES=False` in Vercel for an immediate return to the old tab. To rem
 2026-10-09: Study and plan complete. Waiting for the human's approval. No code written.
 
 2026-10-09: The human approved with "approved"; all nine decisions as recommended. Built on `feat/stats-revamp` from `main`; kept local.
+
+2026-10-09 execution on `feat/stats-revamp`, tests first.
+
+Changes from the plan:
+
+- **The player page keeps the 760px reading column at every width.** The plan put tiles beside the charts from 900px; at 1180px the lead panel was mostly empty.
+- **The chart's heading does not repeat the total.** The lead figure directly above it states it.
+- **The readout is a line under the chart,** not a floating tooltip. It cannot be covered by a finger and is the same for touch, pointer and keys.
+- **Movement marks do not spring in.** One entrance on every row would be decoration; the rows' glide on a new order is the board's movement.
+- **A chart draws at most the latest 60 sessions,** with true running totals. The plan set no limit; bars would thin below 2px on a phone.
+- **Loss bars are hatched.** The validator put Up and Down at 6.0 for red-green colour blindness, inside the band that needs a second cue (plan step 9).
+- **The chart layer is HTML over one stretched SVG path,** so labels and round ends keep their shape at any width. `web/charts.py` returns percentages.
+- **The old stats page tests run against the switched-off tab,** which they describe. New tests cover the board and the pages.
+- **`group_stats_context` and `_group_stats_legacy.html` stay** for the switch.
+
+2026-10-09 verification:
+
+- 891 tests pass on SQLite (15 PostgreSQL-only skips) and all 891 on local PostgreSQL 17, started for the run and stopped after.
+- `stats.mjs`: 49 of 49, twice. Captures inspected at 390px and 1280px: the board, a player's page, and the chart with a session read.
+- Dataviz validator run on the two bar colours; result recorded in DESIGN.md.
+
+Acceptance: AC1 to AC12 are met. AC6 is covered by `FetchTests`, which compares the board with `group_stats` on profit, sessions and wins.
+
+Not verified: `home.mjs` and `navigate.mjs` were not rerun; a physical phone and a real finger on the chart; a screen reader; a group with hundreds of sessions on Vercel's database; the switch on Vercel. No separate design critique was scored; the screens were inspected in two capture rounds.
+
+A fresh reviewer did not read the branch; the author's own read of the diff is the only review.
+
+Documentation synced: wiki features, architecture and deployment, DESIGN.md, PRODUCT.md, roadmap, browser README, TODO.
+
+Not merged and not pushed: features are collected locally until the human says to release.

@@ -1,9 +1,6 @@
 {% load l10n %}{% localize off %}
 <section class="panel chart" aria-labelledby="chart-heading" data-chart tabindex="0" role="group" aria-describedby="chart-help">
-  <div class="chart-head">
-    <h2 id="chart-heading">Running profit</h2>
-    {% include "web/_stat_figure.html" with figure=net class="chart-total" %}
-  </div>
+  <h2 id="chart-heading" class="chart-head">Running profit</h2>
   <p id="chart-help" class="visually-hidden">The running total after each of {{ chart.points|length }} sessions, and each session's result beneath. Every figure is also in the Sessions list. With the chart in focus, the left and right arrow keys step through the sessions.</p>
   <div class="chart-plot" data-chart-plot>
     <div class="chart-line">

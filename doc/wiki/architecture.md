@@ -285,3 +285,12 @@ Two things now replace content on the set page without a reload: the 4-second po
 - **Sign-up** uses the three hook lists in `accounts/signup.py`: `claim_vouches` opens sign-up where it needs an invite, `claim_group_name` names the group on the entry pages, `claim_after_signup` makes the new account the player and returns the group's address.
 - **The page** `claim/<token>/` is exempt from the login requirement, `never_cache`, and sends `Referrer-Policy: same-origin`. GET never writes.
 - **`[data-pop]`** (`motion.js`): an element with this attribute springs in once when its page starts. The claim page uses it for the player's token. Without Motion, or under reduced motion, the element is simply there.
+
+## Stats
+
+- **One query, then arithmetic.** `settlement.stats.fetch(group, unit)` reads every counted result once and folds a player's sets into one `SessionResult` per session. `members_of` is the second query. Periods, the board, ranks, movement and a player's record are plain Python over that list (`Period`, `PlayerRecord`, `board`). The Stats tab and a player page take a fixed number of queries whatever the number of players and sessions.
+- **Integers.** Every amount is an integer; `toward_zero` does each division. Chart positions are floats, because they place marks on a screen.
+- **Nothing is stored.** No table, no migration, no write, no audit event.
+- **Charts** are positions worked out in `web/charts.py` as percentages of a box. The template draws the line as one SVG path stretched to the box (`preserveAspectRatio="none"`, `vector-effect: non-scaling-stroke`) and the labels, end mark and bars as positioned HTML, so text and round ends never distort. `stats.js` adds the readout; without it the chart and the list are complete.
+- **Row movement on a new order** crosses a page load: `stats.js` keeps each row's place in `sessionStorage` when an order pill is tapped and spends it on the next board.
+- **Older stats code stays:** `queries.group_stats` and `member_records` serve Your groups and the switched-off tab (`_group_stats_legacy.html`).

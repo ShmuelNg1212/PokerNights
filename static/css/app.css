@@ -1067,10 +1067,7 @@ input.numpad-refused { border-color: var(--down); }
 
 /* Charts. Positions come from web/charts.py as percentages of the box. */
 .chart { padding: var(--s-4); outline-offset: 2px; }
-.chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); margin: 0 0 var(--s-3); }
-.chart-head h2 { margin: 0; font-size: 1.0625rem; }
-.chart-total { display: inline-flex; align-items: center; gap: var(--s-1); font-size: 1.0625rem; white-space: nowrap; }
-.chart-total .icon { width: .9rem; height: .9rem; }
+.chart-head { margin: 0 0 var(--s-3); font-size: 1.0625rem; }
 .chart-plot { position: relative; touch-action: pan-y; cursor: crosshair; }
 .chart-line { position: relative; height: 176px; }
 .chart-line svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; animation: chart-draw var(--t-focal) var(--ease-out) both; }
@@ -1085,7 +1082,9 @@ input.numpad-refused { border-color: var(--down); }
 .chart-base { position: absolute; left: 0; right: 0; height: 1px; background: var(--rule); }
 .chart-bar { position: absolute; width: calc(100% / var(--n) - 2px); min-width: 2px; max-width: 16px; transform: translateX(-50%); animation: chart-rise 360ms var(--ease-out) both; animation-delay: calc(min(var(--i), 30) * 12ms + 180ms); }
 .chart-bar.up { background: var(--good); border-radius: var(--r-bar) var(--r-bar) 0 0; transform-origin: 50% 100%; }
-.chart-bar.down { background: var(--danger); border-radius: 0 0 var(--r-bar) var(--r-bar); transform-origin: 50% 0; }
+/* Up and Down sit close together for red-green colour-blind readers (dataviz validator: 6.0), so a
+   loss is also below the baseline and hatched. */
+.chart-bar.down { background: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in oklch, var(--ink) 45%, transparent) 3px 4.5px), var(--danger); border-radius: 0 0 var(--r-bar) var(--r-bar); transform-origin: 50% 0; }
 .chart-bar.flat { height: 2px !important; margin-top: -1px; background: var(--line); }
 .chart-bar.is-on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brass); z-index: 1; }
 .chart-cross { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--brass); pointer-events: none; }
@@ -1097,8 +1096,8 @@ input.numpad-refused { border-color: var(--down); }
 @keyframes chart-rise { from { transform: translateX(-50%) scaleY(0); } }
 
 @media (min-width: 900px) {
-  .player-page { max-width: 1180px; }
-  .player-page .chart-line { height: 240px; }
+  .player-page .chart-line { height: 220px; }
+  .chart-bar { max-width: 24px; }
   .stat-tiles { grid-template-columns: repeat(4, 1fr); }
   .player-highlights { grid-template-columns: repeat(4, 1fr); }
 }

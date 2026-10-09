@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09, not merged and not pushed. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 49 of 49. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
+
 Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09 and merged to `main` with roster management. Released 2026-10-09 as `8b51506` (previous production commit `283ecc2`); the live site was not checked from here. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
 
 Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09. Released 2026-10-09 as `8b51506` with claim links. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone acceptance remains open.
@@ -75,6 +77,15 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [ ] Stage 5: shared use (deployment, password reset, claim links).
 
 ## Waiting for the human
+
+- [ ] **The stats revamp is built on `feat/stats-revamp` and not released.** Try it locally now, or on your phone after a release:
+  1. Open a group's Stats tab. Your own figure, rank and last result should lead.
+  2. Tap Average, Return, Per hour and Sessions: rows should glide to their new places and the figure at the right should change.
+  3. Tap This year and Last 3 months, then pick a month from the list.
+  4. Tap a player. Read the Running profit line, then drag a finger across the chart: the line under it should name each session.
+  5. Check a few figures against a session you remember: best night, average, total bought in.
+  6. Say what feels wrong: which figures you would drop or add, the minimum to be ranked (3, 2 and 1), the size of the chart, the movement. `STATS_PAGES=False` in Vercel returns the old tab without a release.
+- [ ] `SPEC.md` step 5 lists profit, sessions, average and win rate, and a "season" filter. Update it if the spec should match the app (return, per hour, rebuys, the four periods, no seasons yet).
 
 
 
