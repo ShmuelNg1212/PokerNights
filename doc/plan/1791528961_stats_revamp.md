@@ -227,3 +227,5 @@ Not merged and not pushed: features are collected locally until the human says t
 - `stats.mjs` has 75 checks. New: with the order row scrolled sideways, the tapped pill, the row and the page do not move over the 60 frames after a tap; on the first frame of the new screen the marker is where the chosen pill was and every row is where it was. `roster.mjs` 44 of 44 again.
 - The scroll checks now use a position every board in the fixture can reach. A chips board is too short to be scrolled to the old one, and the browser then stops 3px short, which is the page's end and not a jump.
 - Not verified: an iPhone. The reproduction and the checks are in desktop Chrome emulating a phone.
+
+2026-10-09 release of the fix: the human said "push it". `fix/stats-pill-scroll` was merged to `main` as `455faab` and pushed (previous production commit `c08d711`). 891 tests passed on PostgreSQL 17 and SQLite on the merged `main` before the push. No migration. The live site was not checked from here. Phone acceptance remains open.
