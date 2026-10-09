@@ -12,7 +12,7 @@
 
 <p id="pick-capacity"><strong>{{ seats_free }}</strong> of {{ session.seat_count }} seat{{ session.seat_count|pluralize }} {{ seats_free|pluralize:"is,are" }} free.</p>
 
-{% if not can_add %}<p class="notice notice-bad">This set is {{ session.get_state_display }}. Players cannot be added now. Return to the set to continue.</p>
+{% if not can_add %}<p class="notice notice-bad">This set is {{ session.state_word }}. Players cannot be added now. Return to the set to continue.</p>
 {% elif seats_free == 0 %}<p class="notice notice-warn">The table is full. A seat must be free before another player can join.</p>{% endif %}
 <section aria-label="Add a new player">
   <h2>Add a new player</h2>

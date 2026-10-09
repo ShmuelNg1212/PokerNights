@@ -71,10 +71,8 @@ ICONS.update({
 })
 
 
-STATE_WORDS = {"setup": "Draft", "open": "Open", "running": "In play", "reconciliation": "Counting up", "finalized": "Final", "canceled": "Canceled"}
-
-
 @register.filter
 def state_word(state):
     """A set's state in the words the screens use. The stored names are 'setup' and 'running'."""
-    return STATE_WORDS.get(state, state)
+    from games.models import GameSession
+    return GameSession.STATE_WORDS.get(state, state)

@@ -7,7 +7,7 @@
 <h1>{% if mode == 'delete' %}Delete this group?{% else %}Archive this group?{% endif %}</h1>
 <p><strong>{{ group.name }}</strong></p>
 {% if unfinished %}
-<div class="notice notice-info">Finish or cancel every set first. Not done: {% for s in unfinished %}{{ s.table.name }} set {{ s.set_number }} ({{ s.get_state_display|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</div>
+<div class="notice notice-info">Finish or cancel every set first. Not done: {% for s in unfinished %}{{ s.table.name }} set {{ s.set_number }} ({{ s.state_word|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</div>
 {% elif mode == 'delete' and has_records %}
 <div class="notice notice-info">Money was recorded in this group, so it cannot be deleted. Money records are never removed.{% if not group.is_archived %} You can archive it instead.{% endif %}</div>
 {% if not group.is_archived %}<p><a class="btn btn-block" href="{% url 'group_archive' group.pk %}">Archive instead</a></p>{% endif %}

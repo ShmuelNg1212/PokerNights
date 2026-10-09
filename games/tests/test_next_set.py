@@ -43,7 +43,7 @@ class NextSetTests(TestCase):
         self.assertIn("Started set 2 with 3 players from set 1", AuditEvent.objects.filter(session_id=second.pk).first().summary)
 
     def test_refused_while_a_set_is_in_play(self):
-        with self.assertRaisesMessage(RuleError, "Set 1 is still running"):
+        with self.assertRaisesMessage(RuleError, "Set 1 is still in play"):
             services.start_next_set(self.first.night_id, self.host)
         self.end()
         second = services.start_next_set(self.first.night_id, self.host)
@@ -51,7 +51,7 @@ class NextSetTests(TestCase):
             services.start_next_set(self.first.night_id, self.host)  # a second tap
         self.assertEqual(GameSession.objects.filter(night=self.first.night).count(), 2)
         services.transition(second.pk, self.host, "start")
-        with self.assertRaisesMessage(RuleError, "Set 2 is still running"):
+        with self.assertRaisesMessage(RuleError, "Set 2 is still in play"):
             services.start_next_set(self.first.night_id, self.host)
 
     def test_refused_for_a_closed_session_a_player_and_another_group(self):

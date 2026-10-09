@@ -1,4 +1,4 @@
-{% load money_tags %}<section class="group-sessions" aria-labelledby="current-sessions">
+{% load money_tags table_tags %}<section class="group-sessions" aria-labelledby="current-sessions">
 <h2 id="current-sessions">Current sessions</h2>
 {% if open_nights %}
   {% if me.is_host and tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>{% endif %}
@@ -6,7 +6,7 @@
     {% for n in open_nights %}
     <li><a class="session-link" href="{% url 'night' n.pk %}">
       <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"D, M j" }}</span></span>
-      <span class="badge {% if n.latest_set.state == 'running' %}badge-live{% endif %}">Set {{ n.latest_set.set_number }} · {{ n.latest_set.get_state_display }}</span>
+      <span class="badge {% if n.latest_set.state == 'running' %}badge-live{% endif %}">Set {{ n.latest_set.set_number }} · {{ n.latest_set.state|state_word }}</span>
     </a></li>
     {% endfor %}
   </ul>

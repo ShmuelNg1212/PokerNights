@@ -305,7 +305,7 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
             return session
     allowed_from, target = TRANSITIONS[action]
     if session.state not in allowed_from:
-        raise RuleError(f"This set is {session.get_state_display().lower()}, so that action is not available.")
+        raise RuleError(f"This set is {session.state_word.lower()}, so that action is not available.")
     reason = (reason or "").strip()
     if action == "resume" and session.night.sets.filter(set_number__gt=session.set_number).exists():
         raise RuleError("A later set of this session has started, so this set cannot resume play.")
@@ -368,7 +368,7 @@ def unfinished_sets(night: GameNight) -> list:
 def _refuse_unfinished(night, verb) -> None:
     unfinished = unfinished_sets(night)
     if unfinished:
-        names = ", ".join(f"set {s.set_number} ({s.get_state_display().lower()})" for s in unfinished)
+        names = ", ".join(f"set {s.set_number} ({s.state_word.lower()})" for s in unfinished)
         raise RuleError(f"Finish or cancel every set before you {verb} the session. Not done: {names}.")
 
 
@@ -473,7 +473,7 @@ def guard_group_archive(group, verb="archive") -> None:
     """A group with a set that is not finished stays as it is."""
     unfinished = group_unfinished_sets(group)
     if unfinished:
-        names = ", ".join(f"{s.table.name} set {s.set_number} ({s.get_state_display().lower()})" for s in unfinished[:3])
+        names = ", ".join(f"{s.table.name} set {s.set_number} ({s.state_word.lower()})" for s in unfinished[:3])
         more = f" and {len(unfinished) - 3} more" if len(unfinished) > 3 else ""
         raise RuleError(f"Finish or cancel every set before you {verb} the group. Not done: {names}{more}.")
 
@@ -529,7 +529,7 @@ def start_next_set(night_id, actor: Member) -> GameSession:
     in_play = next((s for s in sets if s.state in IN_PLAY_STATES), None)
     if in_play is not None:
         raise RuleError(
-            f"Set {in_play.set_number} is still {in_play.get_state_display().lower()}. "
+            f"Set {in_play.set_number} is still {in_play.state_word.lower()}. "
             "End its play before starting the next set."
         )
     played = [s for s in sets if s.state != State.CANCELED]

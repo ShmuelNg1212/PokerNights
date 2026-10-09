@@ -102,7 +102,7 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
     sets = list(night.sets.order_by("set_number"))
     unfinished = [s for s in sets if s.state not in (State.FINALIZED, State.CANCELED)]
     if unfinished:
-        names = ", ".join(f"set {s.set_number} ({s.get_state_display().lower()})" for s in unfinished)
+        names = ", ".join(f"set {s.set_number} ({s.state_word.lower()})" for s in unfinished)
         raise RuleError(f"Finalize or cancel every set first. Not done: {names}.")
     if not any(s.state == State.FINALIZED for s in sets):
         raise RuleError("No set of this session is finalized, so there is nothing to settle.")
