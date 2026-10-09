@@ -216,3 +216,5 @@ Not merged and not pushed: features are collected locally until the human says t
   - on a new order, the summary stays still and each row travels from where it was; a row that is new fades in.
 - The scroll position is still held, and the history entry is still replaced.
 - `stats.mjs` has 70 checks. It now samples the running animations after a tap and requires the marker and the figures to be moving on a new period and unit, and the marker and the rows on a new order, and nothing left behind afterwards. A frame captured 140ms into a change was inspected: the marker was partway across and the figures partway in.
+
+2026-10-09 release: the human said "ok push this". `feat/stats-revamp` was merged to `main` as `c08d711` and pushed (previous production commit `8b51506`). 891 tests passed on PostgreSQL 17 and SQLite on the merged `main` before the push. No migration. The live site was not checked from here: that check is not permitted in this session. Phone acceptance remains open.

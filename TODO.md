@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09, not merged and not pushed. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 70 of 70. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
+Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09. Released 2026-10-09 as `c08d711` (previous production commit `8b51506`); the live site was not checked from here. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 70 of 70. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
 
 Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09 and merged to `main` with roster management. Released 2026-10-09 as `8b51506` (previous production commit `283ecc2`); the live site was not checked from here. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
 
@@ -78,7 +78,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
-- [ ] **The stats revamp is built on `feat/stats-revamp` and not released.** Try it locally now, or on your phone after a release:
+- [ ] **The stats revamp was released on 2026-10-09 (`c08d711`).** First check the Vercel build passed. Then on your phone:
   1. Open a group's Stats tab. Your own figure, rank and last result should lead.
   2. Scroll down the board, then tap Average, Return, Per hour and Sessions: the page should stay where it is, the chosen pill should slide across, and rows should move to their new places.
   3. Tap This year and Last 3 months, then pick a month from the list.
