@@ -749,7 +749,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | A form is sent | The ring spins, one turn in 900ms, until the next page comes. The button keeps its busy line and words |
 | A refused page | No arrival. The mark shakes once with `nudge`, as the refused field does |
 | Log in ⇄ Sign up | The mark, the name and the sheet are the same things on both screens (`brand-mark`, `door-name`, `door-sheet`): the mark changes size and place, the sheet changes height without stretching its content, the rest cross-fades |
-| Getting in, logging out | The mark and the top bar's mark share `brand-mark`, so the browser carries the chip into the top bar and back (420ms). Inside the app the top bar gives the name up (`data-door-done`), so screens there change as before |
+| Getting in, logging out | Only the mark is carried. The name and the sheet are carried between two front-door screens alone (`data-door-swap`, set by `door.js` for that change); into the app they fade with the rest of the old screen in 180ms. Carried there, the sheet had nothing to become and its layer covered the new screen until the chip landed (fixed 2026-10-09). The mark and the top bar's mark share `brand-mark`, so the browser carries the chip into the top bar and back (420ms). Inside the app the top bar gives the name up (`data-door-done`), so screens there change as before |
 
 **Rules.**
 
@@ -763,6 +763,32 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 **Measured.** `door.mjs`, 134 checks at 320 × 568, 390 × 844 and 1280 × 800: the frame, fit and 48px targets on eight screens, contrast on both surfaces, the first frame of each arrival, the key and the tap that end it, each answer of the chip and its centre of turning, ten changes between Log in and Sign up, the carry in and out, late frames, reduced motion, no JavaScript, Motion blocked and the switch. The empty Sign up ends its button at 620px on a 390 × 844 screen, and the invited one at 675px (800px before).
 
 **Critique.** 29 of 40 (24, then 25 before). Open: where the description belongs, naming who invited, and whether a phone's keyboard hides the chip.
+
+### Arrival into the app (2026-10-09)
+
+[Plan](doc/plan/1791546778_arrival_after_login.md). The last step of the front door: the one page that follows a successful log in, sign up, reset link or claim. No new colour, font, asset or words. Over within 880ms; no exception to the 900ms limit.
+
+| Moment | Movement |
+|---|---|
+| The chip lands in the top bar | The top bar's mark sinks 2px and returns, once, 380ms in |
+| Your groups: the cards | Each card rises 16px and fades in with `shift`, from 100ms, 70ms apart. The fourth card and any after it arrive together |
+| The players on a card | The tokens slide 14px into their overlap, from 220ms, 30ms apart; the sixth and the "+N" counter together |
+| A set in play | The "In play" badge springs in from 60% at 320ms |
+| Money to settle | A 2px Brass line draws under "To settle", holds and fades, once |
+| New group | Fades in last |
+| A newcomer's first screen | The mark, the heading, the sentence, the form and the note rise in turn, 60ms apart |
+| Any other landing page | Only the top bar's mark lands |
+| A later visit, a reload, Back | Nothing |
+
+**Rules.**
+
+1. A figure is at its value on the first frame. A card moves with its figures inside it; no digit counts or rolls.
+2. Only cards and their parts move, never `<main>`: a transform on it would re-anchor the floating messages and the host dock inside it. This is why a landing page other than Your groups has no rise.
+3. The server marks the page (`data-welcome` on `<main>`, `config/door.py`): a login sets a cookie for 30 seconds, and the first page shown to the signed-in person reads and removes it. A page fetched ahead of a tap does not use it up, and a front-door screen seen signed in (Join, Claim) leaves it for the page behind it.
+4. It is CSS, as the front door's arrival is. `door.js` ends it on the first key or tap and takes the mark off after 1.2 seconds.
+5. `DOOR_MOTION=False` removes it with the rest of the front door's movement.
+
+**Measured.** `welcome.mjs`, 36 checks at 320 × 568, 390 × 844 and 1280 × 800: the first frame, every figure's text on that frame against its text at rest, the order of the cards, the end within 900ms, a tap and a key ending it, a tap on a card's button during it, one card and five, a group page, a newcomer, a reload, Back, a second login, reduced motion, no JavaScript, Motion blocked and the switch. With the processor slowed four times the arrival had one late frame (50ms) where a plain visit had none.
 
 ## Do's and Don'ts
 

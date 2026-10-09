@@ -98,3 +98,7 @@ Stats opens with the viewer's own profit or loss, rank and last result. The boar
 ## 2026-10-09 addendum — Front door
 
 Logging in and signing up are one place: the chip above, the task in a raised sheet. The chip arrives once per browser session, answers typing, sending and a refusal, and travels into the top bar when the person gets in. An invited Sign up is headed with the group's name. What is asked, the rules, and how the form is sent are unchanged, so a phone's password manager sees the same form. [Plan](doc/plan/1791542366_front_door_revamp.md).
+
+## 2026-10-09 addendum — Arrival after login
+
+The page a person lands on after logging in settles into place once: on Your groups the cards rise in turn, the players are set down in a row, and a set in play and money to settle are pointed out. Nothing new is shown or said, and money figures are at their value from the first frame. [Plan](doc/plan/1791546778_arrival_after_login.md).

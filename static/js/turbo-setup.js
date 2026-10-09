@@ -122,6 +122,9 @@
       var transition = document.startViewTransition(function () { leave(); event.detail.resume(); return shown; });
       moving += 1;
       transition.finished.then(ended, ended);
+      // A tap made while the browser is still carrying the chip in from the login page: the
+      // browser skips this movement and changes the screen at once. That is not an error.
+      transition.ready.catch(function () {});
     } catch (_) { leave(); event.detail.resume(); settle(); }
   });
   // Nothing waits for a movement. While one runs, the browser may give a tap to the page itself

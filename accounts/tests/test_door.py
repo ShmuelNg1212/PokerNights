@@ -5,9 +5,10 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from groups import services
-from groups.tests.helpers import make_group
+from groups.tests.helpers import make_group, make_user
 
 COOKIE = "door"
+ARRIVED = "arrived"
 
 
 class DoorFrameTests(TestCase):
@@ -131,3 +132,88 @@ class DoorArrivalTests(TestCase):
             self.assertNotIn(COOKIE, page.cookies)
             self.assertContains(page, 'class="door-sheet"')
         self.assertContains(self.client.get(self.login), 'data-door="on"')
+
+
+class WelcomeTests(TestCase):
+    """The one page after a successful login plays the arrival into the app."""
+
+    def setUp(self):
+        self.group, self.host = make_group(group_name="Kamuning Card Club")
+        self.login, self.signup, self.home = reverse("login"), reverse("signup"), reverse("home")
+
+    def log_in(self, **extra):
+        return self.client.post(self.login, {"username": "hana", "password": "tablestakes-91", **extra})
+
+    def test_the_page_after_a_login_is_the_arrival_and_only_that_page(self):
+        answer = self.log_in()
+        cookie = answer.cookies[ARRIVED]
+        self.assertEqual((cookie.value, cookie["max-age"], cookie["samesite"], cookie["path"]), ("1", 30, "Lax", "/"))
+        page = self.client.get(self.home)
+        self.assertContains(page, 'class="page hub-page home-page" data-depth="0" data-welcome>')
+        self.assertEqual(page.cookies[ARRIVED].value, "")  # removed by the page that read it
+        self.assertEqual(page.cookies[ARRIVED]["max-age"], 0)
+        for _ in range(2):  # a reload, a later visit
+            again = self.client.get(self.home)
+            self.assertNotContains(again, "data-welcome")
+            self.assertNotIn(ARRIVED, again.cookies)
+
+    def test_the_page_a_person_was_sent_from_is_the_arrival(self):
+        target = reverse("group", args=[self.group.pk])
+        self.assertRedirects(self.log_in(next=target), target, fetch_redirect_response=False)
+        self.assertContains(self.client.get(target), "data-welcome")
+        self.assertNotContains(self.client.get(self.home), "data-welcome")
+
+    def test_sign_up_is_an_arrival_too(self):
+        answer = self.client.post(self.signup, {"username": "newcomer", "password1": "tablestakes-91", "password2": "tablestakes-91"})
+        self.assertEqual(answer.cookies[ARRIVED].value, "1")
+        page = self.client.get(self.home)
+        self.assertContains(page, "Start your first group")
+        self.assertContains(page, "data-welcome")
+
+    def test_a_reset_link_is_an_arrival_too(self):
+        from accounts import services as accounts
+
+        player = make_user("pedro")
+        _, token = accounts.issue_reset_link(player, created_by=self.host.user, group_id=self.group.pk)
+        answer = self.client.post(reverse("password_reset", args=[token]), {"new_password1": "another-stack-77", "new_password2": "another-stack-77"})
+        self.assertEqual(answer.cookies[ARRIVED].value, "1")
+        self.assertContains(self.client.get(self.home), "data-welcome")
+
+    def test_a_refused_login_is_no_arrival(self):
+        answer = self.client.post(self.login, {"username": "hana", "password": "wrong"})
+        self.assertNotIn(ARRIVED, answer.cookies)
+        self.assertNotContains(answer, "data-welcome")
+
+    def test_a_front_door_screen_leaves_the_arrival_for_the_page_behind_it(self):
+        # An existing account that logs in from an invite is asked to confirm first, on a front-door screen.
+        other, _ = make_group(host_name="rosa", group_name="Other Club")
+        from groups import services
+        _, token = services.create_invite(_)
+        invite = reverse("invite_accept", args=[token])
+        self.log_in(next=invite)
+        page = self.client.get(invite)
+        self.assertNotContains(page, "data-welcome")
+        self.assertNotIn(ARRIVED, page.cookies)
+        self.assertContains(self.client.get(self.home), "data-welcome")
+
+    def test_a_page_fetched_ahead_of_a_tap_does_not_use_it_up(self):
+        self.log_in()
+        ahead = self.client.get(self.home, headers={"X-Sec-Purpose": "prefetch"})
+        self.assertNotContains(ahead, "data-welcome")
+        self.assertNotIn(ARRIVED, ahead.cookies)
+        self.assertContains(self.client.get(self.home), "data-welcome")
+
+    def test_a_stale_cookie_means_nothing_to_a_signed_out_page(self):
+        self.client.cookies[ARRIVED] = "1"
+        page = self.client.get(self.login)
+        self.assertNotContains(page, "data-welcome")
+
+    @override_settings(SESSION_COOKIE_SECURE=True)
+    def test_the_cookie_is_secure_where_the_session_cookie_is(self):
+        self.assertTrue(self.log_in().cookies[ARRIVED]["secure"])
+
+    @override_settings(DOOR_MOTION=False)
+    def test_the_switch_removes_it(self):
+        self.assertNotIn(ARRIVED, self.log_in().cookies)
+        self.client.cookies[ARRIVED] = "1"
+        self.assertNotContains(self.client.get(self.home), "data-welcome")

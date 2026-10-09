@@ -425,3 +425,10 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - The arrival is CSS at the end of `static/css/app.css`. `static/js/door.js` ends it on the first key or tap and moves the chip: a turn per key, the crescent on Show, a spin while a form is sent, a shake on a refused page. It also sets `data-door-done` on `<html>` inside the app and removes it when a log-out form is sent, so the top bar's mark carries the chip only into and out of the front door.
 - An invited Sign up is headed "Join {group}". Log in still says "You're invited to {group}".
 - Switch: `DOOR_MOTION=False` removes the movement and the carried names. Check: `web/tests/browser/door.mjs`. [Plan](../plan/1791542366_front_door_revamp.md).
+
+## Arrival after login (2026-10-09)
+
+- `config/door.py` listens to Django's `user_logged_in`, so every way in is covered without a change to a view. The middleware `DoorCookie` sets the cookie `arrived` (30 seconds) on that answer. `door.welcome` is true on the first GET page a signed-in person is shown; `base.html` then writes `data-welcome` on `<main>` and the middleware removes the cookie. A prefetch (`config.prefetch.is_prefetch`) and a signed-out page do not read it; `templates/entry.html` empties the `welcome` block, so Join and Claim pass it on.
+- The movement is the `welcome-*` keyframes at the end of `static/css/app.css`. `door.js` ends it on the first key or tap and removes the attribute.
+- `static/js/turbo-setup.js` now ignores the browser's "transition was skipped" when a link is tapped while the chip is still being carried in; the screen changes at once.
+- Switch: `DOOR_MOTION=False`. Check: `web/tests/browser/welcome.mjs`. [Plan](../plan/1791546778_arrival_after_login.md).

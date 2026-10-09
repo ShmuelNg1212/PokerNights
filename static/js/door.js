@@ -5,6 +5,7 @@
   "use strict";
   var root = document.documentElement;
   function enabled() { return root.dataset.door === "on"; }
+  var swapTimer = 0;
 
   // The top bar's mark carries the chip's name only for the change from or to the front door.
   // Inside the app the name is given up, so screens there change as they did.
@@ -17,11 +18,34 @@
   document.addEventListener("turbo:before-render", function (event) {
     var next = event.detail.newBody.querySelector("[data-arrival]");
     if (next && document.querySelector(".entry-page")) next.removeAttribute("data-arrival");
+    // Only then is the sheet the same thing on both screens. turbo-setup.js has just started the
+    // change; the browser photographs the old screen on the next frame, so the mark is in time.
+    if (document.querySelector(".door-sheet") && event.detail.newBody.querySelector(".door-sheet")) {
+      root.dataset.doorSwap = "1";
+      clearTimeout(swapTimer);
+      swapTimer = setTimeout(function () { delete root.dataset.doorSwap; }, 700);
+    }
   });
+
+  // The page after a login arrives once (app.css, "Arrival into the app"). The first key or tap ends
+  // it, and the mark is taken off when it is over so nothing added to the page later plays it again.
+  function welcome() {
+    var main = document.querySelector("main[data-welcome]");
+    if (!main) return null;
+    var life = new AbortController(), timer = setTimeout(over, 1200);
+    function over() {
+      clearTimeout(timer); life.abort();
+      document.getAnimations().forEach(function (animation) { if (/^welcome-/.test(animation.animationName || "")) animation.finish(); });
+      main.removeAttribute("data-welcome");
+    }
+    document.addEventListener("keydown", over, { signal: life.signal });
+    document.addEventListener("pointerdown", over, { signal: life.signal, capture: true });
+    return function () { clearTimeout(timer); life.abort(); };
+  }
 
   window.pokerPage.register(function () {
     var page = document.querySelector(".entry-page"), motion = window.pokerMotion;
-    if (!page) { if (enabled()) root.dataset.doorDone = "1"; return; }
+    if (!page) { if (enabled()) root.dataset.doorDone = "1"; return welcome(); }
     delete root.dataset.doorDone;
     var mark = page.querySelector(".door-mark");
     if (!enabled() || !mark) return;
