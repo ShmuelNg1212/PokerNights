@@ -140,3 +140,5 @@ Acceptance:
 - AC5 is met in Chrome. Safari on an iPhone is not verified.
 
 Not verified: a physical phone, the installed app, a real password manager, a screen reader, and whether the phone's keyboard hides the chip while typing (the critique computed that it may on Sign up).
+
+2026-10-09 rendezvous: merged into `main` as `394b4f3 feat: merge the front door revamp` and pushed on the human's word ("ok go push it now"). 905 tests passed on `main` before the push. About two minutes later the live login page served the new frame with `data-arrival="full"`, `door.js` and the arrival keyframes. Previous production commit `6119dd4`. The phone checks are open.
