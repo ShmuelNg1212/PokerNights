@@ -17,8 +17,8 @@
   {% endif %}
 </section>
 {% if stat_ranked or stat_unranked %}
-<nav class="pills stat-sort" aria-label="Order by" data-stat-sort>
-  {% for slug, label in stat_sorts %}<a href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+<nav class="pills stat-sort" aria-label="Order by" data-stat-nav data-stat-pills="sort">
+  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
 </nav>
 {% if stat_ranked %}
 <ol class="stat-list" data-stat-board>

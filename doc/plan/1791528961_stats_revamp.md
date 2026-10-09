@@ -197,3 +197,12 @@ A fresh reviewer did not read the branch; the author's own read of the diff is t
 Documentation synced: wiki features, architecture and deployment, DESIGN.md, PRODUCT.md, roadmap, browser README, TODO.
 
 Not merged and not pushed: features are collected locally until the human says to release.
+
+2026-10-09 addendum, after the human tried it locally: "switching between timeframes and which group stats to display brings you back up the page. can you also add animation when switching between these."
+
+- **Cause.** Each pill is a new address, and Turbo starts every new address at the top.
+- **Fix.** A change of period, unit or order on a stats screen is now treated as the same screen. The page stays where it was scrolled (`stats.js` tells Turbo the scrolling is done for these visits and sets the place again once the screen is in). The change replaces the history entry, so Back leaves Stats in one step instead of walking back through every pill.
+- **Movement.** `turbo-setup.js` marks these changes `data-go="filter"`: the chosen pill slides to its new place, each row visible on the board is carried to its new position, and the rest cross-fades in 200ms. On a player's page the chart draws again for the new period. Where the browser has no view transitions, the rows glide with Motion as before. Reduced motion: no movement.
+- The Month list now changes the screen in place like the pills (it was a full page load).
+- `stats.mjs` has 66 checks: for period, order, unit, month and a player's period it checks that the page stays where it was scrolled, that history does not grow, and that no marker or inline style is left. Opening a player from the board still starts at the top.
+- Not verified: the look of the movement itself. The headless check confirms the transition starts and cleans up, not how it looks on a phone.

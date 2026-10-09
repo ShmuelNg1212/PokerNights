@@ -1102,3 +1102,13 @@ input.numpad-refused { border-color: var(--down); }
   .player-highlights { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 359px) { .stat-link { gap: var(--s-2); } .stat-you-facts { grid-template-columns: 1fr; } }
+
+/* A change of period, unit or order on a stats screen (turbo-setup.js sets data-go="filter"). The
+   screen stays; the chosen pill and each row are carried to their new places, above the page. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-go=filter]::view-transition-old(root), html[data-go=filter]::view-transition-new(root) { animation-duration: 200ms; }
+  html[data-go=filter]::view-transition-group(*) { animation-duration: 300ms; animation-timing-function: var(--ease-out); }
+  html[data-go=filter]::view-transition-group(pill-unit), html[data-go=filter]::view-transition-group(pill-period), html[data-go=filter]::view-transition-group(pill-sort) { z-index: 2; }
+  /* A pill's words change as it moves, so the old words leave before the new ones are read. */
+  html[data-go=filter]::view-transition-old(pill-unit), html[data-go=filter]::view-transition-old(pill-period), html[data-go=filter]::view-transition-old(pill-sort) { animation-duration: 120ms; }
+}

@@ -2,7 +2,7 @@
 {% load money_tags clock_tags table_tags %}
 {% block title %}{{ member.display_name }} · {{ group.name }}{% endblock %}
 {% block page_class %}hub-page player-page{% endblock %}
-{% block screen %} data-depth="2"{% endblock %}
+{% block screen %} data-depth="2" data-stats="player"{% endblock %}
 {% block content %}
 <p class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %} {{ group.name }} stats</a></p>
 <header class="player-head">

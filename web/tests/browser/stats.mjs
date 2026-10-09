@@ -39,15 +39,28 @@ try {
  await A.size(390);await A.go(board);
  for(const sel of ['.stat-facts','.stat-label','.stat-move','.stat-you-facts dt','.stat-notes summary'])check(`contrast ${sel}`,await A.js(contrast(sel))>=4.5);
  const before=await A.js(names);
- await A.click(`[...document.querySelectorAll('[data-stat-sort] a')].find(a=>a.textContent==='Average')`);
- check('Average orders the board and shows profit small beneath',await A.js(`location.search.includes('sort=average')&&!!document.querySelector('.stat-profit')&&document.querySelector('[data-stat-sort] [aria-current]').textContent==='Average'`));
+ await A.click(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent==='Average')`);
+ check('Average orders the board and shows profit small beneath',await A.js(`location.search.includes('sort=average')&&!!document.querySelector('.stat-profit')&&document.querySelector('[data-stat-pills=sort] [aria-current]').textContent==='Average'`));
  check('contrast .stat-profit',await A.js(contrast('.stat-profit'))>=4.5);
  await sleep(900);check('rows are at rest with no inline style left',await A.js(`[...document.querySelectorAll('.stat-row')].every(r=>!r.getAttribute('style'))`));await A.shot('stats-board-average-390');
- check('Per hour is offered when time was recorded',await A.js(`[...document.querySelectorAll('[data-stat-sort] a')].some(a=>a.textContent==='Per hour')`));
+ check('Per hour is offered when time was recorded',await A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].some(a=>a.textContent==='Per hour')`));
  await A.js(`(()=>{const s=document.querySelector('#stat-month');s.value=s.options[1].value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`);await sleep(900);
  check('picking a month shows it at once and keeps the order',await A.js(`new RegExp('period=2026-[0-9]{2}').test(location.search)&&location.search.includes('sort=average')&&document.querySelector('#stat-month').hasAttribute('data-chosen')`));await A.shot('stats-board-month-390');
  await A.go(board+'&unit=chips');check('a chips board never shows pesos',await A.js(`!document.querySelector('.group-stats').textContent.includes('₱')&&document.body.textContent.includes('chips')`));
  await A.go(board+'&period=2020-01');check('an empty period says so',await A.js(text('No closed session in January 2020')));
+
+ // A change of period, unit or order keeps the page where it was scrolled.
+ const stays=async(P,label,act)=>{await P.js(`window.scrollTo(0,420)`);await sleep(150);const y=await P.js(`window.scrollY`);const steps=await P.js(`history.length`);await act();await sleep(900);check(`${label}: the page stays where it was scrolled`,y>300&&Math.abs(await P.js(`window.scrollY`)-y)<=2);check(`${label}: Back still leaves Stats in one step`,await P.js(`history.length`)===steps);check(`${label}: nothing is left marked`,await P.js(`!document.documentElement.hasAttribute('data-go')&&[...document.querySelectorAll('.stat-row,.pills a,#stat-month')].every(e=>!e.getAttribute('style'))`));};
+ await A.size(390);await A.go(board);
+ await stays(A,'period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent==='This year').click()`));
+ check('the period changed',await A.js(`location.search.includes('period=year')&&document.querySelector('[data-stat-pills=period] [aria-current]').textContent==='This year'`));
+ await stays(A,'order',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent==='Return').click()`));
+ await stays(A,'unit',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=unit] a')].find(a=>a.textContent==='Chips games').click()`));
+ await stays(A,'month',()=>A.js(`(()=>{const s=document.querySelector('#stat-month');s.value=s.options[1].value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`));
+ await A.go(board);await A.js(`window.scrollTo(0,420)`);await sleep(150);
+ await A.click(`[...document.querySelectorAll('[data-stat-board] .stat-link')].find(a=>a.querySelector('strong').textContent==='Ana')`);
+ check('opening a player still starts at the top',await A.js(`window.scrollY`)<5);
+ await stays(A,'player period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent==='Last 3 months').click()`));
 
  // A player's page.
  await A.go(board);await A.click(`[...document.querySelectorAll('[data-stat-board] .stat-link')].find(a=>a.querySelector('strong').textContent==='Ana')`);

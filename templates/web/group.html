@@ -2,7 +2,7 @@
 {% load table_tags %}
 {% block title %}{{ group.name }} · PokerNights{% endblock %}
 {% block page_class %}hub-page group-page{% endblock %}
-{% block screen %} data-depth="1" data-tab="{% if view == 'settings' %}2{% elif view == 'stats' %}1{% else %}0{% endif %}"{% endblock %}
+{% block screen %} data-depth="1" data-tab="{% if view == 'settings' %}2{% elif view == 'stats' %}1{% else %}0{% endif %}"{% if view == 'stats' and stats_pages %} data-stats="board"{% endif %}{% endblock %}
 {% block content %}
 <p class="table-bar"><a href="{% url 'home' %}">{% icon 'arrow-left' %} Your groups</a></p><header class="page-heading"><h1 data-carry="title">{{ group.name }}</h1><span class="badge">{{ me.get_role_display }}</span></header>
 <nav class="tabs" aria-label="{{ group.name }}">
