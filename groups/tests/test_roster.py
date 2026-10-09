@@ -23,7 +23,8 @@ class RosterTests(TestCase):
         with self.assertRaises(RuleError):
             services.add_roster_player(self.host, "tito boy")
         services.remove_member(self.host, Member.objects.get(display_name="Tito Boy").pk)
-        services.add_roster_player(self.host, "tito boy")
+        with self.assertRaisesMessage(RuleError, "Removed from this group"):  # a second row would split their history
+            services.add_roster_player(self.host, "tito boy")
 
     def test_only_a_host_adds_or_renames(self):
         ben = add_player(self.group, "ben")

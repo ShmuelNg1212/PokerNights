@@ -430,6 +430,36 @@ def _delete_night(night, actor) -> None:
     night.delete()
 
 
+# --- Removing a member from the group -----------------------------------------
+
+def sets_seating(member) -> list:
+    """Unfinished sets where the member is at the table."""
+    return list(
+        GameSession.objects.filter(
+            state__in=UNFINISHED_STATES, participants__member=member, participants__status=Participant.Status.JOINED,
+        ).select_related("table").order_by("game_date", "pk")
+    )
+
+
+def guard_member_removal(member) -> None:
+    """A member at the table of a set that is not finished stays on the roster."""
+    seated = sets_seating(member)
+    if seated:
+        first = seated[0]
+        raise RuleError(
+            f"{member.display_name} is at the table in {first.table.name} set {first.set_number}. "
+            "Take them off that set or finish it first."
+        )
+
+
+def _removed_name(group_id, name) -> str:
+    """The stored name of the removed member who has ``name``, for a message."""
+    found = Member.objects.filter(
+        group_id=group_id, status=Member.Status.REMOVED, display_name__iexact=clean_name(name)
+    ).first()
+    return found.display_name if found else clean_name(name)
+
+
 # --- Archive and delete a group ---------------------------------------------
 
 def group_unfinished_sets(group) -> list:
@@ -561,7 +591,10 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
     allowed = HOST_ADD_STATES if actor.is_host else JOINABLE_STATES
     if session.state not in allowed:
         raise RuleError("This set is not open for joining.")
-    member = Member.objects.filter(group_id=session.group_id, pk=member_id, status=Member.Status.ACTIVE).first()
+    # Locked, so that removing this member from the group waits for the seat, or the seat for it.
+    member = Member.objects.select_for_update().filter(
+        group_id=session.group_id, pk=member_id, status=Member.Status.ACTIVE
+    ).first()
     if member is None:
         raise RuleError("That player is not in this group.")
     participant = Participant.objects.filter(session=session, member=member).first()
@@ -609,6 +642,11 @@ def add_new_player(session_id, actor: Member, name: str, request_id) -> list:
     try:
         member = add_roster_player(actor, name)
     except RuleError as error:
+        if str(error).startswith("Removed from this group"):
+            raise RuleError(
+                f"{_removed_name(session.group_id, name)} was removed from this group. "
+                "Bring them back in Group settings, then add them here."
+            ) from None
         if "already in this group" in str(error):
             seated = Participant.objects.filter(
                 session=session, status=Participant.Status.JOINED,
@@ -648,7 +686,12 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
     if not wanted:
         raise RuleError("Select at least one player.")
 
-    found = Member.objects.filter(group_id=session.group_id, pk__in=wanted, status=Member.Status.ACTIVE).in_bulk()
+    # Locked in one order, so that removing a member from the group waits for the seat, or the seat for it.
+    found = {
+        member.pk: member for member in Member.objects.select_for_update().order_by("pk").filter(
+            group_id=session.group_id, pk__in=wanted, status=Member.Status.ACTIVE
+        )
+    }
     if len(found) != len(wanted):
         raise RuleError("A selected player is no longer in this group. Nothing was added. Review your selection.")
     members = [found[member_id] for member_id in wanted]
@@ -740,6 +783,12 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
         return participant
     if participant.status == Participant.Status.WITHDRAWN:
         raise RuleError("That player is not in this set.")
+    if not left and not Member.objects.select_for_update().filter(
+        pk=participant.member_id, status=Member.Status.ACTIVE
+    ).exists():
+        raise RuleError(
+            f"{participant.member.display_name} was removed from this group. Bring them back in Group settings first."
+        )
     if not left and _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")
     now = timezone.now()

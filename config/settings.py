@@ -187,6 +187,8 @@ ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
 RESET_LINKS = env.bool("RESET_LINKS", default=True)
 # Turn off to make rebuys and final counts host-only again (see ledger/services.py).
 PLAYER_ENTRIES = env.bool("PLAYER_ENTRIES", default=True)
+# Turn off to return Group settings → Players to add, rename and remove only (see groups/services.py).
+ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},
