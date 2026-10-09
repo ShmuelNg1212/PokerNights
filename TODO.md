@@ -72,6 +72,8 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
+- [ ] **Approve the roster management plan** ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): safe remove and restore, your own name, the contact note and sessions played, and several names at once. Eight decisions are listed in the plan. No code is written yet.
+
 - [ ] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
   1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
   2. Open the Rebuy sheet for that player on the host's phone and leave it open. Record another rebuy from the player's phone, then confirm on the host's phone: it should be refused and say who recorded the other one.
