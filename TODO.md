@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Set page revamp ([plan](doc/plan/1791549025_set_page_revamp.md), [study](doc/study/1791548918_set_page_revamp.md)): built on `feat/set-page-revamp` on 2026-10-09. **Not merged and not released.** In play, the pot and six players fit one phone screen, Rebuy is on the row and a tap on a player reaches cash-out; a draft or open set shows four steps and the next one; a set reads Draft, Open or In play everywhere. No migration. 934 tests pass on SQLite and PostgreSQL 17; `table.mjs` 63 of 63. `TABLE_REVAMP=False` in Vercel returns the earlier page.
+Set page revamp ([plan](doc/plan/1791549025_set_page_revamp.md), [study](doc/study/1791548918_set_page_revamp.md)): built on `feat/set-page-revamp` on 2026-10-09. Released 2026-10-09 as `e812dfc` (previous production commit `f2bd882`); the live site serves `table.js` and the new styles, and no live login was made. In play, the pot and six players fit one phone screen, Rebuy is on the row and a tap on a player reaches cash-out; a draft or open set shows four steps and the next one; a set reads Draft, Open or In play everywhere. No migration. 934 tests pass on SQLite and PostgreSQL 17; `table.mjs` 63 of 63. `TABLE_REVAMP=False` in Vercel returns the earlier page.
 
 - [ ] After release, on your phone as a host: create a session and read the four steps; add players, open the set and start it. Watch the felt arrive once.
 - [ ] In play: check the pot and at least five players show without scrolling. Tap Rebuy on a row. Tap a player's name, then Cash out. Open Details on the panel.

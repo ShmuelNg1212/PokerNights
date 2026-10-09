@@ -154,3 +154,5 @@ Still to do in stage 3:
 - **Critique:** 28 of 40, no P0. One fix batch: the pot on one line at 320px, finished steps of an open set on one line, "Choose rake" on the stakes step, a line telling the host a tap reaches cash-out, the hint colour on the rail. Left open (P3): ragged amounts on rows without a button, the lone Details line when open, an action in the draft's empty list.
 - **Differs from the plan:** AC8 said no model or service change. Decision 3 (one set of words) needed `GameSession.state_word`, a property with no migration, and four refusal messages now say "in play" and "draft" where they said "running" and "setup". A sheet cannot open a second sheet, so Cash out swaps the content of the open one.
 - **Acceptance:** AC1 to AC10 met as measured above, with AC8 as noted. The phone checks in TODO.md are the human's.
+
+2026-10-09: released on the human's instruction ("ok push this to the live version") as `e812dfc`; previous production commit `f2bd882`. Both suites passed before the push (934 each). The live site serves the new script and stylesheet. The phone checks in TODO.md are open.
