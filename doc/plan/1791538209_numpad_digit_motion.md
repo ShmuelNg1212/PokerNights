@@ -1,6 +1,6 @@
 # Numpad digit motion: plan
 
-Status: approved 2026-10-09 ("approved"); all three decisions as recommended. Built; not merged. Date: 2026-10-09, Asia/Manila. Study: [Numpad digit motion](../study/1791538181_numpad_digit_motion.md).
+Status: approved 2026-10-09 ("approved"); all three decisions as recommended. Built and released. Date: 2026-10-09, Asia/Manila. Study: [Numpad digit motion](../study/1791538181_numpad_digit_motion.md).
 
 ## Outcome
 
@@ -116,3 +116,5 @@ Not verified: an iPhone and Safari, where the hidden glyphs, the caret and the e
 A fresh reviewer did not read the branch; the author's own read of the diff is the only review.
 
 Documentation synced: DESIGN.md, wiki features, browser README, TODO.
+
+2026-10-09 release: the human said "go push". `feat/numpad-digit-motion` was merged to `main` as `6119dd4` and pushed (previous production commit `ee18667`). 891 tests passed on PostgreSQL 17 and SQLite on the merged `main` before the push. No migration. The live site was not checked from here. Phone acceptance remains open.

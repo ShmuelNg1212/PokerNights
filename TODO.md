@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09; not merged, not pushed. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes. Not checked on a phone.
+Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09. Released 2026-10-09 as `6119dd4` (previous production commit `ee18667`); the live site was not checked from here. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes; 891 pass on PostgreSQL 17. Phone acceptance remains open.
 
 Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
 
@@ -82,9 +82,15 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
+- [ ] **Numpad digit motion was released on 2026-10-09 (`6119dd4`).** On your phone, after closing and reopening the app:
+  1. Open Rebuy on a running set and type an amount, slowly and then fast. The field's box should stay still and each digit should fade and rise into place.
+  2. Tap Delete: the digit should fade out. Hold Delete: all digits should leave together.
+  3. On count-up, type a final count: the digits already there should glide left as each new one arrives.
+  4. Watch for a digit that shifts when the movement ends, or a caret that disappears while typing. Say where you see either. `NUMPAD=False` in Vercel returns the phone's keyboard without a release.
+
 - [ ] **Numpad motion was released on 2026-10-09 (`ee18667`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set: the keys should rise in with the sheet.
-  2. Type an amount fast. Every digit should land and each key should light. (The pulse of the amount is replaced by numpad digit motion, not yet released.)
+  2. Type an amount fast. Every digit should land and each key should light.
   3. Hold Delete: a fill should run across the key and the amount should clear when it reaches the end. Hold again and let go early: nothing should clear.
   4. Type a third decimal place: the key and the field should both shake and turn red for a moment.
   5. On count-up or New session, tap Next: the name above the keys should slide in.
