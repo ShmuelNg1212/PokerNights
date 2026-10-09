@@ -1110,3 +1110,12 @@ input.numpad-refused { border-color: var(--down); }
 .pills a { position: relative; isolation: isolate; }
 .pill-marker { position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: var(--bone); transform-origin: 0 50%; }
 .pills a[aria-current]:has(.pill-marker) { background: transparent; border-color: transparent; }
+
+/* Numpad motion (numpad.js). A key answers the finger: it lights when hit, shows a refusal, and
+   Delete fills for as long as holding it takes to clear the field. Only colour, transform and opacity. */
+.numpad-key { position: relative; overflow: hidden; transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform var(--t-press) var(--ease-out); }
+.numpad-key.is-hit { background: color-mix(in oklch, var(--bone) 26%, var(--surface-2)); transition-duration: 0ms; }
+.numpad-key.is-refused { border-color: var(--down); transition-duration: 0ms; }
+.numpad-key::before { content: ""; position: absolute; inset: 0; background: color-mix(in oklch, var(--down) 38%, transparent); transform: scaleX(0); transform-origin: 0 50%; pointer-events: none; }
+.numpad-key.is-holding::before { transform: scaleX(1); transition: transform 500ms linear; }
+@media (prefers-reduced-motion: reduce) { .numpad-key.is-holding::before { transform: scaleX(0); } }

@@ -689,6 +689,25 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 - **Motion.** The line is revealed left to right in 600ms and its end dot follows; bars rise from the baseline, 12ms apart, at most thirty steps; rows glide to their new places with `shift` when the order changes. The readout follows the finger with no easing. Money never counts up. Under reduced motion everything is in place at once.
 - **Measured.** `stats.mjs`, 75 checks at 320, 390 and 1280px: the page staying where it was scrolled on every change of period, unit and order, no horizontal overflow, 48px targets, contrast of every text style at least 4.5:1, bars meeting the baseline, the end mark inside the chart, the readout by pointer and by keyboard, visible focus on the chart, reduced motion, no JavaScript, and no script error.
 
+### Numpad motion (2026-10-09)
+
+[Plan](doc/plan/1791533332_numpad_motion.md). The app's number keys answer the finger. No new colour, font or asset; only colour, transform and opacity change.
+
+| Moment | Movement |
+|---|---|
+| The keys enter a sheet | The four rows rise 10px and fade in with `shift`, 30ms apart |
+| A key is hit | The key takes a Bone tint at once and loses it over 160ms, on top of the shared press. The field makes one pulse of 2% in 140ms |
+| Delete is hit | The same light; the field moves 3px left and back |
+| Delete is held | A Down-tinted fill runs across the key, left to right, linearly, for the 500ms the hold takes. Letting go takes it back at once. A completed clear fades the field in from 40% |
+| A key is refused | The key shakes with the field and takes the Down border for 260ms |
+| Next in the bottom panel | The field's name and note come in from 8px below in 160ms |
+
+- A key acts as the finger goes down; no movement delays it, and a second tap restarts the light.
+- A digit appears whole and at once. No number rolls, counts or slides.
+- The field's size, caret and focus ring never change.
+- Under reduced motion nothing moves and the fill is not shown; the light on a hit key still appears.
+- **Measured.** `numpad.mjs`, 105 checks: the keys' first frame in a sheet, a key pressed while rising, ten taps with no pause, the light and the pulse, the fill at 250ms of a hold, an early release, a completed hold, a refused key, Next, reduced motion, and no inline style or mark left at rest.
+
 ## Do's and Don'ts
 
 ### Do:

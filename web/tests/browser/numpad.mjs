@@ -139,6 +139,7 @@ try {
  check('cash-out sheet: keys write the amount',await value()==='250');
  check('cash-out sheet: fits the screen',await A.js(`${D}.scrollHeight<=${D}.clientHeight`));
  check('cash-out sheet: amount, keys, option, then the action',await A.js(`(()=>{const y=el=>el.getBoundingClientRect().top;const f=${F},k=${PAD},c=${D}.querySelector('.check'),b=${D}.querySelector('[type=submit]');return y(f)<y(k)&&y(k)<y(c)&&y(c)<y(b)&&b.getBoundingClientRect().width>=k.getBoundingClientRect().width-1})()`));
+ await sleep(350); // the light on a hit key lasts about 230ms
  check('a tapped key returns to its resting colour',await A.js(`getComputedStyle(${key('0')}).backgroundColor===getComputedStyle(${key('7')}).backgroundColor`));
  await sleep(300);await A.shot('numpad-cash-390');
  await closeSheet();
@@ -189,6 +190,47 @@ try {
  check('with motion: a refused key nudges the field by transform only',await A.js(`${F}.getAnimations().length===1&&${F}.getAnimations()[0].effect.getKeyframes().every(k=>Object.keys(k).filter(p=>!['offset','easing','composite','computedOffset'].includes(p)).join()==='transform')`));
  await A.up();await closeSheet();
 
+ // --- Movement of the keys (plan 1791533332). Nothing here may slow typing or show a number the field does not hold.
+ const mvRest=`[...document.querySelectorAll('.numpad-key')].every(k=>!k.getAttribute('style')&&!k.classList.contains('is-hit')&&!k.classList.contains('is-refused')&&!k.classList.contains('is-holding'))&&!${F}.getAttribute('style')`;
+ await A.go(`/s/${PESOS}/`);
+ const mvArrival=await A.js(`(async()=>{const opener=document.querySelector('.buy-opener');opener.click();let first=null,moving=false;for(let i=0;i<40;i++){await new Promise(r=>requestAnimationFrame(r));const keys=[...document.querySelectorAll('.numpad-key')];if(!keys.length)continue;if(first===null)first=Number(getComputedStyle(keys[11]).opacity);if(keys.some(k=>k.getAnimations().length))moving=true}return {first,moving}})()`);
+ check('the keys rise into the sheet: on their first frame the last row is not yet shown',mvArrival.first!==null&&mvArrival.first<0.5&&mvArrival.moving);
+ await sleep(500);check('the keys are at rest afterwards with no inline style or mark',await A.js(mvRest)&&await A.js(`[...document.querySelectorAll('.numpad-key')].every(k=>getComputedStyle(k).opacity==='1')`));
+ await closeSheet();
+ await A.js(`document.querySelector('.buy-opener').click()`);for(let i=0;i<60&&!await A.js(`!!${PAD}&&${PAD}.isConnected&&!!${D}&&${D}.open`);i++)await sleep(10);const mvWas=await value();
+ // The sheet is still rising, so a finger could not find the key yet. The key is pressed directly: the keys' own movement must not make it wait.
+ const mvEarly=await A.js(`(()=>{const k=${key('7')};const moving=k.getAnimations().length>0;k.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));window.dispatchEvent(new PointerEvent('pointerup'));return moving})()`);
+ check('a key pressed while its row is still rising types at once',mvEarly&&(await value())!==mvWas&&(await value()).endsWith('7'));await sleep(500);
+ await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
+ for(const k of ['1','0','0','0','0','0','0','0','0','0'])await A.tap(key(k),0);
+ check('ten taps with no pause between them type ten digits',await value()==='1000000000');await sleep(400);
+ await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
+ const mvSize=`JSON.stringify([${F}.offsetWidth,${F}.offsetHeight])`,mvBefore=await A.js(mvSize);
+ await A.down(key('5'));
+ check('a hit key lights at once',await A.js(`${key('5')}.classList.contains('is-hit')`));await sleep(40);
+ check('the field pulses by transform only, keeps its size and its caret at the end',await A.js(`${F}.getAnimations().length===1&&${F}.getAnimations()[0].effect.getKeyframes().every(k=>Object.keys(k).filter(p=>!['offset','easing','composite','computedOffset'].includes(p)).join()==='transform')`)&&await A.js(mvSize)===mvBefore&&await value()==='5'&&await A.js(`${F}.selectionStart`)===1);
+ await A.up();await sleep(900);check('the light and the pulse are gone',await A.js(mvRest));
+ await type(['0','0']);await sleep(300);
+ await A.down(key('del'));await sleep(250);
+ const mvFill=await A.js(`(()=>{const k=${key('del')};const m=new DOMMatrixReadOnly(getComputedStyle(k,'::before').transform);return {holding:k.classList.contains('is-holding'),x:m.a}})()`);
+ check('holding Delete: a fill is partway across the key and only one digit is gone',mvFill.holding&&mvFill.x>0.2&&mvFill.x<0.8&&await value()==='50');
+ await A.up();await sleep(120);check('letting go early clears nothing and takes the fill back',await value()==='50'&&await A.js(`!${key('del')}.classList.contains('is-holding')`));
+ await A.down(key('del'));await sleep(650);
+ check('held to the end, the field is empty and the fill is gone',await value()===''&&await A.js(`!${key('del')}.classList.contains('is-holding')`));await A.up();await sleep(400);
+ await A.down(key('del'));await sleep(80);check('Delete on an empty field starts no fill',await A.js(`!${key('del')}.classList.contains('is-holding')`));await A.up();
+ await type(['1','alt','2','3']);await sleep(300);await A.down(key('4'));await sleep(40);
+ check('a refused key is marked with the field, and nothing is typed',await A.js(`${key('4')}.classList.contains('is-refused')&&${F}.classList.contains('numpad-refused')&&${key('4')}.getAnimations().length>0`)&&await value()==='1.23');
+ await A.up();await sleep(900);check('the refusal marks are gone',await A.js(mvRest)&&await A.js(`!${F}.classList.contains('numpad-refused')`));
+ await type(['9','9']);await A.down(key('del'));await sleep(260);await A.shot('numpad-motion-hold-390');await A.up();await sleep(300);
+ await A.shot('numpad-motion-rest-390');
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
+ await closeSheet();await A.go(`/s/${PESOS}/`);await openBuy();await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
+ await A.down(key('8'));await sleep(40);
+ check('reduced motion: a key types, lights, and nothing animates',await value()==='8'&&await A.js(`${key('8')}.classList.contains('is-hit')&&${F}.getAnimations().length===0&&[...document.querySelectorAll('.numpad-key')].every(k=>k.getAnimations().length===0&&!k.getAttribute('style'))`));
+ await A.up();await A.down(key('del'));await sleep(250);
+ check('reduced motion: holding Delete shows no fill and still clears',await A.js(`new DOMMatrixReadOnly(getComputedStyle(${key('del')},'::before').transform).a===0`));await sleep(400);check('reduced motion: the hold cleared the field',await value()==='');await A.up();
+ await send('Emulation.setEmulatedMedia',{features:[]},A.s);await closeSheet();
+
  // --- Setup forms: the bottom panel, with the field's label, Next and Done.
  const PANEL=`document.querySelector('.numpad-panel')`,inp=n=>`document.querySelector('[name=${n}]')`;
  await A.go('/s/4/settings/');
@@ -200,7 +242,9 @@ try {
  await A.js(`${inp('small_blind')}.select()`);await type(['2','5','alt','5']);
  check('setup form: keys write the amount',await A.js(`${inp('small_blind')}.value`)==='25.5');
  await sleep(300);await A.shot('numpad-form-390');
- await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,500);
+ await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,40);
+ check('setup form: Next brings the next field\'s name in',await A.js(`${PANEL}.querySelector('.numpad-about').getAnimations().length>0&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Big blind'`));
+ await sleep(460);check('setup form: the name is at rest afterwards',await A.js(`!${PANEL}.querySelector('.numpad-about').getAttribute('style')`));
  check('setup form: Next moves to the next number field',await A.js(`document.activeElement===${inp('big_blind')}&&${PANEL}.querySelector('[data-numpad-label]').textContent==='Big blind'`));
  for(let i=0;i<5;i++)await A.tap(`${PANEL}.querySelector('[data-numpad-next]')`,350);
  check('setup form: Next reaches the last number field, clear of the panel',await A.js(`document.activeElement===${inp('rake_percentage')}&&${PANEL}.querySelector('[data-numpad-next]').hidden&&${inp('rake_percentage')}.getBoundingClientRect().bottom<=${PANEL}.getBoundingClientRect().top`));

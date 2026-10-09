@@ -91,3 +91,28 @@ Revert the feature commit. `NUMPAD=False` in Vercel returns every field to the p
 2026-10-09: Study and plan complete. Waiting for the human's approval. No code written.
 
 2026-10-09: The human approved with "approved"; all four decisions as recommended. Built on `feat/numpad-motion` from `main`; kept local.
+
+2026-10-09 execution on `feat/numpad-motion`. The checks are in the browser, where the movement is; they were written with the code and run against it.
+
+Changes from the plan:
+
+- **Next brings the new name in from below; the old one does not slide out first.** Sliding the old one out would delay the name a screen reader is told.
+- **The light on a key is a class and a stylesheet fade, not a Motion animation,** so it also shows under reduced motion, where it is a change of colour and not a movement.
+- **Each movement clears its own inline styles** instead of using `pokerMotion.settle`. The check found that a key pressed while it was still rising kept the rise's `opacity` and `transform`, because the press had become its latest movement. Recorded in the footgun.
+- **"Tapped before its row has landed" is tested by pressing the key directly.** While the sheet itself is still rising a finger cannot find a key, which was so before this change.
+- One existing check waits 350ms before comparing a tapped key's colour with a resting one, because the light now lasts about 230ms.
+
+2026-10-09 verification:
+
+- 891 tests pass on SQLite. PostgreSQL was not run: nothing on the server changed.
+- `numpad.mjs`: 105 of 105 on a fresh temporary database. `count_flow.mjs`: 89 of 89. A capture of Delete 260ms into a hold was inspected: the fill was a little over halfway across the key.
+
+Acceptance: AC1 to AC10 are met, with AC5 as described above.
+
+Not verified: `player_entries.mjs` was not rerun; a physical phone and a real finger; a slow phone's frame rate while typing fast.
+
+A fresh reviewer did not read the branch; the author's own read of the diff is the only review.
+
+Documentation synced: DESIGN.md, wiki features and the footgun, browser README, TODO.
+
+Not merged and not pushed.
