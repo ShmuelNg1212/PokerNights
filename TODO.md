@@ -77,6 +77,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 ## Waiting for the human
 
 
+
 - [ ] **Roster management was released on 2026-10-09 (`8b51506`).** On your phone in Group settings → Players:
   1. Read a few rows: the sessions and last-played line should match Stats.
   2. Open "Change your name", try a name someone else has, then a new one.
