@@ -696,17 +696,33 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | Moment | Movement |
 |---|---|
 | The keys enter a sheet | The four rows rise 10px and fade in with `shift`, 30ms apart |
-| A key is hit | The key takes a Bone tint at once and loses it over 160ms, on top of the shared press. The field makes one pulse of 2% in 140ms |
-| Delete is hit | The same light; the field moves 3px left and back |
-| Delete is held | A Down-tinted fill runs across the key, left to right, linearly, for the 500ms the hold takes. Letting go takes it back at once. A completed clear fades the field in from 40% |
+| A key is hit | The key takes a Bone tint at once and loses it over 160ms, on top of the shared press. The field's box is still; see "Numpad digit motion" below |
+| Delete is hit | The same light; the deleted digit leaves |
+| Delete is held | A Down-tinted fill runs across the key, left to right, linearly, for the 500ms the hold takes. Letting go takes it back at once. A completed clear lets every digit leave together |
 | A key is refused | The key shakes with the field and takes the Down border for 260ms |
 | Next in the bottom panel | The field's name and note come in from 8px below in 160ms |
 
 - A key acts as the finger goes down; no movement delays it, and a second tap restarts the light.
-- A digit appears whole and at once. No number rolls, counts or slides.
+- The digit shown is always the field's own digit, in its own place. It may fade and rise into that place; no number rolls or counts. (Changed 2026-10-09 from "A digit appears whole and at once".)
 - The field's size, caret and focus ring never change.
 - Under reduced motion nothing moves and the fill is not shown; the light on a hit key still appears.
-- **Measured.** `numpad.mjs`, 105 checks: the keys' first frame in a sheet, a key pressed while rising, ten taps with no pause, the light and the pulse, the fill at 250ms of a hold, an early release, a completed hold, a refused key, Next, reduced motion, and no inline style or mark left at rest.
+- **Measured.** `numpad.mjs`, 105 checks: the keys' first frame in a sheet, a key pressed while rising, ten taps with no pause, the light, the fill at 250ms of a hold, an early release, a completed hold, a refused key, Next, reduced motion, and no inline style or mark left at rest.
+
+### Numpad digit motion (2026-10-09)
+
+[Plan](doc/plan/1791538209_numpad_digit_motion.md). The pulse of the whole field on every key is gone. The box stays still and each digit moves by itself.
+
+| Moment | Movement |
+|---|---|
+| A digit is typed | It fades in and rises 0.16em into its place in 180ms, `--ease-out`. No bounce |
+| Digits already there must make room (a right-aligned field) | They glide to their new place in 180ms, `--ease-out`. A glide cut by the next key carries on from where it is |
+| Delete | The digit fades and drops 0.12em in 100ms, `--ease-in`; the rest glide back |
+| A digit replaces a selection | What it replaces goes at once, so two values never overlap |
+| A key is refused | The drawn digits shake with the field |
+
+- **How.** A text field cannot move one character. While keys are tapped, a drawn copy of the text (`.numpad-figure`, `aria-hidden`) lies over the field, each character where the browser itself sets that text, and the field's own glyphs are hidden with `-webkit-text-fill-color`. The caret stays Brass. 300ms after the last key the copy is removed and the field is a plain field again.
+- **Fail safe.** No copy is made when the text is wider than the field, under reduced motion, or without Motion. An update from the server, typing that is not from the keys, another field, and leaving the sheet all remove it at once. An error gives the copy up for the page and the keys keep working.
+- **Measured.** `numpad.mjs`, 120 checks. A capture of the field with the copy up and one with the field's own text differ by at most 1 shade in 255 on any pixel, for a left-aligned sheet amount and a right-aligned field: the copy sits exactly on the text.
 
 ## Do's and Don'ts
 
