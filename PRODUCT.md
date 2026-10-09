@@ -94,3 +94,7 @@ A host gives a roster player a login of their own by sending a claim link. Whoev
 ## 2026-10-09 addendum — Stats board and player pages
 
 Stats opens with the viewer's own profit or loss, rank and last result. The board can be ordered by profit, average, return, per hour or sessions, over all time, this year, the last three months or one month, and a player needs a few sessions before holding a place. Each player has a page with a running profit chart, a bar for each session, figures that explain the result (average, return on buy-ins, per hour, rebuys, rake paid) and their best and worst nights. Every member of a group can open every player's page. All of it is read from closed sessions; nothing new is stored, pesos and chips never mix, and money never animates through other values. [Plan](doc/plan/1791528961_stats_revamp.md).
+
+## 2026-10-09 addendum — Front door
+
+Logging in and signing up are one place: the chip above, the task in a raised sheet. The chip arrives once per browser session, answers typing, sending and a refusal, and travels into the top bar when the person gets in. An invited Sign up is headed with the group's name. What is asked, the rules, and how the form is sent are unchanged, so a phone's password manager sees the same form. [Plan](doc/plan/1791542366_front_door_revamp.md).

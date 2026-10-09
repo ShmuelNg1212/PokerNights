@@ -34,6 +34,13 @@
   --w-money: 70%; --tap: 48px;
   --t-press: 110ms; --t-fast: 180ms; --t-sheet: 320ms; --t-focal: 600ms;
   --ease-out: cubic-bezier(0.16,1,0.3,1); --ease-in: cubic-bezier(0.4,0,1,1);
+  /* The app's springs for CSS, sampled by Motion's spring(): sheet (300ms, bounce .14), arrive (420ms, bounce .3),
+     shift (260ms, none), turn (500ms, bounce .1). Each runs for the duration written beside it, which includes the settle. */
+  --spring-sheet: linear(0, 0.1154, 0.3348, 0.5501, 0.721, 0.8412, 0.9182, 0.9636, 0.9881, 0.9997, 1.0041, 1.005, 1.0043, 1.0032, 1.0022, 1.0013, 1.0008, 1);
+  --spring-arrive: linear(0, 0.0651, 0.2139, 0.3929, 0.568, 0.72, 0.8406, 0.9288, 0.9879, 1.0232, 1.0408, 1.046, 1.0435, 1.0369, 1.0287, 1.0206, 1.0135, 1.0078, 1.0036, 1.0008, 0.999, 0.9982, 1);
+  --spring-shift: linear(0, 0.1316, 0.3585, 0.5628, 0.7162, 0.8217, 0.8906, 0.934, 0.9607, 0.9769, 0.9865, 0.9922, 0.9955, 0.9974, 0.9985, 0.9992, 1);
+  --spring-turn: linear(0, 0.0433, 0.1429, 0.2661, 0.3928, 0.5114, 0.6161, 0.7048, 0.7776, 0.8358, 0.8812, 0.9159, 0.9419, 0.961, 0.9747, 0.9844, 0.991, 0.9954, 0.9982, 0.9999, 1.0009, 1);
+  --door-under: oklch(0.65 0.035 80);
   color-scheme: dark;
 }
 
@@ -702,18 +709,44 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .home-archived, .form-page h1, .form-page p, .form-page label, .form-page .notice { overflow-wrap: anywhere; }
 
 /* Entry pages: log in, sign up, invite. One centred column led by the mark; the site header is left out while signed out. */
-.entry-page { max-width: 472px; padding-top: var(--s-6); padding-bottom: 48px; overflow-wrap: anywhere; }
-.entry-head { display: grid; justify-items: center; gap: var(--s-2); margin-bottom: var(--s-5); text-align: center; }
-.entry-head-compact { margin-bottom: var(--s-3); }
+/* Front door (DESIGN.md, "Front door"): the night above with the chip, a raised sheet below that holds the task. */
+.entry-page { display: flex; flex-direction: column; max-width: 472px; min-height: 100dvh; padding-top: 0; padding-bottom: 0; overflow-wrap: anywhere; }
+body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
+.entry-page > .messages { margin: var(--s-4) 0 0; }
+.door-hero { display: grid; justify-items: center; gap: var(--s-2); padding: 40px 0 28px; text-align: center; }
+.door-hero-row { grid-auto-flow: column; justify-content: center; align-items: center; gap: var(--s-3); padding: 20px 0; }
+.door-hero-compact { padding: 20px 0 var(--s-4); }
+.door-mark { display: block; width: 96px; height: auto; margin-bottom: var(--s-1); overflow: visible; }
+.door-hero-row .door-mark { width: 56px; margin: 0; }
+.door-hero-compact .door-mark { width: 48px; margin: 0; }
+.door-disc { fill: var(--ink); }
+.door-band { fill: none; stroke: var(--bone); stroke-width: 10; }
+.door-under .door-band { stroke: var(--door-under); }
+.door-notch { fill: none; stroke: var(--ink); stroke-width: 10.5; stroke-dasharray: 7 19.18; stroke-dashoffset: 3.5; }
+.door-moon { fill: var(--brass); }
+/* Each part turns about its own middle, which is also where Motion turns an SVG part. */
+.door-ring, .door-under, .door-moon { transform-box: fill-box; transform-origin: center; }
 .entry-name { margin: 0; font-size: 2rem; font-weight: 800; font-stretch: 88%; letter-spacing: -.01em; line-height: 1.1; }
 .entry-line { margin: 0; max-width: 42ch; color: var(--muted); text-wrap: balance; }
+.door-sheet { flex: 1; margin: 0 -16px; padding: var(--s-5) var(--s-4) calc(var(--s-5) + env(safe-area-inset-bottom)); border-top: 1px solid var(--rule); border-radius: var(--r-sheet) var(--r-sheet) 0 0; background: var(--surface); box-shadow: 0 -12px 48px oklch(0 0 0 / .5); }
+.door-foot { margin: var(--s-5) 0 0; padding-top: var(--s-4); border-top: 1px solid var(--rule); color: var(--muted); font-size: .9rem; text-align: center; text-wrap: balance; }
+@media (max-height: 700px) {
+  .door-hero { padding: var(--s-5) 0 20px; }
+  .door-hero:not(.door-hero-row, .door-hero-compact) .door-mark { width: 72px; }
+}
+/* Wider than a phone, the sheet is a card. */
+@media (min-width: 520px) {
+  .door-hero { padding-top: 56px; }
+  .door-hero-row, .door-hero-compact { padding-top: var(--s-6); }
+  .door-sheet { flex: none; margin: 0 0 48px; padding: var(--s-6); border: 1px solid var(--rule); border-radius: var(--r-sheet); box-shadow: 0 16px 48px oklch(0 0 0 / .45); }
+}
 .entry-page h1 { margin: 0; font-size: 1.375rem; font-weight: 700; text-align: center; text-wrap: balance; }
 .entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
 .entry-note { margin: var(--s-3) auto var(--s-5); max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-page .form-section { margin: var(--s-4) 0 0; padding: 0; border-top: 0; }
 .entry-page .form-section .btn-block { margin-top: var(--s-4); }
 .entry-page .notice { margin: 0 0 var(--s-2); }
-.entry-page > .notice { margin: var(--s-4) 0; text-align: center; }
+.door-sheet > .notice { margin: var(--s-4) 0; text-align: center; }
 .entry-alt { margin: var(--s-4) 0 0; text-align: center; color: var(--muted); }
 .entry-alt a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); justify-content: center; color: var(--text); text-underline-offset: 4px; }
 .password-wrap { position: relative; }
@@ -777,7 +810,7 @@ legend { padding: 0; }
 .hint-note strong { color: var(--text); font-weight: 600; }
 .entry-forgot { margin: 0 0 var(--s-2); }
 .skip-link:focus { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-4); border-radius: var(--r-btn); }
-@media (min-width: 900px) and (min-height: 1000px) { .entry-page { padding-top: 12vh; } }
+@media (min-width: 900px) and (min-height: 1000px) { .entry-page { padding-top: 8vh; } }
 /* A link inside a sentence keeps a 48px touch height without stretching the line. */
 .inline-target { display: inline-block; min-height: var(--tap); padding: 14px 0; margin: -14px 0; line-height: 20px; color: var(--text); text-underline-offset: 4px; }
 .entry-alt-plain { min-height: var(--tap); display: flex; align-items: center; justify-content: center; }
@@ -995,7 +1028,7 @@ input.numpad-refused { border-color: var(--down); }
 @media (max-width: 359px) { .roster-removed .roster-row { flex-wrap: wrap; } }
 
 /* Claim link page (groups/claim.html): the player's own token says who they are about to become. */
-.claim-chip { display: grid; justify-items: center; margin: 0 0 var(--s-3); }
+.claim-chip { display: grid; justify-items: center; margin: 0; }
 .claim-chip .chip { width: 64px; height: 64px; font-size: 1.375rem; }
 .claim-who { margin: var(--s-4) 0 0; padding: var(--s-3) var(--s-4); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); text-align: center; text-wrap: balance; }
 .claim-who p { margin: 0; }
@@ -1127,3 +1160,46 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .numpad-figure-text { visibility: hidden; }
 .numpad-figure-char { position: absolute; left: 0; top: 0; bottom: 0; display: flex; align-items: center; }
 .numpad-figure-char > span { display: block; }
+
+/* Front door: arrival (DESIGN.md, "Front door"). The server writes data-arrival on <main>: "full" once per
+   browser session, "short" after, nothing on a refused page. Every keyframe runs from a start state to the
+   element's ordinary state, so a page where nothing runs is complete. door.js ends it on the first key or tap. */
+@supports not (animation-timing-function: linear(0, 1)) { :root { --spring-sheet: var(--ease-out); --spring-arrive: var(--ease-out); --spring-shift: var(--ease-out); --spring-turn: var(--ease-out); } }
+@keyframes door-drop { from { opacity: 0; transform: translateY(-28px) scale(.86); } }
+@keyframes door-turn { from { transform: rotate(-120deg); } }
+@keyframes door-moon { from { opacity: 0; transform: translateY(40%); } }
+@keyframes door-name { from { opacity: 0; font-stretch: 62%; } }
+@keyframes door-rise { from { transform: translateY(24px); } }
+@keyframes door-step { from { opacity: 0; transform: translateY(10px); } }
+@keyframes door-fade { from { opacity: 0; } }
+@keyframes door-short { from { opacity: 0; transform: translateY(8px); } }
+[data-arrival=full] .door-mark { animation: door-drop 700ms var(--spring-arrive) backwards; }
+[data-arrival=full] :is(.door-ring, .door-under) { animation: door-turn 650ms var(--spring-turn) backwards; }
+[data-arrival=full] .door-moon { animation: door-moon 550ms var(--spring-sheet) 140ms backwards; }
+[data-arrival=full] .entry-name { animation: door-name 360ms var(--ease-out) 200ms backwards; }
+[data-arrival=full] .entry-line { animation: door-fade 300ms var(--ease-out) 480ms backwards; }
+[data-arrival=full] .door-sheet { animation: door-rise 550ms var(--spring-sheet) backwards; }
+/* The sheet's parts follow 40ms apart. A form is not moved itself; its fields and button are. */
+[data-arrival=full] .door-sheet > :not(form), [data-arrival=full] .door-sheet > form > * { animation: door-step 500ms var(--spring-shift) backwards; }
+[data-arrival=full] .door-sheet > :nth-child(2):not(form) { animation-delay: 40ms; }
+[data-arrival=full] .door-sheet > form > :nth-child(3) { animation-delay: 80ms; }
+[data-arrival=full] .door-sheet > form > :nth-child(4) { animation-delay: 120ms; }
+[data-arrival=full] .door-sheet > form > :nth-child(5) { animation-delay: 160ms; }
+[data-arrival=full] .door-sheet > form > :nth-child(n+6) { animation-delay: 200ms; }
+[data-arrival=full] .door-sheet > form ~ * { animation-delay: 260ms; }
+[data-arrival=full] .door-sheet > .door-foot { animation-delay: 300ms; }
+[data-arrival=short] :is(.door-hero, .door-sheet) { animation: door-short 240ms var(--ease-out) backwards; }
+/* One place: between Log in and Sign up the chip, the name and the sheet are the same things and move.
+   Getting in, the chip is the top bar's mark. A screen with a top bar has two marks, and only one may hold the name.
+   door.js sets data-door-done once a screen inside the app is drawn, so screens there change as before. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-door] .entry-page .door-mark, html[data-door]:not([data-door-done]) .brand img { view-transition-name: brand-mark; }
+  html[data-door] .site-header ~ .entry-page .door-mark { view-transition-name: none; }
+  html[data-door] .entry-page .entry-name { view-transition-name: door-name; }
+  html[data-door] .door-sheet { view-transition-name: door-sheet; }
+  ::view-transition-group(brand-mark) { animation-duration: 420ms; }
+  ::view-transition-group(brand-mark), ::view-transition-group(door-name) { z-index: 3; }
+  /* The sheet changes height; its content is never stretched. */
+  ::view-transition-old(door-sheet), ::view-transition-new(door-sheet) { width: 100%; height: 100%; object-fit: none; object-position: center top; }
+  ::view-transition-image-pair(door-sheet) { border-radius: var(--r-sheet) var(--r-sheet) 0 0; background: var(--rail); }
+}

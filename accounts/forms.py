@@ -4,6 +4,13 @@ from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserC
 from .models import User
 
 
+def keyboard_hints(form):
+    """The phone keyboard's return key says Next until the last field, then Go."""
+    names = list(form.fields)
+    for name in names:
+        form.fields[name].widget.attrs["enterkeyhint"] = "go" if name == names[-1] else "next"
+
+
 class LoginForm(AuthenticationForm):
     """Django's login check with one plain message that does not say which field was wrong."""
 
@@ -11,6 +18,10 @@ class LoginForm(AuthenticationForm):
         **AuthenticationForm.error_messages,
         "invalid_login": "That username and password don't match. Check capital letters.",
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        keyboard_hints(self)
 
 
 class PlainWords:
@@ -64,6 +75,7 @@ class SignupForm(PlainWords, UserCreationForm):
         self.fields["password1"].help_text = self.PASSWORD_HELP
         self.fields["password2"].label = "Repeat password"
         self.fields["password2"].help_text = ""
+        keyboard_hints(self)
 
     def validate_password_for_user(self, user, password_field_name="password1"):
         # A broken rule is reported under Password, where the rule is stated. A mismatch stays under Repeat password.
@@ -79,6 +91,7 @@ class NewPasswordForm(PlainWords, SetPasswordForm):
         self.fields["new_password1"].widget.attrs["autofocus"] = True
         self.fields["new_password2"].label = "Repeat password"
         self.fields["new_password2"].help_text = ""
+        keyboard_hints(self)
 
     def validate_password_for_user(self, user, password_field_name="new_password1"):
         super().validate_password_for_user(user, "new_password1")

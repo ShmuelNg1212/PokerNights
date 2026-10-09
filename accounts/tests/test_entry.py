@@ -32,9 +32,10 @@ class EntryPagesTests(TestCase):
         self.assertContains(page, "js/password.js")
 
     def test_usable_invite_names_the_group_on_login_and_signup(self):
-        for url in (self.login, self.signup):
+        for url, words in ((self.login, "You're invited to <strong>Kamuning &lt;Card&gt; Club</strong>"),
+                           (self.signup, "<h1>Join Kamuning &lt;Card&gt; Club</h1>")):
             page = self.client.get(url, {"next": self.invite_url})
-            self.assertContains(page, "You're invited to <strong>Kamuning &lt;Card&gt; Club</strong>")
+            self.assertContains(page, words)
             self.assertNotContains(page, "<Card>")
             self.assertContains(page, f'name="next" value="{self.invite_url}"')
 
@@ -45,7 +46,9 @@ class EntryPagesTests(TestCase):
     def test_no_group_is_named_for_a_bad_or_foreign_next(self):
         for target in ("/", "/join/not-a-token/", "https://evil.example" + self.invite_url, "/g/1/"):
             for url in (self.login, self.signup):
-                self.assertNotContains(self.client.get(url, {"next": target}), "You're invited")
+                page = self.client.get(url, {"next": target})
+                self.assertNotContains(page, "You're invited")
+                self.assertNotContains(page, "<h1>Join")
 
     def test_no_group_is_named_once_the_invite_stops_working(self):
         states = [{"expires_at": timezone.now()}, {"use_count": self.invite.max_uses}, {"revoked_at": timezone.now()}]

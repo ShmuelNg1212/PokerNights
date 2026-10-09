@@ -26,7 +26,7 @@ class InviteLinkTests(TestCase):
         response = self.client.get(self.invite_url)
         self.assertRedirects(response, f"{self.signup}?{urlencode({'next': self.invite_url})}")
         page = self.client.get(response.url)
-        self.assertContains(page, "You're invited to <strong>Kamuning Card Club</strong>")
+        self.assertContains(page, "<h1>Join Kamuning Card Club</h1>")
         html = page.content.decode()
         # The way out for someone who already plays here sits beside the invitation, before the first field.
         self.assertLess(html.index("Already have an account?"), html.index('name="username"'))

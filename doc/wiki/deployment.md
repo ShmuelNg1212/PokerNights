@@ -31,6 +31,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `RESET_LINKS` | optional | Defaults to on. Set `False` to hide password reset links and refuse every one already sent, without a release (`accounts/services.py`). Redeploy for it to take effect |
 | `ROSTER_TOOLS` | optional | Defaults to on. Set `False` to return Group settings → Players to one-name add, rename and remove, without a release (`groups/services.py`). The removal confirmation page stays on. Redeploy after changing it. |
 | `CLAIM_LINKS` | optional | Defaults to on. Set `False` to hide claim links and refuse every one already sent, without a release (`groups/services.py`). Redeploy after changing it. |
+| `DOOR_MOTION` | optional | Defaults to on. Set `False` to stop every movement on the log in and sign up screens, including the chip travelling into the top bar, without a release (`config/door.py`). The new frame stays. Redeploy after changing it. |
 | `STATS_PAGES` | optional | Defaults to on. Set `False` to return the Stats tab to one ranked list and make player pages not found, without a release (`web/stats.py`). Redeploy after changing it. |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |

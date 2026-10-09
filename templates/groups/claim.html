@@ -1,11 +1,12 @@
-{% extends "base.html" %}
+{% extends "entry.html" %}
 {% load table_tags %}
 {% block title %}Claim link · PokerNights{% endblock %}
 {% block header %}{% if user.is_authenticated %}{{ block.super }}{% endif %}{% endblock %}
-{% block page_class %}entry-page{% endblock %}
-{% block content %}
+{% block hero %}
 {# The confirm page leads with the player's own token; the other states keep the mark. #}
-{% if not user.is_authenticated %}{% include "partials/entry_head.html" %}{% elif error or preview.refusal %}{% include "partials/entry_head.html" with compact=True %}{% endif %}
+{% if not user.is_authenticated %}{% include "partials/entry_head.html" %}{% elif error or preview.refusal %}{% include "partials/entry_head.html" with compact=True %}{% else %}<div class="door-hero door-hero-compact"><div class="claim-chip" data-pop>{% member_token member one %}</div></div>{% endif %}
+{% endblock %}
+{% block sheet %}
 {% if error %}
 <h1>This claim link doesn't work</h1>
 <div class="notice notice-bad" role="alert">{{ error }} Ask a host of the group for a new one.</div>
@@ -16,7 +17,6 @@
 <div class="notice notice-info" role="alert">{{ preview.refusal }}</div>
 <p><a class="btn btn-block" href="{% url 'home' %}">Go to your groups</a></p>
 {% else %}
-<div class="claim-chip" data-pop>{% member_token member one %}</div>
 <h1>Join {{ group.name }} as {{ member.display_name }}</h1>
 <p class="entry-invite">A host kept {{ member.display_name }}'s games here before you had a login. Claiming makes them yours: you will see {{ member.display_name }}'s results, and you can record your own rebuys and counts.</p>
 <div class="claim-who">

@@ -417,3 +417,11 @@ The app's number keys answer a tap ([plan](../plan/1791533332_numpad_motion.md))
 ## Numpad digit motion (2026-10-09)
 
 The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digit_motion.md)). The field's box stays still: a typed digit fades and rises into its place, a deleted digit fades out, and in a right-aligned field the other digits glide to make room. While keys are tapped a drawn copy of the field's text lies over the field and the field's own glyphs are hidden; 300ms after the last key the copy is removed. The copy is not made when the text is wider than the field, under reduced motion or without Motion, and it is removed at once by a live or in-place update, by typing that is not from the keys, and when the keys leave the field. Code: `static/js/numpad.js` (`figure`, `place`, `measure`, `drop`); styles `.numpad-figure` and `input.is-figured` in `app.css`.
+
+## Front door (2026-10-09)
+
+- Every entry screen extends `templates/entry.html`: a `hero` block (the mark from `partials/mark.html`, through `partials/entry_head.html`) and a `sheet` block. Each screen still says itself whether the site header shows.
+- `config/door.py` chooses the arrival. The context processor `door` gives templates `door.on` and `door.arrival` (`full`, `short` or empty); reading `arrival` on a first visit marks the request, and the middleware `DoorCookie` then sets the session-lifetime cookie `door`. Nothing is stored on the server. A POST answer has no arrival.
+- The arrival is CSS at the end of `static/css/app.css`. `static/js/door.js` ends it on the first key or tap and moves the chip: a turn per key, the crescent on Show, a spin while a form is sent, a shake on a refused page. It also sets `data-door-done` on `<html>` inside the app and removes it when a log-out form is sent, so the top bar's mark carries the chip only into and out of the front door.
+- An invited Sign up is headed "Join {group}". Log in still says "You're invited to {group}".
+- Switch: `DOOR_MOTION=False` removes the movement and the carried names. Check: `web/tests/browser/door.mjs`. [Plan](../plan/1791542366_front_door_revamp.md).

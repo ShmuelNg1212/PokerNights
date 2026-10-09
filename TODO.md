@@ -4,6 +4,8 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Front door revamp ([plan](doc/plan/1791542366_front_door_revamp.md), [study](doc/study/1791542264_front_door_revamp.md)): built on `feat/front-door` on 2026-10-09. **Not merged, not pushed.** Log in, Sign up and the other entry screens share a new frame: the chip above, the task in a raised sheet. The chip arrives once per browser session, turns as you type, spins while a form is sent, shakes on a refusal and travels into the top bar on getting in. An invited Sign up is headed "Join {group}". No migration. 905 tests pass on SQLite and PostgreSQL 17. `door.mjs` 134 of 134; `entry.mjs` 91, `reset.mjs` 43, `claim.mjs` 30, `motion.mjs` 34, `screens.mjs` 46, `navigate.mjs` 52 pass. Critique 29 of 40 (was 25). `DOOR_MOTION=False` in Vercel stops the movement. Phone acceptance is open.
+
 Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09. Released 2026-10-09 as `6119dd4` (previous production commit `ee18667`); the live site was not checked from here. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes; 891 pass on PostgreSQL 17. Phone acceptance remains open.
 
 Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
@@ -71,8 +73,9 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 - [x] After the next release, on your iPhone, in the home screen app: open a set that is counting up with the host menu left open. Tap the last count field: the menu should be the one-line bar on the keyboard, with the running total. Scroll up and down with the keyboard open: the bar stays a bar on the keyboard, and the page follows your finger without jumping back. If it misbehaves, add `?kb=1` to the end of the set page's address in Safari, repeat, and send a screenshot ([plan](doc/plan/1791192015_dock_keyboard_scroll.md)).
 
+- [ ] Front door, from the critique of 2026-10-09: put one line about the app under the Sign up heading and drop or shorten the description on Log in (it reverses a decision of the front door plan, so it is yours); name who invited and how many play on an invited Sign up; a live tick for the password rules.
 - [ ] A “change my password” screen for a logged-in person, and claim links for roster players. Both were left out of the password reset cycle.
-- [ ] Entry pages: make the invitation the subject (group name as the heading, compact mark), shorten the password help, and give a new player a first step on the group page. From the repeat critique.
+- [ ] Entry pages: shorten the password help, and give a new player a first step on the group page. From the repeat critique. (The invitation as the subject was done with the front door, 2026-10-09.)
 
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
 - [ ] Stage 2: roster management, history list, optional banker, payments before finalization, reopen a finalized game. See the [roadmap](doc/roadmap/README.md).
@@ -83,6 +86,17 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 ## Waiting for the human
 
 2026-10-09: the human reported that all checks in this file are done. Every phone and try-it check here, and the five phone checks under Next, were ticked on that word. The `SPEC.md` updates, the decisions and the superuser step are not checks and stay open.
+
+- [ ] **The front door is built on `feat/front-door` and not released.** After it is released, on your phone, after closing and reopening the app:
+  1. Log out. The chip should travel from the top bar to the middle of the screen.
+  2. Close the browser tab, open the site again: the chip should drop and settle, and the form should rise. Check you can type at once.
+  3. Type a username and a password: the chip's ring should turn with each key. Say whether the keyboard hides the chip, on Log in and on Sign up.
+  4. Tap Show: the crescent should tip.
+  5. Log in with a wrong password: the chip should shake once with the message. Then log in: the chip should travel into the top bar.
+  6. Tap Sign up and back: the chip and the sheet should move, with no flash of the whole screen.
+  7. Check your password manager still offers to fill Log in and to save on Sign up.
+  8. Open an invite link signed out: the heading should be "Join" and the group's name.
+  9. Say what is too much, too slow or missing. `DOOR_MOTION=False` in Vercel stops all of it without a release.
 
 - [x] **Numpad digit motion was released on 2026-10-09 (`6119dd4`).** On your phone, after closing and reopening the app:
   1. Open Rebuy on a running set and type an amount, slowly and then fast. The field's box should stay still and each digit should fade and rise into place.

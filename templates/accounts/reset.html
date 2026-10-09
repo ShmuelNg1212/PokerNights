@@ -1,10 +1,11 @@
-{% extends "base.html" %}
+{% extends "entry.html" %}
 {% load static %}
 {% block title %}Reset password · PokerNights{% endblock %}
 {% block header %}{% endblock %}
-{% block page_class %}entry-page{% endblock %}
-{% block content %}
-{% include "partials/entry_head.html" %}
+{% block hero %}
+{% include "partials/entry_head.html" with row=True %}
+{% endblock %}
+{% block sheet %}
 {% if error %}
 <h1>This reset link doesn't work</h1>
 <div class="notice notice-bad" role="alert">{{ error }} Ask a host of your group for a new one.</div>

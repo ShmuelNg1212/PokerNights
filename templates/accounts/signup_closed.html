@@ -1,9 +1,10 @@
-{% extends "base.html" %}
+{% extends "entry.html" %}
 {% block title %}Invite needed · PokerNights{% endblock %}
 {% block header %}{% endblock %}
-{% block page_class %}entry-page{% endblock %}
-{% block content %}
+{% block hero %}
 {% include "partials/entry_head.html" with line=True %}
+{% endblock %}
+{% block sheet %}
 <h1>Sign-up needs an invite</h1>
 <p class="entry-invite">Ask a host of your group for an invite link, then open that link to create your account.</p>
 <p class="entry-note">An invite link that was revoked, has expired or was used up no longer works. A host can send a new one.</p>
