@@ -266,3 +266,13 @@ Two things now replace content on the set page without a reload: the 4-second po
 - Each lookup goes through `groups.access.member_for` or `games.access.session_for`.
 - Invite tokens are stored as SHA-256 hashes. A link is shown once.
 - `manage.py check --deploy` is clean with `DEBUG=False`, a real `SECRET_KEY` and `HTTPS_ONLY=True`.
+
+## Roster management
+
+- **Removal guard.** `groups.services.REMOVE_GUARDS` holds `guard(member)` functions that raise `RuleError`, as `ARCHIVE_GUARDS` does for a group. `games` registers `guard_member_removal` in `GamesConfig.ready()`: it refuses a member who is `joined` in a set in `UNFINISHED_STATES`. `groups` imports neither `games` nor `settlement`.
+- **Lock order.** Seating a member (`add_participant`, `add_participants`, and `set_left(..., left=False)`) reads the member row with `select_for_update()` after the set lock. `remove_member` and `restore_member` lock the group, then the member row, and never a set. Every path is set → group → member, so a removal and a seating of the same member cannot both succeed. `web.tests.test_concurrency.ConcurrentRosterTests` covers it on PostgreSQL.
+- **Restore** keeps the `Member` row. `_free_name` settles a taken name under the group lock before the status turns active, because `member_active_name_unique` is a partial constraint and cannot be deferred.
+- **The removal page** is `settlement.views.member_remove` (GET asks, POST removes), because it reads seats and unpaid transfers. `groups.services.removal_refusal` gives the reason without writing.
+- **Group writes carry no `request_id`.** Each is safe to repeat: a second remove or restore changes nothing and writes no audit event, and a second add of the same names is refused by the name rule.
+- **Roster activity** is one query over `counted_results()` for active and removed members together, so the settings tab's query count does not grow with the roster.
+- **Marks after a redirect.** The add and restore views put the new member ids in the login session (`roster_arrived`), the removal view puts `roster_left`; the settings page takes them once and `roster.js` marks those rows.

@@ -29,6 +29,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `ANSWER_IN_PLACE` | optional | Defaults to on. Set `False` to answer every in-place action with a redirect again (two trips instead of one), without a release (`config/inplace.py`). Redeploy for it to take effect |
 | `PLAYER_ENTRIES` | optional | Defaults to on. Set `False` to make rebuys and final counts host-only again and to ignore counts players already sent, without a release (`ledger/services.py`). Redeploy for it to take effect |
 | `RESET_LINKS` | optional | Defaults to on. Set `False` to hide password reset links and refuse every one already sent, without a release (`accounts/services.py`). Redeploy for it to take effect |
+| `ROSTER_TOOLS` | optional | Defaults to on. Set `False` to return Group settings → Players to one-name add, rename and remove, without a release (`groups/services.py`). The removal confirmation page stays on. Redeploy after changing it. |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |
 

@@ -175,3 +175,33 @@ Set `ROSTER_TOOLS=False` in Vercel for an immediate stop of the new tools. To re
 2026-10-09: The human approved with "approved."; all eight decisions as recommended. The human added: "make sure to refine the UI elements along the way as well. use the necessary skills and plugins for UI design and dynamic animations."
 
 Change from the plan: the Outcome said "No new colour, font, asset or motion". With the human's addition, the Players section is refined within DESIGN.md's tokens, and motion is added with the app's existing Motion setup and its reduced-motion rule. No new colour, font or asset. What was refined and animated is recorded below when built.
+
+2026-10-09 execution on `feat/roster-management`, tests first.
+
+Changes from the plan:
+
+- **The removal page is in `settlement/views.py`, not `web/views.py`.** `web` views only read; the session archive page, which also lists unpaid transfers, already lives in `settlement`. Same address and name.
+- **`rename_member` stays** as a one-line call to `edit_member`, and the address keeps the name `member_rename`. Other tests and the switched-off section use it.
+- **A removed player who Left a set cannot be brought back to that table** until a host brings them back to the group. The study said this was already refused; it was not. `set_left` now checks and locks the member row.
+- **The Names box has no contact field.** A contact note is saved in Manage after adding.
+- **In the Removed list "No login" is written in the activity line**, not as a badge, so the row and its button fit one line at 390px.
+- **Names are sorted without regard to capitals** in the Players list. The database put "Rosa" before "dani".
+- **Motion and refinement, added by the human at approval:** a drawn chevron on the panel's disclosures, the role and reset buttons full width and apart from Save, Remove from group under its own rule, the mark and rise on new and restored rows, a mark on the Removed line after a removal, an eased disclosure, and a live count under the Names box. All within DESIGN.md's tokens and motion presets.
+- A page drawn before this release that still posts `name` to the add address is accepted, and its typing is kept in the Names box.
+
+2026-10-09 verification:
+
+- 831 tests pass on SQLite (15 PostgreSQL-only skips) and all 831 on local PostgreSQL 17, started for the run and stopped after. `ConcurrentRosterTests` passed six times on PostgreSQL. It was written after the row locks, so it was not seen failing without them.
+- `roster.mjs`: 44 of 44, twice, each on a fresh temporary database. Captures inspected at 390px: the list, Manage with and without a login, the removal page, the marked new rows and the Removed list.
+- Three existing tests were updated: the re-add of a removed name (now refused), the player's settings page (one form, for their own name), and the list of scripts in the head (`roster.js`).
+- `manage.py test --parallel` stops with a pickling error from the test runner on this machine, on `main` as well; the suites were run serially.
+
+Acceptance: AC1 to AC11 are met.
+
+Not verified: a physical phone, a screen reader, the switch on Vercel, and the capture of the marked rows at full size (it was taken mid-movement).
+
+Documentation synced: wiki features, architecture and deployment, DESIGN.md, PRODUCT.md, roadmap, browser README, TODO.
+
+Not merged and not pushed. A push to `main` is a release and waits for the human.
+
+A fresh reviewer did not read the branch; the author's own read of the diff is the only review.

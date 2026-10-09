@@ -5,7 +5,7 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | Stage | Outcome | `SPEC.md` step | Status |
 |---|---|---|---|
 | 1. Game night | Buy-ins and rebuys, cash-outs with balance check, settle-up with paid marks | 1, 2, 3 | Done, 2026-10-03 |
-| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Next |
+| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). History list, banker, payments before finalization and reopening remain |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Partly built 2026-10-04: profit/loss, sessions and win rate by month or all time. Seasons, year filter, average, ROI and a ranking threshold remain |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
 | 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployed 2026-10-04 at https://pokernights-five.vercel.app (Vercel and Neon, invite-only sign-up). Password reset by a host-issued link built 2026-10-06. Claim links remain |
@@ -51,6 +51,8 @@ These used the plan's defaults in Stage 1. They can still change.
 - **Correcting a set's end time.** The end time is the moment the host taps "End play". A late tap adds playing time for everyone. No edit exists.
 - **A live session page.** The session page shows changes on reload only.
 - **Reopening a finalized set or a closed session** (already Stage 2).
+
+- **Merging two member rows.** Nothing joins two rows of one person; the roster now refuses to create the second one from a removed name.
 
 - **New names in the player picker.** Type several new names (one per line) on "Add players"; each becomes a roster player without a login and joins the game in the same all-or-nothing action. Not built. It needs name-clash rules and its own plan. It uses the existing roster model, not a new guest-account system.
 

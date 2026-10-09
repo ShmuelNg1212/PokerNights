@@ -82,3 +82,7 @@ A person who forgot their password asks a host of their group. The host creates 
 ## 2026-10-06 addendum — Players record their own rebuy and count
 
 A player with a login records their own rebuy from their phone; it is accepted at once, as a host's is, and the host can reverse it. After the host ends play, each player types their own final count. That number is a statement: the host confirms it or types another, and only a confirmed count is cashed out or enters a result. Everyone on the set sees both within seconds. A rebuy sent from a screen that does not show the player's latest buy-ins is refused, so the host and the player cannot record one rebuy twice. The first buy-in, cash-outs, corrections, the balance and finalizing stay with the host. [Plan](doc/plan/1791266619_player_rebuys_and_counts.md).
+
+## 2026-10-09 addendum — Roster management
+
+A host keeps the player list in order. Removing a player is asked first, on a page that says what happens and lists what they still owe or are owed; a player at the table of an unfinished set cannot be removed. A removed player can be brought back with their history intact, and their name cannot be added again as a second person. Hosts save a contact note that only hosts see and add up to 30 names at once. Anyone with a login changes their own name in the group; the username stays. Each row says how many sessions the player came to and when they last played, counted as Stats counts. [Plan](doc/plan/1791525658_roster_management.md).
