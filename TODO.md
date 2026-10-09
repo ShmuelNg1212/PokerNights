@@ -4,9 +4,9 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09, on top of `feat/roster-management`; neither is merged. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
+Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09 and merged to `main` with roster management. Released 2026-10-09 as `8b51506` (previous production commit `283ecc2`); the live site was not checked from here. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
 
-Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09, not merged. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone acceptance remains open.
+Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09. Released 2026-10-09 as `8b51506` with claim links. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone acceptance remains open.
 
 Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. Released 2026-10-06 as `283ecc2` (previous production commit `7639c8f`); the live site serves the new `counts.js`. Phone acceptance remains open.
 
@@ -77,7 +77,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 ## Waiting for the human
 
 
-- [ ] **Roster management is built on `feat/roster-management` and not released.** Say when to merge and push; a push to `main` is a release. After it is live, on your phone in Group settings → Players:
+- [ ] **Roster management was released on 2026-10-09 (`8b51506`).** On your phone in Group settings → Players:
   1. Read a few rows: the sessions and last-played line should match Stats.
   2. Open "Change your name", try a name someone else has, then a new one.
   3. Open "Manage" on a player, save a contact note, and check a player's phone does not show it.
@@ -86,7 +86,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Open "Removed players" and tap Bring back: the row should return with the same sessions.
   7. Add three names in one go, then a batch with one name that is already in the group: nobody should be added and the text should stay.
   8. Say what feels wrong, including the movement of new rows. `ROSTER_TOOLS=False` in Vercel turns the new tools off without a release.
-- [ ] **Claim links are built on `feat/claim-links` and not released** (it includes roster management). After the batch is live, with two phones:
+- [ ] **Claim links were released on 2026-10-09 (`8b51506`).** First check the Vercel build passed and applied migration `groups.0005`. Then, with two phones:
   1. As a host open Manage on a player without a login, tap Create claim link, and Copy it into a chat to yourself.
   2. On the other phone, signed out, open the link: it should go to Sign up and name the group. Sign up and check you land in the group as that player, with their sessions on the roster row.
   3. Record a rebuy from that phone in a running set.
