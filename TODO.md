@@ -74,6 +74,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
+
 - [ ] **Roster management is built on `feat/roster-management` and not released.** Say when to merge and push; a push to `main` is a release. After it is live, on your phone in Group settings → Players:
   1. Read a few rows: the sessions and last-played line should match Stats.
   2. Open "Change your name", try a name someone else has, then a new one.
