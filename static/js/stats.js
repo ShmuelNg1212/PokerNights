@@ -56,7 +56,9 @@
     held = {
       path: location.pathname, y: window.scrollY, group: group ? group.dataset.statPills : "",
       from: was ? choices(group).indexOf(was) : -1, to: group ? choices(group).indexOf(control) : -1,
-      box: box ? { left: box.left, top: box.top, width: box.width } : null, places: list ? places(list) : null
+      box: box ? { left: box.left, top: box.top, width: box.width } : null, places: list ? places(list) : null,
+      // On a phone a row of pills scrolls sideways; each row is put back where it was.
+      rows: Array.from(document.querySelectorAll("#main .pills")).map(function (row) { return row.scrollLeft; })
     };
   }
   document.addEventListener("turbo:click", function (event) {
@@ -75,14 +77,30 @@
   });
   document.addEventListener("turbo:load", function () {
     if (!held) return;
-    if (Math.abs(window.scrollY - held.y) > 1) window.scrollTo(0, held.y);
+    if (held.path === location.pathname) place(held);
     held = null;
   });
 
+  // Put the new screen where the old one was, before it is drawn and before anything is measured:
+  // each row of pills sideways, and the page itself. Without this the pills and the page jump.
+  function place(was) {
+    document.querySelectorAll("#main .pills").forEach(function (row, at) {
+      if (was.rows[at]) row.scrollLeft = was.rows[at];
+    });
+    if (Math.abs(window.scrollY - was.y) > 1) window.scrollTo(0, was.y);
+  }
   function arrived(was) {
     var M = window.pokerMotion;
+    place(was);
     if (!M || !M.on()) return;
-    function move(el, keyframes, preset, extra) { if (el) M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes)); }
+    // Motion begins on the next frame. The element is put at its starting point now, so the frame in
+    // between does not show it already arrived and then jumping back
+    // (doc/wiki/footguns/motion_starts_a_frame_late.md).
+    function move(el, keyframes, preset, extra) {
+      if (!el) return;
+      Object.keys(keyframes).forEach(function (name) { el.style[name] = keyframes[name][0]; });
+      M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
+    }
     // The marker slides from the pill that was chosen to the one that is.
     var group = document.querySelector('[data-stat-pills="' + was.group + '"]'), now = group && chosen(group);
     var marker = now && now.querySelector(".pill-marker");

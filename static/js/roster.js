@@ -8,8 +8,12 @@
     var section = document.getElementById("players"), list = section && section.querySelector("[data-roster]");
     if (!list) return;
     var life = new AbortController(), timers = [], M = window.pokerMotion;
+    // Motion begins on the next frame, so the element is put at its starting point now
+    // (doc/wiki/footguns/motion_starts_a_frame_late.md).
     function move(el, keyframes, preset, extra) {
-      if (el && M) M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
+      if (!el || !M || !M.on()) return;
+      Object.keys(keyframes).forEach(function (name) { el.style[name] = keyframes[name][0]; });
+      M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
     }
     // The same brass mark as an accepted change on a set, held and then faded.
     function mark(els) {
