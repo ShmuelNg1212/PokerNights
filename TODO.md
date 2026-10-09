@@ -78,6 +78,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 ## Waiting for the human
 
+
 - [ ] **The fix for the Stats pills was released on 2026-10-09 (`455faab`).** On your phone, after closing and reopening the app: scroll the Profit … Sessions row sideways and tap Sessions, then Profit. The row should stay where you left it and the highlight should slide without a flicker. Say if any jitter remains, and on which pills.
 
 - [ ] **The stats revamp was released on 2026-10-09 (`c08d711`).** First check the Vercel build passed. Then on your phone:
