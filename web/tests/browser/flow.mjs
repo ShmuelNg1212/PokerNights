@@ -116,10 +116,11 @@ try {
 
  await story(1280,'wide');
 
- // A player joins: their own action, through the morph. The join line leaves and the rows move up.
+ // A player joins: their own action, through the morph.
  const J=M.join,C=await user('ben');await C.go(`/s/${J.set}/`);await sleep(300);
  const joined=C.redraw(false);await C.js(`document.querySelector('.join-row form').requestSubmit()`);f=await joined;
- check('join: your own row arrives transparent, the others slide up from where they were',!!f&&f.rows.length===4&&f.rows.at(-1).o<0.2&&f.rows.slice(0,3).every(r=>Math.abs(r.y)>10&&r.o===1));
+ // Since the set page revamp a player's own row is first and takes the place of the join line, so the others stay.
+ check('join: your own row arrives transparent in the place of the join line, the others stay',!!f&&f.rows.length===4&&f.rows[0].o<0.2&&f.rows.slice(1).every(r=>r.y===0&&r.o===1));
  await sleep(900);check('join: at rest',await C.js(`${rowsAtRest}&&${only}&&__errors.length===0`));
 
  // The set changes state, counts are confirmed and the books balance.

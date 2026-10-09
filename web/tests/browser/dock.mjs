@@ -50,7 +50,7 @@ try {
    await A.go(`/s/${id}/`);
    check(tag+' collapsed survives reload',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1`));
    await A.click(toggle);
-   check(tag+' expands again',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&${shown}.length>1&&localStorage.getItem('rack-dock')===null`));
+   check(tag+' expands again',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&${shown}.length>1&&localStorage.getItem('rack-dock')==='open'`)); // the choice is kept either way since the set page revamp
   }
  }
  // One gap between neighbouring host controls, at every width, with "More host controls" closed and open.
@@ -139,8 +139,9 @@ try {
  // Reduced motion and storage refusal.
  const {identifier}=await send('Page.addScriptToEvaluateOnNewDocument',{source:`Object.defineProperty(window,'localStorage',{get(){throw new Error('blocked')}})`},A.s);
  await A.go('/s/3/');await A.click(toggle);
- check('works with storage refused',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1`));
- await A.go('/s/3/');check('refused storage forgets',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'`));
+ // A set in play starts folded since the set page revamp, so the tap unfolds it and a reload folds it again.
+ check('works with storage refused',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&${shown}.length>1`));
+ await A.go('/s/3/');check('refused storage forgets',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'`));
  await send('Page.removeScriptToEvaluateOnNewDocument',{identifier},A.s);
  // Without JavaScript: no toggle, expanded dock, native action works.
  await A.go('/s/3/');await A.click(toggle);
@@ -169,8 +170,8 @@ try {
  await A.shot('dock-counting-keyboard');
  const last=`[...document.querySelectorAll('[data-count-input]')].pop()`;await A.js(`window.scrollTo(0,0);${last}.focus({preventScroll:true});${last}.scrollIntoView({block:'end'})`);await sleep(250);
  check('keyboard up: a field under the bar is moved clear',await A.js(`${last}.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top`));
- await A.click(toggle);
- check('keyboard up: tapping the bar leaves the field and keeps the choice',await A.js(`!document.activeElement.matches('[data-count-input]')&&localStorage.getItem('rack-dock')===null`));
+ const choice=await A.js(`localStorage.getItem('rack-dock')`);await A.click(toggle);
+ check('keyboard up: tapping the bar leaves the field and keeps the choice',await A.js(`!document.activeElement.matches('[data-count-input]')`)&&await A.js(`localStorage.getItem('rack-dock')`)===choice);
  await kb(0);
  check('keyboard closed again: back at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='true'&&!document.documentElement.style.getPropertyValue('--kb')`));
  await A.click(toggle);await A.js(`${field}.focus()`);await kb(336);

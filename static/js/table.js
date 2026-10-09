@@ -45,7 +45,7 @@
   document.addEventListener("live:updated", function () { if (region) answer(before); before = null; });
   // "Details" opens: the facts fade in over a few pixels, as disclosures do elsewhere. Closing is immediate.
   // Only when a person opened it: a live update and a wide screen open it too, and those are not events to mark.
-  var asked = 0;
+  var asked = -Infinity;
   document.addEventListener("click", function (event) { if (event.target.closest && event.target.closest(".set-facts > summary")) asked = performance.now(); });
   document.addEventListener("toggle", function (event) {
     var facts = event.target;

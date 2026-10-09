@@ -119,7 +119,8 @@ try {
  check('opening is answered in place: the step is done, Start is next',await H.until(`document.querySelector('.prep .badge').textContent==='Open'`)&&same(await H.js(steps),{players:'done',stakes:'done',open:'done',start:'next'})&&await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&${text('Players can see it and join.')}`));
  await sleep(600);
  check('open: the menu holds the option and Start; Back to draft waits under More',await H.js(`!!document.querySelector('#opening-buy-ins')&&${shown('.host-controls > form button[value=close], .host-controls > button[value=close]')}.length===0&&!!document.querySelector('.host-more button[value=close]')`));
- const dockH=await H.js(`Math.round(document.querySelector('.host-controls').getBoundingClientRect().height)`);check('open: the menu is at most 260px tall',dockH<=260,`${dockH}px`);await H.shot('table-open-390');
+ await H.js(`localStorage.removeItem('rack-dock')`);await H.go('/s/4/');
+ const dockH=await H.js(`Math.round(document.querySelector('.host-controls').getBoundingClientRect().height)+(document.querySelector('.dock-collapsed')?1000:0)`);check('open: the menu is at most 260px tall',dockH<=260,`${dockH}px`);await H.shot('table-open-390');
  // Start: the one moment.
  await H.js(`window.__seen=null;new MutationObserver(()=>{const f=document.querySelector('.table-v2 .felt');if(f&&!window.__seen){const a=document.getAnimations();window.__seen={figure:document.querySelector('.display-amount').textContent.trim(),clip:getComputedStyle(f).clipPath,styled:f.style.clipPath,timer:document.querySelector('.pot-side strong').textContent.trim()}}}).observe(document.getElementById('live'),{childList:true,subtree:true})`);
  await H.click(`document.querySelector('.host-controls button[value=start]')`,50);

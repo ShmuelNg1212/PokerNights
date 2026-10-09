@@ -21,6 +21,8 @@ async function user(name,width=390){const {browserContextId}=await send('Target.
  const shot=async n=>{const{data}=await send('Page.captureScreenshot',{format:'png'},s);writeFileSync(`${OUT}/${n}.png`,Buffer.from(data,'base64'))};
  const mouse=async(type,expr)=>{const p=await js(`(()=>{const r=${expr}.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`);await send('Input.dispatchMouseEvent',{type,x:p.x,y:p.y,button:'left',clickCount:1},s)};
  await go('/accounts/login/');await js(`document.querySelector('[name=username]').value=${JSON.stringify(name)};document.querySelector('[name=password]').value='tablestakes-91';document.querySelector('form.form-section [type=submit]').click()`);await sleep(900);
+ // Since the set page revamp the host menu starts folded in play; these checks press its buttons.
+ await js(`localStorage.setItem('rack-dock','open')`);
  return {s,js,go,shot,mouse};}
 const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${ok?'PASS':'FAIL'} ${name}`)};
 const opener=`[...document.querySelectorAll('[data-sheet-open^=buy]')].at(-1)`,dialog=`document.querySelector('dialog.sheet')`;
