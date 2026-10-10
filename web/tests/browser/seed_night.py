@@ -3,6 +3,7 @@ import json
 import uuid
 from pathlib import Path
 from games import services as games
+from games.models import Participant
 from games.tests.helpers import make_session, CHIP_STAKES
 from groups import services as groups
 from groups.models import Member
@@ -43,5 +44,16 @@ final('large', [19999999998, -9999999999, -9999999999], large=True)
 final('ready', [60000, -40000, -20000], close=False)
 final('next-ready', [60000, -40000, -20000], close=False)
 final('tied', [30000, 30000, -60000])
+# Two sets, with a rebuy in the second: the recap's set-by-set lines and highlights.
+first = final('two-sets', [60000, -40000, -20000], close=False)
+second = games.start_next_set(first.night_id, host)
+ps = list(Participant.objects.filter(session=second).order_by('join_order'))
+games.transition(second.pk, host, 'start', opening_buy_ins=False)
+for p in ps: ledger.record_buy_in(second.pk, host, p.pk, 100000, u())
+ledger.record_buy_in(second.pk, host, ps[1].pk, 100000, u())
+games.transition(second.pk, host, 'end')
+for p, out in zip(ps, [50000, 280000, 70000]): ledger.record_cash_out(second.pk, host, p.pk, out, u())
+settlement.finalize(second.pk, host)
+settlement.close_night(first.night_id, host)
 Path('/private/tmp/pn-slice3-manifest.json').write_text(json.dumps(manifest))
 print('NIGHT_IDS', manifest)

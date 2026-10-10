@@ -118,6 +118,7 @@ class NightOutcome:
     plan: object = None
     transfers: list = field(default_factory=list)
     payments: list = field(default_factory=list)
+    results: list = field(default_factory=list)  # services.result_rows(night), kept for the recap
 
     @property
     def total_to_pay(self):
@@ -156,6 +157,7 @@ def night_outcome(night) -> NightOutcome:
     rows = services.session_standings(night, results)
     members = Member.objects.in_bulk([row[0] for row in rows])
     found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
+    found.results = results
     balances = dict(services.settlement_balances(night, results))
     for order, standing in enumerate(found.standings, 1):
         standing.join_order = order
@@ -179,24 +181,143 @@ def night_outcome(night) -> NightOutcome:
     return found
 
 
-def night_recap(night, standings, seconds=None):
-    """Read-only closing recap. Buy-ins are frozen; unknown timer duration is not zero.
+@dataclass
+class RecapLine:
+    """One player's session over its finalized sets, from their frozen results."""
 
-    ``seconds`` is ``{session_id: seconds}`` for the session's timed sets when the caller has it.
+    standing: Standing
+    buy_in: int = 0
+    cash_out: int = 0  # cash-outs plus any share of a host override
+    buy_ins: int = 0
+    place: int = 0  # tied results share a place
+    share: int = 0  # whole percent of the largest result of the session, win or loss
+    sets: list = field(default_factory=list)  # [(set_number, net)]
+
+    @property
+    def member(self):
+        return self.standing.member
+
+    @property
+    def net(self):
+        return self.standing.net
+
+    @property
+    def play_seconds(self):
+        return self.standing.play_seconds
+
+
+@dataclass
+class RecapSet:
+    """One finalized set of the session."""
+
+    number: int
+    session_id: int
+    players: int
+    total_buy_in: int
+    seconds: object = None  # None when the set has no recorded time
+    winners: list = field(default_factory=list)  # [(Standing, net)] at the set's highest positive result
+
+
+@dataclass
+class Highlight:
+    """A fact about play worth saying out loud. Never a loss; absent when it has nothing to say."""
+
+    kind: str  # buy_ins | set_win | longest
+    entries: list  # [(Standing, set_number or None)], everyone tied
+    count: object = None
+    amount: object = None
+    seconds: object = None
+
+
+@dataclass
+class Recap:
+    total_buy_in: int
+    total_rake: int
+    all_even: bool
+    play_seconds: object  # None when no finalized set has a recorded time
+    partial_time: bool
+    winners: list
+    players: int = 0
+    set_count: int = 0
+    buy_ins: int = 0
+    ranking: list = field(default_factory=list)
+    sets: list = field(default_factory=list)
+    highlights: list = field(default_factory=list)
+    mine: object = None  # the viewer's RecapLine, when they played
+
+
+def _highlights(lines, rows, by_member, set_count) -> list:
+    found = []
+    most = max((line.buy_ins for line in lines), default=0)
+    if any(line.buy_ins != most for line in lines):
+        found.append(Highlight("buy_ins", [(line.standing, None) for line in lines if line.buy_ins == most], count=most))
+    best = max((row.net for row in rows), default=0)
+    if set_count > 1 and best > 0:
+        entries = [(by_member[row.member_id].standing, row.set_number) for row in rows if row.net == best]
+        found.append(Highlight("set_win", entries, amount=best))
+    timed = [line for line in lines if line.play_seconds is not None]
+    longest = max((line.play_seconds for line in timed), default=0)
+    if len(timed) > 1 and any(line.play_seconds != longest for line in timed):
+        entries = [(line.standing, None) for line in timed if line.play_seconds == longest]
+        found.append(Highlight("longest", entries, seconds=longest))
+    return found
+
+
+def night_recap(night, standings, seconds=None, *, results=None, viewer_id=None) -> Recap:
+    """Read-only closing recap. Figures are frozen results; unknown timer duration is not zero.
+
+    ``seconds`` is ``{session_id: seconds}`` for the session's timed sets and ``results`` is
+    ``services.result_rows(night)``, when the caller has them.
     """
     finals = list(Finalization.objects.filter(session__night=night, is_current=True))
     timed = clock.seconds_by_set([f.session_id for f in finals]) if seconds is None else seconds
+    rows = services.result_rows(night) if results is None else results
     durations = [timed.get(f.session_id) for f in finals]
     known = [seconds for seconds in durations if seconds is not None]
     best = max((s.net for s in standings), default=0)
-    return {
-        "total_buy_in": sum(f.total_buy_in for f in finals),
-        "total_rake": sum(f.total_rake for f in finals),
-        "all_even": all(s.net == 0 for s in standings),
-        "play_seconds": sum(known) if known else None,
-        "partial_time": bool(known) and len(known) != len(durations),
-        "winners": [s for s in standings if s.net == best] if best > 0 else [],
-    }
+
+    by_member = {s.pk: RecapLine(s) for s in standings}
+    by_set = {}
+    for row in rows:
+        line = by_member[row.member_id]
+        line.buy_in += row.buy_in_total
+        line.cash_out += row.cash_out
+        line.buy_ins += row.buy_in_count
+        line.sets.append((row.set_number, row.net))
+        by_set.setdefault(row.session_id, []).append(row)
+    largest = max((abs(s.net) for s in standings), default=0)
+    ranking = sorted(by_member.values(), key=lambda line: (-line.net, line.member.display_name.lower(), line.member.pk))
+    for position, line in enumerate(ranking, 1):
+        tied = position > 1 and ranking[position - 2].net == line.net
+        line.place = ranking[position - 2].place if tied else position
+        line.share = abs(line.net) * 100 // largest if largest else 0
+
+    sets = []
+    for final in finals:
+        played = by_set.get(final.session_id, [])
+        top = max((row.net for row in played), default=0)
+        sets.append(RecapSet(
+            number=played[0].set_number if played else 0, session_id=final.session_id, players=len(played),
+            total_buy_in=final.total_buy_in, seconds=timed.get(final.session_id),
+            winners=[(by_member[row.member_id].standing, row.net) for row in played if row.net == top] if top > 0 else [],
+        ))
+    sets.sort(key=lambda one: one.number)
+
+    return Recap(
+        total_buy_in=sum(f.total_buy_in for f in finals),
+        total_rake=sum(f.total_rake for f in finals),
+        all_even=all(s.net == 0 for s in standings),
+        play_seconds=sum(known) if known else None,
+        partial_time=bool(known) and len(known) != len(durations),
+        winners=[s for s in standings if s.net == best] if best > 0 else [],
+        players=len(standings),
+        set_count=len(finals),
+        buy_ins=sum(line.buy_ins for line in ranking),
+        ranking=ranking,
+        sets=sets,
+        highlights=_highlights(ranking, rows, by_member, len(finals)),
+        mine=by_member.get(viewer_id),
+    )
 
 
 @dataclass

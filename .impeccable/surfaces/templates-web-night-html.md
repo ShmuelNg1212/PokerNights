@@ -56,3 +56,7 @@ This addendum preserves the incumbent Rack and machine-token records. Finish rev
 The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The overview is neutral in both open and closed sessions. Transfers are cards; a fully paid session says Settled. The closing recap is unchanged.
 
 2026-10-05: Transfer alignment plan implemented. Chrome verifies 320/390/768/900/1280px, long names, large pesos/chips, mixed paid states, 200% desktop zoom reflow emulation, host/player/archived permissions, payment/Undo, reduced motion and native forms. Real iPhone Safari and installed-app appearance remain a human check.
+
+## 2026-10-10 addendum — recap in detail
+
+The approved `doc/plan/1791625392_session_recap_details.md` replaces the recap's five fact lines with five sections in the same sheet: top result and facts, Your night, Everyone's results with a result bar per row, Highlights, and Set by set. The sheet's head is sticky in the recap. Sections keep the 360ms clip, 60ms apart; bars grow once when seen. Opening, dismissal, focus, the once-per-browser key and the inline fallback are unchanged. Losses are listed and never highlighted; no percentage is shown. Markup is `templates/web/_night_recap.html`; facts come from `settlement.queries.night_recap`. Evidence: `night.mjs` 68 of 68 on a fresh seed, and captures at 320, 390 and 1280px reviewed in one round with one fix batch (sticky offset, clipped own-row background, a wrapped nine-digit tile, four-column tiles on desktop). No separate critique run was made.

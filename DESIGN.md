@@ -822,6 +822,22 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 **Measured.** `table.mjs`, 63 checks. At 390 × 844 with eight players: panel 223px (was 351), row 65px (was 142), six whole rows on the first screen, page 1,114px (was 1,758). No late frame at the start with the processor slowed four times. Critique 28 of 40, then one fix batch (`.impeccable/critique/`).
 
+### Session recap in detail (2026-10-10)
+
+[Plan](doc/plan/1791625392_session_recap_details.md). This replaces the five fact lines of "Closing recap" and the recap paragraph of "Elevation & Depth" (four lines, 540ms). How the recap opens, closes, keeps focus and remembers that it was seen is unchanged. No new colour, font or raster asset.
+
+- **Sections**, in this order, each a Bone Dim 15px heading over its content, with 24px and a Rule line between them: Top session result, Your night, Everyone's results, Highlights, Set by set. Your night appears only for a viewer who played; Highlights only when one has something to say.
+- **Top session result** names every tied winner on a 22px line: a 36px identity chip, the name, and the figure in Up with its arrow. The existing "Everyone broke even." and "No positive result after rake." lines stay.
+- **Facts** reuse the Stats tiles in two columns at every width. Total bought in and Rake already collected each take a full row so a large amount stays on one line; Players, Finalized sets, Buy-ins and Recorded play time follow.
+- **Your night** leads with the result at the 32px session-result size, then one line of bought in, cashed out, buy-ins and time. With more than one set, each set's result is a pill on Rail 2. The viewer's transfers follow in the page's own words.
+- **Everyone's results** is an ordered list, best result first. A row has the place in Bone Dim, a 36px chip, the name over a muted line of in, out, buy-ins and time, and the signed figure at the right. Tied results share a place. The viewer's row sits on Rail 2 and says "(you)".
+- **Result bar.** Under each row a 6px bar shows the result against the largest of the session, from a Line-coloured middle mark on a Rule hairline: wins to the right in Up, losses to the left in Down with the Stats hatch. A zero result is a 2px Line mark. The bar is decoration for the figure beside it and is hidden from assistive technology.
+- **Highlights** are a label in the stat-label style over a name and its value: Most buy-ins, Biggest win in one set, Longest at the table. No highlight states a loss.
+- **Set by set** is a ruled list: the set's name as a 48px link, a muted line of players, bought in and time, then who finished ahead.
+- **The head stays.** In the recap the sheet's title and Close are sticky over a Rule line, and the scrollbar is thin in Line. A reopened recap starts at its top.
+- **Motion.** The sheet rises as before. Sections are uncovered top to bottom with the existing 360ms clip, 60ms apart, done by 600ms. The result bars grow from the middle mark when their list is first seen, 420ms each and 40ms apart, once per opening. Figures are whole on the first frame. Under reduced motion, and without JavaScript, everything is in place and nothing moves.
+- **Measured.** `night.mjs`, 68 checks: the five sections, highlights without a loss, the reveal within 600ms, bars waiting, growing once and resting with no inline style, Close reachable at the end of the scroll, 48px set links, text contrast of at least 4.5:1 including on Rail 2, 320px with long names and nine-digit amounts, reduced motion, and no JavaScript.
+
 ## Do's and Don'ts
 
 ### Do:

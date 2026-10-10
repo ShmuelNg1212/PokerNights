@@ -54,11 +54,19 @@ def session_results(night: GameNight) -> list:
 
 
 def result_rows(night: GameNight) -> list:
-    """``[(member_id, net, play_seconds, rake_total)]`` of the current results, by set then join order."""
+    """The current results of a session's finalized sets, by set then join order, in one query.
+
+    Named rows: ``member_id``, ``net``, ``play_seconds``, ``rake_total``, ``session_id``,
+    ``set_number``, ``buy_in_total``, ``buy_in_count`` and ``cash_out``.
+    """
     return list(
         PlayerResult.objects.filter(is_current=True, finalization__session__night=night)
-        .order_by("finalization__session__set_number", "participant__join_order")
-        .values_list("member_id", "net", "play_seconds", "rake_total")
+        .annotate(session_id=F("finalization__session_id"), set_number=F("finalization__session__set_number"))
+        .order_by("set_number", "participant__join_order")
+        .values_list(
+            "member_id", "net", "play_seconds", "rake_total", "session_id", "set_number",
+            "buy_in_total", "buy_in_count", "cash_out", named=True,
+        )
     )
 
 
@@ -69,19 +77,19 @@ def session_standings(night: GameNight, rows=None) -> list:
     ``rows`` is ``result_rows(night)`` when the caller has already read it.
     """
     totals, played, seconds = {}, {}, {}
-    for member_id, net, play_seconds, _ in result_rows(night) if rows is None else rows:
-        totals[member_id] = totals.get(member_id, 0) + net
-        played[member_id] = played.get(member_id, 0) + 1
-        if play_seconds is not None:
-            seconds[member_id] = seconds.get(member_id, 0) + play_seconds
+    for row in result_rows(night) if rows is None else rows:
+        totals[row.member_id] = totals.get(row.member_id, 0) + row.net
+        played[row.member_id] = played.get(row.member_id, 0) + 1
+        if row.play_seconds is not None:
+            seconds[row.member_id] = seconds.get(row.member_id, 0) + row.play_seconds
     return [(member_id, net, played[member_id], seconds.get(member_id)) for member_id, net in totals.items()]
 
 
 def settlement_balances(night, rows=None):
     """Remaining player balances: add back the fee already collected at buy-in."""
     totals = {}
-    for member_id, net, _, rake in result_rows(night) if rows is None else rows:
-        totals[member_id] = totals.get(member_id, 0) + net + rake
+    for row in result_rows(night) if rows is None else rows:
+        totals[row.member_id] = totals.get(row.member_id, 0) + row.net + row.rake_total
     return list(totals.items())
 
 

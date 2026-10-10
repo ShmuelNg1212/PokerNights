@@ -1,0 +1,62 @@
+{% load money_tags clock_tags table_tags %}
+<div class="sheet-content recap">
+  <section class="recap-part" aria-labelledby="recap-top-title">
+    <h3 id="recap-top-title">Top session result</h3>
+    {% for winner in recap.winners %}<p class="recap-winner">{% player_token winner outcome.standings %}<span class="grow">{{ winner.member.display_name }}</span><span class="amount plus">{% icon 'arrow-up-right' %} {{ winner.net|signed_amount:unit }}</span></p>{% empty %}<p class="recap-none">{% if recap.all_even %}Everyone broke even.{% else %}No positive result after rake.{% endif %}</p>{% endfor %}
+    <dl class="stat-tiles recap-facts">
+      <div class="stat-tile recap-wide"><dt class="stat-label">Total bought in</dt><dd class="stat-tile-figure">{{ recap.total_buy_in|amount:unit }}</dd><dd class="stat-tile-note">Across finalized sets</dd></div>
+      {% if recap.total_rake %}<div class="stat-tile recap-wide"><dt class="stat-label">Rake already collected</dt><dd class="stat-tile-figure">{{ recap.total_rake|amount:unit }}</dd></div>{% endif %}
+      <div class="stat-tile"><dt class="stat-label">Players</dt><dd class="stat-tile-figure">{{ recap.players }}</dd></div>
+      <div class="stat-tile"><dt class="stat-label">Finalized sets</dt><dd class="stat-tile-figure">{{ recap.set_count }}</dd></div>
+      <div class="stat-tile"><dt class="stat-label">Buy-ins</dt><dd class="stat-tile-figure">{{ recap.buy_ins }}</dd></div>
+      <div class="stat-tile"><dt class="stat-label">Recorded play time</dt><dd class="stat-tile-figure">{% if recap.play_seconds is not None %}{{ recap.play_seconds|duration }}{% else %}Not recorded{% endif %}</dd>{% if recap.partial_time %}<dd class="stat-tile-note">Partial; some sets have no recorded time</dd>{% endif %}</div>
+    </dl>
+  </section>
+  {% if recap.mine %}{% with mine=recap.mine %}
+  <section class="recap-part recap-mine" aria-labelledby="recap-mine-title">
+    <h3 id="recap-mine-title">Your night</h3>
+    <p class="night-result {{ mine.net|sign_class }}">{% if mine.net > 0 %}{% icon 'arrow-up-right' %}{% elif mine.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ mine.net|signed_amount:unit }}</p>
+    <p class="recap-line">{{ mine.buy_in|amount:unit }} bought in · {{ mine.cash_out|amount:unit }} cashed out · {{ mine.buy_ins }} buy-in{{ mine.buy_ins|pluralize }}{% if mine.play_seconds is not None %} · {{ mine.play_seconds|duration }} at the table{% endif %}</p>
+    {% if mine.sets|length > 1 %}<ul class="recap-by-set">{% for number, net in mine.sets %}<li><span class="muted">Set {{ number }}</span> <span class="amount {{ net|sign_class }}">{{ net|signed_amount:unit }}</span></li>{% endfor %}</ul>{% endif %}
+    {% for t in my_transfers %}<p class="recap-line">{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p class="recap-line">You owe nothing and are owed nothing.</p>{% endfor %}
+  </section>
+  {% endwith %}{% endif %}
+  <section class="recap-part" aria-labelledby="recap-all-title">
+    <h3 id="recap-all-title">Everyone's results</h3>
+    <ol class="list recap-ranking" data-recap-bars>
+      {% for line in recap.ranking %}
+      <li{% if line.member.pk == me.pk %} class="is-me"{% endif %}>
+        <div class="recap-rank"><span class="recap-place" aria-hidden="true">{{ line.place }}</span><span class="visually-hidden">Place {{ line.place }}:</span>{% player_token line.standing outcome.standings %}<span class="grow">{{ line.member.display_name }}{% if line.member.pk == me.pk %} <span class="muted">(you)</span>{% endif %}<br><span class="muted small">{{ line.buy_in|amount:unit }} in · {{ line.cash_out|amount:unit }} out · {{ line.buy_ins }} buy-in{{ line.buy_ins|pluralize }}{% if line.play_seconds is not None %} · {{ line.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ line.net|sign_class }}">{% if line.net > 0 %}{% icon 'arrow-up-right' %}{% elif line.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ line.net|signed_amount:unit }}</span></div>
+        <div class="recap-bar" aria-hidden="true"><span class="{% if line.net > 0 %}up{% elif line.net < 0 %}down{% else %}flat{% endif %}" style="--share:{{ line.share }};--i:{{ forloop.counter0 }}"></span></div>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="muted small">Results are after rake and describe play, not payments.</p>
+  </section>
+  {% if recap.highlights %}
+  <section class="recap-part" aria-labelledby="recap-notes-title">
+    <h3 id="recap-notes-title">Highlights</h3>
+    <dl class="recap-highlights">
+      {% for h in recap.highlights %}
+      <div>
+        <dt class="stat-label">{% if h.kind == 'buy_ins' %}Most buy-ins{% elif h.kind == 'set_win' %}Biggest win in one set{% else %}Longest at the table{% endif %}</dt>
+        <dd>{% for who, number in h.entries %}<span class="recap-who">{{ who.member.display_name }}{% if number %} <span class="muted">in set {{ number }}</span>{% endif %}</span>{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+        <dd class="recap-value amount{% if h.kind == 'set_win' %} plus{% endif %}">{% if h.kind == 'buy_ins' %}{{ h.count }} buy-in{{ h.count|pluralize }}{% elif h.kind == 'set_win' %}{{ h.amount|signed_amount:unit }}{% else %}{{ h.seconds|duration }}{% endif %}</dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endif %}
+  <section class="recap-part" aria-labelledby="recap-sets-title">
+    <h3 id="recap-sets-title">Set by set</h3>
+    <ul class="list recap-sets">
+      {% for one in recap.sets %}
+      <li>
+        <a class="set-link" href="{% url 'session' one.session_id %}">Set {{ one.number }}</a>
+        <p class="muted small">{{ one.players }} player{{ one.players|pluralize }} · {{ one.total_buy_in|amount:unit }} bought in{% if one.seconds is not None %} · {{ one.seconds|duration }}{% endif %}</p>
+        <p class="recap-line">{% for who, net in one.winners %}{{ who.member.display_name }} <span class="amount plus">{{ net|signed_amount:unit }}</span>{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">Nobody finished ahead.</span>{% endfor %}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>

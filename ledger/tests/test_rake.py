@@ -134,8 +134,8 @@ class RakeBalanceTests(TestCase):
         plan = settle.close_night(n.session.night_id, n.host)
         self.assertFalse(plan.transfers.exists())
         recap = outcomes.night_recap(n.session.night, outcomes.night_outcome(n.session.night).standings)
-        self.assertFalse(recap['all_even'])
-        self.assertEqual(recap['total_rake'], 10000)
+        self.assertFalse(recap.all_even)
+        self.assertEqual(recap.total_rake, 10000)
 
     def test_partial_cash_out_counts_and_missing_player_coverage(self):
         n = Night('A', 'B')

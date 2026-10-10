@@ -10,14 +10,30 @@ S.key = id; S.opener = button;
 S.dialog.querySelector("h2").textContent = source.dataset.title;
 S.body.appendChild(source.querySelector(".sheet-content"));
 if (window.pokerNumpad) window.pokerNumpad.prepare(S.body); // the number keys are in place before the sheet rises
+watchBars(S);
 S.dialog.showModal();
+S.dialog.scrollTop = 0;
 if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
 // A sheet that confirms something says where focus starts, so a stray Enter does not confirm it.
 var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
 }
+// The recap's result bars grow when their list is first seen, once per opening. The mark is set
+// before the sheet shows, so no bar is drawn full for a frame; without it the bars are simply there.
+function watchBars(sheet) {
+var list = sheet.body.querySelector("[data-recap-bars]");
+if (!list || !window.IntersectionObserver) return;
+list.classList.add("recap-watch");
+sheet.watch = new IntersectionObserver(function (entries) {
+if (!entries.some(function (entry) { return entry.isIntersecting; })) return;
+list.classList.add("is-seen"); sheet.watch.disconnect();
+}, {root: sheet.dialog, threshold: 0.2});
+sheet.watch.observe(list);
+}
 // Puts a sheet's content back where it came from, so the page holds it again.
 function putBack(sheet) {
+if (sheet.watch) { sheet.watch.disconnect(); sheet.watch = null; }
+var bars = sheet.body.querySelector("[data-recap-bars]"); if (bars) bars.classList.remove("recap-watch", "is-seen");
 var current = sheet.region.querySelector('[data-sheet-source="' + sheet.key + '"]'), content = sheet.body.querySelector(".sheet-content");
 if (sheet.discard) { content = null; sheet.discard = false; }
 if (content && current) {
