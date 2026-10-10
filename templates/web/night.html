@@ -136,13 +136,7 @@
     {% if recap %}
     <section class="sheet-source recap-source" data-sheet-source="recap" data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
       <h2>Session recap</h2>
-      <div class="sheet-content recap-lines">
-        <div><h3>Recorded play time</h3><p>{% if recap.play_seconds is not None %}{{ recap.play_seconds|duration }}{% if recap.partial_time %} <span class="small muted">· partial; some sets have no recorded time</span>{% endif %}{% else %}Not recorded{% endif %}</p></div>
-        <div><h3>Total bought in across finalized sets</h3><p class="amount">{{ recap.total_buy_in|amount:unit }}</p></div>
-        {% if recap.total_rake %}<div><h3>Rake already collected</h3><p class="amount">{{ recap.total_rake|amount:unit }}</p></div>{% endif %}
-        <div><h3>Top session result</h3><p>{% for winner in recap.winners %}{{ winner.member.display_name }} <span class="amount plus">{{ winner.net|signed_amount:unit }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}{% if recap.all_even %}Everyone broke even.{% else %}No positive result after rake.{% endif %}{% endfor %}</p></div>
-        {% if my_standing %}<div><h3>Your session result</h3><p class="amount {{ my_standing.net|sign_class }}">{{ my_standing.net|signed_amount:unit }}</p></div>{% endif %}
-      </div>
+      {% include "web/_night_recap.html" %}
     </section>
     {% endif %}
   </div>

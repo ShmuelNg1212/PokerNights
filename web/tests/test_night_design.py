@@ -57,14 +57,14 @@ class NightDesignTests(TestCase):
         # One of the two finalized sets has a timer; the other recorded none.
         with patch('settlement.queries.clock.seconds_by_set', side_effect=lambda ids: {ids[0]: 60}):
             recap = queries.night_recap(self.night, queries.night_outcome(self.night).standings)
-        self.assertEqual(recap['total_buy_in'], 500000)
-        self.assertEqual(recap['play_seconds'], 60)
-        self.assertTrue(recap['partial_time'])
-        self.assertEqual([s.member.display_name for s in recap['winners']], ['A'])
+        self.assertEqual(recap.total_buy_in, 500000)
+        self.assertEqual(recap.play_seconds, 60)
+        self.assertTrue(recap.partial_time)
+        self.assertEqual([s.member.display_name for s in recap.winners], ['A'])
         with patch('web.views.clock.timers', return_value={}):
             page = self.client.get(self.url)
         self.assertContains(page, 'Not recorded')
-        self.assertNotContains(page, 'Your session result')  # host did not play
+        self.assertNotContains(page, 'Your night')  # host did not play
 
     def test_canceled_set_does_not_enter_recap(self):
         two = TwoSets(finalize_second=False)
@@ -75,7 +75,7 @@ class NightDesignTests(TestCase):
             recap = queries.night_recap(night, queries.night_outcome(night).standings)
         timer.assert_called_once()
         self.assertEqual(len(timer.call_args.args[0]), 1)  # the finalized set only
-        self.assertEqual((recap['total_buy_in'], recap['play_seconds']), (250000, 90))
+        self.assertEqual((recap.total_buy_in, recap.play_seconds), (250000, 90))
 
     def test_chips_break_even_recap_has_no_percentage_or_peso(self):
         one = Night('A', unit='chips')
@@ -95,7 +95,7 @@ class NightDesignTests(TestCase):
         standings = queries.night_outcome(self.night).standings
         standings[1].net = standings[0].net
         recap = queries.night_recap(self.night, standings)
-        self.assertEqual([s.member.display_name for s in recap['winners']], ['A', 'B'])
+        self.assertEqual([s.member.display_name for s in recap.winners], ['A', 'B'])
         self.assertEqual([s.join_order for s in standings], [1, 2, 3])
         self.assertEqual([s.pk for s in standings], [s.member.pk for s in standings])
 
@@ -122,3 +122,54 @@ class NightDesignTests(TestCase):
         self.assertIn('Who pays whom', page)
         self.assertIn('Not paid', page)
         self.assertNotIn('Mark paid', page)
+
+
+class RecapPageTests(TestCase):
+    """The closing recap as the session page draws it."""
+
+    def setUp(self):
+        self.two = TwoSets()
+        services.close_night(self.two.night_id, self.two.host)
+        self.url = reverse('night', args=[self.two.night_id])
+
+    def page(self, user):
+        self.client.force_login(user)
+        return self.client.get(self.url)
+
+    def test_host_who_did_not_play_sees_the_table_and_no_own_night(self):
+        page = self.page(self.two.host.user)
+        for heading in ('Top session result', "Everyone's results", 'Highlights', 'Set by set'):
+            self.assertContains(page, heading)
+        self.assertNotContains(page, 'Your night')
+        self.assertNotContains(page, '(you)')
+        self.assertContains(page, '₱2,000 in · ₱2,200 out · 2 buy-ins')
+        self.assertContains(page, '₱1,000 in · ₱700 out · 2 buy-ins')  # the loss is listed
+        self.assertContains(page, 'Biggest win in one set')
+        self.assertContains(page, 'in set 1')
+        self.assertNotContains(page, 'Most buy-ins')  # everyone bought in twice
+        self.assertContains(page, '3 players · ₱2,500 bought in', count=2)
+        self.assertContains(page, 'style="--share:100;--i:2"')
+        self.assertNotContains(page, '%')
+
+    def test_a_player_sees_their_own_night_and_their_transfer(self):
+        from groups.tests.helpers import add_player
+        from games.models import Participant
+        night = Night('A')
+        member = night.add_login_player('Ben')
+        night.buy('A', 1000)
+        night.buy('Ben', 1000)
+        night.buy('Ben', 500)
+        night.go('reconciliation')
+        night.cash('A', 2000)
+        night.cash('Ben', 500)
+        services.finalize(night.session.pk, night.host)
+        services.close_night(night.session.night_id, night.host)
+        self.client.force_login(member.user)
+        page = self.client.get(reverse('night', args=[night.session.night_id]))
+        self.assertContains(page, 'Your night')
+        self.assertContains(page, '₱1,500 bought in · ₱500 cashed out · 2 buy-ins')
+        self.assertContains(page, 'You pay <strong>A</strong>')
+        self.assertContains(page, 'Ben <span class="muted">(you)</span>')
+        self.assertContains(page, 'Most buy-ins')
+        self.assertNotContains(page, 'Biggest win in one set')  # one set
+        self.assertNotContains(page, 'recap-by-set')

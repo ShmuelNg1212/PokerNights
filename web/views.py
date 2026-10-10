@@ -323,7 +323,8 @@ def night(request, night_id):
     })
     if night.is_closed and not night.is_archived:
         context["recap"] = settlement_queries.night_recap(
-            night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()}
+            night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()},
+            results=outcome.results, viewer_id=me.pk,
         )
     if host.is_host:
         context["manage"] = {
