@@ -6,8 +6,8 @@
     <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
     {% if summary.money_lines %}
     <p class="count-progress" data-watch="count-progress" data-value="{{ count_complete }}"><strong>{{ count_complete }} <span>of {{ summary.money_lines|length }}</span></strong> players counted or cashed out</p>
-    {# One mark per player with a buy-in, in the list's order. The line above says the same in words. #}
-    <ol class="count-pips" aria-hidden="true">{% for line in summary.money_lines %}<li data-status="{{ line.status }}"></li>{% endfor %}</ol>
+    {# One mark per player with a buy-in, in the list's order. The line beside them says the same in words. #}
+    <ol class="count-pips" aria-hidden="true">{% for line in summary.money_lines %}<li data-status="{{ line.status }}" data-watch="count-{{ line.participant.pk }}-mark" data-value="{{ line.status }}"></li>{% endfor %}</ol>
     <p class="visually-hidden">{{ summary.awaiting_lines|length }} awaiting count, {{ summary.ready_lines|length }} ready to cash out, {{ summary.cashed_out_lines|length }} cashed out.</p>
     {% else %}<p class="count-progress" data-watch="count-progress" data-value="0">No buy-in is recorded, so there is nothing to count.</p>{% endif %}
   </section>

@@ -2,14 +2,14 @@
 {# The first thing a person reads on a closed session: a player's own part, or the table's total for the host. #}
 {% if me.is_host %}
 <h2 class="pot-label">Still to pay</h2>
-{% if outcome.status == 'settled' %}<div class="display-amount settled-figure plus">{% icon 'check' %} Settled</div>
+{% if outcome.status == 'settled' %}<div class="display-amount settled-figure plus" data-settled="{{ night.pk }}">{% icon 'check' %} Settled</div><span class="settled-rule" aria-hidden="true"></span>
 {% else %}{% with figure=outcome.still_to_pay|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}">{{ outcome.still_to_pay|display_amount:unit }}</div>{% endwith %}{% endif %}
 {% elif my_part.kind == 'pay' or my_part.kind == 'receive' %}
 <h2 class="pot-label">{% if my_part.kind == 'pay' %}You pay{% else %}You receive{% endif %}</h2>
 {% with figure=my_part.amount|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}" data-my-part="{{ my_part.kind }}:{{ my_part.amount }}">{{ my_part.amount|display_amount:unit }}</div>{% endwith %}
 {% elif my_part.kind == 'settled' %}
 <h2 class="pot-label">Your part</h2>
-<div class="display-amount settled-figure plus" data-my-part="settled:0">{% icon 'check' %} You're settled</div>
+<div class="display-amount settled-figure plus" data-my-part="settled:0" data-settled="{{ night.pk }}:{{ me.pk }}">{% icon 'check' %} You're settled</div><span class="settled-rule" aria-hidden="true"></span>
 {% else %}
 <h2 class="pot-label">Your part</h2>
 <div class="display-amount lead-words" data-my-part="none:0">Nothing to pay</div>

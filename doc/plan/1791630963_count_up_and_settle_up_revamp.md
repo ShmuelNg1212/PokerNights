@@ -1,6 +1,6 @@
 # Count-up and who pays whom, revamp: plan
 
-Status: waiting for approval. Date: 2026-10-10, Asia/Manila. Study: [Count-up and who pays whom, revamp](../study/1791630956_count_up_and_settle_up_revamp.md).
+Status: approved 2026-10-10 ("approved"); all six decisions as recommended. Built on `feat/count-and-settle-revamp`. Date: 2026-10-10, Asia/Manila. Study: [Count-up and who pays whom, revamp](../study/1791630956_count_up_and_settle_up_revamp.md).
 
 ## Outcome
 
@@ -138,3 +138,47 @@ A physical phone at a table: typing counts with one thumb, the numpad panel with
 ## Progress and blockers
 
 2026-10-10: Study and plan written after four questions to the human. Waiting for approval.
+
+2026-10-10: approved ("approved"), all six decisions as recommended. The design skill (impeccable) and the motion skill were loaded earlier in the same session for the recap and applied here.
+
+2026-10-10: built on `feat/count-and-settle-revamp`, not merged and not pushed.
+
+- Stages 1 and 2 are commit `974779f`; stage 3 and the docs are the commit after it.
+- 964 tests pass on SQLite and on PostgreSQL.
+- Browser checks on fresh seeds: `count_flow.mjs` 91 of 91, `night.mjs` 83 of 83, `dock.mjs` 228 of 228, `numpad.mjs` 120 of 120, `player_entries.mjs` 48 of 48, `inplace.mjs` 39 of 39, `archive.mjs` 85 of 85, `settled.mjs` 24 of 24, `end_set.mjs` 46 of 47 (the one failure, a contrast pair for a surface that no longer exists, also fails on `main`).
+- No query added: the set page stays within 13 and the session page within 14.
+
+Measured at 390 × 844:
+
+| | Before | Now |
+|---|---|---|
+| Count row | 111px | 63px |
+| Whole rows between the overview and the host bar (six players) | about 3 | 6, bar open or folded |
+| Rows above the open number keys | 2 | 7 |
+| Host bar | 203px | 179px open, 127px folded |
+| Count-up page | 1,973px | 1,241px open, 1,189px folded |
+| Session overview, host | 361px | 204 to 224px |
+| Session overview, player | 539px | 292 to 336px |
+| First transfer starts at (host) | 750px | 417px |
+| Transfer row | about 250px | 99px host, 71px player |
+| Whole transfers on the host's first screen | 0 | 4 |
+| Session page with five transfers | 3,116px | 2,030px |
+
+Acceptance: AC1 to AC12 are met as measured above and by the tests and scripts listed.
+
+Differences from the plan as written:
+
+1. **The host bar's folding did not change.** Making it start folded during count-up moved eighteen of the dock's keyboard checks, so the bar opens and folds exactly as before and keeps the host's saved choice. Instead the open bar hides its hint when a main action is shown (179px, not the planned 130px), and the folded bar keeps the total and the main action (127px). Six rows fit in either state because the row is 63px.
+2. **The help sentence stays above the list.** Removing it after the first count moved the field the host had just typed in by 13px.
+3. **The pages are longer than estimated:** count-up 1,241px (estimate 1,150), five transfers 2,030px (estimate 1,700), a player's overview 292 to 336px (estimate 220), because it holds their transfers and their result.
+4. **"Counted so far" and the difference are not repeated in The books for the host.** They are in the host bar, and from 900px in "Confirmed counts" beside the action. A player's books keep the read-only total.
+5. **The verdict's tick is not drawn.** It is a mask, which cannot be drawn in. The moment is the tick in each accepted field and the mark filling; the balanced rule runs as before.
+6. **The progress bar moves only where the browser can animate it** (Safari and Chrome). Elsewhere it changes at once.
+7. **"Settled" also arrives on the first visit to a session that is already settled**, once, as the balanced rule does for a set. A player's "You're settled" does the same.
+8. **File names.** The new count-up is `_count_v2.html`, `_count_rows.html`, `_count_own.html` and `_books.html`. The earlier `_count_up.html` and `_players_count.html` keep their names, because the canceled-set page also uses the second.
+9. **Two commits, not three.** Stages 1 and 2 share files and went in together.
+10. **No separate `/impeccable critique` run.** Each screen had two rounds of captures at 320, 390 and 1280px with a fix batch after each. A formal critique can still be run on request.
+11. **Existing checks that changed.** Twelve Django tests and parts of `count_flow.mjs`, `dock.mjs`, `player_entries.mjs`, `night.mjs` and `end_set.mjs` named the earlier layout and were updated; the browser README lists each. `transfer_layout.mjs` describes the earlier transfer card and is retired from release runs.
+12. **A stale script was repaired on the way:** `end_set.mjs` stopped at its no-JavaScript chips walk on `main` too; it now runs to the end.
+
+Not checked from here: counting with one thumb at a table, the number keys with the shorter rows on an iPhone, and how the two moments feel on a real phone. These are the phone checklist in TODO.md.

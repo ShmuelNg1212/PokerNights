@@ -111,11 +111,14 @@ try {
  check('tapping elsewhere puts the panel away',await A.js(`!${PANEL}`));
  // Confirm the typed counts with the main button.
  await A.tap(`document.querySelector('[data-confirm-typed]')`,1800);
+ // The moment: each accepted count gets its tick drawn and its mark in the overview fills. Figures are whole from the first frame.
+ check('confirmed counts: a tick is drawn on each accepted row and its mark fills',await A.js(`(()=>{const rows=[...document.querySelectorAll('.count-row.just-changed.is-ready')];return rows.length>=1&&rows.every(r=>getComputedStyle(r.querySelector('.count-tick path')).animationName==='tick-draw'&&getComputedStyle(r.querySelector('.count-tick')).opacity==='1')&&document.querySelectorAll('.count-pips li.just-changed').length===rows.length})()`));
+ check('confirmed counts: the accepted figure is in its field and nothing is written inline',await A.js(`[...document.querySelectorAll('.count-row.just-changed.is-ready')].every(r=>{const f=r.querySelector('[data-count-input]');return f.placeholder!==''&&f.value===''&&!r.querySelector('.count-tick').getAttribute('style')})`));
  check('confirming records the counts and the main button becomes the cash-out',await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]'&&await A.js(`${field(0)}.value===''&&${field(0)}.placeholder==='900'`));
  check('nothing typed: the bar is no longer a preview',await A.js(`document.querySelector('[data-dock-prefix]').textContent`)==='');
  check('confirmed fields are still served by the numpad',await A.js(`${fields}.every(f=>f.getAttribute('inputmode')==='none')`));
  await A.js(`window.scrollTo(0,0)`);await sleep(6500);await A.shot('count-flow-ready-390');
- for(const [name,sel] of [['note after the list','.count-after'],['confirmed count in its field','.count-entry input'],['line under a name','.count-sub'],['bar verdict','[data-dock-status]'],['hint','#batch-why'],['progress','.count-progress']]) {
+ for(const [name,sel] of [['help line','.count-help'],['confirmed count in its field','.count-entry input'],['line under a name','.count-sub'],['bar verdict','[data-dock-status]'],['hint','#batch-why'],['progress','.count-progress']]) {
   const ratio=await A.js(contrast(sel));check(`contrast of the ${name} is at least 4.5 (${ratio})`,ratio>=4.5);
  }
  check('a confirmed count in its field is readable (placeholder colour)',await A.js(`(()=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=getComputedStyle(${field(0)},'::placeholder').color;return c.fillStyle!==''})()`));

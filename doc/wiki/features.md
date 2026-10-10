@@ -443,3 +443,30 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` holds the movement and remembers the steps in `sessionStorage` to know what changed.
 - `GameSession.state_word` gives the words Draft, Open, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
 - Switch: `TABLE_REVAMP=False`. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).
+
+## Count-up in one line and settle-up in rows (2026-10-10)
+
+[Plan](../plan/1791630963_count_up_and_settle_up_revamp.md). The accounting in "End of a set" and "Count-up, review and finalize" still holds; this section describes the screens as built.
+
+**Count-up**
+
+- A player's row is one line: chip, name with what they bought in, and the count field. An empty field is awaiting; a confirmed count shows dim in the field with a tick; a player's own entry shows dim and the row says "entered ₱450". A cashed-out player has no field and shows the amount.
+- Tapping a name opens the player's sheet with records, reversals, the exception cash-out and Clear the count. Without JavaScript each row has a Details disclosure.
+- The overview has one small mark per player with a buy-in, filled as each is counted or cashed out.
+- "The books" lists total bought in, total cashed out, rake when collected, an override when recorded and the set timer, then where the books stand. A discrepancy leads the section and the section moves under the overview once every player is cashed out.
+- The help sentence above the list stays in place, so a field never moves when a count is accepted.
+- The host bar keeps the running total and the main action when folded. Open, it shows its hint only when there is no action.
+- A player sees "Your count" first: the field and Send to host, what they entered, and what the host confirmed.
+- `templates/web/_count_v2.html`, `_count_rows.html`, `_count_own.html` and `_books.html`. The field keeps `data-count-input`, `data-saved`, `data-entered` and `data-keep`, so `counts.js` and `numpad.js` are unchanged.
+- Switch: `COUNT_REVAMP=False`. Checks: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`.
+
+**The closed session page**
+
+- Order: overview, Who pays whom, Session results, Sets, Payment records (closed), then View session recap and Manage this session.
+- The overview's headline is the viewer's own part: You pay, You receive, You're settled or Nothing to pay. The host's is Still to pay for the table, or Settled. The amount is what is still unpaid.
+- A transfer is one row: payer, arrow, payee, amount; beneath it Not paid, or Paid with the time and "marked by the host". The host's Mark paid or Undo is on the row. The viewer's own rows are marked "(you)". The order is the plan's.
+- "How this is worked out" holds the notes on netting and rake.
+- When Mark paid is accepted the row settles and the bar moves; when the last transfer is paid, "Settled" arrives once per session per browser (`settled:<session>` in localStorage; a player's own key adds their member id).
+- `templates/web/night.html`, `_night_lead.html`, `static/js/settle.js`; `settlement.queries.NightOutcome.part_for()` gives the viewer's part from the transfers already loaded.
+- The open session page keeps its overview; its Manage section is at the end of the page too.
+- Check: `night.mjs`.

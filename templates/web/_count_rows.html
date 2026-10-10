@@ -3,13 +3,12 @@
 <section class="count-list" aria-label="Player counts">
   {% if me.is_host %}
   <form id="counts-form" method="post" data-turbo="true" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
-  {# Read once: it steps aside as soon as a count is in, so the list starts higher. #}
-  {% if summary.awaiting_lines and not summary.ready_lines and not summary.cashed_out_lines or any_entered %}<p class="small muted count-help">Type what each player has left; 0 for an empty stack.{% if any_entered %} A player's own count is accepted unless you type another.{% endif %}</p>{% endif %}
+  {% if summary.awaiting_lines or summary.ready_lines %}<p class="small muted count-help">Type what each player has left; 0 for an empty stack.{% if any_entered %} A player's own count is accepted unless you type another.{% endif %}</p>{% endif %}
   {% endif %}
   {% if summary.lines %}
   <ul class="player-list">
     {% for line in summary.lines %}{% with p=line.participant %}
-    {% with figure=line.buy_in_total|amount:unit %}<li class="count-row is-{{ line.status }}{% if not line.has_money %} is-idle{% endif %}{% if figure|length > 11 %} count-wide{% endif %}" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
+    {% with figure=line.buy_in_total|amount:unit %}<li class="count-row is-{{ line.status }}{% if not line.has_money %} is-idle{% endif %}{% if figure|length > 11 %} count-wide{% endif %}" style="--row:{{ forloop.counter0 }}" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
       <div class="count-main">
         {% player_token p participants %}
         <div class="count-who">

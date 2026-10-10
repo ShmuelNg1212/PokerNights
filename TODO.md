@@ -4,6 +4,16 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Count-up and who pays whom, revamp ([plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md), [study](doc/study/1791630956_count_up_and_settle_up_revamp.md)): built on `feat/count-and-settle-revamp` on 2026-10-10. Not merged and not pushed. Count-up is one line per player with the count field on it; the closed session page leads with your own part and lists one row per transfer. `COUNT_REVAMP=False` in Vercel returns the earlier count-up. No migration.
+
+- [ ] After release, as a host at the end of a set: type the counts down the list with the number keys and Next. Check six players show without scrolling and the running total follows.
+- [ ] Confirm the counts: each accepted field should get a green tick and its mark at the top should fill.
+- [ ] Tap a player's name during count-up: their records, the exception cash-out and Clear the count should be in the sheet.
+- [ ] As a player on another phone: "Your count" should be the first thing under the overview; send a count and watch the host's row say "entered".
+- [ ] Close the session. As the host, check four transfers show on the first screen; mark one paid and watch the row settle and the bar move. Mark the last one and "Settled" should arrive once.
+- [ ] As a player, open the closed session: the headline should be what you pay or receive.
+- [ ] Once you accept count-up on your phone, say so and the earlier count-up templates and the switch are removed in the next cycle.
+
 Session recap with more detail ([plan](doc/plan/1791625392_session_recap_details.md), [study](doc/study/1791625335_session_recap_details.md)): built on `feat/session-recap` on 2026-10-10. Released 2026-10-10 as `0c736fb` (previous production commit `e812dfc`); Vercel reports the deployment complete and the live site serves the recap's styles and the new `sheets.js`. The recap itself was not opened on the live site from here. The recap of a closed session has five sections: top result and facts, your night, everyone's results with bars, highlights, and set by set. No migration. 950 tests pass on SQLite and PostgreSQL; `night.mjs` passes 68 of 68.
 
 - [ ] After release, on your phone: close a session of two sets with at least one rebuy. The recap should open by itself once.

@@ -233,8 +233,8 @@ class CountRevampTests(TestCase):
     def test_the_overview_has_one_mark_per_player_with_a_buy_in(self):
         count(self.night, "A", 800)
         html = self.client.get(self.url).content.decode()
-        self.assertEqual(html.count('<li data-status="ready"></li>'), 1)
-        self.assertEqual(html.count('<li data-status="awaiting"></li>'), 1)
+        self.assertEqual(html.count('<li data-status="ready" data-watch="count-'), 1)
+        self.assertEqual(html.count('<li data-status="awaiting" data-watch="count-'), 1)
         self.assertIn("1 awaiting count, 1 ready to cash out, 0 cashed out.", html)
 
     def test_the_books_state_each_figure_once(self):
