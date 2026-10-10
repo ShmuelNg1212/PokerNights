@@ -280,6 +280,16 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Code: `static/js/flow.js`, `static/js/changes.js`, the last block of `static/css/app.css`. Check: `web/tests/browser/flow.mjs`. The events table is in DESIGN.md.
 - Next stages (each with its own plan): the live set page, moving between screens, results and settle-up.
 
+## The pot's figure rolls (2026-10-11)
+
+- When "Still in play" changes on a set in play (a buy-in, a cash-out or a reversal, yours or another person's), the digits that changed roll to the new amount: upward for more, downward for less. The peso sign, commas and unchanged digits stay still.
+- The amount added or taken out shows beside the label for 3 seconds: "+₱500", "−₱1,200.50", "+500 chips". Two changes in one update show their sum.
+- The page's text is the accepted amount from the first frame. No other amount is shown and nothing counts.
+- Nothing moves on first sight of a set, on a reload, in a hidden tab or if the Motion file does not load. Under reduced motion the figure changes at once and the amount added shows still.
+- The "₱X bought in" line of a set that has not started is not part of it.
+- Fail-safe: if the drawn digits cannot take exactly the plain figure's room, or the script would write the amount differently from the server, the figure is as it was before this feature. No switch.
+- Code: `static/js/pot.js`, the `.pot-roll`, `.pot-cell` and `.pot-delta` rules in `static/css/app.css`. The script's formatter mirrors `ledger/money.py` and checks itself against the server's figure on every use. Check: `web/tests/browser/pot.mjs` with `seed_pot.py`.
+
 ## In-app numpad (2026-10-05)
 
 - **On a phone or tablet a typed number uses the app's own keys.** The phone's keyboard does not open for buy-in, rebuy and cash-out amounts, final counts, stakes, rake or seats. Text fields (names, reasons, notes) keep the phone's keyboard. On a computer nothing changes.

@@ -902,6 +902,14 @@ legend { padding: 0; }
 .motion-on .pot-main.just-changed { position: relative; box-shadow: none; }
 .motion-on .pot-main.just-changed::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); transform-origin: left; animation: mark-draw var(--t-sheet) var(--ease-out); transition: opacity 400ms var(--ease-in); }
 .motion-on .pot-main.change-fading::after { opacity: 0; }
+/* pot.js: for the length of a roll the pot's figure is one cell per character, each cut to its own
+   height; a changed cell holds the digit that leaves over the one that arrives. The amount added
+   sits on the label's line, so nothing below it moves. */
+.pot-roll { white-space: nowrap; }
+.pot-cell { display: inline-block; position: relative; clip-path: inset(.12em -.25em 0); }
+.pot-cell > span { display: inline-block; }
+.pot-cell > .pot-gone { position: absolute; left: 0; top: 0; }
+.pot-delta { display: inline-block; margin-left: 8px; color: var(--brass); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 @keyframes mark-draw { from { transform: scaleX(0); } }
 .motion-on .just-left .player-name { animation: name-dim 200ms var(--ease-out); }
 @keyframes name-dim { from { color: inherit; } }
