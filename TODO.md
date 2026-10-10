@@ -4,6 +4,13 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Session recap with more detail ([plan](doc/plan/1791625392_session_recap_details.md), [study](doc/study/1791625335_session_recap_details.md)): built on `feat/session-recap` on 2026-10-10. Not merged and not pushed. The recap of a closed session has five sections: top result and facts, your night, everyone's results with bars, highlights, and set by set. No migration. 950 tests pass on SQLite and PostgreSQL; `night.mjs` passes 68 of 68.
+
+- [ ] After release, on your phone: close a session of two sets with at least one rebuy. The recap should open by itself once.
+- [ ] Scroll the recap to its end. Close should stay at the top the whole way, on Safari and in the installed app.
+- [ ] Check the bars under Everyone's results grow as that list comes into view, and that the opening still feels quick.
+- [ ] Open the recap of an older session from "View session recap" and check its figures against what you remember.
+
 Set page revamp ([plan](doc/plan/1791549025_set_page_revamp.md), [study](doc/study/1791548918_set_page_revamp.md)): built on `feat/set-page-revamp` on 2026-10-09. Released 2026-10-09 as `e812dfc` (previous production commit `f2bd882`); the live site serves `table.js` and the new styles, and no live login was made. In play, the pot and six players fit one phone screen, Rebuy is on the row and a tap on a player reaches cash-out; a draft or open set shows four steps and the next one; a set reads Draft, Open or In play everywhere. No migration. 934 tests pass on SQLite and PostgreSQL 17; `table.mjs` 63 of 63. `TABLE_REVAMP=False` in Vercel returns the earlier page.
 
 - [ ] After release, on your phone as a host: create a session and read the four steps; add players, open the set and start it. Watch the felt arrive once.

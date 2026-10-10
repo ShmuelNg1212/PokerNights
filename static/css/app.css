@@ -465,19 +465,66 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .set-link { display: inline-flex; align-items: center; min-height: var(--tap); }
 .recap-opener { display: none; margin-top: 16px; }
 .sheets-enabled .recap-opener { display: flex; }
-.recap-lines > div { border-bottom: 1px solid var(--rule); padding: 14px 0; overflow-wrap: anywhere; }
-.recap-lines h3 { margin: 0 0 6px; font-size: .875rem; color: var(--bone-dim); }
-.recap-lines p { margin: 0; font-size: 1.375rem; }
-.sheet[open] .recap-lines > div { animation: recap-line 360ms var(--ease-out) both; }
-.sheet[open] .recap-lines > div:nth-child(2) { animation-delay: 60ms; }
-.sheet[open] .recap-lines > div:nth-child(3) { animation-delay: 120ms; }
-.sheet[open] .recap-lines > div:nth-child(4) { animation-delay: 180ms; }
+.recap { display: grid; gap: var(--s-5); }
+.recap-part { min-width: 0; overflow-wrap: anywhere; }
+.recap-part + .recap-part { padding-top: var(--s-5); border-top: 1px solid var(--rule); }
+.recap-part > h3 { margin: 0 0 var(--s-3); font-size: .9375rem; font-weight: 700; color: var(--bone-dim); }
+.recap-winner { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2) var(--s-3); margin: 0 0 var(--s-2); font-size: 1.375rem; font-weight: 750; line-height: 1.2; }
+.recap-winner .chip, .recap-rank .chip { width: 36px; height: 36px; flex: 0 0 36px; font-size: .8125rem; }
+.recap-winner .amount { font-stretch: 80%; font-weight: 800; white-space: nowrap; }
+.recap-none { margin: 0; font-size: 1.375rem; font-weight: 750; }
+.stat-tiles.recap-facts { grid-template-columns: 1fr 1fr; margin-top: var(--s-4); }
+.recap-facts .recap-wide { grid-column: 1 / -1; }
+.recap-facts .recap-wide .stat-tile-figure { white-space: nowrap; overflow-wrap: normal; }
+.recap-mine .night-result { margin: 0; }
+.recap-line { margin: var(--s-2) 0 0; font-size: .9375rem; }
+.recap-by-set { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-3) 0 var(--s-3); padding: 0; list-style: none; }
+.recap-by-set li { padding: 6px var(--s-3); border-radius: var(--r-pill); background: var(--rail-2); font-size: .875rem; white-space: nowrap; }
+.recap-ranking > li { padding: var(--s-3) 0; }
+.recap-ranking > li.is-me { margin-inline: calc(-1 * var(--s-3)); padding-inline: var(--s-3); border-top-color: transparent; border-radius: var(--r-row); background: var(--rail-2); }
+.recap-ranking > li.is-me + li { border-top-color: transparent; }
+.recap-rank { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-1) 10px; }
+.recap-place { flex: 0 0 1.25rem; color: var(--bone-dim); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.recap-rank .grow { flex: 1 1 8rem; line-height: 1.3; }
+.recap-rank > .amount { margin-left: auto; font-size: 1.125rem; white-space: nowrap; }
+/* A result's size against the largest of the session: wins to the right of the middle line, losses to the left. */
+.recap-bar { position: relative; height: 6px; margin-top: 10px; background: linear-gradient(var(--rule), var(--rule)) center / 100% 1px no-repeat; }
+.recap-bar::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line); }
+.recap-bar span { position: absolute; top: 0; bottom: 0; width: calc(var(--share) * .5%); min-width: 2px; }
+.recap-bar .up { left: 50%; border-radius: 0 var(--r-bar) var(--r-bar) 0; background: var(--good); transform-origin: 0 50%; }
+.recap-bar .down { right: 50%; border-radius: var(--r-bar) 0 0 var(--r-bar); background: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in oklch, var(--ink) 45%, transparent) 3px 4.5px), var(--danger); transform-origin: 100% 50%; }
+.recap-bar .flat { left: calc(50% - 1px); width: 2px; background: var(--line); }
+.recap-highlights { display: grid; gap: var(--s-4); margin: 0; }
+.recap-highlights > div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px var(--s-3); align-items: baseline; }
+.recap-highlights dt { grid-column: 1 / -1; }
+.recap-highlights dd { margin: 0; font-size: 1.0625rem; font-weight: 650; }
+.recap-highlights .recap-value { font-size: 1.125rem; white-space: nowrap; }
+.recap-sets { margin-top: calc(-1 * var(--s-3)); }
+.recap-sets > li { padding: 0 0 var(--s-3); }
+.recap-sets > li + li { padding-top: var(--s-1); }
+.recap-sets .set-link { font-weight: 700; }
+.recap-sets p { margin: 0; }
+.recap-sets .recap-line { margin-top: var(--s-1); }
+/* The recap is longer than a screen: its title and Close stay while it scrolls. */
+.sheet:has(.recap) { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.sheet:has(.recap) .sheet-head { position: sticky; top: -16px; z-index: 2; margin: -16px -20px var(--s-5); padding: 16px 20px var(--s-3); border-bottom: 1px solid var(--rule); background: var(--rail); }
+.sheet[open] .recap-part { animation: recap-line 360ms var(--ease-out) backwards; }
+.sheet[open] .recap-part:nth-child(2) { animation-delay: 60ms; }
+.sheet[open] .recap-part:nth-child(3) { animation-delay: 120ms; }
+.sheet[open] .recap-part:nth-child(4) { animation-delay: 180ms; }
+.sheet[open] .recap-part:nth-child(5) { animation-delay: 240ms; }
 @keyframes recap-line { from { clip-path: inset(0 0 100%); } to { clip-path: inset(0); } }
+@keyframes recap-bar { from { transform: scaleX(0); } }
+@media (prefers-reduced-motion: no-preference) {
+  /* sheets.js marks the list while it waits to be seen; without that mark the bars are simply there. */
+  .sheet[open] .recap-watch:not(.is-seen) .recap-bar span { transform: scaleX(0); }
+  .sheet[open] .recap-watch.is-seen .recap-bar span { animation: recap-bar 420ms var(--ease-out) both; animation-delay: calc(min(var(--i), 12) * 40ms); }
+}
 @media (min-width:900px) {
   .night-layout { display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 28px; align-items: start; }
   .night-detail section:first-child { margin-top: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .sheet[open] .recap-lines > div { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sheet[open] .recap-part { animation: none; } }
 
 .night-page .display-amount { white-space: nowrap; overflow-wrap: normal; }
 .night-page .display-amount.amount-compact { font-size: 2rem; }

@@ -106,3 +106,7 @@ The page a person lands on after logging in settles into place once: on Your gro
 ## 2026-10-09 addendum — Set page
 
 While a set is in play the page fits the table on one phone screen: the pot, then one line per player with Rebuy on it; a tap on a player reaches cash-out and corrections. While a set is prepared the host sees four steps and which one is next. A set's state reads Draft, Open or In play everywhere. What each action records, and who may do it, is unchanged. [Plan](doc/plan/1791549025_set_page_revamp.md).
+
+## 2026-10-10 addendum — Session recap
+
+The recap of a closed session tells the whole night from frozen results: the top result and the session's size, the viewer's own night, every player ranked with what they bought in and cashed out, a few highlights about play, and each set. Losses are listed with every other result and are never called out. The recap shows no percentage or rate. [Plan](doc/plan/1791625392_session_recap_details.md).

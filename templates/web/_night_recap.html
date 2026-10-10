@@ -4,12 +4,12 @@
     <h3 id="recap-top-title">Top session result</h3>
     {% for winner in recap.winners %}<p class="recap-winner">{% player_token winner outcome.standings %}<span class="grow">{{ winner.member.display_name }}</span><span class="amount plus">{% icon 'arrow-up-right' %} {{ winner.net|signed_amount:unit }}</span></p>{% empty %}<p class="recap-none">{% if recap.all_even %}Everyone broke even.{% else %}No positive result after rake.{% endif %}</p>{% endfor %}
     <dl class="stat-tiles recap-facts">
+      <div class="stat-tile recap-wide"><dt class="stat-label">Total bought in</dt><dd class="stat-tile-figure">{{ recap.total_buy_in|amount:unit }}</dd><dd class="stat-tile-note">Across finalized sets</dd></div>
+      {% if recap.total_rake %}<div class="stat-tile recap-wide"><dt class="stat-label">Rake already collected</dt><dd class="stat-tile-figure">{{ recap.total_rake|amount:unit }}</dd></div>{% endif %}
       <div class="stat-tile"><dt class="stat-label">Players</dt><dd class="stat-tile-figure">{{ recap.players }}</dd></div>
       <div class="stat-tile"><dt class="stat-label">Finalized sets</dt><dd class="stat-tile-figure">{{ recap.set_count }}</dd></div>
-      <div class="stat-tile"><dt class="stat-label">Total bought in</dt><dd class="stat-tile-figure">{{ recap.total_buy_in|amount:unit }}</dd><dd class="stat-tile-note">Across finalized sets</dd></div>
       <div class="stat-tile"><dt class="stat-label">Buy-ins</dt><dd class="stat-tile-figure">{{ recap.buy_ins }}</dd></div>
       <div class="stat-tile"><dt class="stat-label">Recorded play time</dt><dd class="stat-tile-figure">{% if recap.play_seconds is not None %}{{ recap.play_seconds|duration }}{% else %}Not recorded{% endif %}</dd>{% if recap.partial_time %}<dd class="stat-tile-note">Partial; some sets have no recorded time</dd>{% endif %}</div>
-      {% if recap.total_rake %}<div class="stat-tile"><dt class="stat-label">Rake already collected</dt><dd class="stat-tile-figure">{{ recap.total_rake|amount:unit }}</dd></div>{% endif %}
     </dl>
   </section>
   {% if recap.mine %}{% with mine=recap.mine %}

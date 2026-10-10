@@ -1,6 +1,6 @@
 # Session recap with more detail: plan
 
-Status: waiting for approval. Date: 2026-10-10, Asia/Manila. Study: [Session recap with more detail](../study/1791625335_session_recap_details.md).
+Status: approved 2026-10-10 ("approved."); all five decisions as recommended. Built on `feat/session-recap`. Date: 2026-10-10, Asia/Manila. Study: [Session recap with more detail](../study/1791625335_session_recap_details.md).
 
 ## Outcome
 
@@ -134,3 +134,24 @@ On a physical phone: the sheet scrolling under a thumb, the heading staying put 
 ## Progress and blockers
 
 2026-10-10: Study and plan written after three questions to the human. Waiting for approval.
+
+2026-10-10: approved ("approved."), all five decisions as recommended. The design skill (impeccable) and the motion skill were loaded for stage 2.
+
+2026-10-10: built on `feat/session-recap`, not merged and not pushed.
+
+- **Stage 1** committed as `ebf7328`. **Stage 2** and the docs follow in the next commit.
+- 950 tests pass on SQLite and on PostgreSQL. `night.mjs` passes 68 of 68 on a fresh seed (53 before).
+- No query added: `result_rows` returns named rows with the extra frozen fields, kept on `NightOutcome.results`. The session page's limit of 14 holds.
+- Measured at 390 × 844 as a player in a two-set session: the sheet is 717px tall and its content 1,743px; it opens on the top result, the facts and Your night.
+
+Differences from the plan as written:
+
+1. **Bars are 40ms apart, not 12ms.** With three to nine rows, 12ms cannot be seen as a sequence. Each bar takes 420ms.
+2. **The fact labelled "Sets" reads "Finalized sets"**, since canceled sets are not counted. "Total bought in" carries "Across finalized sets" as its note instead of in its label.
+3. **Total bought in and Rake each take a full row**, so a nine-digit amount stays on one line at 320px.
+4. **The viewer's set-by-set results appear only with more than one set.** With one set they would repeat the result above them.
+5. **A set where nobody won reads "Nobody finished ahead."**
+6. **No separate `/impeccable critique` run.** The captures at 320, 390 and 1280px were reviewed in one round and one batch of four fixes was made from them. A formal critique can still be run on request.
+7. **A browser fixture was added**: `two-sets` in `seed_night.py`. One existing check now ignores links that are not displayed, because the recap's set links are hidden while its sheet is closed.
+
+Not checked from here: the sheet under a thumb on an iPhone, the sticky head in iPhone Safari and the installed app. Both are on the phone checklist in TODO.md.
