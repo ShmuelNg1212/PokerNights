@@ -474,7 +474,7 @@ Motion ([motion.dev](https://motion.dev), version 14.0.0) drives interactive mot
 
 1. Motion explains: where did I go, what changed, did my tap work.
 2. Never in the way. No control waits for an animation; the next tap interrupts it. Interactions end within 300ms; a signature moment within 900ms, once.
-3. Money does not animate its value. A row may move; digits do not count.
+3. Money does not animate its value. A row may move; digits do not count. Since 2026-10-11 a changed digit of the pot may roll to its accepted value (see the pot figure addendum); no figure counts through other values.
 4. Reduced motion removes movement and keeps the state change.
 5. Springs for things a finger touches, eases for things that arrive or leave.
 6. Additive. Without JavaScript, or if Motion does not load, every screen works with the CSS motion described earlier in this document.
@@ -520,7 +520,7 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 **Rules.**
 
 1. Rows carry money and move without bounce. Bounce stays on buttons, badges and the buy-in edge.
-2. A figure is at its accepted value on the first frame. Rows, edges, badges and rules move; digits do not.
+2. A figure is at its accepted value on the first frame. Rows, edges, badges and rules move; digits do not, except a changed digit of the pot, which rolls (2026-10-11 addendum).
 3. Rows only arrive and shift. Nothing reorders or leaves.
 4. Motion animates `transform` (as one string) and `opacity`. The separate `x`, `y` and `scale` remain only where movements combine on one element (buttons, toasts), with `will-change: transform` while they run.
 
@@ -531,7 +531,7 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 | A player is added | The row fades in and rises 12px. Several arrive 40ms apart. |
 | A row above grows or shrinks | The rows below slide to their place. |
 | A buy-in or rebuy | The new edge drops; "Rebuy added" springs in; the brass mark fades out over its last 400ms. |
-| "Still in play" changes | The underline draws, holds and fades. The figure appears at once. |
+| "Still in play" changes | The underline draws, holds and fades. The figure appears at once. Since 2026-10-11 its changed digits roll and the amount added shows beside the label. |
 | A cash-out, a player marked Left | The row's mark; the Left badge springs in; the name dims over 200ms. |
 | The set changes state | The new state fades in over 180ms. Rows do not move as well. |
 | A count is confirmed | The row's status badge springs; the progress line is marked. |
@@ -539,6 +539,17 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 | First sight of a set, typing, a hidden tab, reduced motion, no Motion | Nothing moves. |
 
 **Measured.** `flow.mjs`, 52 checks at 390 and 1280px: each row above on its first frame and at rest, a tap on a moving row, both redraw paths, the books balance complete in under 900ms, twenty redraws leaving nothing running and no inline style, reduced motion and a blocked Motion file.
+
+### 2026-10-11 addendum — The pot's figure rolls
+
+[Plan](doc/plan/1791647086_pot_figure_motion.md). When "Still in play" changes on a set in play, by a buy-in, a cash-out or a reversal from anyone, `static/js/pot.js` shows it on the figure itself.
+
+- **The roll.** Each digit that changed is replaced in its own cell: the old one leaves over 120ms with the ease-in curve and the new one arrives with the `shift` spring, from below for a rise and from above for a fall, travelling 60% of the line. Several changed digits start 30ms apart from the left, four steps at most. The peso sign, the commas and unchanged digits stay still. When the figure gets wider or narrower, a new leading digit arrives and the characters that stay glide to their places. Cells are cut at 0.12em from the top so a leaving digit does not reach the label.
+- **The amount added.** "+₱500" or "−₱500" in Brass, weight 700, tabular, 8px after the "Still in play" label on its line. It rises 8px with `shift`, stays with the brass underline and fades over its last 400ms (3 seconds in all). Two changes in one update show their sum. It is hidden from screen readers; the row's "Rebuy added" already speaks.
+- **What the page says.** The accepted amount is the page's text from the first frame. For the roll (about 420ms) the figure is drawn one character per cell, hidden from screen readers, beside the amount as visually hidden text; then it is the plain text the server sent.
+- **Fail-safe.** The drawn copy must be as wide and as tall as the plain figure within 0.5px, or it is not shown. The amount added is shown only if the script writes the new total exactly as the server did. An error gives the roll up for that page and is still reported.
+- **Nothing moves** on first sight of a set, on a reload, in a hidden tab or without Motion. Under reduced motion the figure changes at once and the amount added shows without movement.
+- **Measured.** `pot.mjs`, 53 checks at 390 and 1280px, pesos and chips: the first frame, the box of the figure and the panel unchanged, both redraw paths, a tap during a roll, a change during a roll, twenty redraws leaving plain text and nothing running, wider, narrower and the long size, reduced motion, a blocked Motion file and both guards.
 
 ### 2026-10-05 addendum — Motion between screens (stage 3 of the motion overhaul)
 
@@ -884,5 +895,5 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 ### Don't:
 
 - **Don't** add casino imagery or shipping raster decorations.
-- **Don't** animate money through intermediate values or show success before server acceptance.
+- **Don't** animate money through intermediate values or show success before server acceptance. The pot's roll shows only the digit that leaves and the digit that arrives.
 - **Don't** use colour alone to identify a player or communicate wins, losses or updates.

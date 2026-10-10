@@ -82,7 +82,7 @@ class ScriptsLoadOnceTests(TestCase):
     """Every page script loads from the head of every page, so a screen change never runs one twice."""
 
     NAMES = ("page", "app", "vendor/turbo-8.0.23", "turbo-setup",
-             "vendor/motion-14.0.0", "motion", "forms", "toasts", "changes", "flow", "sheets", "numpad", "live",
+             "vendor/motion-14.0.0", "motion", "forms", "toasts", "changes", "flow", "pot", "sheets", "numpad", "live",
              "clock", "counts", "dock", "table", "pick", "password", "door", "copy", "roster", "stats", "settle", "perf")
 
     def test_scripts_are_in_the_head_in_order_and_none_in_the_body(self):

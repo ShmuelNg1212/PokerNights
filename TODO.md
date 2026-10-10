@@ -4,6 +4,13 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11, kept local, not merged or pushed. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite; `pot.mjs` 53 of 53. Not seen on a phone.
+
+- [ ] After release, with two phones on a set in play: rebuy on one and watch the pot on the other. The changed digits should roll up and "+₱500" should show beside "Still in play".
+- [ ] Cash a player out: the digits should roll down with a minus amount.
+- [ ] Rebuy on your own phone and tap Rebuy again at once: nothing should wait.
+- [ ] Say if the roll feels too slow, too fast or too large on the phone; the distance and the time are single numbers.
+
 Count-up and who pays whom, revamp ([plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md), [study](doc/study/1791630956_count_up_and_settle_up_revamp.md)): built on `feat/count-and-settle-revamp` on 2026-10-10. Released 2026-10-10 as `08a49b5` (previous production commit `0c736fb`); Vercel reports the deployment complete and the live site serves the new styles and `settle.js`. Neither screen was opened on the live site from here. Count-up is one line per player with the count field on it; the closed session page leads with your own part and lists one row per transfer. `COUNT_REVAMP=False` in Vercel returns the earlier count-up. No migration.
 
 - [ ] After release, as a host at the end of a set: type the counts down the list with the number keys and Next. Check six players show without scrolling and the running total follows.
