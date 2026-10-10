@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Session recap with more detail ([plan](doc/plan/1791625392_session_recap_details.md), [study](doc/study/1791625335_session_recap_details.md)): built on `feat/session-recap` on 2026-10-10. Not merged and not pushed. The recap of a closed session has five sections: top result and facts, your night, everyone's results with bars, highlights, and set by set. No migration. 950 tests pass on SQLite and PostgreSQL; `night.mjs` passes 68 of 68.
+Session recap with more detail ([plan](doc/plan/1791625392_session_recap_details.md), [study](doc/study/1791625335_session_recap_details.md)): built on `feat/session-recap` on 2026-10-10. Released 2026-10-10 as `0c736fb` (previous production commit `e812dfc`); Vercel reports the deployment complete and the live site serves the recap's styles and the new `sheets.js`. The recap itself was not opened on the live site from here. The recap of a closed session has five sections: top result and facts, your night, everyone's results with bars, highlights, and set by set. No migration. 950 tests pass on SQLite and PostgreSQL; `night.mjs` passes 68 of 68.
 
 - [ ] After release, on your phone: close a session of two sets with at least one rebuy. The recap should open by itself once.
 - [ ] Scroll the recap to its end. Close should stay at the top the whole way, on Safari and in the installed app.

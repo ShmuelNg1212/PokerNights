@@ -155,3 +155,5 @@ Differences from the plan as written:
 7. **A browser fixture was added**: `two-sets` in `seed_night.py`. One existing check now ignores links that are not displayed, because the recap's set links are hidden while its sheet is closed.
 
 Not checked from here: the sheet under a thumb on an iPhone, the sticky head in iPhone Safari and the installed app. Both are on the phone checklist in TODO.md.
+
+2026-10-10: the human said "push". Merged to `main` and pushed as `0c736fb` (previous production commit `e812dfc`). Vercel reported the deployment complete; the live stylesheet and `sheets.js` carry the recap's changes and the login page answers 200. The recap was not opened on the live site from here; that is the phone checklist in TODO.md.
