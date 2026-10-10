@@ -1,0 +1,21 @@
+{% load money_tags clock_tags %}
+{# Document order is the order of work: overview, the players' counts, the host's next action, then the books. #}
+<div class="table-layout end-set-layout count-layout count-v2{% if balance.counted %} books-known{% endif %}">
+  <section class="felt hero" data-unit="{{ unit }}" aria-label="Count-up overview">
+    <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Counting up</span></div>
+    <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
+    {% if summary.money_lines %}
+    <p class="count-progress" data-watch="count-progress" data-value="{{ count_complete }}"><strong>{{ count_complete }} <span>of {{ summary.money_lines|length }}</span></strong> players counted or cashed out</p>
+    {# One mark per player with a buy-in, in the list's order. The line above says the same in words. #}
+    <ol class="count-pips" aria-hidden="true">{% for line in summary.money_lines %}<li data-status="{{ line.status }}"></li>{% endfor %}</ol>
+    <p class="visually-hidden">{{ summary.awaiting_lines|length }} awaiting count, {{ summary.ready_lines|length }} ready to cash out, {{ summary.cashed_out_lines|length }} cashed out.</p>
+    {% else %}<p class="count-progress" data-watch="count-progress" data-value="0">No buy-in is recorded, so there is nothing to count.</p>{% endif %}
+  </section>
+  <div class="count-workspace">
+    {% if can_enter_count and my_line and my_line.has_money %}{% include "web/_count_own.html" with line=my_line p=my_line.participant %}{% endif %}
+    <div class="section-heading"><h2>Player counts <span class="muted small">{{ summary.player_count }} players</span></h2></div>
+    {% include "web/_count_rows.html" %}
+  </div>
+  {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
+  <div class="end-balance" id="balance">{% include "web/_books.html" %}</div>
+</div>

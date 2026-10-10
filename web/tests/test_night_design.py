@@ -103,7 +103,7 @@ class NightDesignTests(TestCase):
         self.close()
         page = self.client.get(self.url).content.decode()
         self.assertLess(page.index('Who pays whom'), page.index('Session results'))
-        self.assertIn('class="badge badge-warn">Not paid', page)
+        self.assertIn('class="unpaid-word">Not paid', page)
         self.assertNotIn('settled-figure', page)
         for transfer in queries.night_outcome(self.night).transfers:
             services.mark_paid(self.night.pk, self.two.host, transfer.pk, uuid.uuid4())
@@ -173,3 +173,114 @@ class RecapPageTests(TestCase):
         self.assertContains(page, 'Most buy-ins')
         self.assertNotContains(page, 'Biggest win in one set')  # one set
         self.assertNotContains(page, 'recap-by-set')
+
+
+class SettlePageTests(TestCase):
+    """The closed session page: a person's own part first, then one row per transfer."""
+
+    def closed(self, ben_cash, a_cash):
+        night = Night('A')
+        self.ben = night.add_login_player('Ben')
+        for name in ('A', 'Ben'):
+            night.buy(name, 1000)
+        night.go('reconciliation')
+        night.cash('A', a_cash)
+        night.cash('Ben', ben_cash)
+        services.finalize(night.session.pk, night.host)
+        services.close_night(night.session.night_id, night.host)
+        self.host = night.host
+        self.night_id = night.session.night_id
+        self.url = reverse('night', args=[self.night_id])
+        return night
+
+    def page(self, user):
+        self.client.force_login(user)
+        return self.client.get(self.url).content.decode()
+
+    def lead(self, html):
+        return html[html.index('class="felt hero"'):html.index('</section>', html.index('class="felt hero"'))]
+
+    def test_a_player_who_owes_reads_you_pay(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        lead = self.lead(self.page(self.ben.user))
+        self.assertIn('<h2 class="pot-label">You pay</h2>', lead)
+        self.assertIn('data-my-part="pay:40000">₱400', lead)
+        self.assertIn('You pay <strong>A</strong> <span class="amount">₱400</span> · Not paid', lead)
+        self.assertIn('Table: ₱0 of ₱400 marked paid · 0 of 1 transfer', lead)
+        self.assertNotIn('Still to pay', lead)
+        self.assertNotIn('Collected rake', lead)
+        self.assertIn('Your result in this session', lead)
+
+    def test_a_player_who_is_owed_reads_you_receive_then_settled(self):
+        self.closed(ben_cash=1400, a_cash=600)
+        self.assertIn('data-my-part="receive:40000">₱400', self.lead(self.page(self.ben.user)))
+        transfer = queries.night_outcome(GameNight.objects.get(pk=self.night_id)).transfers[0]
+        services.mark_paid(self.night_id, self.host, transfer.pk, uuid.uuid4())
+        lead = self.lead(self.page(self.ben.user))
+        self.assertIn('data-my-part="settled:0"', lead)
+        self.assertIn("You're settled", lead)
+        self.assertIn('<strong>A</strong> pays you <span class="amount">₱400</span> · Paid', lead)
+        self.assertIn('Nothing is left to pay.', lead)
+
+    def test_a_player_with_no_transfer_reads_nothing_to_pay(self):
+        self.closed(ben_cash=1000, a_cash=1000)
+        lead = self.lead(self.page(self.ben.user))
+        self.assertIn('data-my-part="none:0">Nothing to pay', lead)
+        self.assertIn('You owe nothing and are owed nothing.', lead)
+        self.assertIn('Nobody owes anything.', lead)
+        self.assertNotIn('<progress', lead)
+
+    def test_the_host_reads_the_table_total(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        html = self.page(self.host.user)
+        lead = self.lead(html)
+        self.assertIn('<h2 class="pot-label">Still to pay</h2>', lead)
+        self.assertIn('data-still-to-pay="40000"', lead)
+        self.assertIn('₱0 of ₱400 marked paid · 0 of 1 transfer', lead)
+        self.assertNotIn('data-my-part', lead)
+        self.assertNotIn('Table:', lead)
+
+    def test_a_transfer_is_one_row_and_own_rows_are_marked_in_place(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        html = self.page(self.ben.user)
+        row = html[html.index('class="transfer-row transfer-line'):]
+        row = row[:row.index('</li>')]
+        self.assertIn('transfer-line is-mine"', row)
+        self.assertIn('<strong>Ben</strong> <span class="muted small">(you)</span>', row)
+        self.assertIn('aria-label="Ben pays A"', row)
+        self.assertNotIn('<form', row)
+        host_row = self.page(self.host.user)
+        host_row = host_row[host_row.index('class="transfer-row transfer-line'):]
+        host_row = host_row[:host_row.index('</li>')]
+        self.assertIn('transfer-line has-action"', host_row)
+        self.assertIn('name="request_id"', host_row)
+        self.assertIn('>Mark paid</button>', host_row)
+
+    def test_order_of_the_page_and_folded_records(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        transfer = queries.night_outcome(GameNight.objects.get(pk=self.night_id)).transfers[0]
+        services.mark_paid(self.night_id, self.host, transfer.pk, uuid.uuid4())
+        html = self.page(self.host.user)
+        marks = ['class="felt hero"', 'id="transfers-title"', 'id="results-title"', 'id="sets-title"', 'id="payments-title"',
+                 'class="night-after"', 'data-sheet-open="recap"', 'id="manage"']
+        order = [html.index(mark) for mark in marks]
+        self.assertEqual(order, sorted(order))
+        self.assertIn('<details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">1</span>', html)
+        self.assertIn('How this is worked out', html)
+        self.assertIn('>Undo</button>', html)
+        self.assertIn('<span class="paid-word">Paid</span>', html)
+        self.assertIn('marked by the host', html)
+
+    def test_an_open_session_keeps_its_overview(self):
+        night = Night('A')
+        night.buy('A', 1000)
+        night.go('reconciliation')
+        night.cash('A', 1000)
+        services.finalize(night.session.pk, night.host)
+        self.client.force_login(night.host.user)
+        html = self.client.get(reverse('night', args=[night.session.night_id])).content.decode()
+        self.assertNotIn('night-settle', html)
+        self.assertIn('Session open', html)
+        self.assertIn('Collected rake across sets', html)
+        self.assertIn('Close session and settle up', html)
+        self.assertNotIn('data-my-part', html)

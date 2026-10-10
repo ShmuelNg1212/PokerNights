@@ -189,3 +189,32 @@ class NightSettlePageTests(TestCase):
         self.assertEqual(self.client.post(reverse("night_close", args=[two.night_id])).status_code, 404)
         self.assertEqual(self.client.post(reverse("transfer_paid", args=[two.night_id, transfer.pk])).status_code, 404)
         self.assertEqual(Payment.objects.count(), 0)
+
+
+class ViewerPartTests(TestCase):
+    """TwoSets closes to: C pays A ₱200, C pays B ₱100."""
+
+    def setUp(self):
+        self.two = TwoSets()
+        services.close_night(self.two.night_id, self.two.host)
+        self.night = GameNight.objects.get(pk=self.two.night_id)
+        self.members = {name: p.member for name, p in self.two.night.players.items()}
+
+    def part(self, name):
+        return queries.night_outcome(self.night).part_for(self.members[name].pk)
+
+    def test_a_payer_a_payee_and_someone_outside(self):
+        self.assertEqual((self.part("C").kind, self.part("C").amount), ("pay", 30000))
+        self.assertEqual((self.part("A").kind, self.part("A").amount), ("receive", 20000))
+        outside = queries.night_outcome(self.night).part_for(self.two.host.pk)
+        self.assertEqual((outside.kind, outside.amount, outside.transfers), ("none", 0, []))
+
+    def test_paid_transfers_leave_the_amount_and_then_settle(self):
+        first, second = queries.night_outcome(self.night).transfers
+        services.mark_paid(self.night.pk, self.two.host, first.pk, uuid.uuid4())
+        self.assertEqual((self.part("C").kind, self.part("C").amount), ("pay", 10000))
+        self.assertEqual(self.part("A").kind, "settled")
+        services.mark_paid(self.night.pk, self.two.host, second.pk, uuid.uuid4())
+        self.assertEqual((self.part("C").kind, self.part("C").amount, len(self.part("C").transfers)), ("settled", 0, 2))
+        services.mark_unpaid(self.night.pk, self.two.host, second.pk)
+        self.assertEqual((self.part("B").kind, self.part("B").amount), ("receive", 10000))

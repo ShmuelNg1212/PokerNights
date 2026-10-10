@@ -1,0 +1,22 @@
+{% load money_tags %}
+{# A player's own count, above the list: what they have left, sent to the host to confirm. #}
+<section class="own-count own-count-lead panel" aria-labelledby="own-count-title">
+  <h2 id="own-count-title">Your count</h2>
+  {% if line.status == 'awaiting' %}
+  {% if line.entered %}<p class="own-count-state">You entered <strong class="num">{{ line.entered.amount|amount:unit }}</strong>. Waiting for the host to confirm.</p>
+  <details class="own-count-change" data-key="own-count"><summary class="small">Change</summary>{% endif %}
+  <form method="post" data-turbo="true" action="{% url 'count_enter' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
+    <div class="grow">
+      <label class="small" for="own-count">Your count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
+      <input type="text" name="amount" id="own-count" data-keep="own-count" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" inputmode="decimal" autocomplete="off" required aria-describedby="own-count-help">
+    </div>
+    <button type="submit" class="btn btn-primary">Send to host</button>
+  </form>
+  <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.</p>
+  {% if line.entered %}</details>{% endif %}
+  {% elif line.status == 'ready' %}
+  <p class="own-count-state">{% if not line.entry %}The host counted <strong class="num">{{ line.count.amount|amount:unit }}</strong> for you.{% elif line.entry.amount == line.count.amount %}The host confirmed your count.{% else %}The host confirmed {{ line.count.amount|amount:unit }}. You entered {{ line.entry.amount|amount:unit }}.{% endif %}</p>
+  {% else %}
+  <p class="own-count-state">You are cashed out: <strong class="num">{{ line.cashed_out|amount:unit }}</strong>.</p>
+  {% endif %}
+</section>

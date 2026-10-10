@@ -1,0 +1,31 @@
+{% load money_tags table_tags %}
+{# The first thing a person reads on a closed session: a player's own part, or the table's total for the host. #}
+{% if me.is_host %}
+<h2 class="pot-label">Still to pay</h2>
+{% if outcome.status == 'settled' %}<div class="display-amount settled-figure plus">{% icon 'check' %} Settled</div>
+{% else %}{% with figure=outcome.still_to_pay|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}">{{ outcome.still_to_pay|display_amount:unit }}</div>{% endwith %}{% endif %}
+{% elif my_part.kind == 'pay' or my_part.kind == 'receive' %}
+<h2 class="pot-label">{% if my_part.kind == 'pay' %}You pay{% else %}You receive{% endif %}</h2>
+{% with figure=my_part.amount|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}" data-my-part="{{ my_part.kind }}:{{ my_part.amount }}">{{ my_part.amount|display_amount:unit }}</div>{% endwith %}
+{% elif my_part.kind == 'settled' %}
+<h2 class="pot-label">Your part</h2>
+<div class="display-amount settled-figure plus" data-my-part="settled:0">{% icon 'check' %} You're settled</div>
+{% else %}
+<h2 class="pot-label">Your part</h2>
+<div class="display-amount lead-words" data-my-part="none:0">Nothing to pay</div>
+{% endif %}
+{% if not me.is_host %}<div class="lead-lines">{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}</div>{% endif %}
+<div class="settle-table" data-still-to-pay="{{ outcome.still_to_pay }}">
+  {% if outcome.transfers %}
+  <progress class="payment-progress" value="{{ outcome.paid_amount }}" max="{{ outcome.total_to_pay }}" aria-label="Amount marked paid"></progress>
+  <p class="felt-hint">{% if not me.is_host %}Table: {% endif %}{{ outcome.paid_amount|amount:unit }} of {{ outcome.total_to_pay|amount:unit }} marked paid · {{ outcome.paid_count }} of {{ outcome.transfers|length }} transfer{{ outcome.transfers|length|pluralize }}{% if outcome.status == 'settled' %}. Nothing is left to pay.{% endif %}</p>
+  {% else %}<p class="settle-status">Nobody owes anything.</p>{% endif %}
+</div>
+{% if total_rake %}<dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>{% endif %}
+{% if my_standing %}
+<div class="night-mine">
+  <p class="lead-result"><span class="stat-label">Your result in this session</span><span class="amount {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</span></p>
+  {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
+  {% if me.is_host %}{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}{% endif %}
+</div>
+{% endif %}

@@ -40,15 +40,17 @@ try {
    console.log('  expanded dock height',await A.js(`Math.round(${dock}.getBoundingClientRect().height)`),'padding',await A.js(`getComputedStyle(document.querySelector('.table-page')).paddingBottom`));
    await A.shot(`dock-${name}-${width}-expanded`);
    await A.click(toggle);
-   check(tag+' collapsed shows only the bar',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1&&!document.querySelector('.next-action').getClientRects().length`));
-   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${name==='long'||(name==='counting'&&width===320)?96:name==='counting'?76:72}`));
+   // Counting up, the folded bar keeps the one main action beside the running total (count-v2).
+   const countUp=name==='counting'||name==='long',kept=countUp?await A.js(`[...document.querySelectorAll('.host-controls>.next-action, .host-controls>.dock-hint')].filter(el=>el.getClientRects().length).length`):0;
+   check(tag+' collapsed shows only the bar'+(countUp?' and the main action':''),await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===${1+kept}&&!document.querySelector('.host-more').getClientRects().length`)&&(countUp||await A.js(`!document.querySelector('.next-action').getClientRects().length`)));
+   check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${(name==='long'||(name==='counting'&&width===320)?96:name==='counting'?76:72)+kept*72}`));
    check(tag+' collapsed bar names the state',await A.js(`${toggle}.querySelector('.dock-next').getClientRects().length>0`));
    check(tag+' collapsed clears last row',await A.js(clears(LAST[name])));
    check(tag+' collapsed fits width',await A.js(`document.documentElement.scrollWidth<=${width}`));
    console.log('  collapsed dock height',await A.js(`Math.round(${dock}.getBoundingClientRect().height)`));
    await A.shot(`dock-${name}-${width}-collapsed`);
    await A.go(`/s/${id}/`);
-   check(tag+' collapsed survives reload',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===1`));
+   check(tag+' collapsed survives reload',await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===${1+kept}`));
    await A.click(toggle);
    check(tag+' expands again',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&${shown}.length>1&&localStorage.getItem('rack-dock')==='open'`)); // the choice is kept either way since the set page revamp
   }
@@ -122,7 +124,7 @@ try {
  await A.click(toggle);await A.click(`document.querySelector('button[value=start]')`);await A.click(toggle);
  check('running names end play',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: End play and count up')`));
  await A.click(toggle);await A.click(`document.querySelector('button[value=end]')`);await A.click(toggle);
- check('count-up collapsed after end play',await A.js(`${shown}.length===1&&!!document.querySelector('[data-dock-status]')`));
+ check('count-up collapsed after end play',await A.js(`${shown}.length<=2&&!document.querySelector('.host-more').getClientRects().length&&!!document.querySelector('[data-dock-status]')`));
  // Count-up: the collapsed bar follows the typed counts.
  await A.go(`/s/${C.php}/`);const saved=await A.js(`document.querySelector('[data-dock-status]').textContent`);
  await A.js(`(()=>{const f=[...document.querySelectorAll('[data-count-input]')].find(f=>f.dataset.saved==='');f.value='1000';f.dispatchEvent(new Event('input',{bubbles:true}))})()`);
@@ -176,7 +178,7 @@ try {
  check('keyboard closed again: back at the bottom, expanded',await A.js(`${bottom}===844&&${shown}.length>1&&${toggle}.getAttribute('aria-expanded')==='true'&&!document.documentElement.style.getPropertyValue('--kb')`));
  await A.click(toggle);await A.js(`${field}.focus()`);await kb(336);
  check('collapsed dock also rides the keyboard',await A.js(`${bottom}===508&&${shown}.length===1`));
- await kb(0);check('collapsed dock returns collapsed',await A.js(`${bottom}===844&&${shown}.length===1&&localStorage.getItem('rack-dock')==='collapsed'`));
+ await kb(0);check('collapsed dock returns collapsed',await A.js(`${bottom}===844&&${shown}.length<=2&&!document.querySelector('.host-more').getClientRects().length&&localStorage.getItem('rack-dock')==='collapsed'`));
  await A.click(toggle);
  await A.js(`${field}.focus();visualViewport.scale=2`);await kb(336);check('zoomed page: dock does not move',await A.js(`${bottom}===844`));
  await A.js(`visualViewport.scale=1`);await kb(50);check('a 50px change is not a keyboard',await A.js(`${bottom}===844&&!document.documentElement.classList.contains('kb-open')`));
@@ -208,7 +210,7 @@ try {
  // Only a new focus moves the page; a scroll with the keyboard open is left alone.
  await A.js(`${last}.focus({preventScroll:true})`);await sleep(200);await A.js(`window.scrollBy(0,-140)`);await sleep(100);
  const y0=await A.js(`scrollY`);await pan(10);await pan(0);
- check('a scroll with the keyboard open does not pull the page back',await A.js(`scrollY`)===y0&&await A.js(`${last}.getBoundingClientRect().bottom>${dock}.getBoundingClientRect().top`));
+ check('a scroll with the keyboard open does not pull the page back',await A.js(`scrollY`)===y0&&(y0===0||await A.js(`${last}.getBoundingClientRect().bottom>${dock}.getBoundingClientRect().top`))); // a short list has nothing to scroll: the rows are one line since count-v2
  await A.js(`[...document.querySelectorAll('[data-count-input]')].find(f=>f!==${last}).focus({preventScroll:true})`);await sleep(100);await A.js(`${last}.focus({preventScroll:true})`);await sleep(250);
  check('a new focus on a covered field moves it clear once',await A.js(`${last}.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top`));
  check('no readout without ?kb=1',await A.js(`!document.querySelector('.kb-readout')`));

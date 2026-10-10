@@ -197,6 +197,8 @@ CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 # Turn off to return the set page (preparing and in play) to its layout before 2026-10-09 (see templates/web/_session_live_classic.html).
 TABLE_REVAMP = env.bool("TABLE_REVAMP", default=True)
+# The one-line count-up. False returns the earlier count-up for one release.
+COUNT_REVAMP = env.bool("COUNT_REVAMP", default=True)
 # Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 STORAGES = {
