@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11, kept local, not merged or pushed. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite; `pot.mjs` 53 of 53. Not seen on a phone.
+Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11. Released 2026-10-11 as `800e29e` (previous production commit `08a49b5`); the live site serves `pot.js` and the new styles. The roll itself was not watched on the live site from here. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite and PostgreSQL 17; `pot.mjs` 53 of 53. Not seen on a phone.
 
 - [ ] After release, with two phones on a set in play: rebuy on one and watch the pot on the other. The changed digits should roll up and "+₱500" should show beside "Still in play".
 - [ ] Cash a player out: the digits should roll down with a minus amount.

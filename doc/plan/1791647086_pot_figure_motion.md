@@ -1,6 +1,6 @@
 # Pot figure motion: plan
 
-Status: approved 2026-10-10 ("approved"); all four decisions as recommended. Built on `feat/pot-figure-motion`, kept local. Date: 2026-10-10, Asia/Manila. Study: [Pot figure motion](../study/1791647037_pot_figure_motion.md).
+Status: approved 2026-10-10 ("approved"); all four decisions as recommended. Built and released. Date: 2026-10-10, Asia/Manila. Study: [Pot figure motion](../study/1791647037_pot_figure_motion.md).
 
 ## Outcome
 
@@ -121,3 +121,5 @@ Not verified: an iPhone and Safari, where the width of a digit set alone can dif
 A fresh reviewer did not read the branch; the author's own read of the diff is the only review.
 
 Documentation synced: DESIGN.md, wiki features, browser README, TODO.
+
+2026-10-11 release: the human said "push". `feat/pot-figure-motion` was merged to `main` as `800e29e` and pushed (previous production commit `08a49b5`). 964 tests passed on PostgreSQL 17 and on SQLite on the merged `main` before the push. No migration. The live login page names `pot.js`, which is served, and the live stylesheet carries the new rules. No live login was made and the roll was not watched on the live site. Phone acceptance is open.
