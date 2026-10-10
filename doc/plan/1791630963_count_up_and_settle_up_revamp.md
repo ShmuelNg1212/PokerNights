@@ -182,3 +182,5 @@ Differences from the plan as written:
 12. **A stale script was repaired on the way:** `end_set.mjs` stopped at its no-JavaScript chips walk on `main` too; it now runs to the end.
 
 Not checked from here: counting with one thumb at a table, the number keys with the shorter rows on an iPhone, and how the two moments feel on a real phone. These are the phone checklist in TODO.md.
+
+2026-10-10: the human said "go push". Merged to `main` and pushed as `08a49b5` (previous production commit `0c736fb`). Vercel reported the deployment complete; the live stylesheet carries the count-up and transfer-row styles, `settle.js` is served and the login page loads it and answers 200. Neither screen was opened on the live site from here; that is the phone checklist in TODO.md. `COUNT_REVAMP=False` in Vercel returns the earlier count-up.

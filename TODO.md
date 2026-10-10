@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Count-up and who pays whom, revamp ([plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md), [study](doc/study/1791630956_count_up_and_settle_up_revamp.md)): built on `feat/count-and-settle-revamp` on 2026-10-10. Not merged and not pushed. Count-up is one line per player with the count field on it; the closed session page leads with your own part and lists one row per transfer. `COUNT_REVAMP=False` in Vercel returns the earlier count-up. No migration.
+Count-up and who pays whom, revamp ([plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md), [study](doc/study/1791630956_count_up_and_settle_up_revamp.md)): built on `feat/count-and-settle-revamp` on 2026-10-10. Released 2026-10-10 as `08a49b5` (previous production commit `0c736fb`); Vercel reports the deployment complete and the live site serves the new styles and `settle.js`. Neither screen was opened on the live site from here. Count-up is one line per player with the count field on it; the closed session page leads with your own part and lists one row per transfer. `COUNT_REVAMP=False` in Vercel returns the earlier count-up. No migration.
 
 - [ ] After release, as a host at the end of a set: type the counts down the list with the number keys and Next. Check six players show without scrolling and the running total follows.
 - [ ] Confirm the counts: each accepted field should get a green tick and its mark at the top should fill.
