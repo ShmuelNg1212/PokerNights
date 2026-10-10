@@ -1,0 +1,53 @@
+{% load money_tags clock_tags table_tags %}
+{# One line per player: who, what they bought in for, and the count. The field states the count's state; the row's sheet holds records and corrections. #}
+<section class="count-list" aria-label="Player counts">
+  {% if me.is_host %}
+  <form id="counts-form" method="post" data-turbo="true" action="{% url 'count_confirm' session.pk %}" data-once>{% csrf_token %}{% request_id_field %}</form>
+  {% if summary.awaiting_lines or summary.ready_lines %}<p class="small muted count-help">Type what each player has left; 0 for an empty stack.{% if any_entered %} A player's own count is accepted unless you type another.{% endif %}</p>{% endif %}
+  {% endif %}
+  {% if summary.lines %}
+  <ul class="player-list">
+    {% for line in summary.lines %}{% with p=line.participant %}
+    {% with figure=line.buy_in_total|amount:unit %}<li class="count-row is-{{ line.status }}{% if not line.has_money %} is-idle{% endif %}{% if figure|length > 11 %} count-wide{% endif %}" style="--row:{{ forloop.counter0 }}" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
+      <div class="count-main">
+        {% player_token p participants %}
+        <div class="count-who">
+          <span class="count-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
+          <button hidden type="button" class="count-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span></button>
+          <span class="count-sub">{% if line.has_money %}{{ line.buy_in_total|amount:unit }} in{% else %}No buy-in{% endif %}{% if p.status == 'left' %} · left{% endif %}{% if line.has_cash_out and line.status != 'cashed_out' %} · {{ line.cashed_out|amount:unit }} cashed out{% endif %}{% if line.entered %} · <span class="count-from">entered {{ line.entered.amount|amount:unit }}</span>{% endif %}</span>
+          {% if line.has_money %}<span class="visually-hidden" data-status="{% if line.entered %}entered{% else %}{{ line.status }}{% endif %}">{{ line.status_label }}{% if line.status == 'ready' %}. Counted {{ line.count.amount|amount:unit }}{% endif %}</span>{% endif %}
+        </div>
+        {% if me.is_host and line.has_money and line.status != 'cashed_out' %}
+        {# These fields belong to the one counts form above, so one tap sends every typed count. A confirmed count shows as the field's placeholder. #}
+        <div class="count-entry">
+          <input type="text" form="counts-form" name="count_{{ p.pk }}" value="{{ line.count_draft|default:'' }}" data-keep="count-{{ p.pk }}" data-count-input data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" data-saved="{% if line.count %}{{ line.count.amount }}{% endif %}" data-entered="{% if line.entered %}{{ line.entered.amount }}{% endif %}" aria-describedby="count-error-{{ p.pk }}{% if line.entered %} count-entered-{{ p.pk }}{% endif %}" id="count-{{ p.pk }}" inputmode="decimal" autocomplete="off" placeholder="{% if line.count %}{{ line.count.amount|plain:unit }}{% elif line.entered %}{{ line.entered.amount|plain:unit }}{% endif %}" aria-label="Final count of {{ p.member.display_name }}">
+          <svg class="count-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          <span class="small error" id="count-error-{{ p.pk }}" data-count-error hidden></span>
+          {% if line.entered %}
+          {# The player's own number. It is confirmed with the typed counts unless the host types another here. #}
+          <input type="hidden" form="counts-form" name="entry_{{ p.pk }}" value="{{ line.entered.pk }}">
+          <span class="visually-hidden" id="count-entered-{{ p.pk }}">{{ p.member.display_name }} entered {{ line.entered.amount|amount:unit }}. Leave the field empty to accept it, or type another number.</span>
+          {% endif %}
+        </div>
+        {% elif line.status == 'cashed_out' and line.has_money %}
+        <span class="count-outcome"><small>Cashed out</small><span class="num">{{ line.cashed_out|amount:unit }}</span></span>
+        {% elif line.has_money %}
+        <span class="count-outcome">{% if line.status == 'ready' %}<small>Counted</small><span class="num">{{ line.count.amount|amount:unit }}</span>{% elif line.entered %}<small>Entered</small><span class="num">{{ line.entered.amount|amount:unit }}</span>{% else %}<small>Awaiting count</small>{% endif %}</span>
+        {% endif %}
+      </div>
+      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
+        <summary class="small">Details</summary><div class="sheet-content">
+        <p class="sheet-summary">Bought in <strong>{{ line.buy_in_total|amount:unit }}</strong>{% if line.has_cash_out %} · cashed out <strong>{{ line.cashed_out|amount:unit }}</strong>{% endif %}{% if line.status == 'ready' %} · counted <strong>{{ line.count.amount|amount:unit }}</strong>{% endif %}</p>
+        <p class="muted small">{% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}{% if line.play_seconds is not None %} · Played {% clock_value line.play_seconds line.clock_running %}{% endif %}</p>
+        {% include "web/_player_actions.html" %}
+        </div>
+      </details>
+    </li>{% endwith %}
+    {% endwith %}{% endfor %}
+  </ul>
+  {% if me.is_host %}{% if summary.awaiting_lines or summary.ready_lines %}
+  <p class="small muted count-after">Leave an uncounted player blank. A saved count stays until you replace it. Payment: at the end of the session.</p>
+  <button type="submit" form="counts-form" data-turbo="true" class="btn btn-block confirm-all">Confirm all counts</button>
+  {% endif %}{% endif %}
+  {% else %}<p class="muted">No players yet.</p>{% endif %}
+</section>

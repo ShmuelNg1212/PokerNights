@@ -204,6 +204,8 @@ def session_context(session, me) -> dict:
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
         "table_revamp": settings.TABLE_REVAMP,
+        "count_revamp": settings.COUNT_REVAMP,
+        "any_entered": any(line.entered for line in summary.lines),
         "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
     }
     played, running_ids = clock.player_clocks(session)
@@ -316,6 +318,7 @@ def night(request, night_id):
         "outcome": outcome,
         "my_standing": outcome.standing_for(me.pk),
         "my_transfers": outcome.transfers_for(me.pk),
+        "my_part": outcome.part_for(me.pk),
         "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
         "unfinished_sets": unfinished,
         "can_close": me.is_host and not night.is_closed and not unfinished

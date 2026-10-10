@@ -29,7 +29,7 @@ class EndSetPageTests(TestCase):
     def test_progress_excludes_no_money_and_partial_cash_out(self):
         page = self.client.get(self.url)
         self.assertContains(page, '<strong>0 <span>of 2</span></strong>')
-        self.assertContains(page, 'Recorded cash-outs</dt><dd>₱200')
+        self.assertContains(page, 'Total cashed out</dt><dd>₱200')
         self.assertNotContains(page, 'data-balance=')
         self.count('Ben', 800)
         page = self.client.get(self.url)
@@ -49,7 +49,7 @@ class EndSetPageTests(TestCase):
     def test_equal_recorded_totals_with_missing_final_cash_out_do_not_balance(self):
         self.night.cash('Bea', 1800)
         page = self.client.get(self.url)
-        self.assertContains(page, 'Total cashed out</span><span class="amount">₱2,000')
+        self.assertContains(page, 'Total cashed out</dt><dd>₱2,000')
         self.assertNotContains(page, 'data-balance=')
         self.assertNotContains(page, 'Finalize results')
         self.assertNotContains(page, 'role="alert"')
@@ -116,7 +116,8 @@ class EndSetPageTests(TestCase):
         url = reverse('session', args=[night.session.pk])
         page = self.client.get(url)
         self.assertNotContains(page, '₱')
-        self.assertContains(page, 'Final count (chips)')
+        self.assertContains(page, 'aria-label="Final count of A"')
+        self.assertContains(page, '1,000 chips in')
         night.cash('A', 1000)
         settlement.finalize(night.session.pk, night.host)
         page = self.client.get(url)

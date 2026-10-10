@@ -67,7 +67,7 @@ try {
  check('no JavaScript: the rebuy is recorded',await N.js(`${rowText(M.ben)}.includes('1 buy-in + 1 rebuy')`));
  // --- The host ends play; players enter their own counts.
  await H.click(`document.querySelector('button[name=action][value=end]')`);
- check('player: a field for their own count appears',await until(P,`!!document.querySelector('#own-count')&&document.querySelectorAll('form[action$="/counts/enter/"]').length===1&&!!${row(M.maria)}.querySelector('#own-count')`));
+ check('player: a field for their own count appears',await until(P,`!!document.querySelector('#own-count')&&document.querySelectorAll('form[action$="/counts/enter/"]').length===1&&!!document.querySelector('.own-count-lead #own-count')`));
  await P.js(`window.__same=true`);await B.go(SET);await B.js(`window.__same=true`);await H.go(SET);await H.js(`window.__same=true`);
  for(const width of [320,390,1280]){await P.size(width);
   check('player count-up fits '+width,await P.js(`document.documentElement.scrollWidth<=${width}`));
@@ -84,16 +84,16 @@ try {
  await P.shot('entries-player-numpad-390');
  await send('Emulation.setTouchEmulationEnabled',{enabled:false},P.s);await P.go(SET);await P.js(`window.__same=true`);
  await type(P,'#own-count','1,450');await P.click(`document.querySelector('.own-count [type=submit]')`);
- check('player: sent, waiting for the host',await until(P,`${rowText(M.maria)}.includes('You entered ₱1,450. Waiting for the host to confirm.')&&!!document.querySelector('.own-count-change')&&!document.querySelector('.own-count-change').open&&window.__same===true`,3000));
- check('player: the row says Entered, not confirmed',await P.js(`${row(M.maria)}.querySelector('[data-status=entered]').textContent==='Entered'&&${rowText(M.maria)}.includes('₱1,450, not confirmed yet')`));
+ check('player: sent, waiting for the host',await until(P,`document.querySelector('.own-count-lead').textContent.replace(/\\s+/g,' ').includes('You entered ₱1,450. Waiting for the host to confirm.')&&!!document.querySelector('.own-count-change')&&!document.querySelector('.own-count-change').open&&window.__same===true`,3000));
+ check('player: the row says Entered, not confirmed',await P.js(`!!${row(M.maria)}.querySelector('[data-status=entered]')&&/ntered\\s*₱1,450/.test(${rowText(M.maria)})`));
  check('contrast of the waiting line',await P.js(contrast('.own-count-state'))>=4.5);await P.shot('entries-player-entered-390');
- check('host sees the entered count without a reload',await until(H,`${rowText(M.maria)}.includes('₱1,450, not confirmed yet')&&window.__same===true`));
+ check('host sees the entered count without a reload',await until(H,`/ntered\\s*₱1,450/.test(${rowText(M.maria)})&&window.__same===true`));
  check('host: the field hints the number and stays empty',await H.js(`(()=>{const f=document.querySelector('#count-${M.maria}');return f.value===''&&f.placeholder==='1450'&&f.dataset.entered==='145000'&&!!document.querySelector('[name=entry_${M.maria}]')&&document.querySelector('#count-entered-${M.maria}').textContent.includes('maria entered ₱1,450. Leave the field empty to accept it, or type another number.')})()`));
  check('host: the main button offers to confirm it, and the total counts it as a preview',await H.js(`(()=>{const b=document.querySelector('[data-confirm-typed]');return !b.hidden&&b.textContent==='Confirm 1 count'&&document.querySelector('[data-count-label]').textContent==="Preview · players' counts"&&document.querySelector('[data-count-accounted]').textContent==='₱1,450'})()`));
  check('contrast of the host hint',await H.js(contrast('#count-entered-'+M.maria))>=4.5);
  for(const width of [320,390,1280]){await H.size(width);check('host count-up fits '+width,await H.js(`document.documentElement.scrollWidth<=${width}`));await H.shot('entries-host-entered-'+width);}
  await H.size(390);
- check('the other player sees it and has their own field only',await until(B,`${rowText(M.maria)}.includes('₱1,450, not confirmed yet')&&document.querySelectorAll('#own-count').length===1&&!!${row(M.ben)}.querySelector('#own-count')&&window.__same===true`));
+ check('the other player sees it and has their own field only',await until(B,`/ntered\\s*₱1,450/.test(${rowText(M.maria)})&&document.querySelectorAll('#own-count').length===1&&!!document.querySelector('.own-count-lead #own-count')&&window.__same===true`));
  // --- Typing survives the other side's update.
  await type(H,'#count-'+M.anton,'650');
  check('host: typed and entered are confirmed together',await H.js(`document.querySelector('[data-confirm-typed]').textContent==='Confirm 2 counts'&&document.querySelector('[data-count-label]').textContent==='Preview · unsaved counts'`));
@@ -102,17 +102,17 @@ try {
  check('host: the changed number arrives, the typed count stays',await until(H,`document.querySelector('#count-${M.maria}').placeholder==='1500'&&document.querySelector('#count-${M.anton}').value==='650'&&document.querySelector('[data-confirm-typed]').textContent==='Confirm 2 counts'&&document.querySelector('[data-count-accounted]').textContent==='₱2,150'`));
  await P.js(`document.querySelector('.own-count-change').open=true`);await type(P,'#own-count','77');
  await type(B,'#own-count','900');await B.click(`document.querySelector('.own-count [type=submit]')`);
- check('player: half-typed number and open Change survive another player\'s update',await until(P,`${rowText(M.ben)}.includes('₱900, not confirmed yet')&&document.querySelector('#own-count').value==='77'&&document.querySelector('.own-count-change').open&&window.__same===true`));
+ check('player: half-typed number and open Change survive another player\'s update',await until(P,`/ntered\\s*₱900/.test(${rowText(M.ben)})&&document.querySelector('#own-count').value==='77'&&document.querySelector('.own-count-change').open&&window.__same===true`));
  // --- The host types over one number and accepts the other.
- await until(H,`${rowText(M.ben)}.includes('₱900, not confirmed yet')`);
+ await until(H,`/ntered\\s*₱900/.test(${rowText(M.ben)})`);
  await type(H,'#count-'+M.maria,'1,400');
  check('host: three counts to confirm',await H.js(`document.querySelector('[data-confirm-typed]').textContent==='Confirm 3 counts'&&document.querySelector('[data-count-accounted]').textContent==='₱2,950'`));
  await H.shot('entries-host-before-confirm-390');
  await H.click(`document.querySelector('[data-confirm-typed]')`);
  check('host: confirmed as typed for maria, as entered for Ben',await until(H,`${rowText(M.maria)}.includes('Counted ₱1,400')&&${rowText(M.ben)}.includes('Counted ₱900')&&${rowText(M.anton)}.includes('Counted ₱650')&&!document.querySelector('[data-status=entered]')`,4000));
  check('host: the confirmed total is the server\'s',await H.js(`document.querySelector('[data-count-label]').textContent==='Confirmed counts'&&document.querySelector('[data-count-accounted]').textContent==='₱2,950'`));
- check('player: told the host confirmed another number, field gone',await until(P,`${rowText(M.maria)}.includes('The host confirmed ₱1,400. You entered ₱1,500.')&&!document.querySelector('#own-count')`));
- check('other player: told the host confirmed theirs',await until(B,`${rowText(M.ben)}.includes('The host confirmed your count.')&&!document.querySelector('#own-count')`));
+ check('player: told the host confirmed another number, field gone',await until(P,`document.querySelector('.own-count-lead').textContent.replace(/\\s+/g,' ').includes('The host confirmed ₱1,400. You entered ₱1,500.')&&!document.querySelector('#own-count')`));
+ check('other player: told the host confirmed theirs',await until(B,`document.querySelector('.own-count-lead').textContent.replace(/\\s+/g,' ').includes('The host confirmed your count.')&&!document.querySelector('#own-count')`));
  await P.shot('entries-player-confirmed-390');
  check('no script error on any page',(await Promise.all([H,P,B].map(X=>X.js(`!(window.__errors&&window.__errors.length)`)))).every(Boolean));
  writeFileSync(`${OUT}/player_entries.json`,JSON.stringify(results,null,2));

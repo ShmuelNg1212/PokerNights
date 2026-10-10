@@ -66,3 +66,7 @@ The existing Rack tokens, CSS, assets and motion are reused. CSS remains 32,942 
 ## 2026-10-04 addendum — UI evolution
 
 The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside the Rack. The overview is the neutral lead panel, not slate. On phones the balance check sits above the count list; a completed mismatch leads with the signed amount. Progress is hidden when no player has a buy-in.
+
+## 2026-10-10 addendum — count-up in one line
+
+The approved `doc/plan/1791630963_count_up_and_settle_up_revamp.md` recomposes count-up: one 65px line per player with the count field on it, the field stating the count's state, player details in a sheet, one mark per player in the overview, and "The books" in place of Set totals and Balance check. Accounting, the counts form, the preview and the verdict are unchanged. DESIGN.md, "Count-up in one line", supersedes the row and order described above. `COUNT_REVAMP=False` returns the earlier screen. Evidence: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`, `numpad.mjs` and `inplace.mjs` on fresh seeds; captures at 320, 390 and 1280px reviewed with one fix batch. No separate critique run was made.

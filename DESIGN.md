@@ -838,6 +838,39 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Motion.** The sheet rises as before. Sections are uncovered top to bottom with the existing 360ms clip, 60ms apart, done by 600ms. The result bars grow from the middle mark when their list is first seen, 420ms each and 40ms apart, once per opening. Figures are whole on the first frame. Under reduced motion, and without JavaScript, everything is in place and nothing moves.
 - **Measured.** `night.mjs`, 68 checks: the five sections, highlights without a loss, the reveal within 600ms, bars waiting, growing once and resting with no inline style, Close reachable at the end of the scroll, 48px set links, text contrast of at least 4.5:1 including on Rail 2, 320px with long names and nine-digit amounts, reduced motion, and no JavaScript.
 
+### Count-up in one line (2026-10-10)
+
+[Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md). This replaces the row and the order described in "Count-up" and in the count-up part of the 2026-10-05 addendum. The accounting, the one counts form, the running total, the numpad panel, the verdict and the one main action per state are unchanged. No new colour, font or raster asset. `COUNT_REVAMP=False` returns the earlier count-up.
+
+- **A count row is one line**, 63px: a 36px identity chip, the name over a 13px Bone Dim line ("₱1,000 in"), and the count field in a right column of 36% of the row, at least 104px and at most 180px. The field is 48px high with a right-aligned 700 tabular figure.
+- **The field states the count.** Empty means awaiting. A confirmed count is the field's placeholder in Bone Dim with an 18px Up tick at the field's left edge. A player's own entry is the placeholder, and the line under the name adds "entered ₱450" in Brass. Typing hides the tick. There is no state badge and no visible label; the field is named "Final count of Miguel" and a hidden status says "Ready to cash out. Counted ₱450".
+- **Other rows.** A cashed-out player has no field: "Cashed out" in 12px Bone Dim over the amount in Up, and the name in Bone Dim. A player without a buy-in reads "No buy-in". A player or a read-only viewer sees "Counted", "Entered" or "Awaiting count" in the right column.
+- **A long figure takes its own line.** When the bought-in amount is longer than eleven characters the field moves under the name at full width, so every digit of a count shows.
+- **Details are a sheet.** The name is a button with a small chevron that opens the player's sheet: records, reversals, the exception cash-out and Clear the count. Without JavaScript the row keeps a "Details" disclosure.
+- **The overview** keeps the title, the state badge, the date and the progress line, and adds one 22 × 6px mark per player with a buy-in, in the list's order: outlined in Line while awaiting, Bone when counted, Up when cashed out. The marks are decoration for the line above; a hidden sentence gives the three numbers.
+- **Help.** One sentence stays above the list ("Type what each player has left; 0 for an empty stack."), so the fields below never shift when a count is accepted. The rest sits after the last player.
+- **The host bar.** Open, it is the running total, the main action and "More host controls"; the hint shows only when there is no action. Folded, it keeps the running total and the main action, so nothing needed while counting is behind the chevron. Whether it starts open or folded is the host's saved choice, as before.
+- **The books** replace "Set totals" and "Balance check": Total bought in, Total cashed out, rake rows when rake was collected, a host override when there is one, the set timer, then where the books stand. When every player is cashed out and the books differ, the signed amount leads the section and the section sits directly under the overview, as before.
+- **A player's own count leads the page**: a neutral panel "Your count" above the list, with the field, "Send to host" and what the host confirmed.
+- **Motion.** When the server accepts counts, a tick is drawn in each accepted field over 320ms, 40ms apart, and that player's mark in the overview fills from the left over 360ms. The existing brass mark on a changed row and the once-only balanced rule stay. Figures are at their value on the first frame. Reduced motion draws nothing.
+- **Measured.** `count_flow.mjs`, 91 checks, and `end_set.mjs`. At 390 × 844 with six players: row 63px (was 111), the open host bar 179px (was 203) and 127px folded, all six rows whole between the overview and the bar in either state (about three before), the page 1,241px open and 1,189px folded (was 1,973). With the number keys open, seven rows show above them (two before).
+
+### Settle-up in rows (2026-10-10)
+
+[Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md). This replaces the overview and the transfer card described in "Session overview and settle-up" and the transfer-alignment rules that followed it, for a closed session. The open session page keeps its overview. What Mark paid and Undo record is unchanged.
+
+- **Order on a phone:** overview, Who pays whom, Session results, Sets, Payment records, then "View session recap" and "Manage this session". From 900px the overview and the last two share the 400px column and the rest take the flexible column.
+- **The headline depends on the viewer.** A player reads "You pay" or "You receive" over their unpaid amount, "You're settled" with a tick once their transfers are paid, or "Nothing to pay". The host reads "Still to pay" over the table's amount, or "Settled". The figure is 48px; formatted lengths above 10 use 32px and above 17 use 24px, on one line.
+- **Under it:** a player's own transfers in words with Paid or Not paid; then the progress bar and one line, "₱2,000 of ₱4,650 marked paid · 1 of 5 transfers", which a player's page prefixes with "Table:". Rake shows only when rake was collected. The viewer's session result is one line with its sign and arrow. A playing host's own transfers follow that line.
+- **A transfer is one row** between Rule lines: 28px chips with names, a drawn arrow between them (read as "pays"), and the amount at the right at 20px. Beneath: "Not paid" in Brass, or a small Up tick with "Paid", the time and "marked by the host" in Bone Dim. The host's Mark paid (bone) or Undo (quiet) is at the right of that line, 48px high. 99px for the host, 71px for a player.
+- **Own rows** sit on Rail 2 with 12px corners and say "(you)". The list keeps the plan's order.
+- **A paid row is quiet:** names and amount in Bone Dim.
+- **A long amount** (more than ten characters) takes a line of its own under the names.
+- **Explanations.** One line stays above the list. The notes on netting and rake are in "How this is worked out", closed.
+- **Payment records** are a closed disclosure whose heading states their number.
+- **Motion.** When the server accepts Mark paid, the row's tick is drawn over 320ms, its names and amount settle from Bone to Bone Dim over 520ms, and the progress bar moves to the new amount over 420ms where the browser can animate it. The figures change at once. When the last transfer is paid, "Settled" arrives once per session in that browser: its tick is drawn and a green double rule, the one the balanced books use, is drawn from the left under it. Reduced motion shows each state at once.
+- **Measured.** `night.mjs`, 83 checks. At 390 × 844 as a host: the overview 204 to 224px (was 361), the first transfer at 417px (was 750), four whole transfers on the first screen, a session with five transfers 2,030px (was 3,116). As a player: the overview 292 to 336px (was 539).
+
 ## Do's and Don'ts
 
 ### Do:

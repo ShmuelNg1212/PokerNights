@@ -179,7 +179,7 @@ class BalanceViewTests(TestCase):
         player = add_player(night.group, "ben")
         self.client.force_login(player.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertContains(page, "Balance check")
+        self.assertContains(page, "The books")
         self.assertNotContains(page, "Record override")
         self.assertEqual(self.client.post(reverse("override_add", args=[night.session.pk]), {"absorber": "equal", "note": "x"}).status_code, 403)
         self.assertEqual(self.client.post(reverse("override_void", args=[night.session.pk])).status_code, 403)

@@ -21,7 +21,7 @@ class CountUpStructureTests(TestCase):
 
     def test_the_players_come_before_the_action_and_the_reference_figures(self):
         html = self.page()
-        order = [html.index(mark) for mark in ('class="felt hero"', 'class="count-workspace"', 'class="host-controls', 'class="count-facts"', 'class="end-balance"')]
+        order = [html.index(mark) for mark in ('class="felt hero"', 'class="count-workspace"', 'class="host-controls', 'class="end-balance"')]
         self.assertEqual(order, sorted(order))
         self.assertNotIn("table-left", html)
 
@@ -35,7 +35,7 @@ class CountUpStructureTests(TestCase):
     def test_a_row_has_a_field_and_no_button_of_its_own(self):
         count(self.night, "A", 800)
         html = self.page()
-        row = html[html.index('class="count-row"'):html.index("</li>", html.index('class="count-row"'))]
+        row = html[html.index('class="count-row '):html.index("</li>\n    \n", html.index('class="count-row '))]
         self.assertIn('data-count-input', row)
         self.assertIn('data-numpad="pesos"', row)
         self.assertIn('inputmode="decimal"', row)
@@ -58,7 +58,7 @@ class CountUpStructureTests(TestCase):
         self.assertIn("Cash out counted players (1)", html)
         dock = html[html.index('class="host-controls'):html.index('class="host-more"')]
         self.assertEqual(dock.count("btn-primary"), 1 + 1)  # that link, and the hidden confirm button that replaces it
-        self.assertNotIn("btn-primary", html[html.index('count-help"'):html.index('class="host-controls')])  # "Confirm all counts" is the fallback
+        self.assertIn('class="btn btn-block confirm-all"', html)  # "Confirm all counts" is the fallback, never the main action
 
     def test_books_off_leads_to_the_difference(self):
         self.night.cash("A", 900)
@@ -203,3 +203,63 @@ class FinalPageTests(TestCase):
         html = self.client.get(reverse("session", args=[night.session.pk])).content.decode()
         self.assertEqual(html.count("Even</span>"), 2)
         self.assertNotIn("₱0</span>", html)
+
+
+class CountRevampTests(TestCase):
+    """The one-line count-up, and the switch that returns the earlier one."""
+
+    def setUp(self):
+        self.night = counting("A", "B")
+        self.url = reverse("session", args=[self.night.session.pk])
+        self.client.force_login(self.night.host.user)
+
+    def test_a_row_is_one_line_with_the_field_and_a_sheet_for_details(self):
+        count(self.night, "A", 800)
+        html = self.client.get(self.url).content.decode()
+        self.assertIn('class="table-layout end-set-layout count-layout count-v2"', html)
+        row = html[html.index('class="count-row '):html.index("</li>\n    \n", html.index('class="count-row '))]
+        self.assertIn('class="count-row is-ready"', row)
+        self.assertIn("₱1,000 in", row)
+        self.assertIn('aria-label="Final count of A"', row)
+        self.assertIn('name="count_', row)
+        self.assertIn('form="counts-form"', row)
+        self.assertIn('data-sheet-open="player-', row)
+        self.assertIn('data-sheet-source="player-', row)
+        self.assertNotIn("Final count (₱)</label>", row)
+        self.assertNotIn('class="badge', row)
+        self.assertIn('data-status="ready">Ready to cash out. Counted ₱800', row)
+        self.assertIn('data-watch="count-', row)
+
+    def test_the_overview_has_one_mark_per_player_with_a_buy_in(self):
+        count(self.night, "A", 800)
+        html = self.client.get(self.url).content.decode()
+        self.assertEqual(html.count('<li data-status="ready" data-watch="count-'), 1)
+        self.assertEqual(html.count('<li data-status="awaiting" data-watch="count-'), 1)
+        self.assertIn("1 awaiting count, 1 ready to cash out, 0 cashed out.", html)
+
+    def test_the_books_state_each_figure_once(self):
+        html = self.client.get(self.url).content.decode()
+        self.assertEqual(html.count("The books</h2>"), 1)
+        self.assertNotIn("Set totals", html)
+        self.assertNotIn("Balance check", html)
+        books = html[html.index('id="balance"'):]
+        self.assertEqual(books.count("Total bought in</dt>"), 1)
+        self.assertEqual(books.count("Total cashed out</dt>"), 1)
+
+    def test_a_cashed_out_player_has_no_field(self):
+        self.night.cash("A", 900)
+        html = self.client.get(self.url).content.decode()
+        row = html[html.index('class="count-row is-cashed_out'):]
+        row = row[:row.index("</li>")]
+        self.assertNotIn("data-count-input", row)
+        self.assertIn('<small>Cashed out</small><span class="num">₱900</span>', row)
+
+    def test_the_switch_returns_the_earlier_count_up(self):
+        from django.test import override_settings
+        with override_settings(COUNT_REVAMP=False):
+            html = self.client.get(self.url).content.decode()
+        self.assertNotIn("count-v2", html)
+        self.assertIn("Set totals", html)
+        self.assertIn("Balance check", html)
+        self.assertIn("Final count (₱)", html)
+        self.assertIn('name="count_', html)

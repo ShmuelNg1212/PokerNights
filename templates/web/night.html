@@ -12,41 +12,27 @@
   {% if manage %}<form method="post" action="{% url 'night_restore' night.pk %}" data-once>{% csrf_token %}<button type="submit" class="btn btn-primary btn-block">Restore session</button></form>{% endif %}
 </div>
 {% endif %}
-<div class="night-layout">
+{# Document order on a closed session is the order of reading: your part, who pays whom, the results, the sets, the records, then housekeeping. #}
+<div class="night-layout{% if night.is_closed and outcome.plan %} night-settle{% endif %}">
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
       <h1 data-carry="title">{{ night.table.name }}</h1>
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
-      {% if outcome.status == 'settled' %}
-      <h2 class="pot-label">Still to pay</h2>
-      <div class="display-amount settled-figure plus" data-still-to-pay="{{ outcome.still_to_pay }}">{% icon 'check' %} Settled</div>
-      <p class="settle-status">{% if outcome.transfers %}Nothing is left to pay.{% else %}Nobody owes anything.{% endif %}</p>
-      {% else %}
-      <h2 class="pot-label">Still to pay</h2>
-      {% with figure=outcome.still_to_pay|amount:unit %}<div class="display-amount {% if figure|length > 17 %}amount-long{% elif figure|length > 10 %}amount-compact{% endif %}" data-still-to-pay="{{ outcome.still_to_pay }}">{{ outcome.still_to_pay|display_amount:unit }}</div>{% endwith %}
-      <p class="settle-status"><span class="badge badge-warn">{{ outcome.status_label }}</span></p>
-      {% endif %}
-      {% if outcome.transfers %}
-      <progress class="payment-progress" value="{{ outcome.paid_amount }}" max="{{ outcome.total_to_pay }}" aria-label="Amount marked paid"></progress>
-      <p class="felt-hint">{{ outcome.paid_amount|amount:unit }} of {{ outcome.total_to_pay|amount:unit }} marked paid</p>
-      <p class="felt-hint">{{ outcome.paid_count }} of {{ outcome.transfers|length }} transfers paid</p>
-      {% endif %}
+      {% include "web/_night_lead.html" %}
       {% else %}
       <h2>Session open</h2>
       <p class="felt-hint">Who pays whom is worked out when the host closes the session.</p>
       {% if latest_set %}<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
-      {% endif %}
       <dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>
       {% if my_standing %}
       <div class="night-mine">
-        <h2 class="stat-label">Your result in this session{% if not night.is_closed %} so far{% endif %}</h2>
+        <h2 class="stat-label">Your result in this session so far</h2>
         <div class="night-result {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</div>
         {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
-        {% if night.is_closed %}
-        {% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}
-        {% else %}<p class="felt-hint">Not final. Over finalized sets; session still open.</p>{% endif %}
+        <p class="felt-hint">Not final. Over finalized sets; session still open.</p>
       </div>
+      {% endif %}
       {% endif %}
     </section>
     {% if can_start_next_set %}
@@ -69,6 +55,58 @@
       {% else %}<p class="muted">No set of this session is finalized, so there is nothing to settle.</p>{% endif %}
     </section>
     {% endif %}
+  </div>
+  <div class="night-detail">
+    {% if night.is_closed and outcome.plan %}
+    <section aria-labelledby="transfers-title">
+      <h2 id="transfers-title">Who pays whom</h2>
+      <p class="small muted">The app records payments; it does not move money.</p>
+      <ul class="transfer-list">
+        {% for t in outcome.transfers %}
+        {% with figure=t.amount|amount:unit %}<li class="transfer-row transfer-line{% if figure|length > 10 %} is-wide{% endif %}{% if t.paid %} is-paid{% endif %}{% if t.payer_id == me.pk or t.payee_id == me.pk %} is-mine{% endif %}{% if me.is_host %} has-action{% endif %}" data-transfer="{{ t.pk }}" data-paid="{% if t.paid %}1{% else %}0{% endif %}">
+          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong>{% if t.payer_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span><span class="transfer-direction">{% icon 'arrow-right' %}<span class="visually-hidden">pays</span></span><span class="transfer-party">{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong>{% if t.payee_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span></div>
+          <span class="transfer-amount amount{% if figure|length > 17 %} amount-long{% elif figure|length > 10 %} amount-compact{% endif %}">{{ figure }}</span>
+          <span class="small transfer-state">{% if t.paid %}<span class="transfer-mark">{% icon 'check' %}</span><span class="paid-word">Paid</span> · {{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="unpaid-word">Not paid</span>{% endif %}</span>
+          {% if me.is_host %}{% if t.paid %}
+          <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
+          {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
+        </li>{% endwith %}
+        {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
+      </ul>
+      <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results. This list nets every set of the session. It excludes rake already collected at buy-in and assumes no earlier player payments.</p></details>
+    </section>
+    {% endif %}
+    <section aria-labelledby="results-title">
+      <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
+      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
+      <ul class="list night-results">
+        {% for row in outcome.standings %}
+        <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>
+        {% empty %}<li class="muted">No finalized set results yet.</li>{% endfor %}
+      </ul>
+      {% if outcome.standings %}<p class="muted small">Over {{ finalized_count }} finalized set{{ finalized_count|pluralize }}.</p>{% endif %}
+    </section>
+    <section aria-labelledby="sets-title">
+      <h2 id="sets-title">Sets</h2>
+      <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
+      {% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}. Each set has its own timer.</p>{% endif %}
+    </section>
+    {% if outcome.payments %}
+    <section aria-labelledby="payments-title">
+      <details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">{{ outcome.payments|length }}</span></h2>{% icon 'chevron-down' %}</summary>
+      <ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} pays {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br><span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul>
+      </details>
+    </section>
+    {% endif %}
+    {% if recap %}
+    <section class="sheet-source recap-source" data-sheet-source="recap" data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
+      <h2>Session recap</h2>
+      {% include "web/_night_recap.html" %}
+    </section>
+    {% endif %}
+  </div>
+  {% if recap or manage %}
+  <div class="night-after">
     {% if recap %}
     <button type="button" class="btn btn-quiet btn-block recap-opener" data-sheet-open="recap">View session recap</button>
     {% endif %}
@@ -94,52 +132,7 @@
     </details>
     {% endif %}
   </div>
-  <div class="night-detail">
-    {% if night.is_closed and outcome.plan %}
-    <section aria-labelledby="transfers-title">
-      <h2 id="transfers-title">Who pays whom</h2>
-      <p class="small muted">Transfers settle the session results. The app records payments; it does not move money.</p>
-      <ul class="transfer-list">
-        {% for t in outcome.transfers %}
-        <li class="transfer-row panel{% if t.paid %} is-paid{% endif %}" data-transfer="{{ t.pk }}">
-          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong></span><span class="transfer-direction">{% icon 'arrow-right' %}<span>pays</span></span><span class="transfer-party">{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong></span></div>
-          <div class="transfer-bottom{% if me.is_host %} has-action{% endif %}">{% with figure=t.amount|amount:unit %}<span class="transfer-amount amount{% if figure|length > 17 %} amount-long{% elif figure|length > 10 %} amount-compact{% endif %}">{{ figure }}</span>{% endwith %}
-            <span class="small transfer-state">{% if t.paid %}<span class="badge badge-good">Paid</span><br>{{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="badge badge-warn">Not paid</span>{% endif %}</span>
-            {% if me.is_host %}{% if t.paid %}
-            <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
-            {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
-          </div>
-        </li>
-        {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
-      </ul>
-      <p class="muted small">This list nets every set of the session. It excludes rake already collected at buy-in and assumes no earlier player payments.</p>
-    </section>
-    {% endif %}
-    <section aria-labelledby="results-title">
-      <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="muted small">not final</span>{% endif %}</h2>
-      <p class="small muted">{% if not night.is_closed %}Over finalized sets; session still open. {% endif %}Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>
-      <ul class="list night-results">
-        {% for row in outcome.standings %}
-        <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · played {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>
-        {% empty %}<li class="muted">No finalized set results yet.</li>{% endfor %}
-      </ul>
-      {% if outcome.standings %}<p class="muted small">Over {{ finalized_count }} finalized set{{ finalized_count|pluralize }}.</p>{% endif %}
-    </section>
-    <section aria-labelledby="sets-title">
-      <h2 id="sets-title">Sets</h2>
-      <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
-      {% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}. Each set has its own timer.</p>{% endif %}
-    </section>
-    {% if outcome.payments %}
-    <section aria-labelledby="payments-title"><h2 id="payments-title">Payment records</h2><ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} pays {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br><span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul></section>
-    {% endif %}
-    {% if recap %}
-    <section class="sheet-source recap-source" data-sheet-source="recap" data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
-      <h2>Session recap</h2>
-      {% include "web/_night_recap.html" %}
-    </section>
-    {% endif %}
-  </div>
+  {% endif %}
 </div>
 {% if recap %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
 {% endblock %}

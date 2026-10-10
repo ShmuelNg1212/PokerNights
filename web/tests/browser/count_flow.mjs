@@ -42,7 +42,7 @@ try {
  await A.go(`/s/${M.eight}/`);await A.js(`localStorage.removeItem('rack-dock');sessionStorage.clear()`);await A.go(`/s/${M.eight}/`);
 
  // --- The screen: players first, one total.
- check('document order: overview, players, host action, totals, balance',await A.js(`[...document.querySelector('.count-layout').children].map(e=>e.className.split(' ')[0]).join()`)==='felt,count-workspace,host-controls,count-facts,end-balance');
+ check('document order: overview, players, host action, the books',await A.js(`[...document.querySelector('.count-layout').children].map(e=>e.className.split(' ')[0]).join()`)==='felt,count-workspace,host-controls,end-balance');
  check('headings go down one level at a time',await A.js(`(()=>{const l=${shownIn('#live h1,#live h2,#live h3,#live h4')}.map(h=>+h.tagName[1]);return l[0]===1&&l.every((v,i)=>!i||v<=l[i-1]+1)})()`));
  check('eight count fields, none with a button of its own',await A.js(`${fields}.length===8&&!document.querySelector('.count-row [type=submit][form=counts-form]')`));
  check('the first count field is in the first screen, above the bar',await A.js(`${field(0)}.getBoundingClientRect().bottom<=${DOCK}.getBoundingClientRect().top`));
@@ -111,11 +111,14 @@ try {
  check('tapping elsewhere puts the panel away',await A.js(`!${PANEL}`));
  // Confirm the typed counts with the main button.
  await A.tap(`document.querySelector('[data-confirm-typed]')`,1800);
+ // The moment: each accepted count gets its tick drawn and its mark in the overview fills. Figures are whole from the first frame.
+ check('confirmed counts: a tick is drawn on each accepted row and its mark fills',await A.js(`(()=>{const rows=[...document.querySelectorAll('.count-row.just-changed.is-ready')];return rows.length>=1&&rows.every(r=>getComputedStyle(r.querySelector('.count-tick path')).animationName==='tick-draw'&&getComputedStyle(r.querySelector('.count-tick')).opacity==='1')&&document.querySelectorAll('.count-pips li.just-changed').length===rows.length})()`));
+ check('confirmed counts: the accepted figure is in its field and nothing is written inline',await A.js(`[...document.querySelectorAll('.count-row.just-changed.is-ready')].every(r=>{const f=r.querySelector('[data-count-input]');return f.placeholder!==''&&f.value===''&&!r.querySelector('.count-tick').getAttribute('style')})`));
  check('confirming records the counts and the main button becomes the cash-out',await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]'&&await A.js(`${field(0)}.value===''&&${field(0)}.placeholder==='900'`));
  check('nothing typed: the bar is no longer a preview',await A.js(`document.querySelector('[data-dock-prefix]').textContent`)==='');
  check('confirmed fields are still served by the numpad',await A.js(`${fields}.every(f=>f.getAttribute('inputmode')==='none')`));
  await A.js(`window.scrollTo(0,0)`);await sleep(6500);await A.shot('count-flow-ready-390');
- for(const [name,sel] of [['label','.count-entry label'],['confirmed count in its field','.count-entry input'],['row state','.count-state .num'],['bar verdict','[data-dock-status]'],['hint','#batch-why'],['progress','.count-progress']]) {
+ for(const [name,sel] of [['help line','.count-help'],['confirmed count in its field','.count-entry input'],['line under a name','.count-sub'],['bar verdict','[data-dock-status]'],['hint','#batch-why'],['progress','.count-progress']]) {
   const ratio=await A.js(contrast(sel));check(`contrast of the ${name} is at least 4.5 (${ratio})`,ratio>=4.5);
  }
  check('a confirmed count in its field is readable (placeholder colour)',await A.js(`(()=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=getComputedStyle(${field(0)},'::placeholder').color;return c.fillStyle!==''})()`));
@@ -209,7 +212,7 @@ try {
 
  // --- A computer: two columns, the action beside the fields' top, no panel.
  await A.computer();await A.go(`/s/${M.eight}/`);
- check('computer: players at the right, the action directly under the overview',await A.js(`(()=>{const f=document.querySelector('.felt').getBoundingClientRect(),w=document.querySelector('.count-workspace').getBoundingClientRect(),d=${DOCK}.getBoundingClientRect(),t=document.querySelector('.count-facts').getBoundingClientRect();return w.left>f.right&&Math.abs(w.top-f.top)<4&&d.top>=f.bottom&&d.top<f.bottom+40&&t.top>=d.bottom&&d.left===f.left})()`));
+ check('computer: players at the right, the action directly under the overview',await A.js(`(()=>{const f=document.querySelector('.felt').getBoundingClientRect(),w=document.querySelector('.count-workspace').getBoundingClientRect(),d=${DOCK}.getBoundingClientRect(),t=document.querySelector('.end-balance').getBoundingClientRect();return w.left>f.right&&Math.abs(w.top-f.top)<4&&d.top>=f.bottom&&d.top<f.bottom+40&&t.top>=d.bottom&&d.left===f.left})()`));
  check('computer: one total, and the cash-out button',await A.js(`${shownIn('[data-count-accounted],[data-dock-accounted]')}.length===1`)&&await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]');
  await A.js(`${field(4)}.focus()`);await send('Input.insertText',{text:'750'},A.s);await sleep(300);
  check('computer: typing with the keyboard, no panel, the button confirms',await A.js(`!${PANEL}&&${field(4)}.getAttribute('inputmode')==='decimal'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Confirm 1 count"]');

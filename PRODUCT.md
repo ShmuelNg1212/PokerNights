@@ -110,3 +110,7 @@ While a set is in play the page fits the table on one phone screen: the pot, the
 ## 2026-10-10 addendum — Session recap
 
 The recap of a closed session tells the whole night from frozen results: the top result and the session's size, the viewer's own night, every player ranked with what they bought in and cashed out, a few highlights about play, and each set. Losses are listed with every other result and are never called out. The recap shows no percentage or rate. [Plan](doc/plan/1791625392_session_recap_details.md).
+
+## 2026-10-10 addendum — Count-up and settle-up
+
+Counting up, a host sees one line per player with the count field on it, so a table of six fits a phone screen. After a session closes, a player reads what they pay or receive first and the host reads the table's total; every transfer is one row with its Paid mark. Records and housekeeping are one tap further. Nothing about what a count, a cash-out or a payment records has changed. [Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md).

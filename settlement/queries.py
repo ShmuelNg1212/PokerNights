@@ -111,6 +111,28 @@ def settle_states(night_ids) -> dict:
 
 
 @dataclass
+class ViewerPart:
+    """What one member still pays or receives in a closed session. Derived from the paid marks; never stored."""
+
+    transfers: list
+    to_pay: int = 0  # unpaid transfers the member pays
+    to_receive: int = 0  # unpaid transfers the member receives
+
+    @property
+    def kind(self) -> str:
+        """``pay``, ``receive``, ``settled`` (every transfer of theirs is paid) or ``none`` (no transfer)."""
+        if not self.transfers:
+            return "none"
+        if self.to_pay:
+            return "pay"
+        return "receive" if self.to_receive else "settled"
+
+    @property
+    def amount(self) -> int:
+        return self.to_pay or self.to_receive
+
+
+@dataclass
 class NightOutcome:
     """A session's results over its sets, and its transfers once it is closed."""
 
@@ -150,6 +172,14 @@ class NightOutcome:
 
     def transfers_for(self, member_id):
         return [t for t in self.transfers if member_id in (t.payer_id, t.payee_id)]
+
+    def part_for(self, member_id) -> ViewerPart:
+        mine = self.transfers_for(member_id)
+        return ViewerPart(
+            transfers=mine,
+            to_pay=sum(t.amount for t in mine if t.payer_id == member_id and not t.paid),
+            to_receive=sum(t.amount for t in mine if t.payee_id == member_id and not t.paid),
+        )
 
 
 def night_outcome(night) -> NightOutcome:

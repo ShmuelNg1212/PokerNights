@@ -1,0 +1,63 @@
+{% load money_tags clock_tags %}
+{# One place for the set's money: each figure once, then where the books stand. #}
+<h2>The books</h2>
+<section class="balance-panel books stack">
+  {% if balance.counted and not balance.ok %}
+  {# Every player is cashed out and the books still differ: the exact signed amount comes before the figures. #}
+  <div class="discrepancy" role="alert">
+    <p class="discrepancy-label">The books are off by</p>
+    <p class="discrepancy-amount">{{ balance.difference|signed_amount:unit }}</p>
+    <p>{{ balance.explanation }}</p>
+    <p class="small">Next: reverse and re-enter the wrong buy-in or cash-out in a player's records{% if me.is_host %}, or record an override below if the error cannot be found{% endif %}.</p>
+  </div>
+  {% endif %}
+  <dl class="set-totals books-lines">
+    <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
+    <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Total cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+    {% if summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}
+    {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
+    <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
+  </dl>
+  {% if not me.is_host %}{% include "web/_count_total.html" %}{% endif %}
+  {% if balance.ok %}
+  <div class="books-balanced" data-balance="{{ session.pk }}">
+    <span class="books-message">{% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
+    {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}</span>
+  </div>
+  {% elif balance.counted %}
+  {% elif balance.stray_cash_outs %}
+  <div class="notice">{{ balance.explanation }}</div>
+  {% else %}
+  {# Players still to be counted or cashed out are normal progress, not a warning. #}
+  <div class="notice notice-info">{% if me.is_host or not balance.missing_cash_outs %}{{ balance.explanation }}{% else %}Not cashed out yet: {% for line in balance.missing_cash_outs %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</div>
+  {% endif %}
+
+  {% for line in summary.lines %}{% for a in line.adjustments %}
+  <p class="small">Override: {{ line.participant.member.display_name }} {{ a.amount|signed_amount:unit }}. Note: {{ a.note }}</p>
+  {% endfor %}{% endfor %}
+
+  {% if me.is_host %}
+    {% if summary.adjustment %}
+    <form method="post" data-turbo="true" action="{% url 'override_void' session.pk %}">{% csrf_token %}
+      <button type="submit" class="btn btn-small btn-quiet">Remove the override</button>
+    </form>
+    {% endif %}
+    {% if balance.counted and not balance.ok %}
+    <details data-key="override">
+      <summary class="small">Cannot find the error? Finalize with an override</summary>
+      <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
+        <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
+        <div class="field">
+          <label for="absorber">Who absorbs the difference?</label>
+          <select id="absorber" name="absorber">
+            {% for line in summary.money_lines %}<option value="{{ line.participant.pk }}" {% if line.participant.member_id == me.pk %}selected{% endif %}>{{ line.participant.member.display_name }}</option>{% endfor %}
+            <option value="equal">All players, in equal shares</option>
+          </select>
+        </div>
+        <div class="field"><label for="override-note">Note</label><input id="override-note" type="text" name="note" data-keep="override-note" maxlength="255" required></div>
+        <button type="submit" class="btn btn-danger btn-block">Record override</button>
+      </form>
+    </details>
+    {% endif %}
+  {% endif %}
+</section>
