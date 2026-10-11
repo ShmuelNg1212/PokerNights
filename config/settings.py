@@ -205,6 +205,8 @@ INSTALL_PROMPT = env.bool("INSTALL_PROMPT", default=True)
 SHARE_RESULTS = env.bool("SHARE_RESULTS", default=True)
 # Turn off to hide Reopen set and Reopen session and refuse both (see settlement/services.py).
 REOPENING = env.bool("REOPENING", default=True)
+# The optional seat draw on an open set. False hides it and makes its services refuse.
+SEAT_DRAW = env.bool("SEAT_DRAW", default=True)
 # Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 STORAGES = {

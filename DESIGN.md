@@ -925,6 +925,29 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Motion.** When the count moves on, the card takes the standard Brass "this changed" mark and the step just finished draws: its rule from the left (`mark-draw`, the sheet time) and its tick 160ms later (`tick-draw`, 320ms). The step that waits for the host breathes between 35% and full opacity over 1.8 seconds; the player's own first step does not, because the field is the call to act. Nothing moves on first sight of the page. Only transform, opacity and stroke change. Reduced motion shows every state still.
 - **Measured.** Gap 16px at 320 and 390px and the card's place unchanged at 900 and 1280px; all four states driven through the real services with the animations named on the first frame and nothing running three seconds later.
 
+### Seat draw (2026-10-11)
+
+[Plan](doc/plan/1791717121_seat_draw.md). Mode: Operate, with one Experience moment. No new colour, font or raster file.
+
+**The table.** The rail (`--rail-2`) around the felt gradient the set page already uses, as an oval. Players are their chips, 40px, with the name in a Ground pill under each. The dealer is a 22px Brass disc with "D" (30px on the stage). An empty seat is a 48px dashed ring with its number; Brass and solid on hover and focus when it can be tapped. The viewer's chip has the Brass ring. No cards, no photo.
+
+**The stage.** A full-screen dialog on a phone (Ground, opaque), a 520px panel from 900px. One line (1.5rem, weight 750) says what is happening and one muted line under it says what to do. The table takes the room that is left; with nine or more players on a screen under 700px tall the position badges are left out and the names stay.
+
+**A recorded exception to "a signature moment within 900ms".** The human asked for a draw with suspense and accepted the length: about four seconds for the draw and about two for the seating. It is optional, plays once per draw and browser, and any tap skips the part that is playing.
+
+| Part | Movement |
+|---|---|
+| Arrive | Each chip springs in at its place in the ring (spring 0.3s, bounce 0.3), 45ms apart, in the order of joining |
+| Draw | The disc runs around the ring on a slowing path (two to four rounds, ease-out), lighting the chip it passes; it passes the winner by one seat and springs back (0.34s, bounce 0.5). The others dim |
+| Winner | The winner's chip springs to the middle at 1.5 times its size; the others fade into the table; the empty seats spring in, 40ms apart |
+| Seating | The dealer's chip takes a short arc to the tapped seat; the others leave the middle 120ms apart, clockwise, each on the same arc (0.46s); the position badge fades in as each lands; the viewer's ring comes last |
+
+Only `transform` and `opacity` are animated by Motion. Reduced motion and a missing Motion file show each result at once. The seating never plays before the server has accepted the seat.
+
+**On the set page.** The step in "Get this set ready" has a dashed mark and an "Optional" tag and is never the Next step. The still table is 340px wide at most; in play it folds into one line.
+
+**Measured.** `seat_draw.mjs`, 46 checks: a host and two players side by side, 2, 6 and 12 players, 320, 390 and 1280px, reduced motion, no JavaScript, and no frame over 50ms with the processor slowed four times.
+
 ## Do's and Don'ts
 
 ### Do:

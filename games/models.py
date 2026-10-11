@@ -370,3 +370,59 @@ class ParticipantBatch(models.Model):
 
     def __str__(self):
         return f"Batch of players added to session {self.session_id}"
+
+
+class SeatDraw(models.Model):
+    """One draw of seats for a set, made before play starts.
+
+    The draw fixes the order around the table: ``SeatPlace.rank`` rises clockwise from the
+    dealer. ``dealer_seat`` is the seat the dealer took on the drawn table; it only turns the
+    picture. Drawing again keeps the earlier draw with ``is_current`` off.
+    """
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="seat_draws")
+    number = models.PositiveIntegerField()
+    is_current = models.BooleanField(default=True)
+    # The players at the table changed before the start, so this draw no longer fits them.
+    stale = models.BooleanField(default=False)
+    drawn_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    request_id = models.UUIDField(unique=True)
+    dealer_seat = models.PositiveSmallIntegerField(null=True, blank=True)
+    # Empty when the set started before anyone chose: the dealer then sits at the top seat.
+    chosen_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+")
+    chosen_at = models.DateTimeField(null=True, blank=True)
+    choice_request_id = models.UUIDField(null=True, blank=True, unique=True)
+
+    class Meta:
+        ordering = ["session", "number"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "number"], name="seat_draw_number_unique"),
+            models.UniqueConstraint(fields=["session"], condition=Q(is_current=True), name="seat_draw_one_current"),
+        ]
+
+    def __str__(self):
+        return f"Seat draw {self.number} of session {self.session_id}"
+
+
+class SeatPlace(models.Model):
+    """A player's place in a draw. Rank 0 is the dealer; a higher rank sits further clockwise."""
+
+    # Drawn players are this far apart, so a late player fits between two of them without a rewrite.
+    STEP = 1024
+
+    draw = models.ForeignKey(SeatDraw, on_delete=models.CASCADE, related_name="places")
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="seat_places")
+    rank = models.PositiveIntegerField()
+    # Seated by a host after the draw, between two drawn players.
+    late = models.BooleanField(default=False)
+    placed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    request_id = models.UUIDField(null=True, blank=True, unique=True)
+
+    class Meta:
+        ordering = ["draw", "rank"]
+        constraints = [
+            models.UniqueConstraint(fields=["draw", "participant"], name="seat_place_once_per_draw"),
+            models.UniqueConstraint(fields=["draw", "rank"], name="seat_place_rank_unique"),
+        ]

@@ -45,6 +45,11 @@
           {% include "web/_prep_mark.html" with state=prep.open number=3 %}
           <div class="prep-text"><span class="prep-name">Open for players</span><span class="prep-line">{% if session.state == 'open' %}Players can see it and join.{% else %}Players cannot see this set yet.{% endif %}</span></div>
         </li>
+        {% if can_draw_seats or seating %}<li class="prep-step prep-optional" data-step="seats" data-state="{% if seating and seating.state == 'seated' %}done{% else %}optional{% endif %}">
+          <span class="prep-mark" aria-hidden="true">{% if seating and seating.state == 'seated' %}{% icon 'check' %}{% endif %}</span><span class="visually-hidden">{% if seating and seating.state == 'seated' %}Done:{% else %}Optional:{% endif %}</span>
+          <div class="prep-text"><span class="prep-name">Seat draw <span class="prep-tag">Optional</span></span><span class="prep-line">{% if not seating %}Draw who deals first and where everyone sits.{% elif seating.stale %}The table changed. Draw again.{% elif seating.chosen %}{{ seating.dealer.member.display_name }} deals first.{% else %}{{ seating.dealer.member.display_name }} is choosing a seat.{% endif %}</span></div>
+          {% if can_draw_seats and not seating %}<form method="post" data-turbo="true" action="{% url 'seat_draw' session.pk %}">{% csrf_token %}{% request_id_field %}<button class="btn btn-small btn-quiet" aria-label="Draw seats">Draw</button></form>{% endif %}
+        </li>{% endif %}
         <li class="prep-step" data-step="start" data-state="{{ prep.start }}">
           {% include "web/_prep_mark.html" with state=prep.start number=4 %}
           <div class="prep-text"><span class="prep-name">Start the set</span><span class="prep-line">{% if session.state == 'open' %}The timer starts for everyone at the table.{% else %}After the set is open.{% endif %}</span></div>
@@ -60,6 +65,7 @@
       {% if summary.buy_in_count %}<p class="prep-money" data-watch="in-play" data-value="{{ summary.in_play }}"><strong>{{ summary.total|amount:unit }}</strong> bought in · {{ summary.buy_in_count }} buy-in{{ summary.buy_in_count|pluralize }}</p>{% endif %}
     </section>
     {% endif %}
+    {% if seating %}{% include "web/_seat_table.html" %}{% endif %}
     {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}
   </aside>
   {% include "web/_players.html" %}

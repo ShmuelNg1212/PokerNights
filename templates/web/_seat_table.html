@@ -1,0 +1,46 @@
+{% load table_tags money_tags %}
+{# The seat draw: who deals first and where everyone sits (DESIGN.md, "Seat draw"). seats.js plays it on a stage; this is what the page keeps. #}
+<section class="seats" aria-label="Seats" data-seats data-draw="{{ seating.draw.pk }}" data-state="{{ seating.state }}"{% if seating.chosen %} data-dealer-seat="{{ seating.draw.dealer_seat }}"{% endif %}{% if seating.fresh %} data-fresh{% endif %}{% if seating.poll_fast %} data-poll-fast{% endif %}{% if can_choose_seat %} data-can-choose{% endif %}>
+{% if seating.stale %}
+  <div class="row"><h2 class="grow">Seat draw</h2></div>
+  <p class="seats-line"><strong>The table changed.</strong> {% if can_draw_seats %}Draw again for the players here now.{% else %}The draw was for other players. A host can draw again.{% endif %}</p>
+  {% if can_draw_seats %}<form method="post" data-turbo="true" action="{% url 'seat_draw' session.pk %}">{% csrf_token %}{% request_id_field %}<button class="btn btn-block">Draw seats again</button></form>{% endif %}
+{% else %}
+  {% if session.state == 'running' %}<details class="seats-fold" data-key="seats" data-wide-open><summary><span class="grow"><strong>Seats</strong> · {{ seating.dealer.member.display_name }} dealt first</span><span class="facts-more">Table{% icon 'chevron-down' %}</span></summary>{% endif %}
+  <div class="row seats-head"><h2 class="grow">{% if session.state == 'running' %}Seats{% else %}Seat draw{% endif %}</h2><button hidden type="button" class="btn btn-small btn-quiet" data-seat-replay>Watch the draw</button></div>
+  <p class="seats-line">{% if seating.chosen %}{% if session.state == 'running' %}{{ seating.dealer.member.display_name }} dealt the first hand. Seats run clockwise.{% else %}<strong>{{ seating.dealer.member.display_name }}</strong> deals first. Everyone else follows clockwise.{% endif %}{% else %}<strong>{{ seating.dealer.member.display_name }}</strong> has the dealer seat{% if can_choose_seat %}. {% if seating.dealer.member_id == me.pk %}Choose your seat.{% else %}Choose a seat for them, or let them choose.{% endif %}{% else %} and is choosing a seat.{% endif %}{% endif %}</p>
+  {% if seating.chosen %}
+  <div class="seat-table" data-count="{{ seating.count }}">
+    <div class="seat-felt" aria-hidden="true"></div>
+    {% for seat in seating.by_seat %}<div class="seat-spot is-taken{% if seat.is_dealer %} is-dealer{% endif %}{% if seat.away %} is-away{% endif %}{% if seat.participant.member_id == me.pk %} is-me{% endif %}" style="left:{{ seat.xy.0 }}%;top:{{ seat.xy.1 }}%">{% player_token seat.participant participants %}{% if seat.is_dealer %}<span class="seat-disc" aria-hidden="true">D</span>{% endif %}<span class="seat-name">{{ seat.participant.member.display_name }}</span></div>{% endfor %}
+  </div>
+  {% else %}
+  {% if can_choose_seat %}<form method="post" class="seat-pick" action="{% url 'seat_choose' session.pk %}" data-seat-pick>{% csrf_token %}{% request_id_field %}{% endif %}
+  <div class="seat-table" data-count="{{ seating.count }}">
+    <div class="seat-felt" aria-hidden="true"></div>
+    <div class="seat-mid">{% player_token seating.dealer participants %}<span class="seat-disc" aria-hidden="true">D</span></div>
+    {% for index, number, x, y in seating.spots %}{% if can_choose_seat %}<button class="seat-spot seat-free" name="seat" value="{{ index }}" style="left:{{ x }}%;top:{{ y }}%" aria-label="Seat {{ number }}">{{ number }}</button>{% else %}<span class="seat-spot seat-free" style="left:{{ x }}%;top:{{ y }}%" aria-hidden="true">{{ number }}</span>{% endif %}{% endfor %}
+  </div>
+  {% if can_choose_seat %}</form>{% endif %}
+  {% endif %}
+  <ol class="seat-order" aria-label="{% if seating.chosen %}Seats, clockwise from the dealer{% else %}The draw, clockwise from the dealer{% endif %}">
+    {% for seat in seating.seats %}<li data-pid="{{ seat.participant.pk }}" data-ring="{{ seat.ring }}" data-name="{{ seat.participant.member.display_name }}"{% if seat.position %} data-short="{{ seat.position.1 }}" data-position="{{ seat.position.0 }}"{% endif %}{% if seat.participant.member_id == me.pk %} data-me{% endif %}{% if seat.late %} data-late{% endif %}>{% player_token seat.participant participants %}<span class="seat-who">{{ seat.participant.member.display_name }}{% if seat.participant.member_id == me.pk %} <span class="muted">(you)</span>{% endif %}{% if seat.away %} <span class="muted">· away</span>{% endif %}</span><span class="seat-what">{% if session.state == 'running' %}{% if seat.is_dealer %}First dealer · {% endif %}Seat {{ seat.number }}{% elif seat.position %}{{ seat.position.0 }}{% endif %}</span></li>{% endfor %}
+  </ol>
+  {% if session.state == 'open' %}<p class="small muted seats-note">Positions are for the first hand. The dealer button moves on from there.</p>{% endif %}
+  {% if can_seat_late and seating.unseated %}
+  <div class="seat-late">
+    {% for participant in seating.unseated %}<form method="post" data-turbo="true" action="{% url 'seat_late' session.pk %}" class="form-row">{% csrf_token %}{% request_id_field %}<input type="hidden" name="participant_id" value="{{ participant.pk }}">
+      <label class="grow" for="seat-after-{{ participant.pk }}">Seat {{ participant.member.display_name }} after</label>
+      <select id="seat-after-{{ participant.pk }}" name="after">{% for seat in seating.seats %}<option value="{{ seat.participant.pk }}">{{ seat.participant.member.display_name }}</option>{% endfor %}</select>
+      <button class="btn btn-small">Seat</button>
+    </form>{% endfor %}
+  </div>
+  {% elif seating.unseated and session.state == 'running' %}<p class="small muted seats-note">{% for participant in seating.unseated %}{{ participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %} joined after the draw and {{ seating.unseated|length|pluralize:"has,have" }} no seat yet.</p>
+  {% endif %}
+  {% if can_draw_seats %}<details class="seats-again" data-key="seats-again"><summary>Draw again</summary>
+    <p class="small muted">A new draw replaces this one for everyone. The set log keeps both.</p>
+    <form method="post" data-turbo="true" action="{% url 'seat_draw' session.pk %}">{% csrf_token %}{% request_id_field %}<button class="btn btn-block">Draw seats again</button></form>
+  </details>{% endif %}
+  {% if session.state == 'running' %}</details>{% endif %}
+{% endif %}
+</section>

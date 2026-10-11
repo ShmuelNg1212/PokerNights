@@ -17,6 +17,7 @@ from accounts import services as accounts
 from audit.models import AuditEvent
 
 from games import clock
+from games import seats as seat_draws
 from games import services as games
 from games.access import night_for, read_only, session_for
 from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
@@ -210,6 +211,16 @@ def session_context(session, me) -> dict:
         "any_entered": any(line.entered for line in summary.lines),
         "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
     }
+    if settings.SEAT_DRAW and settings.TABLE_REVAMP and session.state in ("open", "running"):
+        seating = seat_draws.seating(session, participants) if getattr(session, "has_seat_draw", True) else None
+        live = not session.night.is_archived
+        context["seating"] = seating
+        context["can_draw_seats"] = live and me.is_host and session.state == "open" and seated >= 2
+        context["can_choose_seat"] = (
+            live and seating is not None and seating.state == "choosing" and session.state == "open"
+            and (me.is_host or seating.dealer.member_id == me.pk)
+        )
+        context["can_seat_late"] = live and me.is_host and session.state == "running" and seating is not None and seating.state == "seated"
     played, running_ids = clock.player_clocks(session)
     for line in summary.lines:
         line.play_seconds = played.get(line.participant.pk)
