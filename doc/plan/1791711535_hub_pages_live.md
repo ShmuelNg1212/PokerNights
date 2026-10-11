@@ -1,6 +1,6 @@
 # Your groups and a group's sessions update by themselves: plan
 
-Status: approved 2026-10-11 ("approved"); the reading of the report stands uncorrected. Date: 2026-10-11, Asia/Manila. Study: [An open session does not update on players' screens](../study/1791711534_hub_pages_live.md).
+Status: approved 2026-10-11 ("approved"); the reading of the report stands uncorrected. Built and released. Date: 2026-10-11, Asia/Manila. Study: [An open session does not update on players' screens](../study/1791711534_hub_pages_live.md).
 
 ## Outcome
 
@@ -88,3 +88,5 @@ Acceptance: 1 to 5 are met in headless Chrome with signed-in browsers.
 Not verified: real phones; whether this is the screen the report was about (the human approved the reading without comment); the cost on Vercel and Neon of many phones idle on Your groups; a screen reader. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki (features, architecture), browser README, TODO.
+
+2026-10-11 release: the human said "push". `fix/hub-pages-live` was merged to `main` as `1da9bfd` and pushed (previous production commit `6cae533`). 1029 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About three minutes later the live `/state/` address answered a signed-out request with a redirect to the login, so the route exists, and the live `nightlive.js` reads `data-state-url`. No page was opened signed in on the live site, so an update arriving there was not seen.

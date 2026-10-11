@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Your groups and a group's sessions update by themselves ([plan](doc/plan/1791711535_hub_pages_live.md), [study](doc/study/1791711534_hub_pages_live.md)): built on `fix/hub-pages-live` on 2026-10-11. Not merged, not pushed. No migration.
+Your groups and a group's sessions update by themselves ([plan](doc/plan/1791711535_hub_pages_live.md), [study](doc/study/1791711534_hub_pages_live.md)): built on `fix/hub-pages-live` on 2026-10-11. Released 2026-10-11 as `1da9bfd` (previous production commit `6cae533`); the live site answers the new state address and serves the new `nightlive.js`. No migration. Phone acceptance is open.
 
 - [ ] After release, with a player's phone on Your groups: as the host, create a session and open its set. Within about 5 seconds the player's card should show the table.
 - [ ] With the player on the group's Sessions tab: start the set and watch "Open" become "In play".
