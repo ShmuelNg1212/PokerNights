@@ -7,6 +7,7 @@ urlpatterns = [
     path("g/<int:group_id>/", views.group, name="group"),
     path("g/<int:group_id>/players/<int:member_id>/", views.player, name="player"),
     path("n/<int:night_id>/", views.night, name="night"),
+    path("n/<int:night_id>/state/", views.night_state, name="night_state"),
     path("s/<int:session_id>/", views.session, name="session"),
     path("s/<int:session_id>/state/", views.session_state, name="session_state"),
     path("s/<int:session_id>/log/", views.session_log, name="session_log"),

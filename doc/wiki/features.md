@@ -175,7 +175,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The transfer list excludes rake already collected at buy-in. It assumes no earlier player payments. A player payment during the game cannot be recorded yet.
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
-- The session page does not refresh by itself; the set page does.
+- Your groups and the group page do not refresh by themselves; the set page and the session page do.
 - No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
 - No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
 - On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
@@ -524,3 +524,15 @@ After every sign-up or login in a phone's browser, a sheet suggests putting Poke
 - **Join with a link.** Inside the installed app, Your groups has a field to paste an invite, claim or reset link copied from a chat, because an iPhone opens tapped links in the browser. A link to another site, or to another kind of page, is refused in words. Paste appears where the phone allows reading the clipboard.
 - The page cannot tell that the app is installed when it is opened in the browser, so a person who installed it and logs in from the browser again is asked again unless they said Done there.
 - Switch: `INSTALL_PROMPT=False` removes the sheet, the button and the link field. Check: `web/tests/browser/install_prompt.mjs` with `seed_install.py`.
+
+## The session page updates by itself (2026-10-11)
+
+Everyone with a session page open sees what another person does within about 5 seconds, without a reload. [Plan](../plan/1791706983_session_page_live.md).
+
+- **What arrives:** a transfer marked paid or unpaid (the row settles as it does for the host, and the counts follow), the session closed (the recap then opens by itself once, as on a fresh load) or reopened, a set started, moved on, finalized or reopened, the session archived.
+- **What is kept:** the scroll position, open disclosures, and anything typed.
+- **It waits** while a sheet is open (recap, share, reopen) or a field has focus or unsaved typing, and lands within a second of that ending.
+- **How often:** every 5 seconds; every 20 after two minutes with no change; not at all while the tab or the phone's screen is off, and at once on return. After a failed request it tries again more slowly, up to 30 seconds.
+- An archived session is not asked about. Without JavaScript the page is as before.
+- A buy-in or cash-out in a set does not redraw the session page; it shows nothing from them until the set is finalized.
+- Check: `web/tests/browser/night_live.mjs` with `seed_reopen.py`.
