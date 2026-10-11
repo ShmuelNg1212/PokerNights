@@ -4,6 +4,12 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Seat draw before a set starts ([plan](doc/plan/1791717121_seat_draw.md), [study](doc/study/1791717120_seat_draw.md)): built on `feat/seat-draw` on 2026-10-11. One migration that adds two tables. `SEAT_DRAW=False` turns it off.
+
+- [ ] After release, with two phones on an open set with at least three players: as the host tap Draw on the Seat draw step. Both phones should play the draw and name the same dealer.
+- [ ] Tap a seat (on the winner's phone, or on the host's for them). Both phones should deal everyone to the same seats. Say whether the draw is the right length and whether it feels like a draw.
+- [ ] Start the set and check the "Seats" line under the pot. Add a late player and seat them.
+
 The session recap opens at its top ([plan](doc/plan/1791715366_recap_opens_at_bottom.md), [study](doc/study/1791715365_recap_opens_at_bottom.md)): built on `fix/recap-opens-at-top` on 2026-10-11. Released 2026-10-11 as `f3b321f` (previous production commit `1da9bfd`); the live `sheets.js` carries the fix. No migration. Phone acceptance is open.
 
 - [ ] After release, on your phone: open a closed session and tap "View session recap". It should show its first line. Scroll to the end, tap "Share results": the share sheet should also start at its top.

@@ -3,6 +3,9 @@
 import datetime
 import uuid
 
+import secrets
+
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
@@ -16,7 +19,8 @@ from groups.services import clean_name, add_roster_player, lock_group
 
 from . import clock
 from .models import (
-    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, SettingsPreset, SettingsVersion, StakesFields, Table, Unit,
+    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, SeatDraw, SeatPlace, SettingsPreset, SettingsVersion,
+    StakesFields, Table, Unit,
 )
 
 
@@ -324,6 +328,9 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
         session.start_request_id = request_id
     now = timezone.now()
     if action == "start":
+        # A draw nobody chose a seat for: the dealer takes the top seat, so play never waits for it.
+        SeatDraw.objects.filter(session=session, is_current=True, stale=False, dealer_seat__isnull=True).update(dealer_seat=0, chosen_at=now)
+    if action == "start":
         session.started_at = session.started_at or now
         clock.start(session, now)
     elif action == "resume":
@@ -629,6 +636,7 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
         summary=f"{member.display_name} joined" if is_self else f"Added {member.display_name}",
     )
+    _table_changed(session)
     touch(session)
     return participant
 
@@ -745,6 +753,8 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
         added.append(participant)
     batch = ParticipantBatch.objects.create(session=session, request_id=request_id, added_by=actor.user)
     batch.participants.set(added)
+    if added:
+        _table_changed(session)
     touch(session)
     return added
 
@@ -777,6 +787,7 @@ def withdraw_participant(session_id, actor: Member, participant_id) -> Participa
         "participant.withdrawn", actor=actor.user, group_id=session.group_id, session_id=session.pk,
         target=participant, summary=f"{participant.member.display_name} was taken out of the set",
     )
+    _table_changed(session)
     touch(session)
     return participant
 
@@ -820,3 +831,138 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
     )
     touch(session)
     return participant
+
+
+# --- Seat draw ---------------------------------------------------------------
+
+SEATS_OFF = "The seat draw is switched off."
+
+
+def _table_changed(session) -> None:
+    """The players at the table changed before the start: a draw made for the earlier table no longer fits."""
+    if session.state in (State.SETUP, State.OPEN):
+        SeatDraw.objects.filter(session=session, is_current=True, stale=False).update(stale=True)
+
+
+def _current_draw(session):
+    return SeatDraw.objects.filter(session=session, is_current=True).first()
+
+
+@transaction.atomic
+def draw_seats(session_id, actor: Member, request_id) -> SeatDraw:
+    """Draw the dealer and the order around the table for an open set. A host's action.
+
+    The first drawn player is the dealer; the others sit 1, 2, 3… places clockwise. An
+    earlier draw is kept and stops being the current one. A repeated request draws nothing.
+    """
+    require_host(actor)
+    if not settings.SEAT_DRAW:
+        raise RuleError(SEATS_OFF)
+    session = lock_session(session_id, actor.group_id)
+    request_id = uuid.UUID(str(request_id))
+    again = SeatDraw.objects.filter(request_id=request_id).first()
+    if again is not None:
+        if again.session_id != session.pk:
+            raise RuleError("That request belongs to another set.")
+        return again
+    if session.state != State.OPEN:
+        raise RuleError("Seats are drawn while the set is open, before it starts.")
+    players = list(session.participants.filter(status=Participant.Status.JOINED).select_related("member").order_by("join_order"))
+    if len(players) < 2:
+        raise RuleError("A seat draw needs at least two players at the table.")
+    secrets.SystemRandom().shuffle(players)
+    number = session.seat_draws.count() + 1
+    session.seat_draws.filter(is_current=True).update(is_current=False)
+    draw = SeatDraw.objects.create(session=session, number=number, drawn_by=actor.user, request_id=request_id)
+    SeatPlace.objects.bulk_create(
+        [SeatPlace(draw=draw, participant=player, rank=index * SeatPlace.STEP) for index, player in enumerate(players)]
+    )
+    names = [player.member.display_name for player in players]
+    audit.record(
+        "seats.drawn", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=draw,
+        summary=f"Drew seats{' again' if number > 1 else ''}: {names[0]} has the dealer seat",
+        data={"order": names, "draw": number},
+    )
+    touch(session)
+    return draw
+
+
+@transaction.atomic
+def choose_seat(session_id, actor: Member, seat, request_id) -> SeatDraw:
+    """The dealer takes a seat on the drawn table: their own choice, or a host's for them.
+
+    ``seat`` counts from 0 at the top of the table. Everyone else follows clockwise in the drawn order.
+    """
+    if not settings.SEAT_DRAW:
+        raise RuleError(SEATS_OFF)
+    session = lock_session(session_id, actor.group_id)
+    request_id = uuid.UUID(str(request_id))
+    draw = _current_draw(session)
+    if draw is None or draw.stale:
+        raise RuleError("There is no seat draw to choose a seat in. Ask a host to draw.")
+    if draw.choice_request_id == request_id:
+        return draw
+    places = list(draw.places.select_related("participant__member").order_by("rank"))
+    dealer = places[0].participant
+    if not actor.is_host and dealer.member_id != actor.pk:
+        raise RuleError(f"{dealer.member.display_name} has the dealer seat and chooses, or a host for them.")
+    if draw.dealer_seat is not None:
+        raise RuleError("The dealer's seat is already chosen.")
+    if session.state != State.OPEN:
+        raise RuleError("The seat is chosen while the set is open, before it starts.")
+    try:
+        seat = int(seat)
+    except (TypeError, ValueError):
+        raise RuleError("Choose a seat on the table.") from None
+    if not 0 <= seat < len(places):
+        raise RuleError("Choose a seat on the table.")
+    draw.dealer_seat, draw.chosen_by, draw.chosen_at, draw.choice_request_id = seat, actor.user, timezone.now(), request_id
+    draw.save(update_fields=["dealer_seat", "chosen_by", "chosen_at", "choice_request_id"])
+    own = dealer.member_id == actor.pk
+    audit.record(
+        "seats.chosen", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=draw,
+        summary=f"{dealer.member.display_name} took seat {seat + 1}" if own else f"Chose seat {seat + 1} for {dealer.member.display_name}",
+        data={"seat": seat + 1, "draw": draw.number},
+    )
+    touch(session)
+    return draw
+
+
+@transaction.atomic
+def seat_late_player(session_id, actor: Member, participant_id, after_participant_id, request_id) -> SeatPlace:
+    """Seat a player who joined after the draw, in the place clockwise after another seated player. A host's action."""
+    require_host(actor)
+    if not settings.SEAT_DRAW:
+        raise RuleError(SEATS_OFF)
+    session = lock_session(session_id, actor.group_id)
+    request_id = uuid.UUID(str(request_id))
+    again = SeatPlace.objects.filter(request_id=request_id).first()
+    if again is not None:
+        return again
+    draw = _current_draw(session)
+    if draw is None or draw.stale or draw.dealer_seat is None:
+        raise RuleError("This set has no seating to add a player to.")
+    if session.state != State.RUNNING:
+        raise RuleError("A late player is seated while the set is in play.")
+    participant = _participant(session, participant_id)
+    if participant.status != Participant.Status.JOINED:
+        raise RuleError(f"{participant.member.display_name} is not at the table.")
+    places = list(draw.places.select_related("participant__member").order_by("rank"))
+    if any(place.participant_id == participant.pk for place in places):
+        raise RuleError(f"{participant.member.display_name} already has a seat.")
+    at = next((index for index, place in enumerate(places) if str(place.participant_id) == str(after_participant_id)), None)
+    if at is None:
+        raise RuleError("Choose the player they sit after.")
+    lower = places[at].rank
+    upper = places[at + 1].rank if at + 1 < len(places) else lower + 2 * SeatPlace.STEP
+    if upper - lower < 2:
+        raise RuleError("There is no room left between those two players. Choose another place.")
+    place = SeatPlace.objects.create(
+        draw=draw, participant=participant, rank=(lower + upper) // 2, late=True, placed_by=actor.user, request_id=request_id,
+    )
+    audit.record(
+        "seats.late", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=place,
+        summary=f"Seated {participant.member.display_name} after {places[at].participant.member.display_name}",
+    )
+    touch(session)
+    return place

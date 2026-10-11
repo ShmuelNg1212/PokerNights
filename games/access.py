@@ -8,7 +8,9 @@ from groups.access import member_for
 
 from groups.models import Member
 
-from .models import GameNight, GameSession
+from django.db.models import Exists, OuterRef
+
+from .models import GameNight, GameSession, SeatDraw
 
 
 def read_only(member):
@@ -23,7 +25,12 @@ def session_for(user, session_id) -> tuple[GameSession, object]:
 
     A session in setup is a draft: only hosts can see it.
     """
-    session = GameSession.objects.select_related("table", "group", "night").filter(pk=session_id).first()
+    # Whether a seat draw exists rides on this query, so a set without one pays nothing to find that out.
+    session = (
+        GameSession.objects.select_related("table", "group", "night")
+        .annotate(has_seat_draw=Exists(SeatDraw.objects.filter(session=OuterRef("pk"), is_current=True)))
+        .filter(pk=session_id).first()
+    )
     if session is None:
         raise Http404("Not found")
     member = member_for(user, session.group_id)

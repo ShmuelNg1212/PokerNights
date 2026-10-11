@@ -176,7 +176,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - A group's Stats and Group settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.
-- No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
+- No banker mode and no seasons. Seating is the optional seat draw (see “Seat draw”); the app does not follow the dealer button hand by hand. Stats have no minimum-session threshold, average result or ROI yet.
 - No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
 - On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
 
@@ -557,3 +557,22 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 - **How often:** as the session page: every 5 seconds, every 20 after two quiet minutes, not while hidden, at once on return.
 - The page asks once as it starts and takes that answer as its starting point. A change made in the instant between the page being drawn and that answer shows at the next change or visit.
 - Check: `web/tests/browser/hub_live.mjs` with `seed.py`.
+
+## Seat draw (2026-10-11)
+
+[Plan](../plan/1791717121_seat_draw.md), [study](../study/1791717120_seat_draw.md). Optional. A set starts without it.
+
+- **Where.** An open set with two or more players. "Get this set ready" has an optional step, **Seat draw**, between Open for players and Start the set, with a **Draw** button for a host. Start the set stays the one main button.
+- **The draw.** The server shuffles the players at the table (`secrets.SystemRandom`). The first is the dealer; the others sit 1, 2, 3… places clockwise. Each phone plays back that one result, so no two phones can differ.
+- **The stage.** A full-screen sheet opens by itself on the host's phone at once and on every other phone on the set page at its next update: a drawn table with every player's chip around it, a dealer disc that runs around the ring, slows, passes the winner by one and springs back (about four seconds), then "{Name} has the dealer seat". A tap skips the part that is playing. Close and Escape leave it; closing counts as having watched.
+- **The seat.** The table has one seat per player. The dealer taps any seat on their own phone, or a host taps for them. Everyone else reads "{Name} is choosing a seat". Nobody else's choice is accepted, and a second choice is refused.
+- **The seating.** The dealer goes to the tapped seat with the disc; the others are dealt out clockwise in the drawn order, about an eighth of a second apart. Each lands with its first-hand position: dealer, small blind, big blind, under the gun, middle, hijack, cutoff (with two players the dealer is the small blind). The viewer's own chip is ringed and the line says "You are in seat N: {position} on the first hand."
+- **On the page afterwards.** A still table with the same seats and the dealer disc, a list clockwise from the dealer with each position, and "Watch the draw". In play the table folds into one line, "Seats · {Name} dealt first", and the list gives seat numbers; positions are for the first hand only.
+- **Start without a choice.** If the set starts before a seat is chosen, the dealer takes the top seat.
+- **Draw again** (host, before the start) replaces the draw for everyone. The earlier draw is kept, not current; the set log has both.
+- **The table changes before the start** (a player joins or is taken off): the draw is marked out of date, the page says "The table changed." and a host can draw again.
+- **Late and gone.** A player who joins in play has no seat until a host chooses "Seat {name} after {player}"; no earlier place is rewritten. A player marked as left keeps their seat, shown as away.
+- **Each set has its own draw.** Seats are not carried to the next set.
+- **When a phone plays it.** Once per draw and browser, and only when it learns of the draw from an update or within two minutes of it; a phone that opens the page later sees the table. While a draw waits for a seat the set page asks the server every 1.5 seconds for those two minutes, so the phones seat within about a second and a half of each other.
+- **Without JavaScript** Draw and the seats are ordinary forms and the result is the still table and the list. **Reduced motion** shows each result at once.
+- Switch: `SEAT_DRAW=False` hides the step and the table and makes the three services refuse. Check: `web/tests/browser/seat_draw.mjs` with `seed_seat_draw.py`.

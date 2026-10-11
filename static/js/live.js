@@ -13,6 +13,7 @@
 
   var statusLine = document.getElementById("live-status");
   var BASE_MS = 4000;
+  var FAST_MS = 1500;
   var MAX_MS = 30000;
   var version = region.dataset.version;
   var delay = BASE_MS;
@@ -82,7 +83,9 @@
 
   function schedule() {
     clearTimeout(timer);
-    if (!stopped && !document.hidden) timer = setTimeout(poll, delay);
+    // While a seat draw waits for the dealer's seat the page asks more often, so every phone seats together.
+    var soon = delay === BASE_MS && region.querySelector("[data-poll-fast]");
+    if (!stopped && !document.hidden) timer = setTimeout(poll, soon ? FAST_MS : delay);
   }
 
   function poll() {

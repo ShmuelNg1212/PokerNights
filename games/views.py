@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -167,6 +168,38 @@ def participants_add(request, session_id):
         "request_id": uuid.uuid4(),
     }
     return render(request, "games/add_players.html", context)
+
+
+@require_POST
+def seat_draw(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.draw_seats, session.pk, actor, request_id_from(request))
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def seat_choose(request, session_id):
+    """The dealer's seat. The draw stage (seats.js) sends it in the background and reads the answer."""
+    session, actor = session_for(request.user, session_id)
+    seat, key = request.POST.get("seat"), request_id_from(request)
+    if request.headers.get("X-Requested-With") != "fetch":
+        attempt(request, services.choose_seat, session.pk, actor, seat, key)
+        return redirect("session", session_id=session.pk)
+    try:
+        draw = services.choose_seat(session.pk, actor, seat, key)
+    except RuleError as error:
+        return JsonResponse({"error": str(error)}, status=409)
+    return JsonResponse({"draw": draw.pk, "seat": draw.dealer_seat})
+
+
+@require_POST
+def seat_late(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(
+        request, services.seat_late_player, session.pk, actor,
+        request.POST.get("participant_id"), request.POST.get("after"), request_id_from(request),
+    )
+    return redirect("session", session_id=session.pk)
 
 
 @require_POST
