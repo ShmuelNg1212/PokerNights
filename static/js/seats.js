@@ -33,12 +33,16 @@ var dialog = document.createElement("dialog");
 dialog.className = "seat-stage"; dialog.setAttribute("aria-labelledby", "seat-stage-title");
 dialog.innerHTML = '<div class="stage-head"><h2 id="seat-stage-title">Seat draw</h2><button type="button" class="btn btn-round" data-stage-close aria-label="Close the seat draw">' + CLOSE_ICON + '</button></div>' +
 '<div class="stage-words"><p class="stage-line" aria-live="polite"></p><p class="stage-sub"></p></div>' +
-'<div class="stage-room"><div class="stage-table"><div class="seat-rail" aria-hidden="true"><div class="seat-felt"><span class="seat-line"></span><img class="seat-mark" alt="" width="52" height="52"><span class="stage-dim"></span><span class="stage-light"></span></div><span class="stage-glow"></span></div>' +
+'<div class="stage-room"><div class="stage-table"><div class="seat-rail" aria-hidden="true"><div class="seat-felt"><span class="seat-line"></span><span class="stage-dim"></span><span class="stage-light"></span></div><span class="stage-glow"></span></div>' +
 '<div class="stage-chairs" aria-hidden="true"></div><div class="stage-seats"></div><div class="stage-tokens"></div><span class="stage-burst" aria-hidden="true"></span><span class="stage-disc" aria-hidden="true">D</span></div></div>' +
 '<div class="stage-actions"><button type="button" class="btn btn-primary btn-block" data-stage-done hidden>Done</button><p class="stage-hint" data-stage-hint hidden>Tap to skip</p></div>';
 // Inside the container Turbo keeps: a form answered in place redraws the body, and a dialog left in it would be removed.
-var brand = document.querySelector(".brand img"), mark = dialog.querySelector(".seat-mark");
-if (brand) mark.src = brand.src; else mark.remove();
+// The app's mark on the felt, under the dimming and the light: the image the top bar already loaded.
+var brand = document.querySelector(".brand img");
+if (brand) {
+var mark = new Image(52, 52); mark.className = "seat-mark"; mark.alt = ""; mark.src = brand.src;
+dialog.querySelector(".seat-line").after(mark);
+}
 (document.getElementById("table-sheets") || document.body).appendChild(dialog);
 return dialog;
 }
