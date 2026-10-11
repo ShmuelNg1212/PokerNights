@@ -199,6 +199,8 @@ ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 TABLE_REVAMP = env.bool("TABLE_REVAMP", default=True)
 # The one-line count-up. False returns the earlier count-up for one release.
 COUNT_REVAMP = env.bool("COUNT_REVAMP", default=True)
+# Turn off to hide Reopen set and Reopen session and refuse both (see settlement/services.py).
+REOPENING = env.bool("REOPENING", default=True)
 # Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 STORAGES = {

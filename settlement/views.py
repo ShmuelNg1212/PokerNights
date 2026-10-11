@@ -30,6 +30,22 @@ def close_night(request, night_id):
 
 
 @require_POST
+def reopen_set(request, session_id):
+    session, actor = session_for(request.user, session_id)
+    attempt(request, services.reopen_set, session.pk, actor, request.POST.get("reason", ""),
+            success=f"Set {session.set_number} is counting up again. Correct it, then finalize.")
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def reopen_night(request, night_id):
+    night, actor = night_for(request.user, night_id)
+    attempt(request, services.reopen_night, night.pk, actor, request.POST.get("reason", ""),
+            success="The session is open again. Close it when the results are right.")
+    return redirect("night", night_id=night.pk)
+
+
+@require_POST
 def transfer_paid(request, night_id, transfer_id):
     night, actor = night_for(request.user, night_id)
     attempt(request, services.mark_paid, night.pk, actor, transfer_id, request_id_from(request))

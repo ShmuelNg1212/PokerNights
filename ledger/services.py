@@ -131,10 +131,14 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
     repeated = BuyIn.objects.filter(session=session, request_id=request_id).first()
     if repeated is not None:
         return repeated
-    if session.state not in BUY_IN_STATES:
+    # A reopened set is being corrected: the host may add a buy-in that was never recorded.
+    correcting = actor.is_host and is_reopened(session)
+    if session.state not in BUY_IN_STATES and not correcting:
         raise RuleError("Buy-ins can be recorded only while the set is open or running.")
     participant = _participant(session, participant_id) if actor.is_host else _own_participant(session, actor, participant_id)
-    if participant.status != Participant.Status.JOINED:
+    if participant.status != Participant.Status.JOINED and not (
+        correcting and participant.status == Participant.Status.LEFT
+    ):
         raise RuleError(f"{participant.member.display_name} is not at the table.")
     if not actor.is_host:
         if not _accepted_buy_ins(session).filter(participant=participant).exists():
@@ -154,7 +158,8 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
             else current.rake_flat if current.rake_mode == "flat" else 0)
     if not 0 <= rake < amount:
         raise RuleError("Rake must leave a positive amount in play. Increase the buy-in or change rake before recording money.")
-    _back_in_play(participant, actor)
+    if not correcting:  # a missed buy-in was played before the cash-out, which stands
+        _back_in_play(participant, actor)
     if session.state == State.RUNNING:
         games.clock.open_interval(participant, timezone.now())
     buy_in = BuyIn.objects.create(
@@ -640,6 +645,24 @@ def write_results(session: GameSession, actor: Member) -> Finalization:
         )
         for line, net in zip(lines, nets)
     )
+    return finalization
+
+
+def is_reopened(session: GameSession) -> bool:
+    """True while a set that was finalized is counting up again."""
+    return session.state == State.RECONCILIATION and session.finalizations.exists()
+
+
+def void_results(session: GameSession, actor: Member, reason: str) -> Finalization:
+    """Retire the current results of a set that is being reopened. Call with the session locked.
+
+    The rows stay, marked not current; finalizing again writes the next revision.
+    """
+    finalization = session.finalizations.get(is_current=True)
+    PlayerResult.objects.filter(finalization=finalization, is_current=True).update(is_current=False)
+    finalization.is_current = False
+    finalization.voided_at, finalization.voided_by, finalization.void_reason = timezone.now(), actor.user, reason
+    finalization.save(update_fields=["is_current", "voided_at", "voided_by", "void_reason"])
     return finalization
 
 

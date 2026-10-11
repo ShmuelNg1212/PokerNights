@@ -5,6 +5,8 @@ from . import views
 urlpatterns = [
     path("g/<int:group_id>/members/<int:member_id>/remove/", views.member_remove, name="member_remove"),
     path("s/<int:session_id>/finalize/", views.finalize, name="session_finalize"),
+    path("s/<int:session_id>/reopen/", views.reopen_set, name="session_reopen"),
+    path("n/<int:night_id>/reopen/", views.reopen_night, name="night_reopen"),
     path("n/<int:night_id>/close/", views.close_night, name="night_close"),
     path("n/<int:night_id>/archive/", views.night_archive, name="night_archive"),
     path("n/<int:night_id>/restore/", views.night_restore, name="night_restore"),

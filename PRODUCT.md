@@ -73,7 +73,7 @@ An invite link is the way in. A signed-out visitor who opens one creates an acco
 
 On a phone, typed numbers use the app's own number keys: amounts, final counts, stakes, rake and seats. The phone's keyboard stays for text. The keys only offer what the field can take, so a chips amount has no decimal point. The environment variable `NUMPAD=False` returns to the phone's keyboard.
 
-Ending a set is arranged around the host's task. The players' count fields come first, one running total is always in view, and one main button names the next step. Before cash-outs are recorded the review says whether the books will balance. Finalizing asks once, because the app cannot reopen a finalized set. The final page opens with what went in, what came out and that the two agree. Accounting, permissions and what each step records are unchanged. [Plan](doc/plan/1791202390_host_gaps_numpad_count_up.md).
+Ending a set is arranged around the host's task. The players' count fields come first, one running total is always in view, and one main button names the next step. Before cash-outs are recorded the review says whether the books will balance. Finalizing asks once. (Since 2026-10-11 a host can reopen a finalized set; see the reopening addendum.) The final page opens with what went in, what came out and that the two agree. Accounting, permissions and what each step records are unchanged. [Plan](doc/plan/1791202390_host_gaps_numpad_count_up.md).
 
 ## 2026-10-06 addendum — Password reset link
 
@@ -114,3 +114,7 @@ The recap of a closed session tells the whole night from frozen results: the top
 ## 2026-10-10 addendum — Count-up and settle-up
 
 Counting up, a host sees one line per player with the count field on it, so a table of six fits a phone screen. After a session closes, a player reads what they pay or receive first and the host reads the table's total; every transfer is one row with its Paid mark. Records and housekeeping are one tap further. Nothing about what a count, a cash-out or a payment records has changed. [Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md).
+
+## 2026-10-11 addendum — Reopening
+
+A host can reopen a finalized set to correct a count, a cash-out or a buy-in, and reopen a closed session to correct a set or play another. Each asks for a reason, which everyone on the page sees. Earlier results and the earlier transfer list are kept and marked replaced; nothing recorded is removed. A session with a transfer marked paid is not reopened until the mark is removed, so no list has to account for money that already moved. While reopened, the results are left out of the totals and the stats. [Plan](doc/plan/1791699815_reopen_set_and_session.md).

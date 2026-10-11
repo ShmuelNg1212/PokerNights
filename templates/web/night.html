@@ -22,6 +22,7 @@
       {% include "web/_night_lead.html" %}
       {% else %}
       <h2>Session open</h2>
+      {% if reopening %}{% include "web/_correction.html" with record=reopening lead="Reopened." %}{% endif %}
       <p class="felt-hint">Who pays whom is worked out when the host closes the session.</p>
       {% if latest_set %}<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
       <dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>
@@ -61,6 +62,7 @@
     <section aria-labelledby="transfers-title">
       <h2 id="transfers-title">Who pays whom</h2>
       <p class="small muted">The app records payments; it does not move money.</p>
+      {% if replaced_plans %}{% with last=replaced_plans|last %}<p class="small muted">Worked out again after the session was reopened on {{ last.voided_at|date:"M j" }}. This list replaces the earlier one.</p>{% endwith %}{% endif %}
       <ul class="transfer-list">
         {% for t in outcome.transfers %}
         {% with figure=t.amount|amount:unit %}<li class="transfer-row transfer-line{% if figure|length > 10 %} is-wide{% endif %}{% if t.paid %} is-paid{% endif %}{% if t.payer_id == me.pk or t.payee_id == me.pk %} is-mine{% endif %}{% if me.is_host %} has-action{% endif %}" data-transfer="{{ t.pk }}" data-paid="{% if t.paid %}1{% else %}0{% endif %}">
@@ -98,6 +100,16 @@
       </details>
     </section>
     {% endif %}
+    {% if replaced_plans %}
+    <section aria-labelledby="replaced-title">
+      <details class="night-records" data-key="replaced-lists"><summary><h2 id="replaced-title">Earlier transfer lists <span class="muted small">{{ replaced_plans|length }}</span></h2>{% icon 'chevron-down' %}</summary>
+      {% for plan in replaced_plans %}
+      <p class="small replaced-head"><span class="badge">Replaced</span> Listed {{ plan.created_at|date:"M j, H:i" }} · reopened {{ plan.voided_at|date:"M j, H:i" }} by {{ plan.voided_by.username }}<br><span class="muted">Reason: {{ plan.void_reason }}</span></p>
+      <ul class="list small payment-records">{% for t in plan.transfers.all %}<li><span class="struck">{{ t.payer.display_name }} pays {{ t.payee.display_name }} {{ t.amount|amount:unit }}</span></li>{% empty %}<li class="muted">No transfer was needed.</li>{% endfor %}</ul>
+      {% endfor %}
+      </details>
+    </section>
+    {% endif %}
     {% if recap %}
     <section class="sheet-source recap-source" data-sheet-source="recap" data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
       <h2>Session recap</h2>
@@ -121,6 +133,31 @@
       {% else %}
         <p class="small muted">Archiving hides the session and takes it out of the totals. It can be restored.</p>
         <a class="btn btn-block" href="{% url 'night_archive' night.pk %}">Archive session</a>
+      {% endif %}
+      {% if reopen %}
+        {% if reopen.paid %}
+        <p class="small muted">To reopen the session, no transfer may be marked paid. {{ reopen.paid }} transfer{{ reopen.paid|pluralize:" is,s are" }} marked paid. Mark {{ reopen.paid|pluralize:"it,them" }} unpaid first.</p>
+        {% else %}
+        <p class="small muted">Reopen the session to play another set or to correct one. Who pays whom is worked out again when you close it.</p>
+        <button hidden type="button" class="btn btn-block reopen-opener" data-sheet-open="reopen-night">Reopen session</button>
+        <details class="sheet-source" data-key="reopen-night" data-sheet-source="reopen-night" data-title="Reopen this session?">
+          <summary class="btn btn-block">Reopen session</summary>
+          <div class="sheet-content stack">
+            <ul class="reopen-effects">
+              <li>The session is open again: start another set, or reopen a set to correct it.</li>
+              <li>The transfer list goes away. Closing the session writes a new one.</li>
+              <li>The session leaves the stats and “to settle” until it is closed again.</li>
+            </ul>
+            <form method="post" action="{% url 'night_reopen' night.pk %}" class="stack" data-once>{% csrf_token %}
+              <div class="field"><label for="reopen-night-reason">Why reopen it?</label>
+                <input id="reopen-night-reason" type="text" name="reason" data-sheet-focus maxlength="255" required autocomplete="off" aria-describedby="reopen-night-help">
+                <p class="hint" id="reopen-night-help">Everyone in the session sees this. It stays in the log.</p></div>
+              <button type="submit" class="btn btn-primary btn-block">Reopen session</button>
+            </form>
+            <button hidden type="button" class="btn btn-quiet btn-block sheet-cancel" data-sheet-close>Keep it closed</button>
+          </div>
+        </details>
+        {% endif %}
       {% endif %}
       {% if manage.has_records %}
         <p class="small muted">Money was recorded here, so the session cannot be deleted.</p>

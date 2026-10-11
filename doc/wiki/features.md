@@ -173,7 +173,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 
 - The app records who owes what. It does not move money.
 - The transfer list excludes rake already collected at buy-in. It assumes no earlier player payments. A player payment during the game cannot be recorded yet.
-- A finalized set and a closed session cannot be reopened. Check the cash-outs before finalizing.
+- A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - The session page does not refresh by itself; the set page does.
 - No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
@@ -480,3 +480,18 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - `templates/web/night.html`, `_night_lead.html`, `static/js/settle.js`; `settlement.queries.NightOutcome.part_for()` gives the viewer's part from the transfers already loaded.
 - The open session page keeps its overview; its Manage section is at the end of the page too.
 - Check: `night.mjs`.
+
+## Reopen a set or a session (2026-10-11)
+
+A host can take back a finalized set or a closed session to correct a mistake or to keep playing. Nothing recorded is removed. [Plan](../plan/1791699815_reopen_set_and_session.md).
+
+- **Reopen set.** On a finalized set's page, under “Found a mistake?”. A sheet lists what happens and asks what needs correcting; the reason is required. The set returns to counting up. Reverse a cash-out or a buy-in, count again, cash out, and finalize: the results are revision 2. The earlier revision stays in the set log, struck and marked Replaced, with the reason.
+- **A missed buy-in.** While a reopened set is counting up, a player's sheet has “Add a missed buy-in” for the host. It adds the buy-in (and its rake) and leaves the player's cash-out as it is. An ordinary count-up still refuses buy-ins.
+- **Reopen session.** In “Manage this session” on a closed session. Refused while any transfer is marked paid: mark those unpaid first. The session is open again: start another set, or reopen a set. The transfer list is retired and kept under “Earlier transfer lists”; closing writes a new one, every transfer unpaid.
+- **Order.** A set of a closed session cannot be reopened by itself. Its page says to reopen the session first.
+- **While reopened.** A reopened set is left out of the session's results. A reopened session is left out of the stats and of “to settle” on the home page. Both return, corrected, after finalize and close.
+- **What everyone sees.** A brass line on the page: “Reopened to correct.” with the reason, who and when; “Corrected.” on the final page of a set finalized again; “Reopened.” on the open session. On a set page the line's rule draws once per reopening and browser.
+- Resume play is available on a reopened set only when no later set of the session has started, as before.
+- The closing recap does not open by itself a second time; “View session recap” shows the corrected figures.
+- With `COUNT_REVAMP=False` the earlier count-up has no “Add a missed buy-in”.
+- Switch: `REOPENING=False` hides both controls and makes both services refuse. Check: `web/tests/browser/reopen.mjs` with `seed_reopen.py`.

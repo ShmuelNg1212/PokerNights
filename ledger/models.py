@@ -273,6 +273,12 @@ class Finalization(models.Model):
     settings_snapshot = models.JSONField()
     finalized_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
+    # Filled when the host reopens the set: who, when and why these results stopped being current.
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    void_reason = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["session", "revision"]

@@ -882,6 +882,19 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Motion.** When the server accepts Mark paid, the row's tick is drawn over 320ms, its names and amount settle from Bone to Bone Dim over 520ms, and the progress bar moves to the new amount over 420ms where the browser can animate it. The figures change at once. When the last transfer is paid, "Settled" arrives once per session in that browser: its tick is drawn and a green double rule, the one the balanced books use, is drawn from the left under it. Reduced motion shows each state at once.
 - **Measured.** `night.mjs`, 83 checks. At 390 × 844 as a host: the overview 204 to 224px (was 361), the first transfer at 417px (was 750), four whole transfers on the first screen, a session with five transfers 2,030px (was 3,116). As a player: the overview 292 to 336px (was 539).
 
+### Reopening (2026-10-11)
+
+[Plan](doc/plan/1791699815_reopen_set_and_session.md). No new colour, font, asset or motion preset.
+
+- **Reopen set** sits last in the final page's left column, under a Line rule: a 14px heading “Found a mistake?”, one muted sentence and a quiet full-width button. It never competes with “Next set or settle up”. In a closed session the button is “Go to the session” and the sentence says why.
+- **Reopen session** is a neutral button in “Manage this session”, after Archive, with its own sentence. With a paid mark the sentence says what to do and no button appears, as the archive rules have it.
+- **The two sheets** reuse the finalize confirmation: a question as the title, three consequences as Rule-separated lines, one labelled reason field with a help line, a primary button that names the action, and a quiet “Keep it final” or “Keep it closed”. Focus starts in the reason field; an empty reason is stopped by the browser.
+- **The reason line** (`.correction`) lives on the felt under the date line: a 2px Brass rule across the panel, a Brass bold lead (“Reopened to correct.”, “Corrected.”, “Reopened.”), the reason in quotation marks in Bone, and who and when in felt ink at 13px. Brass is the system's “this changed” colour.
+- **Motion.** One moment, once per reopening and browser, on the set page only: the Brass rule draws from the left (`mark-draw`, the sheet time, ease-out) and the reason rises 8px with the `shift` spring 180ms later. It mirrors the books balancing. The change of screen itself is the existing fade. Reduced motion shows the line still.
+- **Add a missed buy-in** is a quiet disclosure in a player's sheet during a reopened count-up, holding one sentence and the usual buy-in form.
+- **Replaced records.** Earlier results in the set log and earlier transfer lists on the session page are struck, under a “Replaced” badge with the reason. Earlier transfer lists are a closed disclosure beside Payment records.
+- **Measured.** `reopen.mjs`, 24 checks at 390 and 1280px: 48px targets, no horizontal overflow, focus, the one-time arrival and its absence after a reload, 4.5:1 for the three text colours of the reason line on the felt, reduced motion, the paid-mark refusal, and a player's view.
+
 ## Do's and Don'ts
 
 ### Do:

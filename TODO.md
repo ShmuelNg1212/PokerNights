@@ -4,6 +4,16 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Reopen a set or a session ([plan](doc/plan/1791699815_reopen_set_and_session.md), [study](doc/study/1791699745_reopen_set_and_session.md)): built on `feat/reopen` on 2026-10-11. Not merged, not pushed. Two migrations (`ledger 0014`, `settlement 0007`) run on release; run the PostgreSQL suite first.
+
+- [ ] After release, as a host on a finalized set of an open session: tap Reopen set, give a reason, and watch the set come back to counting up with the brass line.
+- [ ] Reverse one cash-out, count again, cash out and finalize. The final page should say "Corrected." with your reason; the set log should show the earlier results struck under "Replaced".
+- [ ] In a reopened set, tap a player's name and add a missed buy-in. Their cash-out should stay.
+- [ ] On a closed session with a transfer marked paid: Manage this session should say to mark it unpaid first, with no button.
+- [ ] Mark it unpaid, reopen the session, start another set, finalize it and close. The transfer list should be new; the earlier one should be under "Earlier transfer lists".
+- [ ] As a player on another phone: you should see the reason line and no reopen control.
+- [ ] Say if the reason line is too loud or too quiet on the felt.
+
 Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11. Released 2026-10-11 as `800e29e` (previous production commit `08a49b5`); the live site serves `pot.js` and the new styles. The roll itself was not watched on the live site from here. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite and PostgreSQL 17; `pot.mjs` 53 of 53. Not seen on a phone.
 
 - [ ] After release, with two phones on a set in play: rebuy on one and watch the pot on the other. The changed digits should roll up and "+₱500" should show beside "Still in play".

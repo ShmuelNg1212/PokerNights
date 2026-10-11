@@ -1533,3 +1533,23 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
   .settle-arrived .icon path { stroke-dasharray: 24; animation: tick-draw 320ms var(--ease-out) both; }
   .settle-arrived + .settled-rule { animation: books-rule 420ms var(--ease-out) 120ms both; }
 }
+
+/* Reopening a set or a session (2026-10-11). The reason line reuses the brass "this changed" mark;
+   its rule draws once when the set comes back (changes.js), as the books' rule does when they balance. */
+.correction { position: relative; margin: 0 0 var(--s-4); padding-top: 10px; font-size: .875rem; overflow-wrap: anywhere; }
+.correction::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--brass); transform-origin: left; }
+.correction strong { color: var(--brass); }
+.correction q { quotes: "\201C" "\201D"; }
+.correction-by { display: block; margin-top: 2px; color: var(--felt-ink); font-size: .8125rem; }
+.reopen-arrived::before { animation: mark-draw var(--t-sheet) var(--ease-out); }
+.set-correct { padding: var(--s-4) 0; border-top: 1px solid var(--line); }
+.set-correct h2 { margin: 0; font-size: .875rem; }
+.set-correct p { margin: 0; }
+.sheets-enabled .reopen-opener { display: flex !important; }
+.reopen-effects { list-style: none; margin: 0; padding: 0; font-size: .9375rem; }
+.reopen-effects li { padding: var(--s-2) 0; border-bottom: 1px solid var(--rule); }
+.replaced-head { margin: var(--s-3) 0 var(--s-1); }
+.missed-buy-in { margin-top: var(--s-3); }
+.missed-buy-in > summary.btn, .set-correct summary.btn, .night-manage summary.btn { list-style: none; }
+.missed-buy-in > summary.btn::-webkit-details-marker, .set-correct summary.btn::-webkit-details-marker, .night-manage summary.btn::-webkit-details-marker { display: none; }
+.missed-buy-in[open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }

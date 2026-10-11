@@ -163,7 +163,7 @@ class FinalizeAsksOnceTests(TestCase):
         sheet = html[html.index('data-sheet-source="finalize"'):html.index('class="host-more"')]
         self.assertIn('data-title="Finalize set 1?"', sheet)
         for text in ("<dt>Players</dt><dd>2</dd>", "<dt>Total bought in</dt><dd>₱2,000</dd>", "<dt>Total cashed out</dt><dd>₱2,000</dd>",
-                     'data-tone="good">The books balance.', "It cannot be undone here.", ">Finalize set 1</button>", "data-sheet-close data-sheet-focus"):
+                     'data-tone="good">The books balance.', "A host can reopen the set to correct a mistake.", ">Finalize set 1</button>", "data-sheet-close data-sheet-focus"):
             self.assertIn(text, sheet)
         self.assertEqual(html.count(reverse("session_finalize", args=[self.night.session.pk])), 1)
         # The form that finalizes is inside the confirmation, never the first button.

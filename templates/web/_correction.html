@@ -1,0 +1,2 @@
+{# Why a set or session was reopened. ``reopened`` keys the one-time arrival (changes.js); a settled line passes none. #}
+<p class="correction"{% if reopened %} data-reopened="{{ reopened }}"{% endif %}><strong>{{ lead }}</strong> <span class="correction-text"><q>{{ record.void_reason }}</q> <span class="correction-by">{{ record.voided_by.username }} · {{ record.voided_at|date:"M j, g:i A" }}</span></span></p>

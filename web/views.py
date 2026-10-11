@@ -196,6 +196,7 @@ def session_context(session, me) -> dict:
         "can_buy_in": me.is_host and session.state in ledger.BUY_IN_STATES,
         "can_reverse": me.is_host and session.state in ledger.REVERSAL_STATES,
         "can_cash_out": me.is_host and session.state in ledger.CASH_OUT_STATES,
+        "reopen_on": settings.REOPENING,
         "balance": ledger_queries.balance(summary) if session.state == GameSession.State.RECONCILIATION else None,
         "seats_free": session.seat_count - seated,
         "can_configure_rake": me.is_host and session.state in ("setup", "open") and not games.has_money(session),
@@ -230,6 +231,15 @@ def session_context(session, me) -> dict:
         context["outcome"] = outcome
         context["my_result"] = outcome.result_for(me.pk)
         context["night"] = session.night
+        context["can_reopen"] = me.is_host and settings.REOPENING and not session.night.is_archived
+        # A second or later revision says what was corrected: the reason the one before it was reopened.
+        if outcome.finalization.revision > 1:
+            context["correction"] = (
+                session.finalizations.filter(is_current=False).select_related("voided_by").order_by("-revision").first()
+            )
+    if ledger.is_reopened(session):
+        context["reopening"] = session.finalizations.select_related("voided_by").order_by("-revision").first()
+        context["can_add_missed"] = me.is_host
     if context["can_manage_players"]:
         present = {p.member_id for p in participants if p.status == Participant.Status.JOINED}
         context["addable_members"] = [
@@ -285,6 +295,8 @@ def session_log(request, session_id):
             "participant__member", "recorded_by"
         ),
         "outcome": settlement_queries.outcome(session),
+        "replaced": session.finalizations.filter(is_current=False).select_related("finalized_by", "voided_by")
+        .prefetch_related("results__participant__member").order_by("-revision"),
         "events": AuditEvent.objects.filter(session_id=session.pk).select_related("actor"),
         "play_periods": session.play_periods.all(),
         "set_seconds": clock.set_seconds(session),
@@ -324,6 +336,11 @@ def night(request, night_id):
         "can_close": me.is_host and not night.is_closed and not unfinished
         and any(s.state == State.FINALIZED for s in all_sets),
     })
+    context["replaced_plans"] = outcome.replaced
+    if not night.is_closed and outcome.replaced:
+        context["reopening"] = outcome.replaced[-1]
+    if host.is_host and night.is_closed and not night.is_archived and settings.REOPENING:
+        context["reopen"] = {"paid": outcome.paid_count}
     if night.is_closed and not night.is_archived:
         context["recap"] = settlement_queries.night_recap(
             night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()},
