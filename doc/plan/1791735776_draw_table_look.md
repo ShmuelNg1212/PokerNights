@@ -1,6 +1,6 @@
 # The look of the table in the seat draw: plan
 
-Status: approved 2026-10-12 with one change ("approved, can the animation be around 30% shorter for the draw. keep the same length for the seating animation. make sure to use motion and design skills for this."). Built; kept local. Date: 2026-10-12, Asia/Manila. Study: [The look of the table in the seat draw](../study/1791735775_draw_table_look.md).
+Status: approved 2026-10-12 with one change ("approved, can the animation be around 30% shorter for the draw. keep the same length for the seating animation. make sure to use motion and design skills for this."). Built and pushed. Date: 2026-10-12, Asia/Manila. Study: [The look of the table in the seat draw](../study/1791735775_draw_table_look.md).
 
 ## Outcome
 
@@ -96,3 +96,5 @@ Acceptance: 1 to 5 are met in headless Chrome; 6 on SQLite, PostgreSQL before re
 Not verified: real phones; whether the table reads as a poker table to the human; the light on a slow phone (the check slows the processor, not the graphics). A fresh reviewer did not read the branch.
 
 Documentation synced: DESIGN.md, wiki (features, architecture), browser README, TODO.
+
+2026-10-12 release: the human said "push". `feat/draw-table-look` (with the later fix `02955fe`, which creates the stage's mark together with its image) was merged to `main` as `0c168bc` and pushed (previous production commit `c91dc68`). 1103 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. The release could not be confirmed from here: after the push every request the agent made to the live site was answered 403 with Vercel's security checkpoint (`x-vercel-mitigated: challenge`), most likely because of the agent's own repeated checks during this and earlier releases. The agent stopped asking and did not try to get past it. Whether the build finished, and whether the checkpoint shows to anyone else, is for the human to see in a browser.
