@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Reopen a set or a session ([plan](doc/plan/1791699815_reopen_set_and_session.md), [study](doc/study/1791699745_reopen_set_and_session.md)): built on `feat/reopen` on 2026-10-11. Not merged, not pushed. Two migrations (`ledger 0014`, `settlement 0007`) run on release; run the PostgreSQL suite first.
+Reopen a set or a session ([plan](doc/plan/1791699815_reopen_set_and_session.md), [study](doc/study/1791699745_reopen_set_and_session.md)): built on `feat/reopen` on 2026-10-11. Released 2026-10-11 as `be3bcf2` (previous production commit `800e29e`); the live site serves the new styles. Two migrations ran in the build (`ledger 0014`, `settlement 0007`). If anything is wrong, set `REOPENING=False` in Vercel first.
 
 - [ ] After release, as a host on a finalized set of an open session: tap Reopen set, give a reason, and watch the set come back to counting up with the brass line.
 - [ ] Reverse one cash-out, count again, cash out and finalize. The final page should say "Corrected." with your reason; the set log should show the earlier results struck under "Replaced".

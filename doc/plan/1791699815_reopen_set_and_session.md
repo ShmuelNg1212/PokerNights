@@ -1,6 +1,6 @@
 # Reopen a finalized set or a closed session: plan
 
-Status: approved 2026-10-11 ("approved"); all five decisions as recommended. The human asked for the design and motion skills on the screens. Date: 2026-10-11, Asia/Manila. Study: [Reopen a finalized set or a closed session](../study/1791699745_reopen_set_and_session.md).
+Status: approved 2026-10-11 ("approved"); all five decisions as recommended. Built and released. The human asked for the design and motion skills on the screens. Date: 2026-10-11, Asia/Manila. Study: [Reopen a finalized set or a closed session](../study/1791699745_reopen_set_and_session.md).
 
 ## Outcome
 
@@ -109,3 +109,5 @@ Acceptance: 1 to 6 are met in tests and headless Chrome.
 Not verified: an iPhone and Safari; a screen reader; the other browser scripts (`count_flow.mjs`, `end_set.mjs`, `night.mjs`) were not rerun; the migration against a copy of live data. A fresh reviewer did not read the branch; the author's own read of the diff is the only review.
 
 Documentation synced: wiki (features, architecture, deployment), PRODUCT.md, DESIGN.md, browser README, TODO.
+
+2026-10-11 release: the human said "go push it to livs". `feat/reopen` was merged to `main` as `be3bcf2` and pushed (previous production commit `800e29e`). 992 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. About two and a half minutes later the live site served the new stylesheet (it contains `reopen-arrived`), the login page answered 200 and the new reopen route answered a signed-out POST with 403, not 404. The two migrations run in the build before the new version goes live, so they are taken as applied; no signed-in page was opened on the live site to confirm it.
