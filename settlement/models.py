@@ -60,6 +60,29 @@ class Transfer(models.Model):
         return f"Transfer {self.amount} from {self.payer_id} to {self.payee_id}"
 
 
+class CarriedTransfer(models.Model):
+    """An unpaid transfer of an earlier session that a later session's list took over.
+
+    Written when the later session is closed. It is in force while ``plan`` is that session's
+    current list: reopening the session retires the plan, and the transfer is unpaid again
+    without any row being changed. A transfer in force is neither paid nor unpaid.
+    """
+
+    transfer = models.ForeignKey(Transfer, on_delete=models.PROTECT, related_name="carries")
+    plan = models.ForeignKey(SettlementPlan, on_delete=models.PROTECT, related_name="carried")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["plan", "transfer"]
+        constraints = [
+            models.UniqueConstraint(fields=["transfer", "plan"], name="carry_once_per_plan"),
+        ]
+
+    def __str__(self):
+        return f"Transfer {self.transfer_id} carried into plan {self.plan_id}"
+
+
 class Payment(models.Model):
     """A record that money changed hands. The app records payments; it never moves money.
 

@@ -380,17 +380,22 @@ def night(request, night_id):
         "can_close": me.is_host and not night.is_closed and not unfinished
         and any(s.state == State.FINALIZED for s in all_sets),
     })
+    if context["can_close"] and settings.CARRY_DEBTS:
+        # Earlier unpaid transfers between two of tonight's players, which closing can fold into this list.
+        context["carryable"] = settlement_queries.carryable(night, {standing.pk for standing in outcome.standings})
+    context["my_makeup"] = outcome.makeup_for(me.pk)
     if not night.is_archived:
         # The mark nightlive.js polls with, from rows this page has already read.
         context["stamp"] = settlement_queries.stamp_from(
             night, [(s.pk, s.state, s.finalized_at) for s in by_number], outcome.plan.pk if outcome.plan else None,
             len(outcome.replaced), (len(outcome.payments), sum(1 for p in outcome.payments if p.active)),
+            sum(1 for t in outcome.transfers if t.carried),
         )
     context["replaced_plans"] = outcome.replaced
     if not night.is_closed and outcome.replaced:
         context["reopening"] = outcome.replaced[-1]
     if host.is_host and night.is_closed and not night.is_archived and settings.REOPENING:
-        context["reopen"] = {"paid": outcome.paid_count}
+        context["reopen"] = {"paid": outcome.paid_count, "carried": next((t.carried for t in outcome.transfers if t.carried), None)}
     if night.is_closed and not night.is_archived:
         context["recap"] = settlement_queries.night_recap(
             night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()},

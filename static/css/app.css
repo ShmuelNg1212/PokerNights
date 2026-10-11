@@ -1721,3 +1721,47 @@ button.seat-free[aria-busy=true] { border-style: solid; color: var(--brass); }
 @media (max-height: 699px) { .seat-stage[data-dense] .stage-pos { display: none; } .seat-stage[data-dense] .stage-room { padding: 22px 10px 30px; } }
 @media (min-width: 900px) { .seat-stage { height: min(760px, 92dvh); margin: auto; border-radius: var(--r-sheet); padding: 20px 24px 24px; border: 1px solid var(--rule); } }
 @media (prefers-reduced-motion: no-preference) { .stage-sub.is-waiting::after { animation: own-wait 1.1s ease-in-out infinite alternate; } }
+
+/* Carried transfers (DESIGN.md, "Carried transfers"). Paid is green, not paid is brass; carried is
+   neither, so it is bone with an arrow that points on to the session that took it. */
+.carry-pick { margin: 0 0 var(--s-4); padding: var(--s-3) var(--s-4) var(--s-2); border: 1px solid var(--rule); border-radius: var(--r-row); min-width: 0; }
+.carry-pick legend { padding: 0 var(--s-2); margin-left: calc(-1 * var(--s-2)); font-weight: 650; }
+.carry-pick > p { margin: 0 0 var(--s-2); }
+.carry-list { list-style: none; margin: 0; padding: 0; }
+.carry-list > li + li { border-top: 1px solid var(--rule); }
+.carry-option { min-height: 60px; padding: var(--s-2) 0; }
+.carry-option .grow { display: grid; min-width: 0; }
+.carry-who { overflow-wrap: anywhere; }
+.carry-option .amount { font-variant-numeric: tabular-nums; font-weight: 650; white-space: nowrap; transition: color var(--t-fast); }
+.carry-option .grow { transition: opacity var(--t-fast); }
+.carry-option:has(input:not(:checked)) .grow { opacity: .55; }
+.carry-option:has(input:not(:checked)) .amount { color: var(--muted); }
+.carry-count { margin: var(--s-2) 0 var(--s-1); color: var(--bone-dim); }
+.carried-word { color: var(--bone); font-weight: 650; }
+.transfer-mark.carried-mark { display: inline-block; }
+.transfer-mark.carried-mark .icon { color: var(--bone); }
+.transfer-state a { color: inherit; text-underline-offset: 3px; }
+.night-carried { border-top: 1px solid var(--rule); }
+.night-carried > summary { display: flex; align-items: center; gap: var(--s-3); min-height: var(--tap); list-style: none; cursor: pointer; color: var(--bone-dim); border-radius: var(--r-bar); }
+.night-carried > summary::-webkit-details-marker { display: none; }
+.night-carried > summary strong { color: var(--bone); }
+.night-carried > summary .icon { width: 1rem; height: 1rem; flex: none; transition: transform var(--t-fast) var(--ease-out); }
+.night-carried[open] > summary .icon { transform: rotate(180deg); }
+.night-carried > summary:active { background: var(--pressed); }
+.carried-list { list-style: none; margin: 0 0 var(--s-2); padding: 0; }
+.carried-list > li { display: flex; align-items: center; gap: var(--s-3); min-height: 52px; padding: 6px 0; border-top: 1px solid var(--rule); }
+.carried-list .grow { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.carried-list a { color: var(--bone-dim); min-height: 24px; text-underline-offset: 3px; }
+.carried-list .amount { font-variant-numeric: tabular-nums; font-weight: 650; white-space: nowrap; }
+.carried-list > li.is-mine strong:first-child { color: var(--bone); }
+.night-carried > p { margin: 0 0 var(--s-3); }
+.makeup { margin: var(--s-3) 0 0; padding: 0; font-size: .9375rem; }
+.makeup > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding: 3px 0; }
+.makeup dt { min-width: 0; overflow-wrap: anywhere; color: var(--felt-ink); }
+.makeup dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.makeup .makeup-total { margin-top: var(--s-1); padding-top: var(--s-2); border-top: 1px solid color-mix(in oklch, var(--felt-ink) 35%, transparent); }
+.makeup .makeup-total dt { color: var(--bone); font-weight: 650; }
+.makeup .makeup-total dd { font-weight: 750; transform-origin: 100% 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .transfer-line.just-carried .transfer-party strong, .transfer-line.just-carried .transfer-amount { animation: settle-dim 520ms var(--ease-out) both; }
+}

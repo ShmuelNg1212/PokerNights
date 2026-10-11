@@ -25,7 +25,10 @@ def finalize(request, session_id):
 @require_POST
 def close_night(request, night_id):
     night, actor = night_for(request.user, night_id)
-    attempt(request, services.close_night, night.pk, actor, success="The session is closed. Transfers are listed below.")
+    attempt(
+        request, services.close_night, night.pk, actor, request.POST.getlist("carry"),
+        success="The session is closed. Transfers are listed below.",
+    )
     return redirect("night", night_id=night.pk)
 
 

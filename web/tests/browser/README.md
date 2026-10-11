@@ -214,3 +214,13 @@ PN_DB=/private/tmp/pn-seat-draw-check.sqlite3 node web/tests/browser/seat_draw.m
 `PN_DB` is the served SQLite file. A host and two players sit side by side; the script clicks through the draw, the seat and the seating and plays some host actions through the services. The dealer is drawn at random, so one check runs only when Ben or Cara wins (45 or 46 checks). It takes about a minute and a half and uses up the fixture.
 
 `table.mjs`'s last failure, "a player on an open set", opens `/s/19/`; with today's seeds that set is not the open one it expects. It predates the seat draw.
+
+For carried transfers, seed a fresh temporary database with `seed_carried.py` alone, serve it, then:
+
+```sh
+PN_DB=/private/tmp/pn-carried-check.sqlite3 node web/tests/browser/carried_debts.mjs
+```
+
+32 checks. A host ticks and closes while a player's page of the earlier session watches; the reopening is made through the service. It uses up the fixture.
+
+Since carried transfers, `night.mjs` unticks the earlier transfers before its own close: its fixture's other sessions have unpaid transfers between the same players, and carrying them (the default) turned rows of another fixture session into "Carried".
