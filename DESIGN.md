@@ -948,6 +948,27 @@ Only `transform` and `opacity` are animated by Motion. Reduced motion and a miss
 
 **Measured.** `seat_draw.mjs`, 46 checks: a host and two players side by side, 2, 6 and 12 players, 320, 390 and 1280px, reduced motion, no JavaScript, and no frame over 50ms with the processor slowed four times.
 
+### Carried transfers (2026-10-11)
+
+[Plan](doc/plan/1791728777_carried_debts.md). Mode: Operate. No new colour, font or component.
+
+**Three states of a transfer.** Paid is Up green with a tick. Not paid is Brass. Carried is neither, so it is Bone with the up-right arrow: "Carried to {table}, {date}", the place a link. The row dims as a paid row does and has no action.
+
+**Before closing.** A ruled box inside "Settle up": the legend "Carry unpaid transfers from earlier sessions", one sentence, then one 60px row per transfer: checkbox, "{payer} pays {payee}" over its table and date, the amount at the right. An unticked row dims to 55%. One line under the list counts what is ticked; it never adds amounts, which only the server works out.
+
+**After closing.** Under the list, a disclosure: "Includes N unpaid transfers from earlier sessions". Its rows read "{payer} owed {payee}", the session as a link under it, the amount at the right. In the lead panel, a person whose debt was taken over gets four quiet lines: This session, each carried debt with its sign, and "To settle" over a rule.
+
+| Moment | Movement |
+|---|---|
+| A box is ticked or unticked | Its words settle 4px from the side they moved to (`drop`); the count line fades up 3px (`fade`) |
+| The disclosure is opened by a tap | Its rows rise 6px in turn, 45ms apart (`shift`). Opened any other way: nothing |
+| An earlier transfer turns Carried on an open page | The arrow springs in from below-left (`drop`), the state fades in, the names and amount dim as for Paid. Once |
+| The make-up is first seen | Its lines rise 8px in turn, 70ms apart, and "To settle" pulses once. Once per list and browser, after the recap that opens by itself has closed. Under 900ms |
+
+No figure counts. Reduced motion and a missing Motion file move nothing.
+
+**Measured.** `carried_debts.mjs`, 32 checks at 320, 390 and 1280px, with a host and a player side by side.
+
 ## Do's and Don'ts
 
 ### Do:

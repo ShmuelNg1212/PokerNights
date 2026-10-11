@@ -14,11 +14,11 @@
 <h2 class="pot-label">Your part</h2>
 <div class="display-amount lead-words" data-my-part="none:0">Nothing to pay</div>
 {% endif %}
-{% if not me.is_host %}<div class="lead-lines">{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}</div>{% endif %}
+{% if not me.is_host %}<div class="lead-lines">{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% elif t.carried %}Carried to {{ t.carried.plan.night.game_date|date:"M j" }}{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}</div>{% endif %}
 <div class="settle-table" data-still-to-pay="{{ outcome.still_to_pay }}">
   {% if outcome.transfers %}
   <progress class="payment-progress" value="{{ outcome.paid_amount }}" max="{{ outcome.total_to_pay }}" aria-label="Amount marked paid"></progress>
-  <p class="felt-hint">{% if not me.is_host %}Table: {% endif %}{{ outcome.paid_amount|amount:unit }} of {{ outcome.total_to_pay|amount:unit }} marked paid · {{ outcome.paid_count }} of {{ outcome.transfers|length }} transfer{{ outcome.transfers|length|pluralize }}{% if outcome.status == 'settled' %}. Nothing is left to pay.{% endif %}</p>
+  <p class="felt-hint">{% if not me.is_host %}Table: {% endif %}{{ outcome.paid_amount|amount:unit }} of {{ outcome.total_to_pay|amount:unit }} marked paid · {{ outcome.paid_count }} of {{ outcome.transfers|length }} transfer{{ outcome.transfers|length|pluralize }}{% if outcome.carried_count %} · {{ outcome.carried_count }} carried to a later session{% endif %}{% if outcome.status == 'settled' %}. Nothing is left to pay.{% endif %}</p>
   {% else %}<p class="settle-status">Nobody owes anything.</p>{% endif %}
 </div>
 {% if total_rake %}<dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>{% endif %}
@@ -26,6 +26,11 @@
 <div class="night-mine">
   <p class="lead-result"><span class="stat-label">Your result in this session</span><span class="amount {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</span></p>
   {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
-  {% if me.is_host %}{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}{% endif %}
+  {% if my_makeup %}<dl class="makeup" data-makeup="{{ outcome.plan.pk }}:{{ me.pk }}" aria-label="How your figure is made up">
+    <div><dt>This session</dt><dd class="amount">{{ my_makeup.0|signed_amount:unit }}</dd></div>
+    {% for c, signed in my_makeup.1 %}<div><dt>{% if signed < 0 %}You owed {{ c.transfer.payee.display_name }}{% else %}{{ c.transfer.payer.display_name }} owed you{% endif %} <span class="muted">· {{ c.transfer.plan.night.game_date|date:"M j" }}</span></dt><dd class="amount">{{ signed|signed_amount:unit }}</dd></div>{% endfor %}
+    <div class="makeup-total"><dt>To settle</dt><dd class="amount">{{ my_makeup.2|signed_amount:unit }}</dd></div>
+  </dl>{% endif %}
+  {% if me.is_host %}{% for t in my_transfers %}<p>{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% elif t.carried %}Carried to {{ t.carried.plan.night.game_date|date:"M j" }}{% else %}Not paid{% endif %}</p>{% empty %}<p>You owe nothing and are owed nothing.</p>{% endfor %}{% endif %}
 </div>
 {% endif %}

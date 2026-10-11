@@ -576,3 +576,19 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 - **When a phone plays it.** Once per draw and browser, and only when it learns of the draw from an update or within two minutes of it; a phone that opens the page later sees the table. While a draw waits for a seat the set page asks the server every 1.5 seconds for those two minutes, so the phones seat within about a second and a half of each other.
 - **Without JavaScript** Draw and the seats are ordinary forms and the result is the still table and the list. **Reduced motion** shows each result at once.
 - Switch: `SEAT_DRAW=False` hides the step and the table and makes the three services refuse. Check: `web/tests/browser/seat_draw.mjs` with `seed_seat_draw.py`.
+
+## Carried transfers (2026-10-11)
+
+[Plan](../plan/1791728777_carried_debts.md), [study](../study/1791728776_carried_debts.md). Unpaid transfers of earlier sessions can be folded into a later session's settle-up when it is closed.
+
+- **Before closing.** Above "Close session and settle up" a host sees "Carry unpaid transfers from earlier sessions": each transfer that qualifies, with its table and date, ticked. Any can be unticked. A line under the list counts the ticked ones. With none that qualify the close looks as before.
+- **What qualifies.** A transfer of the same group and the same unit, in the current list of a closed session that is not archived, not marked paid, not carried already, whose payer and payee both have a result in the session being closed. Any table.
+- **Closing.** Each ticked transfer moves its amount from the payer's balance to the payee's, on top of the session's results; the balances still sum to zero and the same netting writes the fewest transfers that clear them. The list can therefore name different pairs than the earlier transfers did. Every ticked transfer is checked again under lock; if one was paid, carried elsewhere or no longer qualifies, nothing is closed and the page says so.
+- **The later session's page.** "Who pays whom" is the netted list. Under it, "Includes N unpaid transfers from earlier sessions" opens them, each "{payer} owed {payee}" with a link to its session. A person whose earlier transfer was taken over sees how their figure is made up: this session's balance, each carried debt with its sign, and "To settle".
+- **The earlier session's page.** The transfer reads "Carried to {table}, {date}" with a link, has no Mark paid button, and is neither paid nor unpaid. The session is Settled once every transfer is paid or carried; the summary says how many were carried. An open page shows this by itself within a few seconds.
+- **Totals.** A carried transfer leaves "you owe", "you are owed" and "still to pay" everywhere; its amount is inside the later session's transfers. What each person owes over all sessions is the same before and after.
+- **Undo.** Reopening the later session retires its list, as before, and every transfer it had carried is unpaid again; no row is changed. Closing it again asks again.
+- **Refused.** Marking a carried transfer paid ("Mark it paid there."). Reopening an earlier session while one of its transfers is carried ("Reopen that session first.").
+- **Chains.** The later session's own unpaid transfers can be carried into the next one.
+- **Unchanged.** Results, stats and the recap's ranking describe play. The recap and the share text say that the transfers include earlier unpaid ones.
+- Switch: `CARRY_DEBTS=False` offers no list and carries nothing; transfers already carried stay carried. Check: `web/tests/browser/carried_debts.mjs` with `seed_carried.py`.

@@ -89,7 +89,7 @@ class ScriptsLoadOnceTests(TestCase):
 
     NAMES = ("page", "app", "vendor/turbo-8.0.23", "turbo-setup",
              "vendor/motion-14.0.0", "motion", "forms", "toasts", "changes", "flow", "pot", "sheets", "numpad", "live",
-             "clock", "counts", "dock", "table", "seats", "pick", "password", "door", "copy", "roster", "stats", "settle", "nightlive", "share", "install", "perf")
+             "clock", "counts", "dock", "table", "seats", "pick", "password", "door", "copy", "roster", "stats", "settle", "carry", "nightlive", "share", "install", "perf")
 
     def test_scripts_are_in_the_head_in_order_and_none_in_the_body(self):
         night = Night("A")

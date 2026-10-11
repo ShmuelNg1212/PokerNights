@@ -36,7 +36,9 @@ class QueryCountTests(TestCase):
             games.transition(later.pk, night.host, "start", opening_buy_ins=False)
             games.transition(later.pk, night.host, "end")
         self.assertContains(self.client.get(url), "Set 3")
-        self.assertEqual(len(self.queries(url)), one)
+        # With one finalized set the session could be closed, which reads the earlier transfers it
+        # could carry; with a set still counting up it cannot. More sets never cost more.
+        self.assertEqual(len(self.queries(url)), one - 1)
 
     def test_a_set_in_play(self):
         night = Night("A", "B", "C")

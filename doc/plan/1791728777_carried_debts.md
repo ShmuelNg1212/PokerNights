@@ -1,6 +1,6 @@
 # Unpaid transfers carried into a later session: plan
 
-Status: awaiting approval. Date: 2026-10-11, Asia/Manila. Study: [Unpaid transfers carried into a later session](../study/1791728776_carried_debts.md).
+Status: approved 2026-10-11 ("approved. make sure to use motion.dev and UI skills for polishing this feature implementation."); all six decisions as recommended. Built; kept local. Date: 2026-10-11, Asia/Manila. Study: [Unpaid transfers carried into a later session](../study/1791728776_carried_debts.md).
 
 ## Outcome
 
@@ -81,3 +81,30 @@ Branch `feat/carried-debts` from `main`. Tests first.
 ## Release
 
 Kept local on its branch until you say to push. One migration that adds one table. The first response to trouble is `CARRY_DEBTS=False`.
+
+## Progress
+
+2026-10-11: Approved. Built on `feat/carried-debts` from `main`; kept local.
+
+Changes from the plan:
+
+- **No query for a session without a carry.** The plan's own read says whether a carry touches it; the closed session page costs one query more only when one does. The poll counts carries on a read it already made.
+- **The stamp of a session nobody carried from is unchanged,** so open pages did not redraw at the release.
+- **The reopen sheet says the carried transfers become unpaid again.** Not in the plan.
+- **Movement, with Motion** (the human asked for it at approval): the ticked row and the count line, the carried rows on opening, an earlier row turning Carried, and the make-up arriving once. See DESIGN.md.
+- **Two existing tests changed, both deliberately:** `web/tests/test_query_counts.py` (a session that can be closed reads what it could carry, one query more than one that cannot) and `web/tests/test_inplace.py` (the script order names `carry`).
+- **One existing browser check changed:** `night.mjs` unticks before its own close. Its failure was this feature working on a shared fixture, which was established before the change.
+- The impeccable and motion skills' rules were applied from their earlier loading in this session. No separate critique run and no MotionScore audit was made, and the Motion documentation server was not searched again in this cycle.
+
+Verification:
+
+- 1100 tests pass on SQLite (15 skipped), 36 of them new (`settlement/tests/test_carried.py`, `web/tests/test_carried.py`). PostgreSQL is run before the release.
+- `carried_debts.mjs`: 32 of 32 on a fresh temporary database. On the way: two faults in the check, and one layout fault (a carried row's words stacked one per line) seen in a capture and fixed.
+- Rerun on this branch: `night.mjs` 86 of 86, `settled.mjs` 24 of 24, `reopen.mjs` 24 of 24, `night_live.mjs` 22 of 22, `hub_live.mjs` 19 of 19, `share.mjs` 29 of 29.
+- Captures at 320, 390 and 1280px were looked at, in two rounds.
+
+Acceptance: 1 to 5 are met in headless Chrome and in the service tests; 6 on SQLite.
+
+Not verified: real phones; PostgreSQL (before release); two hosts closing at the same moment on PostgreSQL, where the locks matter (SQLite does not lock rows, so the tests cover the re-check and not the waiting); a screen reader. A fresh reviewer did not read the branch.
+
+Documentation synced: wiki (features, architecture, deployment), PRODUCT.md, DESIGN.md, browser README, TODO.

@@ -48,6 +48,14 @@
       {% if can_close %}
       <form method="post" action="{% url 'night_close' night.pk %}" data-once>{% csrf_token %}
         <p class="small muted">Closing the session adds up every player's results over its sets and lists who pays whom. No further set can be started afterwards.</p>
+        {% if carryable %}<fieldset class="carry-pick" data-carry-pick>
+          <legend>Carry unpaid transfers from earlier sessions</legend>
+          <p class="small muted" id="carry-help">A ticked transfer is added to tonight's results, so everything is settled in one list. It then reads “Carried” in its own session.</p>
+          <ul class="carry-list" aria-describedby="carry-help">
+            {% for t in carryable %}<li><label class="check carry-option" for="carry-{{ t.pk }}"><input id="carry-{{ t.pk }}" type="checkbox" name="carry" value="{{ t.pk }}" checked><span class="grow"><span class="carry-who"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong></span><span class="muted small">{{ t.plan.night.table.name }}, {{ t.plan.night.game_date|date:"M j" }}</span></span><span class="amount">{{ t.amount|amount:unit }}</span></label></li>{% endfor %}
+          </ul>
+          <p class="small carry-count" data-carry-count aria-live="polite" hidden></p>
+        </fieldset>{% endif %}
         <button type="submit" class="btn btn-primary btn-block">Close session and settle up</button>
       </form>
       {% elif unfinished_sets %}
@@ -65,17 +73,23 @@
       {% if replaced_plans %}{% with last=replaced_plans|last %}<p class="small muted">Worked out again after the session was reopened on {{ last.voided_at|date:"M j" }}. This list replaces the earlier one.</p>{% endwith %}{% endif %}
       <ul class="transfer-list">
         {% for t in outcome.transfers %}
-        {% with figure=t.amount|amount:unit %}<li class="transfer-row transfer-line{% if figure|length > 10 %} is-wide{% endif %}{% if t.paid %} is-paid{% endif %}{% if t.payer_id == me.pk or t.payee_id == me.pk %} is-mine{% endif %}{% if me.is_host %} has-action{% endif %}" data-transfer="{{ t.pk }}" data-paid="{% if t.paid %}1{% else %}0{% endif %}">
+        {% with figure=t.amount|amount:unit %}<li class="transfer-row transfer-line{% if figure|length > 10 %} is-wide{% endif %}{% if t.paid %} is-paid{% elif t.carried %} is-paid is-carried{% endif %}{% if t.payer_id == me.pk or t.payee_id == me.pk %} is-mine{% endif %}{% if me.is_host and not t.carried %} has-action{% endif %}" data-transfer="{{ t.pk }}" data-paid="{% if t.paid %}1{% elif t.carried %}c{% else %}0{% endif %}">
           <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong>{% if t.payer_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span><span class="transfer-direction">{% icon 'arrow-right' %}<span class="visually-hidden">pays</span></span><span class="transfer-party">{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong>{% if t.payee_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span></div>
           <span class="transfer-amount amount{% if figure|length > 17 %} amount-long{% elif figure|length > 10 %} amount-compact{% endif %}">{{ figure }}</span>
-          <span class="small transfer-state">{% if t.paid %}<span class="transfer-mark">{% icon 'check' %}</span><span class="paid-word">Paid</span> · {{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% else %}<span class="unpaid-word">Not paid</span>{% endif %}</span>
-          {% if me.is_host %}{% if t.paid %}
+          <span class="small transfer-state">{% if t.paid %}<span class="transfer-mark">{% icon 'check' %}</span><span class="paid-word">Paid</span> · {{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% elif t.carried %}<span class="transfer-mark carried-mark">{% icon 'arrow-up-right' %}</span><span class="carried-word">Carried</span> to <a href="{% url 'night' t.carried.plan.night_id %}">{{ t.carried.plan.night.table.name }}, {{ t.carried.plan.night.game_date|date:"M j" }}</a>{% else %}<span class="unpaid-word">Not paid</span>{% endif %}</span>
+          {% if me.is_host and not t.carried %}{% if t.paid %}
           <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
           {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
         </li>{% endwith %}
         {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
       </ul>
-      <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results. This list nets every set of the session. It excludes rake already collected at buy-in and assumes no earlier player payments.</p></details>
+      {% if outcome.carried_in %}<details class="night-carried" data-key="carried-in"><summary><span class="grow">Includes <strong>{{ outcome.carried_in|length }}</strong> unpaid transfer{{ outcome.carried_in|length|pluralize }} from earlier session{{ outcome.carried_in|length|pluralize }}</span>{% icon 'chevron-down' %}</summary>
+        <ul class="carried-list">
+          {% for c in outcome.carried_in %}<li{% if c.transfer.payer_id == me.pk or c.transfer.payee_id == me.pk %} class="is-mine"{% endif %}><span class="grow"><span class="carried-who"><strong>{{ c.transfer.payer.display_name }}</strong> owed <strong>{{ c.transfer.payee.display_name }}</strong></span><a class="small" href="{% url 'night' c.transfer.plan.night_id %}">{{ c.transfer.plan.night.table.name }}, {{ c.transfer.plan.night.game_date|date:"M j" }}</a></span><span class="amount">{{ c.transfer.amount|amount:unit }}</span></li>{% endfor %}
+        </ul>
+        <p class="muted small">Each was added to that person's balance before the list above was worked out, so it is settled by paying this list.</p>
+      </details>{% endif %}
+      <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results{% if outcome.carried_in %} and the earlier transfers carried in{% endif %}. This list nets every set of the session. It excludes rake already collected at buy-in and assumes no {% if outcome.carried_in %}other {% endif %}earlier player payments.</p></details>
     </section>
     {% endif %}
     <section aria-labelledby="results-title">
@@ -136,7 +150,9 @@
         <a class="btn btn-block" href="{% url 'night_archive' night.pk %}">Archive session</a>
       {% endif %}
       {% if reopen %}
-        {% if reopen.paid %}
+        {% if reopen.carried %}
+        <p class="small muted">A transfer of this session was carried into <a href="{% url 'night' reopen.carried.plan.night_id %}">the session of {{ reopen.carried.plan.night.game_date|date:"M j" }}</a>. Reopen that session first.</p>
+        {% elif reopen.paid %}
         <p class="small muted">To reopen the session, no transfer may be marked paid. {{ reopen.paid }} transfer{{ reopen.paid|pluralize:" is,s are" }} marked paid. Mark {{ reopen.paid|pluralize:"it,them" }} unpaid first.</p>
         {% else %}
         <p class="small muted">Reopen the session to play another set or to correct one. Who pays whom is worked out again when you close it.</p>
@@ -147,6 +163,7 @@
             <ul class="reopen-effects">
               <li>The session is open again: start another set, or reopen a set to correct it.</li>
               <li>The transfer list goes away. Closing the session writes a new one.</li>
+              {% if outcome.carried_in %}<li>The {{ outcome.carried_in|length }} earlier transfer{{ outcome.carried_in|length|pluralize }} it carried {{ outcome.carried_in|length|pluralize:"is,are" }} unpaid again in {{ outcome.carried_in|length|pluralize:"its,their" }} own session{{ outcome.carried_in|length|pluralize }}.</li>{% endif %}
               <li>The session leaves the stats and “to settle” until it is closed again.</li>
             </ul>
             <form method="post" action="{% url 'night_reopen' night.pk %}" class="stack" data-once>{% csrf_token %}

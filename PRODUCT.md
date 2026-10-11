@@ -20,7 +20,7 @@ The approved brief describes a dim room, late at night, one hand free and short 
 
 ## Capabilities and Constraints
 
-Django templates, plain CSS and small vanilla JavaScript modules. Integer money only: centavos in pesos games, whole chips in chips games. Chips have no peso value. Server-confirmed figures are authoritative. Count-up also shows an explicitly labelled local preview while the host types, to compare remaining stacks plus cash-outs with buy-ins before recording cash-outs. Hosts can add existing roster players or create a no-login roster player from an ongoing set; late buy-ins remain separate. Accounting and permissions stay unchanged in the redesign. Seating is an optional seat draw before a set starts (2026-10-11): the server draws the dealer and the order around the table, and every phone plays it back.
+Django templates, plain CSS and small vanilla JavaScript modules. Integer money only: centavos in pesos games, whole chips in chips games. Chips have no peso value. Server-confirmed figures are authoritative. Count-up also shows an explicitly labelled local preview while the host types, to compare remaining stacks plus cash-outs with buy-ins before recording cash-outs. Hosts can add existing roster players or create a no-login roster player from an ongoing set; late buy-ins remain separate. Accounting and permissions stay unchanged in the redesign. Since 2026-10-11 a host closing a session can carry earlier unpaid transfers between two of its players into that session's settle-up; they are netted with its results into one list. Seating is an optional seat draw before a set starts (2026-10-11): the server draws the dealer and the order around the table, and every phone plays it back.
 
 ## Brand Commitments
 

@@ -20,7 +20,7 @@ from ledger import services as ledger
 from ledger.models import Finalization, PlayerResult
 
 from . import algorithm
-from .models import Payment, PaymentReversal, SettlementPlan, Transfer
+from .models import CarriedTransfer, Payment, PaymentReversal, SettlementPlan, Transfer
 
 State = GameSession.State
 
@@ -98,6 +98,13 @@ def reopen_night(night_id, actor: Member, reason: str = "") -> GameNight:
             f"{paid} transfer{' is' if paid == 1 else 's are'} marked paid. "
             f"Mark {'it' if paid == 1 else 'them'} unpaid first."
         )
+    taken = _carried_by(plan) if plan is not None else None
+    if taken is not None:
+        raise RuleError(
+            f"A transfer of this session was carried into the session of {_night_day(taken.plan.night)}. "
+            "Reopen that session first."
+        )
+    released = CarriedTransfer.objects.filter(plan=plan).count() if plan is not None else 0
     if plan is not None:
         plan.is_current = False
         plan.voided_at, plan.voided_by, plan.void_reason = timezone.now(), actor.user, reason
@@ -107,7 +114,9 @@ def reopen_night(night_id, actor: Member, reason: str = "") -> GameNight:
     night.save(update_fields=["status", "closed_at"])
     audit.record(
         "night.reopened", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=night,
-        summary="Reopened the session; its transfer list is replaced when it is closed again", reason=reason,
+        summary="Reopened the session; its transfer list is replaced when it is closed again"
+        + (f". {released} earlier transfer{' is' if released == 1 else 's are'} unpaid again" if released else ""),
+        reason=reason,
     )
     # Open set pages poll their set's version: bump it so they show the open session.
     GameSession.objects.filter(night=night).update(version=F("version") + 1)
@@ -162,12 +171,59 @@ def settlement_balances(night, rows=None):
     return list(totals.items())
 
 
+def _night_day(night) -> str:
+    return f"{night.game_date:%b} {night.game_date.day}"
+
+
+def _carried_by(plan):
+    """The carry, in force, that took one of this list's transfers into a later session; None when none did."""
+    return (
+        CarriedTransfer.objects.filter(transfer__plan=plan, plan__is_current=True)
+        .select_related("plan__night").order_by("pk").first()
+    )
+
+
+def _transfers_to_carry(night, parties, carry_ids) -> list:
+    """The earlier transfers named by ``carry_ids``, each checked again with its session locked."""
+    wanted = []
+    for value in carry_ids or ():
+        try:
+            wanted.append(int(value))
+        except (TypeError, ValueError):
+            raise RuleError("Choose the earlier transfers from the list.") from None
+    wanted = list(dict.fromkeys(wanted))
+    if not wanted or not settings.CARRY_DEBTS:
+        return []
+    # The earlier sessions are locked in a fixed order, so a paid mark or a reopening there waits for this close.
+    earlier = Transfer.objects.filter(pk__in=wanted).values_list("plan__night_id", flat=True)
+    list(GameNight.objects.select_for_update().filter(pk__in=set(earlier)).order_by("pk").values_list("pk", flat=True))
+    from . import queries
+
+    allowed = {transfer.pk: transfer for transfer in queries.carryable(night, {member_id for member_id, _ in parties})}
+    gone = [pk for pk in wanted if pk not in allowed]
+    if gone:
+        raise RuleError(
+            f"{len(gone)} earlier transfer{' has' if len(gone) == 1 else 's have'} changed since this page was shown: "
+            "paid, carried elsewhere, or no longer between two of tonight's players. Nothing was closed. Look at the list again."
+        )
+    return [allowed[pk] for pk in wanted]
+
+
+def _carried(transfer):
+    return CarriedTransfer.objects.filter(transfer=transfer, plan__is_current=True).select_related("plan__night").first()
+
+
 @transaction.atomic
-def close_night(night_id, actor: Member) -> SettlementPlan:
+def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     """Close a session and list who pays whom, netted over all of its sets.
 
     Every set must be finalized or canceled. Closing says nothing about
     whether anyone has paid.
+
+    ``carry_ids`` are unpaid transfers of earlier sessions to fold into this list: each one moves
+    its amount from the payer's balance to the payee's before the netting, and is then carried,
+    neither paid nor unpaid. Every one is checked again here; if one no longer qualifies nothing
+    is closed.
     """
     require_host(actor)
     night = games.lock_night(night_id, actor.group_id)
@@ -187,8 +243,18 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
     parties = settlement_balances(night)
     if sum(net for _, net in parties) != 0:
         raise ledger.LedgerInvariantError(f"Session {night.pk}: the results of its sets do not sum to zero.")
+    carried = _transfers_to_carry(night, parties, carry_ids)
+    if carried:
+        balances = dict(parties)
+        for old in carried:
+            balances[old.payer_id] -= old.amount
+            balances[old.payee_id] += old.amount
+        parties = list(balances.items())
+        if sum(net for _, net in parties) != 0:
+            raise ledger.LedgerInvariantError(f"Session {night.pk}: the balances with carried transfers do not sum to zero.")
     transfers = algorithm.settle(parties)
     plan = SettlementPlan.objects.create(night=night, proven_minimal=algorithm.is_proven_minimal(parties))
+    CarriedTransfer.objects.bulk_create(CarriedTransfer(transfer=old, plan=plan, created_by=actor.user) for old in carried)
     Transfer.objects.bulk_create(
         Transfer(plan=plan, position=position, payer_id=payer, payee_id=payee, amount=amount)
         for position, (payer, payee, amount) in enumerate(transfers, start=1)
@@ -205,9 +271,15 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
     audit.record(
         "night.closed", actor=actor.user, group_id=night.group_id, session_id=sets[-1].pk, target=night,
         summary=f"Closed the session: {len(sets)} set{'' if len(sets) == 1 else 's'}, "
-        f"{len(transfers)} transfer{'' if len(transfers) == 1 else 's'}",
-        data={"nets": {str(member_id): net for member_id, net in parties}},
+        f"{len(transfers)} transfer{'' if len(transfers) == 1 else 's'}"
+        + (f", {len(carried)} earlier transfer{'' if len(carried) == 1 else 's'} carried in" if carried else ""),
+        data={"nets": {str(member_id): net for member_id, net in parties}, "carried": [old.pk for old in carried]},
     )
+    for old in carried:
+        audit.record(
+            "transfer.carried", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(old.plan.night),
+            target=old, summary=f"Carried into the session of {_night_day(night)}: {_describe(old, night.unit)}",
+        )
     # Open set pages poll their set's version: bump it so they show the closed session.
     GameSession.objects.filter(night=night).update(version=F("version") + 1)
     return plan
@@ -239,6 +311,9 @@ def mark_paid(night_id, actor: Member, transfer_id, request_id) -> Payment:
     existing = Payment.objects.filter(transfer=transfer, active=True).first()
     if existing is not None:
         return existing
+    carry = _carried(transfer)
+    if carry is not None:
+        raise RuleError(f"This transfer was carried into the session of {_night_day(carry.plan.night)}. Mark it paid there.")
     repeated = Payment.objects.filter(night=night, request_id=request_id).first()
     if repeated is not None:
         return repeated

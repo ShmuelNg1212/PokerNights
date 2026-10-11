@@ -4,6 +4,12 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Unpaid transfers carried into a later session ([plan](doc/plan/1791728777_carried_debts.md), [study](doc/study/1791728776_carried_debts.md)): built on `feat/carried-debts` on 2026-10-11. Not merged, not pushed. One migration that adds one table. `CARRY_DEBTS=False` turns it off.
+
+- [ ] After release, with a real unpaid transfer between two people who play again: close the new session with it ticked. Check the one list against your own arithmetic, and that the old transfer reads "Carried" with a link.
+- [ ] As one of those two people, check "To settle" and its lines on the new session, and that Your groups counts the debt once.
+- [ ] Reopen the new session and check the old transfer is unpaid again.
+
 Seat draw before a set starts ([plan](doc/plan/1791717121_seat_draw.md), [study](doc/study/1791717120_seat_draw.md)): built on `feat/seat-draw` on 2026-10-11. Released 2026-10-11 as `dc6e00c` (previous production commit `f3b321f`); the live site serves `seats.js` and the stage's styles, and the draw address exists. One migration that adds two tables. Phone acceptance is open. `SEAT_DRAW=False` turns it off.
 
 - [ ] After release, with two phones on an open set with at least three players: as the host tap Draw on the Seat draw step. Both phones should play the draw and name the same dealer.

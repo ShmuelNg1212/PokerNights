@@ -18,7 +18,8 @@
     <p class="night-result {{ mine.net|sign_class }}">{% if mine.net > 0 %}{% icon 'arrow-up-right' %}{% elif mine.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ mine.net|signed_amount:unit }}</p>
     <p class="recap-line">{{ mine.buy_in|amount:unit }} bought in · {{ mine.cash_out|amount:unit }} cashed out · {{ mine.buy_ins }} buy-in{{ mine.buy_ins|pluralize }}{% if mine.play_seconds is not None %} · {{ mine.play_seconds|duration }} at the table{% endif %}</p>
     {% if mine.sets|length > 1 %}<ul class="recap-by-set">{% for number, net in mine.sets %}<li><span class="muted">Set {{ number }}</span> <span class="amount {{ net|sign_class }}">{{ net|signed_amount:unit }}</span></li>{% endfor %}</ul>{% endif %}
-    {% for t in my_transfers %}<p class="recap-line">{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% else %}Not paid{% endif %}</p>{% empty %}<p class="recap-line">You owe nothing and are owed nothing.</p>{% endfor %}
+    {% for t in my_transfers %}<p class="recap-line">{% if t.payer_id == me.pk %}You pay <strong>{{ t.payee.display_name }}</strong>{% else %}<strong>{{ t.payer.display_name }}</strong> pays you{% endif %} <span class="amount">{{ t.amount|amount:unit }}</span> · {% if t.paid %}Paid{% elif t.carried %}Carried to {{ t.carried.plan.night.game_date|date:"M j" }}{% else %}Not paid{% endif %}</p>{% empty %}<p class="recap-line">You owe nothing and are owed nothing.</p>{% endfor %}
+    {% if my_makeup %}<p class="recap-line muted">This settles tonight and what was carried from earlier sessions.</p>{% endif %}
   </section>
   {% endwith %}{% endif %}
   <section class="recap-part" aria-labelledby="recap-all-title">

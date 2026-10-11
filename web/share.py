@@ -38,10 +38,14 @@ def card(night, outcome, recap) -> dict:
         foot.append(f"Closed {closed:%b} {closed.day}, {closed.hour % 12 or 12}:{closed:%M %p}")
     if recap.total_rake:
         foot.append("Results are after rake.")
+    if outcome.carried_in:
+        foot.append("With earlier unpaid transfers.")
     text = [f"{night.table.name} · {day}", "Results"]
     text += [f"{row['place']}. {row['name']} {row['amount']}" for row in rows]
     text.append("Who pays whom")
     text += [f"{t['payer']['name']} → {t['payee']['name']} {t['amount']}" for t in transfers] or ["Nobody owes anything."]
+    if outcome.carried_in:
+        text.append("Includes unpaid transfers from earlier sessions.")
     text.append("PokerNights")
     return {
         "title": night.table.name,
