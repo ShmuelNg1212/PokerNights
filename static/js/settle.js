@@ -25,6 +25,16 @@
     }
     arrive(region);
   });
+  // A redraw that someone else's mark caused (nightlive.js): the row settles here as it did there.
+  document.addEventListener("night:refreshed", function (event) {
+    var region = document.querySelector(".night-settle"), was = event.detail.paid || {};
+    if (!region) return;
+    region.querySelectorAll('[data-transfer][data-paid="1"]').forEach(function (row) {
+      if (was[row.dataset.transfer] !== "0") return;
+      row.classList.add("just-paid");
+      setTimeout(function () { row.classList.remove("just-paid"); }, 900);
+    });
+  });
   window.pokerPage.register(function () {
     var region = document.querySelector(".night-settle");
     if (region) arrive(region);

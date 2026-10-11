@@ -325,3 +325,13 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 - `static/js/install.js`: keeps `beforeinstallprompt` for the tab and prevents the browser's own bar; picks a part (`inapp`, `install`, `ios`, `menu`) from the user agent and the kept event; notes a login in `sessionStorage` (`rack-install-due`) and opens on the first page that is not an entry page and has no open dialog; remembers only "done" in `localStorage` (`rack-install`). Inside the installed app (`display-mode: standalone` or `navigator.standalone`) it shows the link field instead and sends a pasted same-origin `/join/`, `/claim/` or `/reset/` path to `location.assign`.
 - `static/manifest.webmanifest` states `launch_handler` (reuse the open app) and `handle_links`. Android's installed web apps take in-scope links through the system; iOS has no way for a home-screen web app to receive a link.
 - No model, service, migration or audit event.
+
+## Live updates of the session page
+
+[Plan](../plan/1791706983_session_page_live.md). The set page polls a stored `version`; the session page polls a derived stamp, because the writes that change it (paid marks, close, reopen, set transitions) have no single row to bump.
+
+- `settlement.queries.night_stamp(night)`: a 16-character hash of the session's status and archive mark, each set's id, state and `finalized_at`, the current plan's id, the number of retired plans, and (while a plan is current) how many payments exist and how many stand. Three queries. Never stored.
+- `settlement.queries.stamp_from(...)` is the same rule over rows the caller holds. The session view uses it with what it has already read, so the page carries its stamp (`data-stamp` and `data-state-url` on `.night-layout`) at no cost in queries. `web/tests/test_night_live.py` checks at every kind of change that the page's stamp equals the queried one; if they ever differed the page would redraw on every poll, and `nightlive.js` also refuses to redraw twice for one stamp.
+- `web.views.night_state` (`n/<id>/state/?v=`): 204 when unchanged, else `{"stamp": …}`. Membership as on the page.
+- `static/js/nightlive.js`: on a new stamp it asks Turbo to visit the same address with `replace`, which the page's `turbo-refresh-method: morph` turns into a redraw in place. After a morph it calls `pokerPage.start()`, because a morph restarts no script: the sheet, the recap that opens once and "Settled" must read the new page. It raises `night:refreshed` with the paid marks as they were, which `settle.js` uses to settle a row marked by someone else.
+- Something a future change makes the session page show must enter the stamp, or other people's pages will not learn of it.

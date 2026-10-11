@@ -482,6 +482,41 @@ def session_nets(night_ids, member_ids) -> dict:
     return {(row["finalization__session__night_id"], row["member_id"]): row["total"] for row in rows}
 
 
+def stamp_from(night, sets, plan_id, replaced, payments) -> str:
+    """The session page's mark, from rows the caller holds. ``sets`` are ``(pk, state, finalized_at)``;
+    ``replaced`` is the number of transfer lists a reopening retired; ``payments`` are
+    ``(how many exist, how many stand)``, counted only while there is a current list."""
+    import hashlib
+
+    seen = (
+        night.status, night.archived_at is not None,
+        [(pk, state, finalized_at.isoformat() if finalized_at else None) for pk, state, finalized_at in sets],
+        plan_id, replaced, tuple(payments) if plan_id else (0, 0),
+    )
+    return hashlib.sha1(repr(seen).encode()).hexdigest()[:16]
+
+
+def night_stamp(night) -> str:
+    """A short mark of everything the session page shows that another person can change.
+
+    Derived on each read and never stored: the session's status, each set's state and the moment
+    it was last finalized, the current transfer list, and how many payments exist and stand. The
+    page polls it (``web.views.night_state``); a write that changes any of these changes the mark
+    without having to remember to. The page itself gets the same mark from the rows it has
+    already read (``stamp_from``), at no cost in queries.
+    """
+    from django.db.models import Count, Q
+
+    sets = list(GameSession.objects.filter(night=night).order_by("set_number").values_list("pk", "state", "finalized_at"))
+    plans = list(SettlementPlan.objects.filter(night=night).values_list("pk", "is_current"))
+    plan_id = next((pk for pk, current in plans if current), None)
+    payments = (0, 0)
+    if plan_id:
+        found = Payment.objects.filter(night=night).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
+        payments = (found["made"], found["standing"])
+    return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments)
+
+
 def night_has_records(night) -> bool:
     """True when the session has a settle-up plan or a payment record."""
     return SettlementPlan.objects.filter(night=night).exists() or Payment.objects.filter(night=night).exists()

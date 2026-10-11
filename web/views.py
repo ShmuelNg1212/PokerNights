@@ -306,6 +306,20 @@ def session_log(request, session_id):
     return render(request, "web/session_log.html", context)
 
 
+def night_state(request, night_id):
+    """Polling endpoint of the session page: 204 while nothing it shows has changed, else the new stamp.
+
+    The page then fetches itself and is redrawn in place (nightlive.js).
+    """
+    night, _ = night_for(request.user, night_id)
+    stamp = settlement_queries.night_stamp(night)
+    if request.GET.get("v") == stamp:
+        return HttpResponse(status=204)
+    response = JsonResponse({"stamp": stamp})
+    response["Cache-Control"] = "no-store"
+    return response
+
+
 def night(request, night_id):
     """The session page: its sets, in order."""
     night, host = night_for(request.user, night_id)
@@ -337,6 +351,12 @@ def night(request, night_id):
         "can_close": me.is_host and not night.is_closed and not unfinished
         and any(s.state == State.FINALIZED for s in all_sets),
     })
+    if not night.is_archived:
+        # The mark nightlive.js polls with, from rows this page has already read.
+        context["stamp"] = settlement_queries.stamp_from(
+            night, [(s.pk, s.state, s.finalized_at) for s in by_number], outcome.plan.pk if outcome.plan else None,
+            len(outcome.replaced), (len(outcome.payments), sum(1 for p in outcome.payments if p.active)),
+        )
     context["replaced_plans"] = outcome.replaced
     if not night.is_closed and outcome.replaced:
         context["reopening"] = outcome.replaced[-1]

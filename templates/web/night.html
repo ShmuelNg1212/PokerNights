@@ -13,7 +13,7 @@
 </div>
 {% endif %}
 {# Document order on a closed session is the order of reading: your part, who pays whom, the results, the sets, the records, then housekeeping. #}
-<div class="night-layout{% if night.is_closed and outcome.plan %} night-settle{% endif %}">
+<div class="night-layout{% if night.is_closed and outcome.plan %} night-settle{% endif %}"{% if stamp %} data-state-url="{% url 'night_state' night.pk %}" data-stamp="{{ stamp }}"{% endif %}>
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
       <h1 data-carry="title">{{ night.table.name }}</h1>

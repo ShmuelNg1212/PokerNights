@@ -61,7 +61,7 @@
     var away = hiddenAt === null ? 0 : Date.now() - hiddenAt;
     hiddenAt = null;
     if (away < AWAY_MS) return;
-    if (document.getElementById("live")) return;            // the set page refreshes itself
+    if (document.getElementById("live") || document.querySelector("[data-state-url]")) return; // the set page and the session page refresh themselves
     if (document.body.dataset.method !== "GET") return;     // a reload would send the form again
     if (navigator.onLine === false || hasUnsavedWork()) return;
     window.location.reload();

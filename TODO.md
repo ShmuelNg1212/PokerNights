@@ -4,6 +4,14 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The session page updates by itself ([plan](doc/plan/1791706983_session_page_live.md), [study](doc/study/1791706965_session_page_live.md)): built on `fix/session-page-live` on 2026-10-11. Not merged, not pushed. No migration.
+
+- [ ] After release, with two phones on a closed session: mark a transfer paid on the host's. Within about 5 seconds the row should settle on the player's, without a reload.
+- [ ] Undo it and watch it return on the player's phone.
+- [ ] With a player on an open session's page, close the session as the host: the player's page should become the settle-up page and the recap should open.
+- [ ] On the player's phone open Share results, mark a transfer on the host's, then close the sheet: the change should land a moment after it closes.
+- [ ] Say if 5 seconds feels slow.
+
 Home screen suggestion and Join with a link ([plan](doc/plan/1791703670_install_prompt.md), [study](doc/study/1791703645_install_prompt.md)): built on `feat/install-prompt` on 2026-10-11. Released 2026-10-11 as `6090ce1` (previous production commit `2557f50`); the live site serves `install.js`, the new manifest and the new styles. No migration. If anything is wrong, set `INSTALL_PROMPT=False` in Vercel first.
 
 - [ ] After release, in Safari on your iPhone: log out and log in. About a second after Your groups shows, the sheet should rise with the two steps.

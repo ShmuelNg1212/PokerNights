@@ -188,3 +188,11 @@ node web/tests/browser/install_prompt.mjs
 ```
 
 It sets each phone's user agent itself and stands in for the browser's install event and for the installed app. It uses up the fixture's invite, so use another fresh database for a second run.
+
+For the session page's own updates, seed a fresh temporary database with `seed_reopen.py` alone, serve it, then:
+
+```sh
+PN_DB=/private/tmp/pn-nightlive-check.sqlite3 node web/tests/browser/night_live.mjs
+```
+
+`PN_DB` is the served SQLite file: the script plays the host through the real services while a player's page watches. It takes about a minute and a half because it waits out real polling intervals. Use a fresh database per run.
