@@ -4,6 +4,13 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+"Your count" card ([plan](doc/plan/1791710364_your_count_gap.md), [study](doc/study/1791710363_your_count_gap.md)): built on `fix/your-count-gap` on 2026-10-11. Not merged, not pushed. No migration.
+
+- [ ] After release, as a player on a set that is counting up: "Your count" should sit clear of the panel above it.
+- [ ] Send a count: the Counted step should draw in with a tick and Confirmed should breathe.
+- [ ] Have the host confirm and then cash you out, and watch each step complete on your phone.
+- [ ] Say if the breathing mark is distracting at the table.
+
 The session page updates by itself ([plan](doc/plan/1791706983_session_page_live.md), [study](doc/study/1791706965_session_page_live.md)): built on `fix/session-page-live` on 2026-10-11. Released 2026-10-11 as `243ce78` (previous production commit `6090ce1`); the live site serves `nightlive.js` and the new address answers. No migration.
 
 - [ ] After release, with two phones on a closed session: mark a transfer paid on the host's. Within about 5 seconds the row should settle on the player's, without a reload.

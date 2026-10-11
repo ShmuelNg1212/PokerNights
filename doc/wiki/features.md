@@ -536,3 +536,12 @@ Everyone with a session page open sees what another person does within about 5 s
 - An archived session is not asked about. Without JavaScript the page is as before.
 - A buy-in or cash-out in a set does not redraw the session page; it shows nothing from them until the set is finalized.
 - Check: `web/tests/browser/night_live.mjs` with `seed_reopen.py`.
+
+## "Your count" card (2026-10-11)
+
+[Plan](../plan/1791710364_your_count_gap.md).
+
+- On a phone the card sits 16px under the overview panel. Before, it touched that panel and looked tucked under its rounded corners.
+- The card shows where the player's count is, in three steps: **Counted** (the player sent it, or the host counted for them), **Confirmed** (by the host), **Cashed out**. A finished step has a tick; the step that is waited for is Brass.
+- When the count moves on, on anyone's phone, the player's card is marked for three seconds and the finished step draws in. While the next step is the host's, its mark breathes slowly.
+- The card's words, field and button are unchanged. The steps are read out as one sentence ("Step 2 of 3: counted, waiting for the host to confirm.").

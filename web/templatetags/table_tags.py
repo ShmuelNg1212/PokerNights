@@ -81,3 +81,28 @@ def state_word(state):
     """A set's state in the words the screens use. The stored names are 'setup' and 'running'."""
     from games.models import GameSession
     return GameSession.STATE_WORDS.get(state, state)
+
+
+@register.simple_tag
+def own_count(line):
+    """Where a player's own count is, for the "Your count" card: the stage, the amount it names and each step's state.
+
+    Counted (the player entered it, or the host counted for them), confirmed by the host, cashed out.
+    """
+    if line.status == "awaiting":
+        stage, amount = ("sent", line.entered.amount) if line.entered else ("open", "")
+    elif line.status == "ready":
+        stage, amount = "confirmed", line.count.amount
+    else:
+        stage, amount = "cashed", line.cashed_out
+    reached = ["open", "sent", "confirmed", "cashed"].index(stage)  # how many steps are finished
+    steps = [
+        {"name": name, "state": "done" if number < reached else "now" if number == reached else "todo",
+         "fresh": number == reached - 1,
+         # The player's own turn is the field; every later step waits for the host.
+         "waits": number == reached and reached > 0}
+        for number, name in enumerate(["Counted", "Confirmed", "Cashed out"])
+    ]
+    words = ["Step 1 of 3: send your count.", "Step 2 of 3: counted, waiting for the host to confirm.",
+             "Step 3 of 3: confirmed, waiting for the host to cash you out.", "All 3 steps done: cashed out."][reached]
+    return {"stage": stage, "amount": amount, "steps": steps, "words": words}

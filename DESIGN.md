@@ -916,6 +916,15 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Your groups** ends with a quiet "Add to home screen" in a phone's browser. Inside the installed app the same place holds "Join with a link", a disclosure in the New group style with one labelled field, a refusal line, Paste and a primary Open link.
 - **Measured.** `install_prompt.mjs`, 38 checks: each phone's part, timing after the arrival, focus and its return, Escape, 48px targets and no overflow at 320 and 390px, every login asking again, Done and the browser's install ending it, deferral behind a join page and a recap, desktop, reduced motion, and the link field's refusal, paste and opening.
 
+### "Your count" card (2026-10-11)
+
+[Plan](doc/plan/1791710364_your_count_gap.md). This adds to "A player's own row" and to "Count-up in one line". No new colour, font or asset; one new keyframe.
+
+- **Space.** Stacked under the overview (below 900px) the card has 16px above it. Beside the overview (from 900px) it has none and is level with it.
+- **Steps.** Under the heading, three equal columns: Counted, Confirmed, Cashed out. Each is a 3px rule with its name under it at 13px, weight 600. To do: Rule colour, Bone Dim name. Waited for: Brass rule, Bone name. Done: Bone rule, a 14px tick and a Bone name; the last step done is Green, as the count marks in the overview are. Names never wrap; they shorten with an ellipsis if a phone is very narrow.
+- **Motion.** When the count moves on, the card takes the standard Brass "this changed" mark and the step just finished draws: its rule from the left (`mark-draw`, the sheet time) and its tick 160ms later (`tick-draw`, 320ms). The step that waits for the host breathes between 35% and full opacity over 1.8 seconds; the player's own first step does not, because the field is the call to act. Nothing moves on first sight of the page. Only transform, opacity and stroke change. Reduced motion shows every state still.
+- **Measured.** Gap 16px at 320 and 390px and the card's place unchanged at 900 and 1280px; all four states driven through the real services with the animations named on the first frame and nothing running three seconds later.
+
 ## Do's and Don'ts
 
 ### Do:

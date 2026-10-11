@@ -1428,7 +1428,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-pips li { width: 22px; height: 6px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--line); }
 .count-pips li[data-status="ready"] { background: var(--bone); box-shadow: none; }
 .count-pips li[data-status="cashed_out"] { background: var(--good); box-shadow: none; }
-.own-count-lead { margin: 0 0 var(--s-5); }
+/* Stacked under the overview on a phone, the card keeps clear of that panel's rounded corners. */
+.own-count-lead { margin: var(--s-4) 0 var(--s-5); }
 .own-count-lead h2 { margin: 0 0 var(--s-2); font-size: 1.0625rem; }
 .own-count-lead .own-count-state { margin: 0; }
 .books { --felt-ink: var(--muted); }
@@ -1445,6 +1446,7 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
   .dock-enabled .count-v2 .count-entry input { scroll-margin-block-end: calc(var(--dock-h, 140px) + 16px); }
 }
 @media (min-width: 900px) {
+  .own-count-lead { margin-top: 0; } /* beside the overview, level with it */
   .count-layout.count-v2 > .end-balance { grid-row: 3; }
   .count-layout.count-v2.books-known > .end-balance { grid-row: 2; }
 }
@@ -1616,3 +1618,25 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 @keyframes install-drop { from { opacity: 0; transform: translateY(-22px) scale(.82); } }
 @keyframes install-name { from { opacity: 0; } }
 @keyframes install-lift { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+
+/* "Your count" (2026-10-11): where the count is, in three steps. A finished step is Bone with a
+   tick (the last one Green, as the count marks are); the step waited for is Brass. When the count
+   moves on, changes.js marks the card and the finished step's rule and tick draw. */
+.own-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: 0 0 var(--s-3); padding: 0; }
+.own-steps li { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; padding-top: 10px; font-size: .8125rem; font-weight: 600; color: var(--muted); }
+.own-steps li > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.own-steps li::before, .own-steps li::after { content: ""; position: absolute; inset: 0 0 auto; height: 3px; border-radius: var(--r-bar); }
+.own-steps li::before { background: var(--rule); }
+.own-steps li::after { background: var(--bone); transform: scaleX(0); transform-origin: left; }
+.own-steps li[data-state="done"], .own-steps li[data-state="now"] { color: var(--text); }
+.own-steps li[data-state="done"]::after { transform: none; }
+.own-steps li[data-state="done"]:last-child::after { background: var(--good); }
+.own-steps li[data-state="done"]:last-child .icon { color: var(--good); }
+.own-steps li[data-state="now"]::after { transform: none; background: var(--brass); }
+.own-steps .icon { flex: none; width: 14px; height: 14px; stroke-width: 3; }
+@media (prefers-reduced-motion: no-preference) {
+  .own-steps li[data-wait]::after { animation: own-wait 1.8s ease-in-out infinite alternate; }
+  .own-count.just-changed .own-steps li[data-fresh]::after { animation: mark-draw var(--t-sheet) var(--ease-out) backwards; }
+  .own-count.just-changed .own-steps li[data-fresh] .icon path { stroke-dasharray: 24; animation: tick-draw 320ms var(--ease-out) 160ms backwards; }
+}
+@keyframes own-wait { from { opacity: .35; } to { opacity: 1; } }
