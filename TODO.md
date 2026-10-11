@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Home screen suggestion and Join with a link ([plan](doc/plan/1791703670_install_prompt.md), [study](doc/study/1791703645_install_prompt.md)): built on `feat/install-prompt` on 2026-10-11. Not merged, not pushed. No migration.
+Home screen suggestion and Join with a link ([plan](doc/plan/1791703670_install_prompt.md), [study](doc/study/1791703645_install_prompt.md)): built on `feat/install-prompt` on 2026-10-11. Released 2026-10-11 as `6090ce1` (previous production commit `2557f50`); the live site serves `install.js`, the new manifest and the new styles. No migration. If anything is wrong, set `INSTALL_PROMPT=False` in Vercel first.
 
 - [ ] After release, in Safari on your iPhone: log out and log in. About a second after Your groups shows, the sheet should rise with the two steps.
 - [ ] Follow the steps. Open PokerNights from the home screen and log in: no sheet should appear there, and Your groups should end with "Join with a link".

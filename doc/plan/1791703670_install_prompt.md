@@ -1,6 +1,6 @@
 # Suggest adding the app to the home screen: plan
 
-Status: approved 2026-10-11 with two changes (see "Changes at approval"). Date: 2026-10-11, Asia/Manila. Study: [Suggest adding the app to the home screen](../study/1791703645_install_prompt.md).
+Status: approved 2026-10-11 with two changes (see "Changes at approval"). Built and released. Date: 2026-10-11, Asia/Manila. Study: [Suggest adding the app to the home screen](../study/1791703645_install_prompt.md).
 
 ## Outcome
 
@@ -119,3 +119,5 @@ Acceptance: 1, 3 (as changed: every login), 4, 5 and 6 are met in headless Chrom
 Not verified: a real iPhone or Android phone; Chrome's real install dialog; whether Android opens a tapped link in the installed app (it depends on how the app was installed and on the chat app); the wording of the in-app browsers' own menus, which differ ("Open in browser", "Open in Safari", "Open in external browser"); an iPad. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki (features, architecture, deployment), PRODUCT.md, DESIGN.md, browser README, TODO.
+
+2026-10-11 release: the human said "push". `feat/install-prompt` was merged to `main` as `6090ce1` and pushed (previous production commit `2557f50`). 1011 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About two and a half minutes later the live login page named `install.js`, which is served; the live manifest holds `launch_handler` and the live stylesheet the install rules. No login was made on the live site, so the sheet itself was not seen there.
