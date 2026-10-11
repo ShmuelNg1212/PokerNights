@@ -111,7 +111,7 @@
     </section>
     {% endif %}
     {% if recap %}
-    <section class="sheet-source recap-source" data-sheet-source="recap" data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
+    <section class="sheet-source recap-source" data-sheet-source="recap" data-sheet-reads data-title="Session recap" data-recap="{{ night.pk }}:{{ user.pk }}">
       <h2>Session recap</h2>
       {% include "web/_night_recap.html" %}
     </section>

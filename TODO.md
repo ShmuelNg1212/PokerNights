@@ -4,6 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The session recap opens at its top ([plan](doc/plan/1791715366_recap_opens_at_bottom.md), [study](doc/study/1791715365_recap_opens_at_bottom.md)): built on `fix/recap-opens-at-top` on 2026-10-11. Not merged, not pushed. No migration.
+
+- [ ] After release, on your phone: open a closed session and tap "View session recap". It should show its first line. Scroll to the end, tap "Share results": the share sheet should also start at its top.
+
 Your groups and a group's sessions update by themselves ([plan](doc/plan/1791711535_hub_pages_live.md), [study](doc/study/1791711534_hub_pages_live.md)): built on `fix/hub-pages-live` on 2026-10-11. Released 2026-10-11 as `1da9bfd` (previous production commit `6cae533`); the live site answers the new state address and serves the new `nightlive.js`. No migration. Phone acceptance is open.
 
 - [ ] After release, with a player's phone on Your groups: as the host, create a session and open its set. Within about 5 seconds the player's card should show the table.
