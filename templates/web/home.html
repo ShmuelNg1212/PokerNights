@@ -18,6 +18,7 @@
   <p class="muted small">Joining a friend's game instead? Open the invite link a host sent you.</p>
 </section>
 {% endif %}
+{% if install_prompt %}{% include "web/_home_app.html" %}{% endif %}
 {% if archived_groups %}
 <details class="home-create home-archived" id="archived"><summary>Archived groups ({{ archived_groups|length }})</summary>
   <p class="small muted">Hidden from every member. Nothing was removed.</p>

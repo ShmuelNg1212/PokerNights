@@ -149,7 +149,7 @@ class WelcomeTests(TestCase):
         cookie = answer.cookies[ARRIVED]
         self.assertEqual((cookie.value, cookie["max-age"], cookie["samesite"], cookie["path"]), ("1", 30, "Lax", "/"))
         page = self.client.get(self.home)
-        self.assertContains(page, 'class="page hub-page home-page" data-depth="0" data-welcome>')
+        self.assertContains(page, 'class="page hub-page home-page" data-depth="0" data-welcome data-came-in>')
         self.assertEqual(page.cookies[ARRIVED].value, "")  # removed by the page that read it
         self.assertEqual(page.cookies[ARRIVED]["max-age"], 0)
         for _ in range(2):  # a reload, a later visit
@@ -212,7 +212,8 @@ class WelcomeTests(TestCase):
     def test_the_cookie_is_secure_where_the_session_cookie_is(self):
         self.assertTrue(self.log_in().cookies[ARRIVED]["secure"])
 
-    @override_settings(DOOR_MOTION=False)
+    # The home-screen suggestion reads the same cookie, so only both switches off leave it unset.
+    @override_settings(DOOR_MOTION=False, INSTALL_PROMPT=False)
     def test_the_switch_removes_it(self):
         self.assertNotIn(ARRIVED, self.log_in().cookies)
         self.client.cookies[ARRIVED] = "1"

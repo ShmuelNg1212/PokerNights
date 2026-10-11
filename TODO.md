@@ -4,6 +4,16 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Home screen suggestion and Join with a link ([plan](doc/plan/1791703670_install_prompt.md), [study](doc/study/1791703645_install_prompt.md)): built on `feat/install-prompt` on 2026-10-11. Not merged, not pushed. No migration.
+
+- [ ] After release, in Safari on your iPhone: log out and log in. About a second after Your groups shows, the sheet should rise with the two steps.
+- [ ] Follow the steps. Open PokerNights from the home screen and log in: no sheet should appear there, and Your groups should end with "Join with a link".
+- [ ] In a chat, long-press an invite link and copy it. In the installed app, open Join with a link, paste and open it.
+- [ ] Back in Safari, log in again: the sheet shows again. Tap "Done, it's on my home screen" and log in once more: it should stay away.
+- [ ] If you have an Android phone at the table: log in with Chrome and tap Install. Then tap an invite link in a chat and see whether it opens in the installed app.
+- [ ] Open an invite link inside Messenger and log in there: the sheet should say to open the real browser.
+- [ ] Say if every login is too often once people have seen it a few times.
+
 Share results ([plan](doc/plan/1791701751_share_results.md), [study](doc/study/1791701725_share_results.md)): built on `feat/share-results` on 2026-10-11. Released 2026-10-11 as `2557f50` (previous production commit `be3bcf2`); the live site serves `share.js` and the new styles. No migration. If anything is wrong, set `SHARE_RESULTS=False` in Vercel first.
 
 - [ ] After release, on your phone on a closed session: tap Share results. The card should be dealt onto the sheet and uncovered from the top.

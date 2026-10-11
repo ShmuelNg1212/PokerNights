@@ -44,6 +44,7 @@
   <script src="{% static 'js/stats.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/settle.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/share.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/install.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/perf.js' %}" defer data-turbo-track="reload"></script>
 </head>
 <body data-method="{{ request.method }}">
@@ -60,7 +61,7 @@
     {% endif %}
   </header>{% endblock %}
   <div id="route-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true" data-turbo-permanent></div>
-  <main id="main" tabindex="-1" class="page {% block page_class %}{% endblock %}"{% block screen %}{% endblock %}{% block welcome %}{% if door.welcome %} data-welcome{% endif %}{% endblock %}>
+  <main id="main" tabindex="-1" class="page {% block page_class %}{% endblock %}"{% block screen %}{% endblock %}{% block welcome %}{% if door.welcome %} data-welcome{% endif %}{% if door.came_in %} data-came-in{% endif %}{% endblock %}>
     {% if messages %}
     <ul class="messages" role="status">
       {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
@@ -68,5 +69,6 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  {% if install_prompt and user.is_authenticated %}{% include "_install.html" %}{% endif %}
 </body>
 </html>

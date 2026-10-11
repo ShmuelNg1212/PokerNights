@@ -1,0 +1,14 @@
+{# Shown by install.js: in a phone's browser, the way back to the home-screen steps; in the installed app, where links from a chat do not arrive, a field to paste one. #}
+<div class="home-app">
+  <button hidden type="button" class="btn btn-quiet btn-block" data-install-open>Add to home screen</button>
+  <details hidden class="home-create home-link" data-app-link>
+    <summary class="btn btn-block">Join with a link</summary>
+    <form class="stack" data-app-link-form novalidate>
+      <p class="small muted">A link tapped in a chat opens in the browser, not here. Copy the link and paste it.</p>
+      <div class="field"><label for="app-link">Invite, claim or reset link</label>
+        <input id="app-link" type="text" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="app-link-error"></div>
+      <p class="sheet-error" id="app-link-error" role="alert" hidden></p>
+      <div class="form-row"><button hidden type="button" class="btn" data-app-link-paste>Paste</button><button type="submit" class="btn btn-primary grow">Open link</button></div>
+    </form>
+  </details>
+</div>

@@ -59,5 +59,5 @@ def offline(request):
 
 def flags(request):
     """Template context: the service worker, the in-app numpad, one-trip answers to in-place actions, and password reset links."""
-    return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD, "answer_in_place": settings.ANSWER_IN_PLACE,
+    return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD, "answer_in_place": settings.ANSWER_IN_PLACE, "install_prompt": settings.INSTALL_PROMPT,
             "reset_links": settings.RESET_LINKS}
