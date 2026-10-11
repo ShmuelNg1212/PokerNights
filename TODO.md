@@ -4,10 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-The look of the table in the seat draw ([plan](doc/plan/1791735776_draw_table_look.md), [study](doc/study/1791735775_draw_table_look.md)): built on `feat/draw-table-look` on 2026-10-12. Merged as `0c168bc` and pushed 2026-10-12 (previous production commit `c91dc68`). Not confirmed live from the agent's side: Vercel answered its checks with a security challenge. No migration.
+The look of the table in the seat draw ([plan](doc/plan/1791735776_draw_table_look.md), [study](doc/study/1791735775_draw_table_look.md)): built on `feat/draw-table-look` on 2026-10-12. Merged as `0c168bc` and pushed 2026-10-12 (previous production commit `c91dc68`). Accepted 2026-10-12: the human said "the revamped table works on the live version." No migration.
 
-- [ ] After release, on two phones: draw seats on an open set. Say whether the table now reads as a poker table, whether the light and the winner's moment are enough, and whether the shorter draw (about two and a half seconds) is the right length.
-- [ ] Check the still table on the set page, before and after starting the set.
+- [x] After release, on two phones: draw seats on an open set. Say whether the table now reads as a poker table, whether the light and the winner's moment are enough, and whether the shorter draw (about two and a half seconds) is the right length.
+- [x] Check the still table on the set page, before and after starting the set.
 
 Unpaid transfers carried into a later session ([plan](doc/plan/1791728777_carried_debts.md), [study](doc/study/1791728776_carried_debts.md)): built on `feat/carried-debts` on 2026-10-11. Released 2026-10-11 as `c91dc68` (previous production commit `dc6e00c`); the live site serves `carry.js` and its styles. One migration that adds one table. Accepted 2026-10-12: the human tested on the live build and said "they work in the live version well." `CARRY_DEBTS=False` turns it off.
 

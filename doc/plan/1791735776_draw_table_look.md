@@ -98,3 +98,5 @@ Not verified: real phones; whether the table reads as a poker table to the human
 Documentation synced: DESIGN.md, wiki (features, architecture), browser README, TODO.
 
 2026-10-12 release: the human said "push". `feat/draw-table-look` (with the later fix `02955fe`, which creates the stage's mark together with its image) was merged to `main` as `0c168bc` and pushed (previous production commit `c91dc68`). 1103 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. The release could not be confirmed from here: after the push every request the agent made to the live site was answered 403 with Vercel's security checkpoint (`x-vercel-mitigated: challenge`), most likely because of the agent's own repeated checks during this and earlier releases. The agent stopped asking and did not try to get past it. Whether the build finished, and whether the checkpoint shows to anyone else, is for the human to see in a browser.
+
+2026-10-12 acceptance: the human said "ok, the revamped table works on the live version." So the build went live. The human did not say whether a checkpoint screen was seen, or comment on the shorter draw.
