@@ -55,3 +55,5 @@ Acceptance: 1 and 2 are met. 3 (the host's page unchanged) rests on the rule tou
 Not verified: a real phone; a screen reader; the part of `player_entries.mjs` after its stop. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki features, DESIGN.md, TODO.
+
+2026-10-11 release: the human said "push". `fix/your-count-gap` was merged to `main` as `6cae533` and pushed (previous production commit `243ce78`). 1020 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About two and a quarter minutes later the live stylesheet held the gap rule and the step rules and the login page answered 200. No count-up page was opened signed in on the live site, so the card itself was not seen there.

@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-"Your count" card ([plan](doc/plan/1791710364_your_count_gap.md), [study](doc/study/1791710363_your_count_gap.md)): built on `fix/your-count-gap` on 2026-10-11. Not merged, not pushed. No migration.
+"Your count" card ([plan](doc/plan/1791710364_your_count_gap.md), [study](doc/study/1791710363_your_count_gap.md)): built on `fix/your-count-gap` on 2026-10-11. Released 2026-10-11 as `6cae533` (previous production commit `243ce78`); the live stylesheet holds the gap and the step rules. No migration.
 
 - [ ] After release, as a player on a set that is counting up: "Your count" should sit clear of the panel above it.
 - [ ] Send a count: the Counted step should draw in with a tick and Confirmed should breathe.
