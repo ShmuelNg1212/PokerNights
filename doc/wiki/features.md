@@ -175,7 +175,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The transfer list excludes rake already collected at buy-in. It assumes no earlier player payments. A player payment during the game cannot be recorded yet.
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
-- Your groups and the group page do not refresh by themselves; the set page and the session page do.
+- A group's Stats and Group settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.
 - No banker mode, no seating and no seasons. Stats have no minimum-session threshold, average result or ROI yet.
 - No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
 - On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
@@ -545,3 +545,15 @@ Everyone with a session page open sees what another person does within about 5 s
 - The card shows where the player's count is, in three steps: **Counted** (the player sent it, or the host counted for them), **Confirmed** (by the host), **Cashed out**. A finished step has a tick; the step that is waited for is Brass.
 - When the count moves on, on anyone's phone, the player's card is marked for three seconds and the finished step draws in. While the next step is the host's, its mark breathes slowly.
 - The card's words, field and button are unchanged. The steps are read out as one sentence ("Step 2 of 3: counted, waiting for the host to confirm.").
+
+## Your groups and a group's sessions update by themselves (2026-10-11)
+
+A person on Your groups or on a group's Sessions tab sees what someone else does within about 5 seconds, without a reload. [Plan](../plan/1791711535_hub_pages_live.md).
+
+- **What arrives:** a session created and its set opened, a set's state (Open, In play, Counting up, Finalized), the number at the table, a new member, the session closed, reopened or archived, a transfer marked paid or unpaid ("you owe", the settle badge).
+- **What does not:** buy-ins and cash-outs, which these pages do not show.
+- **It waits** while a field has focus or typing, a form such as New group is open, or the page is the answer to a form. It lands within a second of that ending.
+- **Group settings and Stats never redraw by themselves.** Group settings shows a new invite, claim or reset link once; a redraw would lose it.
+- **How often:** as the session page: every 5 seconds, every 20 after two quiet minutes, not while hidden, at once on return.
+- The page asks once as it starts and takes that answer as its starting point. A change made in the instant between the page being drawn and that answer shows at the next change or visit.
+- Check: `web/tests/browser/hub_live.mjs` with `seed.py`.

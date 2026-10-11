@@ -2,7 +2,10 @@
 {% block screen %} data-depth="0"{% endblock %}
 {% load static table_tags %}
 {% block page_class %}hub-page home-page{% if cards|length > 1 %} home-many{% endif %}{% endblock %}
+{# Redrawn in place when something on it changes for someone else (nightlive.js asks home_state). #}
+{% block head %}<meta name="turbo-refresh-method" content="morph"><meta name="turbo-refresh-scroll" content="preserve">{% endblock %}
 {% block content %}
+<span hidden data-state-url="{% url 'home_state' %}"></span>
 {% if cards %}
 <header class="page-heading"><h1>Your groups</h1></header>
 <div class="home-groups">{% for card in cards %}{% include "web/_group_card.html" %}{% endfor %}</div>

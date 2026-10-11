@@ -53,11 +53,17 @@ class InPlaceMarksTests(TestCase):
     def test_other_pages_have_no_marked_form_and_no_morph_setting(self):
         group = self.night.group
         open_night = reverse("night", args=[self.night.session.night_id])
-        for url in (reverse("home"), reverse("group", args=[group.pk]), reverse("group", args=[group.pk]) + "?view=settings",
+        # Your groups and the Sessions tab are redrawn in place when someone else changes them
+        # (nightlive.js), so they declare it; their forms still load a page.
+        redrawn = (reverse("home"), reverse("group", args=[group.pk]))
+        for url in (*redrawn, reverse("group", args=[group.pk]) + "?view=settings",
                     reverse("session_create", args=[group.pk]), reverse("login")):
             page = self.client.get(url, follow=True)
             self.assertEqual(self.marked(page), [], url)
-            self.assertNotContains(page, "turbo-refresh-method")
+            if url in redrawn:
+                self.assertContains(page, 'name="turbo-refresh-method" content="morph"')
+            else:
+                self.assertNotContains(page, "turbo-refresh-method")
         for f in forms(self.client.get(open_night)):
             if any(part in f for part in ELSEWHERE):
                 self.assertNotIn("data-turbo", f)

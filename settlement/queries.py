@@ -517,6 +517,46 @@ def night_stamp(night) -> str:
     return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments)
 
 
+def hub_stamp(group_ids) -> str:
+    """A short mark of what Your groups and a group's Sessions tab show that another person can change.
+
+    Over these groups: each set's state and the moment it was finalized, with its session's status
+    and archive mark; how many players are at the table of each unfinished set; how many active
+    members each group has; each transfer list and whether it is current; how many payments exist
+    and stand. Derived on each read and never stored (``web.views.home_state``, ``group_state``).
+    """
+    import hashlib
+
+    from django.db.models import Count, Q
+
+    from games.models import Participant
+    from games.services import UNFINISHED_STATES
+
+    group_ids = sorted(group_ids)
+    sets = list(
+        GameSession.objects.filter(group_id__in=group_ids).order_by("pk")
+        .values_list("pk", "state", "finalized_at", "night_id", "night__status", "night__archived_at")
+    )
+    seated = list(
+        Participant.objects.filter(session__group_id__in=group_ids, session__state__in=UNFINISHED_STATES,
+                                   status=Participant.Status.JOINED)
+        .values("session_id").annotate(count=Count("pk")).order_by("session_id").values_list("session_id", "count")
+    )
+    members = list(
+        Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE)
+        .values("group_id").annotate(count=Count("pk")).order_by("group_id").values_list("group_id", "count")
+    )
+    plans = list(SettlementPlan.objects.filter(night__group_id__in=group_ids).order_by("pk").values_list("pk", "is_current"))
+    paid = Payment.objects.filter(night__group_id__in=group_ids).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
+    seen = (
+        group_ids,
+        [(pk, state, done.isoformat() if done else None, night, status, archived is not None)
+         for pk, state, done, night, status, archived in sets],
+        seated, members, plans, paid["made"], paid["standing"],
+    )
+    return hashlib.sha1(repr(seen).encode()).hexdigest()[:16]
+
+
 def night_has_records(night) -> bool:
     """True when the session has a settle-up plan or a payment record."""
     return SettlementPlan.objects.filter(night=night).exists() or Payment.objects.filter(night=night).exists()
