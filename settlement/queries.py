@@ -99,7 +99,7 @@ def settle_states(night_ids) -> dict:
     if not night_ids:
         return {}
     states = {night_id: SettleState() for night_id in night_ids}
-    transfers = Transfer.objects.filter(plan__night_id__in=night_ids)
+    transfers = Transfer.objects.filter(plan__night_id__in=night_ids, plan__is_current=True)
     for row in transfers.values("plan__night_id").annotate(count=Count("pk"), total=Sum("amount")):
         state = states[row["plan__night_id"]]
         state.transfers, state.total_to_pay = row["count"], row["total"]
@@ -141,6 +141,7 @@ class NightOutcome:
     transfers: list = field(default_factory=list)
     payments: list = field(default_factory=list)
     results: list = field(default_factory=list)  # services.result_rows(night), kept for the recap
+    replaced: list = field(default_factory=list)  # earlier plans, retired when the session was reopened
 
     @property
     def total_to_pay(self):
@@ -193,7 +194,14 @@ def night_outcome(night) -> NightOutcome:
         standing.join_order = order
         standing.rake_total = balances[standing.pk] - standing.net
     identities = {s.member.pk: s for s in found.standings}
-    found.plan = SettlementPlan.objects.filter(night=night).first()
+    # One read for the current list and for any that a reopening replaced.
+    plans = list(SettlementPlan.objects.filter(night=night).select_related("voided_by").order_by("created_at", "id"))
+    found.plan = next((plan for plan in plans if plan.is_current), None)
+    found.replaced = [plan for plan in plans if not plan.is_current]
+    if found.replaced:
+        from django.db.models import prefetch_related_objects
+
+        prefetch_related_objects(found.replaced, "transfers__payer", "transfers__payee")
     if found.plan is not None:
         found.transfers = list(
             Transfer.objects.filter(plan=found.plan).select_related("payer", "payee").order_by("position")
@@ -459,7 +467,7 @@ def unpaid_transfers(member_ids) -> list:
     paid = Payment.objects.filter(active=True, transfer__isnull=False).values("transfer_id")
     return list(
         Transfer.objects.filter(Q(payer_id__in=member_ids) | Q(payee_id__in=member_ids))
-        .filter(plan__night__archived_at__isnull=True)
+        .filter(plan__is_current=True, plan__night__archived_at__isnull=True)
         .exclude(pk__in=paid)
         .select_related("payer", "payee", "plan__night__table")
         .order_by("plan__night__game_date", "plan__night_id", "position")
@@ -482,4 +490,4 @@ def night_has_records(night) -> bool:
 def unpaid_in(night) -> list:
     """The transfers of this session that nobody has marked paid."""
     paid = Payment.objects.filter(active=True, transfer__isnull=False).values("transfer_id")
-    return list(Transfer.objects.filter(plan__night=night).exclude(pk__in=paid).select_related("payer", "payee").order_by("position"))
+    return list(Transfer.objects.filter(plan__night=night, plan__is_current=True).exclude(pk__in=paid).select_related("payer", "payee").order_by("position"))

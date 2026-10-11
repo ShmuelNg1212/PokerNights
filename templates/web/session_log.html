@@ -80,6 +80,16 @@
 
 {% endif %}
 
+{% for old in replaced %}
+<h2>Results <span class="badge">Replaced</span> <span class="muted small">revision {{ old.revision }} · {{ old.created_at|date:"M j, H:i" }} · {{ old.finalized_by.username }}</span></h2>
+<p class="small muted">Reopened {{ old.voided_at|date:"M j, H:i" }} by {{ old.voided_by.username }}. Reason: {{ old.void_reason }}</p>
+<ul class="list log-records">
+  {% for r in old.results.all %}
+  <li class="row"><span class="grow struck">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount struck">{{ r.net|signed_amount:session.unit }}</span></li>
+  {% endfor %}
+</ul>
+{% endfor %}
+
 <p class="small"><a href="{% url 'night' session.night_id %}">Who pays whom and payment records are on the session page.</a></p>
 
 <h2 id="audit">Who did what</h2>

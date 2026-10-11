@@ -38,6 +38,13 @@
         </form>
         {% endif %}
         {% endif %}
+        {% if can_add_missed and p.status != 'withdrawn' %}
+        <details class="missed-buy-in" data-key="missed-{{ p.pk }}">
+          <summary class="btn btn-quiet btn-block">Add a missed buy-in</summary>
+          <p class="small muted">For a buy-in that was played but never recorded. {{ p.member.display_name }}'s cash-out stays as it is.</p>
+          {% include "web/_buy_in_form.html" %}
+        </details>
+        {% endif %}
         {% if not line.has_money %}{% if can_manage_players or p.member_id == me.pk and can_join %}
         <form method="post" data-turbo="true" action="{% url 'participant_withdraw' session.pk p.pk %}">{% csrf_token %}
           <button type="submit" class="btn btn-small btn-danger">{% if p.member_id == me.pk %}Leave this set{% else %}Remove from set{% endif %}</button>

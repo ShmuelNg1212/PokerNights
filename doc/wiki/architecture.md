@@ -44,7 +44,7 @@ User ─1:n─ Member ─n:1─ GameGroup ─1:n─ Invite
                                       │          ├─1:n─ CashOut ─0:1─ CashOutReversal
                                       │          └─1:n─ BalanceAdjustment
                                       ├─1:n─ Finalization ─1:n─ PlayerResult
-                                      │          └─1:1─ SettlementPlan ─1:n─ Transfer
+                                      │          └─1:n─ SettlementPlan ─1:n─ Transfer
                                       └─1:n─ Payment ─0:1─ PaymentReversal   (Payment → Transfer)
 AuditEvent (group_id, session_id as plain integers)
 ```
@@ -294,3 +294,15 @@ Two things now replace content on the set page without a reload: the 4-second po
 - **Charts** are positions worked out in `web/charts.py` as percentages of a box. The template draws the line as one SVG path stretched to the box (`preserveAspectRatio="none"`, `vector-effect: non-scaling-stroke`) and the labels, end mark and bars as positioned HTML, so text and round ends never distort. `stats.js` adds the readout; without it the chart and the list are complete.
 - **A stats filter is the same screen.** `main` carries `data-stats`; when a visit goes from one stats screen to the same kind, `turbo-setup.js` starts no view transition. `stats.js` holds, from the tap until the new screen is in, the scroll position, which pill was chosen and where, and each row's place. It marks Turbo's visit as already scrolled (`Turbo.navigator.currentVisit.scrolled`, an internal of the vendored 8.0.23) and sets the position again on `turbo:load`; then it slides the pill marker, brings in `[data-stat-body]`, or moves the rows. The links and the Month form use `data-turbo-action="replace"`; the form needs `data-turbo="true"` because forms are opt-in here.
 - **Older stats code stays:** `queries.group_stats` and `member_records` serve Your groups and the switched-off tab (`_group_stats_legacy.html`).
+
+## Reopening
+
+Two more transitions, both in `settlement.services`, host only, with a required reason, idempotent by state like finalize and close. [Plan](../plan/1791699815_reopen_set_and_session.md).
+
+- `reopen_set()`: `finalized → reconciliation`. Refused while the session is closed. `ledger.services.void_results()` marks the current `Finalization` and its `PlayerResult` rows not current and fills `voided_at`, `voided_by`, `void_reason`; `games.services.mark_reopened()` changes the state and clears `finalized_at`. `ended_at` and the play periods are untouched. `write_results()` then writes revision `n + 1`.
+- `reopen_night()`: `closed → open`. Refused while the current plan has an active `Payment`. The plan is marked not current with the same three void fields; `close_night()` writes a new one.
+- **A session has several plans, one current.** `SettlementPlan.night` is a plain link (`night.plans`) with the partial unique rule `plan_one_current`. Every reader of transfers filters `plan__is_current=True`: `night_outcome()` (which also returns `replaced`), `settle_states()`, `unpaid_transfers()`, `unpaid_in()`, `services._transfer()`. A new reader must do the same, or a retired transfer shows as owed.
+- `ledger.services.is_reopened(session)` is true while a set with an earlier finalization is counting up. Only then does `record_buy_in()` accept a host's buy-in outside open and running; it does not reclassify the player's final cash-out.
+- Stats need no change: they read current results of finalized sets in closed sessions.
+- Audit actions: `session.reopened` (with the retired nets) and `night.reopened`.
+- Screens: `_reopen_set.html`, `_correction.html` (the reason line), the session's manage disclosure. The arrival of the reason line is in `changes.js` (`[data-reopened]`, once per reopening and browser, as the books' rule).

@@ -7,6 +7,7 @@
       {# The proof first, for everyone: what went in, what came out, and that the two agree. #}
       <p class="final-proof">{{ outcome.results|length }} player{{ outcome.results|length|pluralize }} · {{ outcome.finalization.total_buy_in|amount:unit }} in · {{ outcome.finalization.total_cash_out|amount:unit }} out{% if outcome.finalization.total_rake %} · {{ outcome.finalization.total_rake|amount:unit }} rake{% endif %}
         <span class="verdict" data-tone="{% if outcome.finalization.raw_difference %}warn{% else %}good{% endif %}">{% if outcome.finalization.raw_difference %}Off by {{ outcome.finalization.raw_difference|signed_amount:unit }}, covered by an override.{% else %}The books balance.{% if outcome.finalization.total_rake %} Cash-outs plus rake equal gross buy-ins.{% endif %}{% endif %}</span></p>
+      {% if correction %}{% include "web/_correction.html" with record=correction lead="Corrected." %}{% endif %}
       {% if my_result %}
       <p class="final-title">Your result in set {{ session.set_number }}</p>
       <div class="final-amount {{ my_result.net|sign_class }}">{% include "web/_result_icon.html" with net=my_result.net %} {% if my_result.net == 0 %}Even{% else %}{{ my_result.net|signed_amount:unit }}{% endif %}</div>
@@ -19,6 +20,7 @@
       {% if night.is_closed %}<p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>{% else %}<p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>{% endif %}
       <a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>
     </div>
+    {% if can_reopen %}{% include "web/_reopen_set.html" %}{% endif %}
   </aside>
   {% include "web/_results.html" %}
 </div>

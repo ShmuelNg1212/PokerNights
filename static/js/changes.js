@@ -24,6 +24,16 @@
       var key = "balanced:" + el.dataset.balance;
       try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); } } catch (_) {}
     });
+    // A set coming back to be corrected is a moment too, once per reopening: the brass rule draws, then the reason rises.
+    region.querySelectorAll("[data-reopened]").forEach(function (el) {
+      var key = "reopened:" + el.dataset.reopened;
+      try {
+        if (localStorage.getItem(key)) return;
+        localStorage.setItem(key, "1");
+        el.classList.add("reopen-arrived");
+        move(el.querySelector(".correction-text"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.18 });
+      } catch (_) {}
+    });
     region.querySelectorAll("[data-watch]").forEach(function (el) {
       var key = prefix + el.dataset.watch, value = el.dataset.value;
       var previous = seen[key];

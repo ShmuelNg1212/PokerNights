@@ -11,12 +11,29 @@ from groups.models import Member
 
 
 class SettlementPlan(models.Model):
-    """The who-pays-whom list of a session. Written once, when the session is closed."""
+    """The who-pays-whom list of a session. Written when the session is closed.
 
-    night = models.OneToOneField(GameNight, on_delete=models.PROTECT, related_name="plan")
+    Reopening the session marks the plan not current; it is never edited or
+    removed. Closing again writes a new plan.
+    """
+
+    night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="plans")
+    is_current = models.BooleanField(default=True)
     # False only if the exact search was skipped (more parties than a table can seat).
     proven_minimal = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Filled when the host reopens the session: who, when and why this list stopped being current.
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    void_reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["night", "created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["night"], condition=Q(is_current=True), name="plan_one_current"),
+        ]
 
     def __str__(self):
         return f"Settlement plan of {self.night}"

@@ -563,6 +563,17 @@ def mark_finalized(session: GameSession) -> None:
     touch(session)
 
 
+def mark_reopened(session: GameSession) -> None:
+    """Return a finalized set to counting up. Called only by the reopen service, with the session locked.
+
+    Play stays ended: ``ended_at`` and the play periods are as they were.
+    """
+    session.state = State.RECONCILIATION
+    session.finalized_at = None
+    session.save(update_fields=["state", "finalized_at"])
+    touch(session)
+
+
 # --- Participants -----------------------------------------------------------
 
 # Checks that run before a participant is withdrawn. An app that holds a

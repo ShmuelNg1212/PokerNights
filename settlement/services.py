@@ -4,6 +4,7 @@ A set is finalized on its own: that freezes its results. Who pays whom is
 decided once per session, over all of its sets, when the host closes it.
 """
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
@@ -43,6 +44,74 @@ def finalize(session_id, actor: Member) -> Finalization:
     )
     games.mark_finalized(session)
     return finalization
+
+
+def _reopen_reason(reason) -> str:
+    if not settings.REOPENING:
+        raise RuleError("Reopening is turned off.")
+    reason = " ".join((reason or "").split())[:255]
+    if not reason:
+        raise RuleError("Give a reason for reopening. It stays in the log.")
+    return reason
+
+
+@transaction.atomic
+def reopen_set(session_id, actor: Member, reason: str = "") -> GameSession:
+    """Return a finalized set to counting up so the host can correct it. Finalizing again writes the next revision.
+
+    The results leave the session's totals until then. The retired revision stays, with the reason.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if ledger.is_reopened(session):
+        return session  # a repeated tap
+    if session.state != State.FINALIZED:
+        raise RuleError("Only a finalized set can be reopened.")
+    if session.night.is_closed:
+        raise RuleError("The session is closed. Reopen the session first.")
+    reason = _reopen_reason(reason)
+    retired = ledger.void_results(session, actor, reason)
+    audit.record(
+        "session.reopened", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=retired,
+        summary=f"Reopened set {session.set_number} to correct it; results revision {retired.revision} replaced",
+        reason=reason, data={"nets": {str(r.participant_id): r.net for r in retired.results.all()}},
+    )
+    games.mark_reopened(session)
+    return session
+
+
+@transaction.atomic
+def reopen_night(night_id, actor: Member, reason: str = "") -> GameNight:
+    """Open a closed session again: its who-pays-whom list is retired and closing writes a new one.
+
+    Refused while a transfer is marked paid, so no list ever has to account for money that already moved.
+    """
+    require_host(actor)
+    night = games.lock_night(night_id, actor.group_id)
+    if not night.is_closed:
+        return night  # a repeated tap
+    reason = _reopen_reason(reason)
+    plan = SettlementPlan.objects.filter(night=night, is_current=True).first()
+    paid = Payment.objects.filter(transfer__plan=plan, active=True).count() if plan is not None else 0
+    if paid:
+        raise RuleError(
+            f"{paid} transfer{' is' if paid == 1 else 's are'} marked paid. "
+            f"Mark {'it' if paid == 1 else 'them'} unpaid first."
+        )
+    if plan is not None:
+        plan.is_current = False
+        plan.voided_at, plan.voided_by, plan.void_reason = timezone.now(), actor.user, reason
+        plan.save(update_fields=["is_current", "voided_at", "voided_by", "void_reason"])
+    night.status = GameNight.Status.OPEN
+    night.closed_at = None
+    night.save(update_fields=["status", "closed_at"])
+    audit.record(
+        "night.reopened", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=night,
+        summary="Reopened the session; its transfer list is replaced when it is closed again", reason=reason,
+    )
+    # Open set pages poll their set's version: bump it so they show the open session.
+    GameSession.objects.filter(night=night).update(version=F("version") + 1)
+    return night
 
 
 def session_results(night: GameNight) -> list:
@@ -103,7 +172,7 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
     require_host(actor)
     night = games.lock_night(night_id, actor.group_id)
     if night.is_closed:
-        plan = SettlementPlan.objects.filter(night=night).first()
+        plan = SettlementPlan.objects.filter(night=night, is_current=True).first()
         if plan is not None:
             return plan  # a repeated tap
         raise RuleError("This session is closed and has no results to settle.")
@@ -145,7 +214,7 @@ def close_night(night_id, actor: Member) -> SettlementPlan:
 
 
 def _transfer(night, transfer_id) -> Transfer:
-    transfer = Transfer.objects.select_related("payer", "payee").filter(pk=transfer_id, plan__night=night).first()
+    transfer = Transfer.objects.select_related("payer", "payee").filter(pk=transfer_id, plan__night=night, plan__is_current=True).first()
     if transfer is None:
         raise RuleError("That transfer is not in this session.")
     return transfer

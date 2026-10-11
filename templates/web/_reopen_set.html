@@ -1,0 +1,28 @@
+{# A finalized set's way back, for a host. It asks once, with the reason, in the sheet that Finalize uses. #}
+<section class="set-correct stack" aria-labelledby="correct-title">
+  <h2 id="correct-title">Found a mistake?</h2>
+  {% if night.is_closed %}
+  <p class="small muted">The session is closed, and its transfer list was worked out from this set. Reopen the session first, then this set.</p>
+  <a class="btn btn-quiet btn-block" href="{% url 'night' session.night_id %}#manage">Go to the session</a>
+  {% else %}
+  <p class="small muted">Reopen the set to correct a count, a cash-out or a buy-in, then finalize it again.</p>
+  <button hidden type="button" class="btn btn-quiet btn-block reopen-opener" data-sheet-open="reopen">Reopen set</button>
+  <details class="sheet-source" data-key="reopen" data-sheet-source="reopen" data-title="Reopen set {{ session.set_number }}?">
+    <summary class="btn btn-quiet btn-block">Reopen set</summary>
+    <div class="sheet-content stack">
+      <ul class="reopen-effects">
+        <li>Set {{ session.set_number }} goes back to counting up.</li>
+        <li>Its results leave the session totals until you finalize again.</li>
+        <li>The results as they are now stay in the set log, marked replaced.</li>
+      </ul>
+      <form method="post" data-turbo="true" action="{% url 'session_reopen' session.pk %}" class="stack" data-once>{% csrf_token %}
+        <div class="field"><label for="reopen-reason">What needs correcting?</label>
+          <input id="reopen-reason" type="text" name="reason" data-keep="reopen-reason" data-sheet-focus maxlength="255" required autocomplete="off" aria-describedby="reopen-reason-help">
+          <p class="hint" id="reopen-reason-help">Everyone on the set sees this. It stays in the log.</p></div>
+        <button type="submit" class="btn btn-primary btn-block">Reopen set {{ session.set_number }}</button>
+      </form>
+      <button hidden type="button" class="btn btn-quiet btn-block sheet-cancel" data-sheet-close>Keep it final</button>
+    </div>
+  </details>
+  {% endif %}
+</section>
