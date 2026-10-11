@@ -74,6 +74,8 @@ try {
   check('player count field and button are 48px '+width,await P.js(`['#own-count','.own-count [type=submit]'].every(s=>document.querySelector(s).getBoundingClientRect().height>=48)`));
   await P.shot('entries-player-count-'+width);}
  await P.size(390);
+ check('player: the card keeps 16px clear of the overview above it',await P.js(`(()=>{const h=document.querySelector('.count-layout > .felt').getBoundingClientRect(),o=document.querySelector('.own-count-lead').getBoundingClientRect();return Math.round(o.top-h.bottom)===16})()`));
+ check('player: three steps, the first one theirs to take',await P.js(`[...document.querySelectorAll('.own-steps li')].map(e=>e.textContent.trim()+':'+e.dataset.state).join(' ')==='Counted:now Confirmed:todo Cashed out:todo'&&!document.querySelector('.own-steps [data-wait]')`));
  check('player: label, help and no host field',await P.js(`document.querySelector('label[for=own-count]').textContent.trim()==='Your count (₱)'&&document.querySelector('#own-count-help').textContent.includes('The host confirms it.')&&!document.querySelector('[data-count-input]')&&!document.querySelector('#counts-form')`));
  check('contrast of the help',await P.js(contrast('#own-count-help'))>=4.5);
  // On a phone the app's own number keys serve the field (numpad.mjs covers the keys themselves).
@@ -85,6 +87,7 @@ try {
  await send('Emulation.setTouchEmulationEnabled',{enabled:false},P.s);await P.go(SET);await P.js(`window.__same=true`);
  await type(P,'#own-count','1,450');await P.click(`document.querySelector('.own-count [type=submit]')`);
  check('player: sent, waiting for the host',await until(P,`document.querySelector('.own-count-lead').textContent.replace(/\\s+/g,' ').includes('You entered ₱1,450. Waiting for the host to confirm.')&&!!document.querySelector('.own-count-change')&&!document.querySelector('.own-count-change').open&&window.__same===true`,3000));
+ check('player: Counted is done with a tick, and Confirmed waits for the host',await P.js(`(()=>{const li=[...document.querySelectorAll('.own-steps li')];return li.map(e=>e.dataset.state).join(' ')==='done now todo'&&!!li[0].querySelector('svg')&&li[1].hasAttribute('data-wait')})()`));
  check('player: the row says Entered, not confirmed',await P.js(`!!${row(M.maria)}.querySelector('[data-status=entered]')&&/ntered\\s*₱1,450/.test(${rowText(M.maria)})`));
  check('contrast of the waiting line',await P.js(contrast('.own-count-state'))>=4.5);await P.shot('entries-player-entered-390');
  check('host sees the entered count without a reload',await until(H,`/ntered\\s*₱1,450/.test(${rowText(M.maria)})&&window.__same===true`));

@@ -1,7 +1,11 @@
-{% load money_tags %}
+{% load money_tags table_tags %}
 {# A player's own count, above the list: what they have left, sent to the host to confirm. #}
-<section class="own-count own-count-lead panel" aria-labelledby="own-count-title">
+{% own_count line as own %}
+<section class="own-count own-count-lead panel" aria-labelledby="own-count-title" data-stage="{{ own.stage }}" data-watch="own-count" data-value="{{ own.stage }}:{{ own.amount }}">
   <h2 id="own-count-title">Your count</h2>
+  {# Where the count is. A finished step's rule and tick draw when the count moves on (changes.js marks the card). #}
+  <ol class="own-steps" aria-hidden="true">{% for step in own.steps %}<li data-state="{{ step.state }}"{% if step.fresh %} data-fresh data-status="{{ own.stage }}"{% endif %}{% if step.waits %} data-wait{% endif %}>{% if step.state == 'done' %}{% icon 'check' %}{% endif %}<span>{{ step.name }}</span></li>{% endfor %}</ol>
+  <p class="visually-hidden">{{ own.words }}</p>
   {% if line.status == 'awaiting' %}
   {% if line.entered %}<p class="own-count-state">You entered <strong class="num">{{ line.entered.amount|amount:unit }}</strong>. Waiting for the host to confirm.</p>
   <details class="own-count-change" data-key="own-count"><summary class="small">Change</summary>{% endif %}
