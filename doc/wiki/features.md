@@ -495,3 +495,17 @@ A host can take back a finalized set or a closed session to correct a mistake or
 - The closing recap does not open by itself a second time; “View session recap” shows the corrected figures.
 - With `COUNT_REVAMP=False` the earlier count-up has no “Add a missed buy-in”.
 - Switch: `REOPENING=False` hides both controls and makes both services refuse. Check: `web/tests/browser/reopen.mjs` with `seed_reopen.py`.
+
+## Share results (2026-10-11)
+
+Any member can send a closed session to the group chat as a picture and a short text. Nothing is written and nothing is readable without a login. [Plan](../plan/1791701751_share_results.md).
+
+- **Where.** "Share results" under "View session recap" on a closed session, and at the foot of the recap. Not on an open or archived session.
+- **The card.** A picture 1080px wide, as tall as it needs: the table, the date and place, players, sets and total bought in; every player ranked with their signed result; who pays whom; when the session was closed; "Results are after rake." when rake was collected. No Paid marks. A long table name goes onto a second line; long player names are shortened; amounts never are.
+- **The text.** The same figures as lines of plain text. It goes with the picture and is what Copy text copies.
+- **On a phone that can share a picture:** Share (the phone's own sheet), Save image, Copy text. Some chat apps keep only the picture and drop the text.
+- **Elsewhere:** Save image leads, with Copy text; "Share text" appears where the browser can share text only.
+- **If the card cannot be drawn** (the font or the canvas is not available), the sheet is the text and Copy text. Without JavaScript the text is in the page under a "Share results" disclosure.
+- **After a correction.** A session reopened and closed again shares the new figures and the new "Closed" time. A picture already sent does not change.
+- Shares are not logged.
+- Switch: `SHARE_RESULTS=False` removes the control. Check: `web/tests/browser/share.mjs` with `seed_share.py`.

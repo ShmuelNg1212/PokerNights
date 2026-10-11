@@ -1553,3 +1553,34 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .missed-buy-in > summary.btn, .set-correct summary.btn, .night-manage summary.btn { list-style: none; }
 .missed-buy-in > summary.btn::-webkit-details-marker, .set-correct summary.btn::-webkit-details-marker, .night-manage summary.btn::-webkit-details-marker { display: none; }
 .missed-buy-in[open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
+
+/* Share results (2026-10-11). The card is a picture share.js draws; here are its frame, the
+   actions and the one moment: the card is dealt onto the sheet, then uncovered from the top. */
+.sheets-enabled .share-opener, .sheet .share-swap { display: flex !important; }
+.night-after .share-opener { margin-top: var(--s-2); }
+.sheet .share-swap { margin-top: var(--s-5); }
+.share-stage { display: grid; place-items: center; padding: var(--s-2) 0 var(--s-5); }
+.share-stage[hidden] { display: none; }
+.share-deal { position: relative; max-width: 100%; border-radius: 14px; transform-origin: 50% 80%; }
+/* The shadow is its own layer so that landing changes only opacity and transform. */
+.share-deal::before { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 18px 36px oklch(0 0 0 / .55), 0 2px 6px oklch(0 0 0 / .4); }
+.share-preview { position: relative; display: block; width: auto; max-width: 100%; max-height: min(46dvh, 520px); border-radius: inherit; outline: 1px solid var(--rule); outline-offset: -1px; }
+.share-actions { display: grid; gap: var(--s-2); }
+.share-actions[hidden] { display: none; }
+.share-actions.share-first [data-share-do="share"] { order: -1; }
+.share-actions:not(.share-first) [data-share-do="save"] { order: -1; }
+.share-status { min-height: 1.4em; margin: var(--s-2) 0 0; text-align: center; color: var(--muted); }
+.share-status:empty { display: none; }
+.share-text { margin-top: var(--s-4); padding-top: var(--s-2); border-top: 1px solid var(--line); }
+.share-text > summary { min-height: var(--tap); display: flex; align-items: center; color: var(--muted); cursor: pointer; }
+.share-text textarea { width: 100%; min-height: 9rem; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--r-field); background: var(--ground); color: var(--text); font: inherit; font-size: .9375rem; line-height: 1.45; font-variant-numeric: tabular-nums; resize: vertical; }
+.share-text .btn { margin-top: var(--s-2); }
+.share-plain .share-text { margin-top: 0; padding-top: 0; border-top: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .share-stage.is-dealt .share-deal { animation: share-deal 520ms var(--spring-arrive) backwards; }
+  .share-stage.is-dealt .share-deal::before { animation: share-land 420ms var(--ease-out) backwards; }
+  .share-stage.is-dealt .share-preview { animation: share-uncover 460ms var(--ease-out) 160ms backwards; }
+}
+@keyframes share-deal { from { opacity: 0; transform: translateY(16px) scale(.96) rotate(-1.5deg); } }
+@keyframes share-land { from { opacity: 0; } }
+@keyframes share-uncover { from { clip-path: inset(0 0 100% 0 round 14px); } to { clip-path: inset(0 0 0 0 round 14px); } }

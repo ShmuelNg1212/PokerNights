@@ -306,3 +306,12 @@ Two more transitions, both in `settlement.services`, host only, with a required 
 - Stats need no change: they read current results of finalized sets in closed sessions.
 - Audit actions: `session.reopened` (with the retired nets) and `night.reopened`.
 - Screens: `_reopen_set.html`, `_correction.html` (the reason line), the session's manage disclosure. The arrival of the reason line is in `changes.js` (`[data-reopened]`, once per reopening and browser, as the books' rule).
+
+## Share results
+
+Read-only and client-drawn. [Plan](../plan/1791701751_share_results.md).
+
+- `web/share.py` `card(night, outcome, recap)` builds a plain structure from what the session view already loaded (no query): title, lines, ranked rows, transfers, foot, the text and a file name. Every amount is formatted there with `ledger.money`. The view adds it on a closed, unarchived session with a current plan; `_share.html` writes it with `json_script` (`#share-card`).
+- `web/templatetags/table_tags.py` `token()` is the chip label rule, shared by the `player_token` tag and the card.
+- `static/js/share.js` draws on a canvas when the share sheet shows (`sheet:shown`, dispatched by `sheets.js` on open and swap): it confirms Archivo with `document.fonts.load`, reads the palette from the page's custom properties (each colour painted once and read back, so an unread colour stops the card), lays the card out in a dry pass for its height, draws, checks the result is not blank and keeps a PNG `File`. The share call is made directly in the tap with that file; nothing is awaited first. Any failure leaves the text and Copy.
+- No service, model, migration or audit event.

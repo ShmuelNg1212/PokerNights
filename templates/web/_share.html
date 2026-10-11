@@ -1,0 +1,24 @@
+{% load static %}
+{# The closed session for the group chat. share.js draws the card from #share-card when the sheet opens; without it the text below is copied by hand. #}
+<button hidden type="button" class="btn btn-block share-opener" data-sheet-open="share">Share results</button>
+<details class="sheet-source share-source" data-key="share" data-sheet-source="share" data-title="Share results">
+  <summary class="btn btn-block">Share results</summary>
+  <div class="sheet-content share" data-share data-mark="{% static 'branding/logo-mark.svg' %}">
+    <div class="share-stage" data-share-stage hidden>
+      <div class="share-deal"><img class="share-preview" data-share-preview alt="Results card for {{ share.title }}: {{ share.rows|length }} player{{ share.rows|length|pluralize }} ranked, and who pays whom. The same figures are in the text below."></div>
+    </div>
+    <div class="share-actions" data-share-actions hidden>
+      <button type="button" class="btn btn-block" data-share-do="share" hidden>Share</button>
+      <button type="button" class="btn btn-block" data-share-do="save">Save image</button>
+      <button type="button" class="btn btn-quiet btn-block" data-share-do="copy">Copy text</button>
+    </div>
+    <p class="share-status small" role="status" data-share-status></p>
+    <details class="share-text" data-share-text open>
+      <summary class="small">Results as text</summary>
+      <label class="visually-hidden" for="share-text">Results as text</label>
+      <textarea id="share-text" readonly rows="{{ share.lines }}">{{ share.text }}</textarea>
+      <button hidden type="button" class="btn btn-block" data-share-do="copy" data-share-plain>Copy text</button>
+    </details>
+  </div>
+</details>
+{{ share|json_script:"share-card" }}

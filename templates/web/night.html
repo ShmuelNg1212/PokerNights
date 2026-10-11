@@ -122,6 +122,7 @@
     {% if recap %}
     <button type="button" class="btn btn-quiet btn-block recap-opener" data-sheet-open="recap">View session recap</button>
     {% endif %}
+    {% if share %}{% include "web/_share.html" %}{% endif %}
     {% if manage %}
     <details class="night-manage" id="manage">
       <summary>Manage this session</summary>
