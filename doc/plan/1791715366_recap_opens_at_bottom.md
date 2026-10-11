@@ -1,6 +1,6 @@
 # The session recap opens at its top: plan
 
-Status: approved 2026-10-11 ("approved"). Built; kept local. Date: 2026-10-11, Asia/Manila. Study: [The session recap opens at its bottom](../study/1791715365_recap_opens_at_bottom.md).
+Status: approved 2026-10-11 ("approved"). Built and released. Date: 2026-10-11, Asia/Manila. Study: [The session recap opens at its bottom](../study/1791715365_recap_opens_at_bottom.md).
 
 ## Outcome
 
@@ -47,3 +47,5 @@ Acceptance: 1 to 3 are met in headless Chrome.
 Not verified: a real phone; a screen reader's reading of the sheet now that focus starts on Close.
 
 Documentation synced: wiki (features), TODO.
+
+2026-10-11 release: the human said "push". `fix/recap-opens-at-top` was merged to `main` as `f3b321f` and pushed (previous production commit `1da9bfd`). 1029 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About four minutes later the live `sheets.js` held the new focus rule. No recap was opened signed in on the live site, so the sheet itself was not seen there.
