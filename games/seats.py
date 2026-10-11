@@ -30,10 +30,49 @@ def positions(count: int) -> list:
     return names + early + between + late
 
 
-def spot(index: int, count: int, reach: float = 44.0) -> tuple:
-    """Where seat ``index`` of ``count`` sits on the drawn table, in percent: seat 0 at the top, then clockwise."""
-    angle = math.radians(-90 + 360 * index / count)
-    return round(50 + reach * math.cos(angle), 2), round(50 + reach * math.sin(angle), 2)
+# The drawn table is a racetrack: straight sides and round ends. The same rule is written in
+# static/js/seats.js (edge), which places the players on the stage; the two must agree.
+WIDE = 1.25      # the still table on the set page is five wide and four tall
+MARGIN = 0.07    # how far inside the table's box the seats sit, as a share of its shorter side
+
+
+def edge(index: int, count: int, width: float, height: float) -> tuple:
+    """Where seat ``index`` of ``count`` sits on a table drawn in a ``width`` by ``height`` box.
+
+    ``(x, y, turn)``: x and y from the box's centre, and the way the seat faces outward in
+    degrees clockwise from straight up. Seat 0 is top centre; the rest follow clockwise, each
+    the same distance from the next along the edge, so none bunch up on the round ends.
+    """
+    margin = MARGIN * min(width, height)
+    a, b = width / 2 - margin, height / 2 - margin
+    r = min(a, b)
+    lx, ly = a - r, b - r  # half of each straight: along the top and bottom, and along the sides
+    quarter = math.pi * r / 2
+    # Clockwise from top centre: (length, kind, where it starts or its centre, the turn it starts with).
+    pieces = [
+        (lx, "line", (0, -b), (1, 0), 0), (quarter, "arc", (lx, -ly), None, 0),
+        (2 * ly, "line", (a, -ly), (0, 1), 90), (quarter, "arc", (lx, ly), None, 90),
+        (2 * lx, "line", (lx, b), (-1, 0), 180), (quarter, "arc", (-lx, ly), None, 180),
+        (2 * ly, "line", (-a, ly), (0, -1), 270), (quarter, "arc", (-lx, -ly), None, 270),
+        (lx, "line", (-lx, -b), (1, 0), 0),
+    ]
+    left = sum(length for length, *_ in pieces) * (index % count) / count
+    for length, kind, origin, along, turn in pieces:
+        if left > length:
+            left -= length
+            continue
+        if kind == "line":
+            return origin[0] + along[0] * left, origin[1] + along[1] * left, float(turn)
+        swept = left / r  # radians along the corner
+        angle = math.radians(turn - 90) + swept
+        return origin[0] + r * math.cos(angle), origin[1] + r * math.sin(angle), turn + math.degrees(swept)
+    return 0.0, -b, 0.0
+
+
+def spot(index: int, count: int, wide: float = WIDE) -> tuple:
+    """Seat ``index`` on the still table, as ``(left %, top %, turn in degrees)``."""
+    x, y, turn = edge(index, count, wide, 1.0)
+    return round(50 + 100 * x / wide, 2), round(50 + 100 * y, 2), round(turn, 1)
 
 
 @dataclass
@@ -97,7 +136,7 @@ class Seating:
 
     @property
     def spots(self):
-        """Every seat of the drawn table as ``(index, number, x, y)``, for the empty table."""
+        """Every seat of the drawn table as ``(index, number, x, y, turn)``, for the empty table."""
         return [(index, index + 1, *spot(index, self.count)) for index in range(self.count)]
 
     @property

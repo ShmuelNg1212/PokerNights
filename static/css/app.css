@@ -1649,20 +1649,35 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .seats-line { margin: 0 0 var(--s-3); color: var(--muted); }
 .seats-line strong { color: var(--bone); }
 .seats-note { margin: var(--s-2) 0 0; }
-.seat-table { position: relative; width: min(100%, 340px); aspect-ratio: 5 / 4; margin: var(--s-5) auto; }
-.seat-felt { position: absolute; inset: 17% 15%; border-radius: 50%; border: 9px solid var(--rail-2); background: repeating-linear-gradient(45deg, oklch(1 0 0 / .025) 0 1px, transparent 1px 7px), radial-gradient(ellipse at 50% 35%, var(--felt), var(--felt-deep)); box-shadow: 0 0 0 1px var(--rule), inset 0 0 0 1px oklch(0 0 0 / .35), inset 0 10px 24px oklch(0 0 0 / .3); }
+.seat-table { position: relative; width: min(100%, 340px); aspect-ratio: 5 / 4; margin: var(--s-5) auto; container-type: size; --seat-in: 15%; }
+.stage-table { --seat-in: 16%; }
+@supports (width: 1cqmin) { .seat-table, .stage-table { --seat-in: calc(7cqmin + 14px); } }
+/* A racetrack: a padded rail (dark outer edge, lit top, shadow onto the felt) around felt lit from above. */
+.seat-rail { position: absolute; inset: var(--seat-in); border-radius: 999px; background: linear-gradient(180deg, color-mix(in oklch, var(--rail-2) 82%, var(--bone)) 0%, var(--rail-2) 30%, var(--rail) 72%, color-mix(in oklch, var(--rail) 60%, black) 100%); box-shadow: 0 0 0 1px oklch(0 0 0 / .65), 0 14px 30px oklch(0 0 0 / .5), inset 0 1px 0 color-mix(in oklch, var(--bone) 28%, transparent), inset 0 -3px 5px oklch(0 0 0 / .45); }
+.seat-felt { position: absolute; inset: 11px; border-radius: inherit; overflow: hidden; background: repeating-linear-gradient(45deg, oklch(1 0 0 / .022) 0 1px, transparent 1px 7px), radial-gradient(ellipse 90% 70% at 50% 28%, color-mix(in oklch, var(--felt) 88%, var(--bone)) 0%, var(--felt) 42%, var(--felt-deep) 100%); box-shadow: inset 0 0 0 1px oklch(0 0 0 / .55), inset 0 8px 16px oklch(0 0 0 / .5), inset 0 -2px 6px oklch(0 0 0 / .3); }
+.seat-line { position: absolute; inset: 13px; border-radius: inherit; border: 1.5px solid color-mix(in oklch, var(--felt-ink) 26%, transparent); }
+.seat-mark { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; opacity: .16; filter: grayscale(1) brightness(1.6); }
+/* A chair behind each place, turned to face the table. --turn is the way the seat faces, clockwise from up. */
+.seat-chair { position: absolute; width: 36px; height: 15px; margin: -7.5px 0 0 -18px; border-radius: 9px 9px 4px 4px; background: linear-gradient(180deg, color-mix(in oklch, var(--rail-2) 70%, var(--bone)), var(--rail-2) 55%, var(--rail)); box-shadow: 0 0 0 1px oklch(0 0 0 / .6), inset 0 1px 0 color-mix(in oklch, var(--bone) 24%, transparent); transform: rotate(var(--turn, 0deg)) translateY(-19px); }
+.seat-chair.is-me { box-shadow: 0 0 0 1px oklch(0 0 0 / .6), inset 0 2px 0 var(--brass); }
+.seat-chair.is-away { opacity: .45; }
 .seat-spot { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; }
-.seat-free { place-items: center; width: var(--tap); height: var(--tap); padding: 0; border-radius: 50%; border: 2px dashed var(--line); background: var(--ground); color: var(--muted); font: inherit; font-size: .8125rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-button.seat-free { border-color: var(--brass); color: var(--bone); cursor: pointer; }
-button.seat-free:hover, button.seat-free:focus-visible { border-style: solid; background: color-mix(in oklch, var(--brass) 18%, var(--ground)); }
-button.seat-free:active { background: color-mix(in oklch, var(--brass) 30%, var(--ground)); }
-button.seat-free[aria-busy=true] { border-style: solid; color: var(--brass); }
+/* An empty place: the tap target is 48px; what is drawn is a small number plate on it. */
+.seat-free { place-items: center; width: var(--tap); height: var(--tap); padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); font: inherit; font-size: .8125rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+.seat-free::before { content: ""; position: absolute; inset: 9px; z-index: -1; border-radius: 50%; border: 1.5px solid var(--line); background: var(--ground); box-shadow: 0 2px 0 oklch(0 0 0 / .45); transition: border-color var(--t-fast), background var(--t-fast); }
+button.seat-free { color: var(--bone); cursor: pointer; isolation: isolate; }
+span.seat-free { isolation: isolate; }
+button.seat-free::before { border-color: var(--brass); }
+button.seat-free:hover::before, button.seat-free:focus-visible::before { background: color-mix(in oklch, var(--brass) 22%, var(--ground)); }
+button.seat-free:active::before { background: color-mix(in oklch, var(--brass) 36%, var(--ground)); box-shadow: none; transform: translateY(2px); }
+button.seat-free[aria-busy=true] { color: var(--brass); }
 .seat-spot.is-taken { width: 72px; gap: 2px; }
 .seat-spot .chip, .seat-mid .chip, .stage-token .chip { width: 40px; height: 40px; font-size: .8125rem; box-shadow: 0 2px 0 oklch(0 0 0 / .45); }
 .seat-name, .stage-name { max-width: 100%; padding: 0 6px; border-radius: var(--r-pill); background: var(--ground); color: var(--bone); font-size: .6875rem; font-weight: 600; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .seat-spot.is-me .chip, .stage-token.is-you .chip { box-shadow: 0 0 0 2px var(--ground), 0 0 0 4px var(--brass); }
 .seat-spot.is-away { opacity: .45; }
-.seat-disc, .stage-disc { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brass); color: var(--ink); font-size: .6875rem; font-weight: 800; line-height: 1; box-shadow: 0 2px 0 oklch(0 0 0 / .5), inset 0 0 0 2px color-mix(in oklch, var(--brass) 70%, var(--ink)); }
+/* The dealer button: light with a dark rim and a brass inner ring. */
+.seat-disc, .stage-disc { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff 0%, var(--bone) 60%, color-mix(in oklch, var(--bone) 82%, var(--ink)) 100%); color: var(--ink); font-size: .6875rem; font-weight: 850; line-height: 1; box-shadow: 0 0 0 1.5px var(--ink), 0 3px 0 oklch(0 0 0 / .55), inset 0 0 0 2px var(--bone), inset 0 0 0 3.5px var(--brass); }
 .seat-spot .seat-disc { position: absolute; top: -6px; left: calc(50% + 10px); }
 .seat-mid { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: flex-start; }
 .seat-mid .seat-disc { margin-left: -8px; margin-top: -6px; }
@@ -1704,7 +1719,17 @@ button.seat-free[aria-busy=true] { border-style: solid; color: var(--brass); }
 .stage-table { position: relative; width: min(100%, 400px, 50dvh); aspect-ratio: 3 / 4; }
 @supports (width: 1cqh) { .stage-table { width: min(100cqw, 420px); height: min(100cqh, 135cqw, 560px); aspect-ratio: auto; } }
 @media (max-height: 699px) { .stage-words { min-height: 4.25rem; } .stage-line { font-size: 1.3125rem; } .stage-room { padding: 22px 10px 34px; } }
-.stage-table .seat-felt { inset: 16%; border-width: 11px; }
+.stage-table { container-type: size; }
+.stage-table .seat-felt { inset: 14px; }
+.stage-table .seat-line { inset: 16px; }
+.stage-table .seat-mark { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+/* Layers of the draw, all moved by transform or faded by opacity: the dimming, the light that follows the button, the rail's glow and the ring from the winner. */
+.stage-dim, .stage-light, .stage-glow, .stage-burst { position: absolute; pointer-events: none; opacity: 0; }
+.stage-dim { inset: 0; background: oklch(0.08 0.02 265 / .6); }
+.stage-light { left: 50%; top: 50%; width: 190px; height: 190px; margin: -95px 0 0 -95px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklch, var(--bone) 34%, transparent) 0%, color-mix(in oklch, var(--bone) 14%, transparent) 38%, transparent 68%); }
+.stage-glow { inset: 0; border-radius: inherit; box-shadow: 0 0 0 2px color-mix(in oklch, var(--brass) 80%, transparent), 0 0 34px color-mix(in oklch, var(--brass) 50%, transparent), inset 0 0 18px color-mix(in oklch, var(--brass) 30%, transparent); }
+.stage-burst { left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 2px solid var(--brass); z-index: 1; }
+.stage-chairs .seat-chair { opacity: 0; }
 .stage-seats .seat-spot { pointer-events: none; }
 .seat-stage:not(.is-choosing) .stage-seats .seat-spot { opacity: 0 !important; }
 .is-choosing .stage-seats .seat-spot { pointer-events: auto; }
@@ -1719,6 +1744,8 @@ button.seat-free[aria-busy=true] { border-style: solid; color: var(--brass); }
 .stage-hint { margin: 0; text-align: center; color: var(--muted); font-size: .8125rem; }
 /* Nine or more players on a short phone: the names stay, the position is in the line above and in the list on the page. */
 @media (max-height: 699px) { .seat-stage[data-dense] .stage-pos { display: none; } .seat-stage[data-dense] .stage-room { padding: 22px 10px 30px; } }
+/* On a wide screen the table lies down, as it does on the set page. */
+@media (min-width: 900px) { @supports (width: 1cqh) { .stage-table { width: min(100cqw, 470px); height: min(100cqh, 76cqw); } } }
 @media (min-width: 900px) { .seat-stage { height: min(760px, 92dvh); margin: auto; border-radius: var(--r-sheet); padding: 20px 24px 24px; border: 1px solid var(--rule); } }
 @media (prefers-reduced-motion: no-preference) { .stage-sub.is-waiting::after { animation: own-wait 1.1s ease-in-out infinite alternate; } }
 

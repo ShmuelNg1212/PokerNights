@@ -1,6 +1,6 @@
 # The look of the table in the seat draw: plan
 
-Status: awaiting approval. Date: 2026-10-12, Asia/Manila. Study: [The look of the table in the seat draw](../study/1791735775_draw_table_look.md).
+Status: approved 2026-10-12 with one change ("approved, can the animation be around 30% shorter for the draw. keep the same length for the seating animation. make sure to use motion and design skills for this."). Built; kept local. Date: 2026-10-12, Asia/Manila. Study: [The look of the table in the seat draw](../study/1791735775_draw_table_look.md).
 
 ## Outcome
 
@@ -71,3 +71,28 @@ Branch `feat/draw-table-look` from `main`.
 ## Release
 
 Kept local on its branch until you say to push. No migration. `SEAT_DRAW=False` still turns the whole seat draw off.
+
+## Changes at approval
+
+Decision 4 changes: the draw is about 30% shorter; the seating keeps its length.
+
+## Progress
+
+2026-10-12: Built on `feat/draw-table-look` from `main`; kept local.
+
+- **The draw** runs about 2.7 seconds from the stage opening to the dealer's name, measured; it was about 3.9. Every part of it was shortened by about the same share. The seating is untouched in path and timing.
+- **On a wide screen the stage's table lies down.** The first build left it nearly round there.
+- **Found in the browser:** the ring that opens from the winner kept its large size after fading and made the stage 28px wider than a 320px phone. It now returns to its small size.
+- The impeccable and motion skills' rules were applied from their earlier loading in this session (compositor-only movement, springs for what lands, one authored moment). No separate critique run and no MotionScore audit was made.
+
+Verification:
+
+- 1103 tests pass on SQLite (15 skipped); 3 more geometry tests, and the page test extended.
+- `seat_draw.mjs`: 50 of 50 on a fresh temporary database, 5 of them new. Twelve seats at 320px and the late-frame check with the processor slowed four times pass unchanged.
+- Captures of the ring, the light mid-run, the winner, the choice, the seating and the page's table at 320, 390 and 1280px were looked at, in two rounds.
+
+Acceptance: 1 to 5 are met in headless Chrome; 6 on SQLite, PostgreSQL before release.
+
+Not verified: real phones; whether the table reads as a poker table to the human; the light on a slow phone (the check slows the processor, not the graphics). A fresh reviewer did not read the branch.
+
+Documentation synced: DESIGN.md, wiki (features, architecture), browser README, TODO.

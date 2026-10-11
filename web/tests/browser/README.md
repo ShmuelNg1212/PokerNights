@@ -224,3 +224,5 @@ PN_DB=/private/tmp/pn-carried-check.sqlite3 node web/tests/browser/carried_debts
 32 checks. A host ticks and closes while a player's page of the earlier session watches; the reopening is made through the service. It uses up the fixture.
 
 Since carried transfers, `night.mjs` unticks the earlier transfers before its own close: its fixture's other sessions have unpaid transfers between the same players, and carrying them (the default) turned rows of another fixture session into "Carried".
+
+Since the table's new look (2026-10-12) `seat_draw.mjs` has 49 or 50 checks. It resizes the stage's table to the page's proportions for one check, to compare where the server and the browser put each seat.
