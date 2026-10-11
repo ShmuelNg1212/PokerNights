@@ -335,3 +335,14 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 - `web.views.night_state` (`n/<id>/state/?v=`): 204 when unchanged, else `{"stamp": …}`. Membership as on the page.
 - `static/js/nightlive.js`: on a new stamp it asks Turbo to visit the same address with `replace`, which the page's `turbo-refresh-method: morph` turns into a redraw in place. After a morph it calls `pokerPage.start()`, because a morph restarts no script: the sheet, the recap that opens once and "Settled" must read the new page. It raises `night:refreshed` with the paid marks as they were, which `settle.js` uses to settle a row marked by someone else.
 - Something a future change makes the session page show must enter the stamp, or other people's pages will not learn of it.
+
+## Live updates of Your groups and the Sessions tab
+
+[Plan](../plan/1791711535_hub_pages_live.md). The same script and redraw as the session page, with a stamp over groups.
+
+- `settlement.queries.hub_stamp(group_ids)`: a hash, over those groups, of each set's id, state and `finalized_at` with its session's id, status and archive mark; the count of players at the table of each unfinished set; the count of active members per group; each plan's id and whether it is current; how many payments exist and stand. Five queries however many groups.
+- `web.views.home_state` (`state/`) covers the requester's active memberships in unarchived groups; `group_state` (`g/<id>/state/`) one group through `member_for`. Both share `_stamp_answer` with `night_state`.
+- `home.html` and the Sessions view of `group.html` declare `turbo-refresh-method: morph` and hold a hidden element with `data-state-url`. They carry **no stamp**: `home_cards` is held to 11 queries. `nightlive.js` therefore asks at once on such a page and takes the answer as its baseline.
+- `nightlive.js` now serves every page with `data-state-url`. It does not start on a page that answered a form (`data-method` other than GET) and treats an open disclosure with a form and no `data-key` as in use.
+- With the morph setting, a tap on a link to the very page one is on (the brand mark on Your groups) is also a redraw in place.
+- A hub page that starts showing something new must add it to `hub_stamp`.

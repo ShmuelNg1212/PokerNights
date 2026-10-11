@@ -306,18 +306,36 @@ def session_log(request, session_id):
     return render(request, "web/session_log.html", context)
 
 
+def _stamp_answer(request, stamp):
+    """204 while the asker's stamp still holds, else the new one."""
+    if request.GET.get("v") == stamp:
+        return HttpResponse(status=204)
+    response = JsonResponse({"stamp": stamp})
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+def home_state(request):
+    """Polling endpoint of Your groups, over the requester's own groups (nightlive.js)."""
+    group_ids = Member.objects.filter(
+        user=request.user, status=Member.Status.ACTIVE, group__archived_at__isnull=True
+    ).values_list("group_id", flat=True)
+    return _stamp_answer(request, settlement_queries.hub_stamp(list(group_ids)))
+
+
+def group_state(request, group_id):
+    """Polling endpoint of a group's Sessions tab."""
+    me = member_for(request.user, group_id)
+    return _stamp_answer(request, settlement_queries.hub_stamp([me.group_id]))
+
+
 def night_state(request, night_id):
     """Polling endpoint of the session page: 204 while nothing it shows has changed, else the new stamp.
 
     The page then fetches itself and is redrawn in place (nightlive.js).
     """
     night, _ = night_for(request.user, night_id)
-    stamp = settlement_queries.night_stamp(night)
-    if request.GET.get("v") == stamp:
-        return HttpResponse(status=204)
-    response = JsonResponse({"stamp": stamp})
-    response["Cache-Control"] = "no-store"
-    return response
+    return _stamp_answer(request, settlement_queries.night_stamp(night))
 
 
 def night(request, night_id):

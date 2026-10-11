@@ -4,7 +4,9 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("state/", views.home_state, name="home_state"),
     path("g/<int:group_id>/", views.group, name="group"),
+    path("g/<int:group_id>/state/", views.group_state, name="group_state"),
     path("g/<int:group_id>/players/<int:member_id>/", views.player, name="player"),
     path("n/<int:night_id>/", views.night, name="night"),
     path("n/<int:night_id>/state/", views.night_state, name="night_state"),

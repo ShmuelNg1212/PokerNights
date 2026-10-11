@@ -196,3 +196,11 @@ PN_DB=/private/tmp/pn-nightlive-check.sqlite3 node web/tests/browser/night_live.
 ```
 
 `PN_DB` is the served SQLite file: the script plays the host through the real services while a player's page watches. It takes about a minute and a half because it waits out real polling intervals. Use a fresh database per run.
+
+For Your groups and the Sessions tab updating by themselves, seed a fresh temporary database with `seed.py` alone, serve it, then:
+
+```sh
+PN_DB=/private/tmp/pn-hublive-check.sqlite3 node web/tests/browser/hub_live.mjs
+```
+
+`PN_DB` is the served SQLite file. The script plays the host through the services while a player's two pages watch; it takes about a minute and a half. Use a fresh database per run.
