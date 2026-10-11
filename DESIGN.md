@@ -948,6 +948,37 @@ Only `transform` and `opacity` are animated by Motion. Reduced motion and a miss
 
 **Measured.** `seat_draw.mjs`, 46 checks: a host and two players side by side, 2, 6 and 12 players, 320, 390 and 1280px, reduced motion, no JavaScript, and no frame over 50ms with the processor slowed four times.
 
+### Seat draw: the table (2026-10-12)
+
+[Plan](doc/plan/1791735776_draw_table_look.md). It replaces "The table" and the Arrive, Draw and Winner rows of "Seat draw (2026-10-11)". The seating's path and timing are unchanged.
+
+**The table is a racetrack**: straight sides and round ends, upright on a phone's stage, lying down on the set page and from 900px. Seats are spaced equally along its edge, seat 1 at top centre (`games/seats.py` `edge`, and the same rule in `seats.js`).
+
+| Part | Rule |
+|---|---|
+| Rail | 11px on the page, 14px on the stage. A vertical gradient from a lit top (Rail 2 with Bone) to a dark foot, a 1px dark outline, a drop shadow, a 1px highlight inside the top edge |
+| Felt | The set page's felt, lit from above (lighter at 28% from the top, Felt Deep at the rail) with an inner shadow. A 1.5px line in Felt Ink at 26% runs 13 to 16px inside the rail |
+| Mark | The app's own mark, 40px (52px on the stage), grey, at 16% |
+| Chair | 36 by 15px, rounded at the back, turned to face the table and set 19px outside the seat. The viewer's has a Brass top line |
+| Empty place | The tap target is 48px; what is drawn is a 30px Ground plate with the seat's number, Brass-ringed when it can be tapped |
+| Dealer button | Bone, lit from above, an Ink rim and a Brass inner ring, "D" in Ink. 22px on the page, 30px on the stage |
+
+**Where "no casino imagery" stands.** Drawn furniture is in: the rail, the felt's line, chairs, the dealer button. Gambling props are out: cards, chip stacks in the pot, photographs, anything downloaded.
+
+**The draw is 30% shorter** (the human asked at approval): about 2.7 seconds from the stage opening to the dealer's name, where it was about 3.9. The seating keeps its two seconds.
+
+| Part | Movement |
+|---|---|
+| Arrive | The chairs set down 22ms apart (spring 0.22s), then the chips 32ms apart (spring 0.24s, bounce 0.3) |
+| Draw | The felt dims and a 190px soft light travels with the button, which is a quarter larger while it runs (about 1.9s, slowing). It passes the winner by one and springs back (0.3s, bounce 0.5) |
+| Winner | Once: the dimming lifts, a Brass ring opens from the winner's chip (0.55s) and the rail glows Brass and fades (0.7s) |
+| Choosing | Each empty chair lifts 4px in turn; a pressed plate sinks 2px |
+| Seating | As before; the chair gives 2px as each chip lands |
+
+The light, the dimming, the glow and the ring are their own elements, moved by `transform` or faded by `opacity`; the felt is never repainted. Reduced motion shows the table still.
+
+**Measured.** `seat_draw.mjs`, 50 checks: the racetrack and its parts, chairs outside their seats and facing out, the page and the stage agreeing on every place to a fifth of a percent, one brighter moment, twelve seats at 320px, and no frame over 50ms with the processor slowed four times.
+
 ### Carried transfers (2026-10-11)
 
 [Plan](doc/plan/1791728777_carried_debts.md). Mode: Operate. No new colour, font or component.

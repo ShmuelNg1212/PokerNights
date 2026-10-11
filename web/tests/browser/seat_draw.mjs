@@ -48,7 +48,7 @@ check('a player is offered no draw and sees no table yet',await B.js(`!document.
 check('the stage is closed before a draw',!(await H.js(OPEN))&&!(await B.js(OPEN)));
 
 // --- The draw reaches every phone.
-await H.js(`window.__t={};setInterval(()=>{const d=document.querySelector('dialog.seat-stage[open]');if(d&&!__t.open)__t.open=performance.now();if(d&&!__t.named&&d.querySelector('.stage-line').textContent.includes('has the dealer seat'))__t.named=performance.now()},30);document.querySelector('.prep-step[data-step=seats] form button').click()`);
+await H.js(`window.__t={glows:0,seen:new WeakSet()};setInterval(()=>{document.getAnimations().forEach(a=>{const el=a.effect&&a.effect.target;if(el&&el.classList&&el.classList.contains('stage-glow')&&!__t.seen.has(a)){__t.seen.add(a);__t.glows++}});const d=document.querySelector('dialog.seat-stage[open]');if(d&&!__t.open)__t.open=performance.now();if(d&&!__t.named&&d.querySelector('.stage-line').textContent.includes('has the dealer seat'))__t.named=performance.now()},30);document.querySelector('.prep-step[data-step=seats] form button').click()`);
 const opened=[await H.until(OPEN,3000),await B.until(OPEN,7000),await C.until(OPEN,7000)];
 check('the stage opens on the host and on both players by itself',opened.every(Boolean),opened);
 await sleep(700);await H.shot('seats-draw-ring');
@@ -57,8 +57,11 @@ let truth=server(M.six);
 const named=[await H.until(`${LINE}.includes('has the dealer seat')`,9000),await B.until(`${LINE}.includes('has the dealer seat')`,9000),await C.until(`${LINE}.includes('has the dealer seat')`,9000)];
 check('every phone names the dealer the server drew',named.every(Boolean)&&(await H.js(LINE))===truth.dealer+' has the dealer seat'&&(await B.js(LINE))===(await H.js(LINE))&&(await C.js(LINE))===(await H.js(LINE)),[truth.dealer,await B.js(LINE)]);
 await sleep(900);await H.shot('seats-choose-host');
+check('the table is a racetrack with a padded rail, a betting line, the mark, a chair at every place and a light button',await H.js(`(()=>{const t=document.querySelector('.stage-table'),r=t.querySelector('.seat-rail'),b=r.getBoundingClientRect(),cs=getComputedStyle(r);return parseFloat(cs.borderTopLeftRadius)>=Math.min(b.width,b.height)/2-1&&b.height>b.width*1.15&&!!t.querySelector('.seat-felt .seat-line')&&/logo-mark/.test(t.querySelector('.seat-mark').src)&&t.querySelectorAll('.stage-chairs .seat-chair').length===6&&/gradient/.test(getComputedStyle(t.querySelector('.stage-disc')).backgroundImage)})()`));
+check('every chair is outside its seat and faces away from the middle',await H.js(`(()=>{const t=document.querySelector('.stage-table').getBoundingClientRect(),cx=t.x+t.width/2,cy=t.y+t.height/2,seats=[...document.querySelectorAll('.stage-seats .seat-spot')];return [...document.querySelectorAll('.stage-chairs .seat-chair')].every((c,i)=>{const r=c.getBoundingClientRect(),s=seats[i].getBoundingClientRect(),a=parseFloat(c.dataset.turn)*Math.PI/180,x=r.x+r.width/2-cx,y=r.y+r.height/2-cy,sx=s.x+s.width/2-cx,sy=s.y+s.height/2-cy;return x*Math.sin(a)-y*Math.cos(a)>0&&Math.hypot(x,y)>Math.hypot(sx,sy)})})()`));
+check('the winner had one brighter moment',(await H.js(`__t.glows`))===1,await H.js(`__t.glows`));
 const took=await H.js(`Math.round(__t.named-__t.open)`);
-check('the draw runs between three and five seconds before it names the dealer',took>3000&&took<5000,took);
+check('the draw names the dealer after about two and a half seconds (30% shorter than at first)',took>2000&&took<3300,took);
 const players={Ben:B,Cara:C},winner=players[truth.dealer]||null,other=truth.dealer==='Ben'?C:B;
 check('the host can tap a seat; seats are 48px targets',await H.js(`(()=>{const b=[...document.querySelectorAll('.stage-seats button')];return b.length===6&&b.every(e=>{const r=e.getBoundingClientRect();return r.width>=48&&r.height>=48})})()`));
 check('a player who is not the dealer has no seat to tap and reads who is choosing',await other.js(`!document.querySelector('.stage-seats button')&&document.querySelectorAll('.stage-seats span.seat-spot').length===6`)&&(await other.js(SUB))===truth.dealer+' is choosing a seat');
@@ -87,6 +90,12 @@ await H.until(`document.querySelectorAll('#live .seat-table .seat-spot.is-taken'
 check('the page keeps the table: same seats, the dealer disc, the viewer ringed',JSON.stringify(await B.js(tableNames))===JSON.stringify(truth.by_seat)&&await B.js(`document.querySelectorAll('#live .seat-table .seat-disc').length===1&&document.querySelector('#live .seat-spot.is-me .seat-name').textContent==='Ben'`),await B.js(tableNames));
 check('the list gives each first-hand position',await B.js(`[...document.querySelectorAll('#live .seat-order .seat-what')].map(e=>e.textContent).join('|')==='Dealer|Small blind|Big blind|Under the gun|Hijack|Cutoff'`));
 check('the host\'s step is done and the main button is still Start the set',await H.js(`document.querySelector('.prep-step[data-step=seats]').dataset.state==='done'&&document.querySelector('.host-controls .next-action').textContent.trim()==='Start the set'&&!document.querySelector('.host-controls form[action$="/draw/"]')`));
+check('the still table on the page has the same look: rail, line, mark and six chairs',await H.js(`(()=>{const t=document.querySelector('#live .seat-table');return !!t.querySelector('.seat-rail .seat-felt .seat-line')&&!!t.querySelector('.seat-mark')&&t.querySelectorAll('.seat-chair').length===6&&t.querySelectorAll('.seat-chair.is-me').length===0})()`)&&await B.js(`document.querySelectorAll('#live .seat-chair.is-me').length===1`));
+// The page places seats on the server and the stage places them in the browser: given the page's proportions they must agree.
+await H.js(`document.querySelector('[data-seat-replay]').click()`);await H.until(`${LINE}==='Seats are set'`,9000);
+const agree=await H.js(`(()=>{const t=document.querySelector('.stage-table');t.style.width='300px';t.style.height='240px';window.dispatchEvent(new Event('resize'));const place=el=>[parseFloat(el.style.left),parseFloat(el.style.top),parseFloat(el.style.getPropertyValue('--turn'))];const page=[...document.querySelectorAll('#live .seat-table .seat-chair')].map(place),stage=[...document.querySelectorAll('.stage-chairs .seat-chair')].map(place);t.style.width='';t.style.height='';window.dispatchEvent(new Event('resize'));return {n:page.length,worst:Math.max(...page.map((p,i)=>Math.max(Math.abs(p[0]-stage[i][0]),Math.abs(p[1]-stage[i][1]),Math.abs(p[2]-stage[i][2]))))}})()`);
+check('the page and the stage put every seat in the same place and turn',agree.n===6&&agree.worst<0.2,agree);
+await H.js(`document.querySelector('[data-stage-done]').click()`);await sleep(300);
 await H.js(`document.querySelector('.seats').scrollIntoView()`);await H.shot('seats-page-host');
 check('no page scrolls sideways',await H.js(`document.documentElement.scrollWidth<=390`)&&await B.js(`document.documentElement.scrollWidth<=390`));
 await sleep(4600);

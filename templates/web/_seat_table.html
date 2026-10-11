@@ -1,4 +1,4 @@
-{% load table_tags money_tags %}
+{% load table_tags money_tags static %}
 {# The seat draw: who deals first and where everyone sits (DESIGN.md, "Seat draw"). seats.js plays it on a stage; this is what the page keeps. #}
 <section class="seats" aria-label="Seats" data-seats data-draw="{{ seating.draw.pk }}" data-state="{{ seating.state }}"{% if seating.chosen %} data-dealer-seat="{{ seating.draw.dealer_seat }}"{% endif %}{% if seating.fresh %} data-fresh{% endif %}{% if seating.poll_fast %} data-poll-fast{% endif %}{% if can_choose_seat %} data-can-choose{% endif %}>
 {% if seating.stale %}
@@ -11,15 +11,17 @@
   <p class="seats-line">{% if seating.chosen %}{% if session.state == 'running' %}{{ seating.dealer.member.display_name }} dealt the first hand. Seats run clockwise.{% else %}<strong>{{ seating.dealer.member.display_name }}</strong> deals first. Everyone else follows clockwise.{% endif %}{% else %}<strong>{{ seating.dealer.member.display_name }}</strong> has the dealer seat{% if can_choose_seat %}. {% if seating.dealer.member_id == me.pk %}Choose your seat.{% else %}Choose a seat for them, or let them choose.{% endif %}{% else %} and is choosing a seat.{% endif %}{% endif %}</p>
   {% if seating.chosen %}
   <div class="seat-table" data-count="{{ seating.count }}">
-    <div class="seat-felt" aria-hidden="true"></div>
+    <div class="seat-rail" aria-hidden="true"><div class="seat-felt"><span class="seat-line"></span><img class="seat-mark" src="{% static 'branding/logo-mark.svg' %}" alt="" width="40" height="40"></div></div>
+    {% for seat in seating.by_seat %}<span class="seat-chair{% if seat.participant.member_id == me.pk %} is-me{% endif %}{% if seat.away %} is-away{% endif %}" style="left:{{ seat.xy.0 }}%;top:{{ seat.xy.1 }}%;--turn:{{ seat.xy.2 }}deg" aria-hidden="true"></span>{% endfor %}
     {% for seat in seating.by_seat %}<div class="seat-spot is-taken{% if seat.is_dealer %} is-dealer{% endif %}{% if seat.away %} is-away{% endif %}{% if seat.participant.member_id == me.pk %} is-me{% endif %}" style="left:{{ seat.xy.0 }}%;top:{{ seat.xy.1 }}%">{% player_token seat.participant participants %}{% if seat.is_dealer %}<span class="seat-disc" aria-hidden="true">D</span>{% endif %}<span class="seat-name">{{ seat.participant.member.display_name }}</span></div>{% endfor %}
   </div>
   {% else %}
   {% if can_choose_seat %}<form method="post" class="seat-pick" action="{% url 'seat_choose' session.pk %}" data-seat-pick>{% csrf_token %}{% request_id_field %}{% endif %}
   <div class="seat-table" data-count="{{ seating.count }}">
-    <div class="seat-felt" aria-hidden="true"></div>
+    <div class="seat-rail" aria-hidden="true"><div class="seat-felt"><span class="seat-line"></span><img class="seat-mark" src="{% static 'branding/logo-mark.svg' %}" alt="" width="40" height="40"></div></div>
+    {% for index, number, x, y, turn in seating.spots %}<span class="seat-chair" style="left:{{ x }}%;top:{{ y }}%;--turn:{{ turn }}deg" aria-hidden="true"></span>{% endfor %}
     <div class="seat-mid">{% player_token seating.dealer participants %}<span class="seat-disc" aria-hidden="true">D</span></div>
-    {% for index, number, x, y in seating.spots %}{% if can_choose_seat %}<button class="seat-spot seat-free" name="seat" value="{{ index }}" style="left:{{ x }}%;top:{{ y }}%" aria-label="Seat {{ number }}">{{ number }}</button>{% else %}<span class="seat-spot seat-free" style="left:{{ x }}%;top:{{ y }}%" aria-hidden="true">{{ number }}</span>{% endif %}{% endfor %}
+    {% for index, number, x, y, turn in seating.spots %}{% if can_choose_seat %}<button class="seat-spot seat-free" name="seat" value="{{ index }}" style="left:{{ x }}%;top:{{ y }}%" aria-label="Seat {{ number }}">{{ number }}</button>{% else %}<span class="seat-spot seat-free" style="left:{{ x }}%;top:{{ y }}%" aria-hidden="true">{{ number }}</span>{% endif %}{% endfor %}
   </div>
   {% if can_choose_seat %}</form>{% endif %}
   {% endif %}

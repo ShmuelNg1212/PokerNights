@@ -79,6 +79,10 @@ class SeatDrawPageTests(TestCase):
         self.assertContains(page, 'data-state="seated"')
         self.assertContains(page, 'data-dealer-seat="2"')
         self.assertContains(page, "seat-spot is-taken", count=4)
+        self.assertContains(page, '<span class="seat-chair', count=4)
+        self.assertContains(page, "--turn:0.0deg")
+        self.assertContains(page, 'class="seat-rail"')
+        self.assertContains(page, "branding/logo-mark.svg")
         self.assertContains(page, 'data-step="seats" data-state="done"')
         self.assertNotContains(page, "data-poll-fast")
 

@@ -28,9 +28,46 @@ class PositionTests(TestCase):
         self.assertEqual(short(12)[-2:], ["HJ", "CO"])
 
     def test_the_top_seat_is_first_and_seats_run_clockwise(self):
-        self.assertEqual(seats.spot(0, 4), (50.0, 6.0))
-        self.assertEqual(seats.spot(1, 4), (94.0, 50.0))  # to the right of the top seat: clockwise on a screen
-        self.assertEqual(seats.spot(2, 4), (50.0, 94.0))
+        x, y, turn = seats.spot(0, 4)
+        self.assertEqual((x, turn), (50.0, 0.0))
+        self.assertLess(y, 10)
+        right, bottom, left = seats.spot(1, 4), seats.spot(2, 4), seats.spot(3, 4)
+        self.assertGreater(right[0], 90)  # to the right of the top seat: clockwise on a screen
+        self.assertEqual((right[1], right[2]), (50.0, 90.0))
+        self.assertEqual((bottom[0], bottom[2]), (50.0, 180.0))
+        self.assertGreater(bottom[1], 90)
+        self.assertEqual((left[1], left[2]), (50.0, 270.0))
+
+    def test_seats_are_equally_far_apart_along_the_edge_of_a_racetrack(self):
+        import math
+
+        for width, height in ((1.25, 1.0), (0.75, 1.0), (1.0, 1.0)):
+            for count in range(2, 13):
+                # Walk the edge finely and add up the distance between neighbouring seats.
+                steps = 600
+                points = [seats.edge(step, count * steps, width, height)[:2] for step in range(count * steps + 1)]
+                lengths = []
+                for seat in range(count):
+                    run = points[seat * steps:(seat + 1) * steps + 1]
+                    lengths.append(sum(math.dist(run[k], run[k + 1]) for k in range(steps)))
+                self.assertAlmostEqual(max(lengths), min(lengths), delta=max(lengths) * 0.002, msg=(width, count))
+
+    def test_every_seat_is_inside_the_box_and_faces_away_from_the_middle(self):
+        import math
+
+        for width, height in ((1.25, 1.0), (0.75, 1.0)):
+            for count in (2, 6, 9, 12):
+                for index in range(count):
+                    x, y, turn = seats.edge(index, count, width, height)
+                    self.assertLess(abs(x), width / 2)
+                    self.assertLess(abs(y), height / 2)
+                    outward = (math.sin(math.radians(turn)), -math.cos(math.radians(turn)))
+                    self.assertGreater(x * outward[0] + y * outward[1], 0, (width, count, index))
+
+    def test_a_wide_table_has_straight_sides_on_top_and_an_upright_one_at_the_sides(self):
+        self.assertEqual([seats.edge(i, 12, 1.25, 1.0)[2] for i in (0, 6)], [0.0, 180.0])
+        tall = [round(seats.edge(i, 12, 0.75, 1.0)[2]) for i in (3, 9)]
+        self.assertEqual(tall, [90, 270])
 
 
 class DrawTests(TestCase):
