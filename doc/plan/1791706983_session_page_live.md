@@ -1,6 +1,6 @@
 # The session page updates by itself: plan
 
-Status: approved 2026-10-11 ("approved"); all four decisions as recommended. Date: 2026-10-11, Asia/Manila. Study: [The session page does not update by itself](../study/1791706965_session_page_live.md).
+Status: approved 2026-10-11 ("approved"); all four decisions as recommended. Built and released. Date: 2026-10-11, Asia/Manila. Study: [The session page does not update by itself](../study/1791706965_session_page_live.md).
 
 ## Outcome
 
@@ -92,3 +92,5 @@ Acceptance: 1 to 5 are met in headless Chrome with two signed-in browsers.
 Not verified: two real phones; a phone whose screen locks and unlocks (the hidden-tab rule was tested by telling the page it was hidden); the cost on Vercel and Neon of several phones left on the page; a screen reader's announcement of a redraw. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki (features, architecture), browser README, TODO.
+
+2026-10-11 release: the human said "push". `fix/session-page-live` was merged to `main` as `243ce78` and pushed (previous production commit `6090ce1`). 1018 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About two and a quarter minutes later the live login page named `nightlive.js`, which is served, and the new state address answered a signed-out request with a redirect to the login, so the route exists. No session page was opened signed in on the live site, so an update arriving there was not seen.
