@@ -1584,3 +1584,35 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 @keyframes share-deal { from { opacity: 0; transform: translateY(16px) scale(.96) rotate(-1.5deg); } }
 @keyframes share-land { from { opacity: 0; } }
 @keyframes share-uncover { from { clip-path: inset(0 0 100% 0 round 14px); } to { clip-path: inset(0 0 0 0 round 14px); } }
+
+/* Home screen (2026-10-11): the suggestion after a login, and the link field of the installed app.
+   One moment per opening: the app's icon drops onto its tile and its name fades in under it. */
+.install-sheet .sheet-head h2 { font-size: 1.125rem; text-wrap: balance; }
+.install-tile { display: grid; justify-items: center; gap: var(--s-2); margin: var(--s-2) 0 var(--s-4); }
+.install-icon { position: relative; display: block; width: 72px; height: 72px; border-radius: 18px; background: var(--ground); box-shadow: inset 0 0 0 1px var(--rule); }
+.install-icon img { display: block; width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 8px 18px oklch(0 0 0 / .5), 0 1px 3px oklch(0 0 0 / .4); }
+.install-name { font-size: .8125rem; font-weight: 600; color: var(--muted); }
+.install-why { margin: 0 0 var(--s-4); text-align: center; text-wrap: balance; }
+.install-lead { margin: 0 0 var(--s-2); }
+.install-steps { list-style: none; margin: 0 0 var(--s-3); padding: 0; counter-reset: step; }
+.install-steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--rule); counter-increment: step; }
+.install-steps li:first-child { border-top: 1px solid var(--rule); }
+.install-steps li > span:last-child::before { content: counter(step) ". "; color: var(--muted); font-variant-numeric: tabular-nums; }
+.install-glyph { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--r-row); background: var(--surface-2); color: var(--bone); }
+.install-glyph .icon { width: 24px; height: 24px; }
+.install-after { margin: 0 0 var(--s-3); }
+.install-status { margin: var(--s-2) 0 0; color: var(--muted); text-align: center; overflow-wrap: anywhere; }
+.install-status:empty { display: none; }
+.install-actions { display: grid; gap: var(--s-2); margin-top: var(--s-3); }
+.install-sheet section .btn { margin-bottom: var(--s-1); }
+.home-app { margin-top: var(--s-4); }
+.home-app .home-link { margin-top: 0; }
+.home-link .form-row { gap: var(--s-2); }
+@media (prefers-reduced-motion: no-preference) {
+  .install-sheet[open] .install-icon img { animation: install-drop 520ms var(--spring-arrive) 200ms backwards; }
+  .install-sheet[open] .install-name { animation: install-name 240ms var(--ease-out) 460ms backwards; }
+  .install-sheet[open] .install-lift { animation: install-lift 700ms var(--ease-out) 900ms 1 backwards; }
+}
+@keyframes install-drop { from { opacity: 0; transform: translateY(-22px) scale(.82); } }
+@keyframes install-name { from { opacity: 0; } }
+@keyframes install-lift { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }

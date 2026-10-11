@@ -180,3 +180,11 @@ node web/tests/browser/share.mjs
 ```
 
 It writes nothing, so it can be rerun on the same database. The drawn cards are saved beside the captures as `share-card-*.png`.
+
+For the home-screen suggestion, seed a fresh temporary database with `seed_install.py` alone, serve it, then:
+
+```sh
+node web/tests/browser/install_prompt.mjs
+```
+
+It sets each phone's user agent itself and stands in for the browser's install event and for the installed app. It uses up the fixture's invite, so use another fresh database for a second run.

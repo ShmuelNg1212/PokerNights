@@ -315,3 +315,13 @@ Read-only and client-drawn. [Plan](../plan/1791701751_share_results.md).
 - `web/templatetags/table_tags.py` `token()` is the chip label rule, shared by the `player_token` tag and the card.
 - `static/js/share.js` draws on a canvas when the share sheet shows (`sheet:shown`, dispatched by `sheets.js` on open and swap): it confirms Archivo with `document.fonts.load`, reads the palette from the page's custom properties (each colour painted once and read back, so an unread colour stops the card), lays the card out in a dry pass for its height, draws, checks the result is not blank and keeps a PNG `File`. The share call is made directly in the tap with that file; nothing is awaited first. Any failure leaves the text and Copy.
 - No service, model, migration or audit event.
+
+## Home screen suggestion
+
+Browser-side, with one signal from the server. [Plan](../plan/1791703670_install_prompt.md).
+
+- `config/door.py`: `door.came_in` is true on the one page shown after a login, read from the same 30-second `arrived` cookie as `door.welcome` and not consumed by a prefetch. It does not depend on `DOOR_MOTION`; the cookie is now set when either switch is on. `base.html` writes `data-came-in` on `<main>` inside the `welcome` block, so entry pages (which empty that block) pass it on with the arrival.
+- `templates/_install.html` is a `<dialog class="sheet">` in `base.html` for signed-in pages. `templates/web/_home_app.html` on Your groups holds the button that reopens it and the installed app's link field; both start hidden.
+- `static/js/install.js`: keeps `beforeinstallprompt` for the tab and prevents the browser's own bar; picks a part (`inapp`, `install`, `ios`, `menu`) from the user agent and the kept event; notes a login in `sessionStorage` (`rack-install-due`) and opens on the first page that is not an entry page and has no open dialog; remembers only "done" in `localStorage` (`rack-install`). Inside the installed app (`display-mode: standalone` or `navigator.standalone`) it shows the link field instead and sends a pasted same-origin `/join/`, `/claim/` or `/reset/` path to `location.assign`.
+- `static/manifest.webmanifest` states `launch_handler` (reuse the open app) and `handle_links`. Android's installed web apps take in-scope links through the system; iOS has no way for a home-screen web app to receive a link.
+- No model, service, migration or audit event.

@@ -905,6 +905,17 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Motion.** One moment per opening: the card is dealt (from 16px low, 96% and −1.5°, with the `arrive` spring over 520ms) while its shadow fades in, and from 160ms it is uncovered top to bottom over 460ms. The picture is complete before it shows; nothing in it moves or counts. An accepted action pulses once as its label changes to Shared, Saved or Copied for two seconds. Only transform, opacity and clip-path animate. Reduced motion shows the card at rest.
 - **Measured.** `share.mjs`, 29 checks at 390 and 1280px: the picture's width, font and content, the three ways out and their refusals, focus, 48px targets, no horizontal overflow, the card and actions in view together, a twelve-player card, reduced motion, and the text-only fallback.
 
+### Home screen suggestion (2026-10-11)
+
+[Plan](doc/plan/1791703670_install_prompt.md). This replaces "No install prompt" in the installable-app addendum. No new colour, font or raster asset (the tile shows the existing 192px app icon).
+
+- **The sheet** is the shared bottom sheet: the title "Put PokerNights on your home screen" on two balanced lines with the round Close; a home-screen tile (the app icon at 72px with 18px corners and a soft offset shadow, its name under it in Bone Dim 13px); one centred sentence; then the part for this phone; then the actions.
+- **Steps** are numbered rows between Rule lines: a 44px Rail-2 tile with a drawn 24px glyph in the app's stroke (share, add, menu, log in), then the sentence with the control's name in bold.
+- **Actions.** Android with an offer: primary Install, quiet Not now. Elsewhere there is no primary, because the action happens outside the page: neutral "Done, it's on my home screen" (or Copy link) and quiet Not now.
+- **Motion.** The sheet rises with the `sheet` spring about a second after the page shows, after the arrival. One moment per opening: the icon drops 22px onto its tile from 82% with the `arrive` spring (520ms, from 200ms) and its name fades in; on the iPhone card the Share glyph's arrow lifts 4px once at 900ms. Reduced motion shows everything at rest.
+- **Your groups** ends with a quiet "Add to home screen" in a phone's browser. Inside the installed app the same place holds "Join with a link", a disclosure in the New group style with one labelled field, a refusal line, Paste and a primary Open link.
+- **Measured.** `install_prompt.mjs`, 38 checks: each phone's part, timing after the arrival, focus and its return, Escape, 48px targets and no overflow at 320 and 390px, every login asking again, Done and the browser's install ending it, deferral behind a join page and a recap, desktop, reduced motion, and the link field's refusal, paste and opening.
+
 ## Do's and Don'ts
 
 ### Do:

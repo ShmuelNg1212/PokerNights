@@ -199,6 +199,8 @@ ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 TABLE_REVAMP = env.bool("TABLE_REVAMP", default=True)
 # The one-line count-up. False returns the earlier count-up for one release.
 COUNT_REVAMP = env.bool("COUNT_REVAMP", default=True)
+# Turn off to stop suggesting the home screen after a login and to hide Join with a link (see static/js/install.js).
+INSTALL_PROMPT = env.bool("INSTALL_PROMPT", default=True)
 # Turn off to remove Share results from closed sessions (see web/share.py).
 SHARE_RESULTS = env.bool("SHARE_RESULTS", default=True)
 # Turn off to hide Reopen set and Reopen session and refuse both (see settlement/services.py).

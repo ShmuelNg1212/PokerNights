@@ -59,6 +59,17 @@ class Door:
         request.door_welcomed = True
         return True
 
+    @property
+    def came_in(self):
+        """The same one page, said for the home-screen suggestion (install.js). It does not need the arrival's motion."""
+        request = self.request
+        if not settings.INSTALL_PROMPT or request.method != "GET" or request.COOKIES.get(ARRIVED) != "1":
+            return False
+        if is_prefetch(request) or not request.user.is_authenticated:
+            return False
+        request.door_welcomed = True
+        return True
+
 
 def door(request):
     return {"door": Door(request)}
@@ -74,7 +85,7 @@ class DoorCookie:
         response = self.get_response(request)
         if getattr(request, "door_opened", False):
             response.set_cookie(COOKIE, "1", samesite="Lax", secure=settings.SESSION_COOKIE_SECURE)
-        if getattr(request, "door_arrived", False) and settings.DOOR_MOTION:
+        if getattr(request, "door_arrived", False) and (settings.DOOR_MOTION or settings.INSTALL_PROMPT):
             response.set_cookie(ARRIVED, "1", max_age=ARRIVED_SECONDS, samesite="Lax", secure=settings.SESSION_COOKIE_SECURE)
         elif getattr(request, "door_welcomed", False):
             response.delete_cookie(ARRIVED, samesite="Lax")

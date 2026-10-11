@@ -1,0 +1,36 @@
+{% load static %}
+{# The suggestion to put the app on the home screen. install.js opens it after a login on a phone's browser and shows the part that fits the phone; without the script nothing shows. #}
+<dialog class="sheet install-sheet" id="install-sheet" aria-labelledby="install-title">
+  <div class="sheet-head"><h2 id="install-title">Put PokerNights on your home screen</h2><button type="button" class="btn btn-round" aria-label="Close" data-install-close><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg></button></div>
+  <div class="install-tile" aria-hidden="true"><span class="install-icon"><img src="{% static 'icons/app-192.png' %}" alt="" width="64" height="64"></span><span class="install-name">PokerNights</span></div>
+  <p class="install-why">It opens full screen like an app, one tap from your home screen.</p>
+  <section data-install-part="install" hidden>
+    <button type="button" class="btn btn-primary btn-block" data-install-go>Install</button>
+  </section>
+  <section data-install-part="ios" hidden>
+    <ol class="install-steps">
+      <li><span class="install-glyph install-share"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10H5.5A1.5 1.5 0 0 0 4 11.500v8A1.500 1.500 0 0 0 5.500 21h13a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18.500 10H17"/><g class="install-lift"><path d="M12 15V3M8 7l4-4 4 4"/></g></svg></span><span>Tap <strong>Share</strong> in your browser's bar.</span></li>
+      <li><span class="install-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.500v7M8.500 12h7"/></svg></span><span>Tap <strong>Add to Home Screen</strong>. Scroll the list if you do not see it.</span></li>
+    </ol>
+    <p class="small muted install-after">You log in once more inside the app.</p>
+  </section>
+  <section data-install-part="inapp" hidden>
+    <p class="install-lead">This is a chat app's own browser, which cannot add apps.</p>
+    <ol class="install-steps">
+      <li><span class="install-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg></span><span>Open the menu and tap <strong>Open in browser</strong>.</span></li>
+      <li><span class="install-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l4-4-4-4M14 12H4"/></svg></span><span>Log in there. The steps for your phone show next.</span></li>
+    </ol>
+    <button type="button" class="btn btn-block" data-install-copy>Copy link</button>
+  </section>
+  <section data-install-part="menu" hidden>
+    <ol class="install-steps">
+      <li><span class="install-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5h.01M12 12h.01M12 19h.01"/></svg></span><span>Open your browser's menu.</span></li>
+      <li><span class="install-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.500v7M8.500 12h7"/></svg></span><span>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</span></li>
+    </ol>
+  </section>
+  <p class="install-status small" role="status" data-install-status></p>
+  <div class="install-actions">
+    <button type="button" class="btn btn-block" data-install-done hidden>Done, it's on my home screen</button>
+    <button type="button" class="btn btn-quiet btn-block" data-install-close>Not now</button>
+  </div>
+</dialog>

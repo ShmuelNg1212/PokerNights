@@ -142,14 +142,14 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - A web app manifest (`static/manifest.webmanifest`), PNG icons in `static/icons/` and iPhone meta tags let a phone add the site to its home screen and open it full-screen.
 - `static/js/app.js`, on every page: the offline notice; no form is sent while the browser reports offline; a page that does not refresh itself reloads when the app returns after 30 seconds away, unless a field holds unsaved typing, a sheet is open, or the page was rendered from a POST; and the service worker registration.
 - The service worker (`config/pwa.py`, served at `/sw.js`) does one thing: a navigation that fails for lack of a connection shows `/offline/`. It caches that page only. `SERVICE_WORKER=False` serves a worker that removes itself, and pages then also remove any worker and cache on the phone.
-- Not built: offline viewing or recording, push notifications, an install prompt, splash images, an app-store app.
+- Not built: offline viewing or recording, push notifications, splash images, an app-store app. The install suggestion is described under “Home screen suggestion and Join with a link”.
 
 ### Put PokerNights on your phone
 
 - **iPhone:** open the site in Safari, tap Share, then Add to Home Screen.
 - **Android:** open the site in Chrome, open the menu, then Install app or Add to Home screen.
 - On an iPhone you log in once more inside the installed app; it does not share Safari's login.
-- An invite link opened from a chat still opens in the browser, not in the installed app.
+- On an iPhone an invite link opened from a chat still opens in the browser; inside the installed app, use Join with a link on Your groups. On Android an installed app takes links to the site, unless the chat app opens them in its own browser.
 
 ## Actions update in place
 
@@ -509,3 +509,18 @@ Any member can send a closed session to the group chat as a picture and a short 
 - **After a correction.** A session reopened and closed again shares the new figures and the new "Closed" time. A picture already sent does not change.
 - Shares are not logged.
 - Switch: `SHARE_RESULTS=False` removes the control. Check: `web/tests/browser/share.mjs` with `seed_share.py`.
+
+## Home screen suggestion and Join with a link (2026-10-11)
+
+After every sign-up or login in a phone's browser, a sheet suggests putting PokerNights on the home screen, with the steps that fit the phone. [Plan](../plan/1791703670_install_prompt.md).
+
+- **When.** On the first ordinary page after a login, about a second in, after the arrival has played. A join or claim page and a session whose recap opens by itself keep the screen; the sheet then shows on the next page. Not on a desktop browser, and never inside the installed app.
+- **Android** where the browser offers it: one **Install** button that opens the browser's own install dialog. Accepting ends the suggestion for that browser; declining leaves the menu steps.
+- **iPhone:** two steps, Share and then Add to Home Screen, and the line "You log in once more inside the app."
+- **A chat app's own browser** (Messenger, Instagram, Viber, Line): says it cannot add apps, to open the page in the real browser, and has **Copy link**.
+- **Any other phone browser:** open the menu, then Install app or Add to Home screen.
+- **Closing.** Not now, Close, Escape or a tap outside. It shows again at the next login. **Done, it's on my home screen** ends it for that browser, as does the browser reporting the install.
+- **Later.** Your groups ends with **Add to home screen**, which opens the same sheet, until it is marked done.
+- **Join with a link.** Inside the installed app, Your groups has a field to paste an invite, claim or reset link copied from a chat, because an iPhone opens tapped links in the browser. A link to another site, or to another kind of page, is refused in words. Paste appears where the phone allows reading the clipboard.
+- The page cannot tell that the app is installed when it is opened in the browser, so a person who installed it and logs in from the browser again is asked again unless they said Done there.
+- Switch: `INSTALL_PROMPT=False` removes the sheet, the button and the link field. Check: `web/tests/browser/install_prompt.mjs` with `seed_install.py`.
