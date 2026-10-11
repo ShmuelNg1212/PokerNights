@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Seat draw before a set starts ([plan](doc/plan/1791717121_seat_draw.md), [study](doc/study/1791717120_seat_draw.md)): built on `feat/seat-draw` on 2026-10-11. One migration that adds two tables. `SEAT_DRAW=False` turns it off.
+Seat draw before a set starts ([plan](doc/plan/1791717121_seat_draw.md), [study](doc/study/1791717120_seat_draw.md)): built on `feat/seat-draw` on 2026-10-11. Released 2026-10-11 as `dc6e00c` (previous production commit `f3b321f`); the live site serves `seats.js` and the stage's styles, and the draw address exists. One migration that adds two tables. Phone acceptance is open. `SEAT_DRAW=False` turns it off.
 
 - [ ] After release, with two phones on an open set with at least three players: as the host tap Draw on the Seat draw step. Both phones should play the draw and name the same dealer.
 - [ ] Tap a seat (on the winner's phone, or on the host's for them). Both phones should deal everyone to the same seats. Say whether the draw is the right length and whether it feels like a draw.
