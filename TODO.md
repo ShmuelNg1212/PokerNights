@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Share results ([plan](doc/plan/1791701751_share_results.md), [study](doc/study/1791701725_share_results.md)): built on `feat/share-results` on 2026-10-11. Not merged, not pushed. No migration.
+Share results ([plan](doc/plan/1791701751_share_results.md), [study](doc/study/1791701725_share_results.md)): built on `feat/share-results` on 2026-10-11. Released 2026-10-11 as `2557f50` (previous production commit `be3bcf2`); the live site serves `share.js` and the new styles. No migration. If anything is wrong, set `SHARE_RESULTS=False` in Vercel first.
 
 - [ ] After release, on your phone on a closed session: tap Share results. The card should be dealt onto the sheet and uncovered from the top.
 - [ ] Tap Share and send it to a chat. Check the picture reads clearly there, and whether the text arrives with it (some chat apps keep only the picture).

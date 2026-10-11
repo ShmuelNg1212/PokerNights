@@ -1,6 +1,6 @@
 # Share a session's results to the group chat: plan
 
-Status: approved 2026-10-11 ("approved"); all five decisions as recommended. Date: 2026-10-11, Asia/Manila. Study: [Share a session's results](../study/1791701725_share_results.md).
+Status: approved 2026-10-11 ("approved"); all five decisions as recommended. Built and released. Date: 2026-10-11, Asia/Manila. Study: [Share a session's results](../study/1791701725_share_results.md).
 
 ## Outcome
 
@@ -142,3 +142,5 @@ Acceptance: 1, 3, 4, 5 and 6 are met in tests and headless Chrome. 2 is met only
 Not verified: a real phone's share sheet (iPhone Safari, the installed app, Android Chrome); how the picture looks inside Messenger, Viber or WhatsApp, and whether each keeps the text; the condensed money width in Safari's canvas (if Safari ignores it the amounts are wider and names give way sooner); a screen reader. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki (features, architecture, deployment), PRODUCT.md, DESIGN.md, browser README, TODO.
+
+2026-10-11 release: the human said "push". `feat/share-results` was merged to `main` as `2557f50` and pushed (previous production commit `be3bcf2`). 1003 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. No migration. About two and a quarter minutes later the live login page named `share.js`, which is served, and the live stylesheet holds the share rules. No signed-in page was opened on the live site, so the sheet itself was not seen there.
