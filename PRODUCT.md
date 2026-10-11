@@ -118,3 +118,7 @@ Counting up, a host sees one line per player with the count field on it, so a ta
 ## 2026-10-11 addendum — Reopening
 
 A host can reopen a finalized set to correct a count, a cash-out or a buy-in, and reopen a closed session to correct a set or play another. Each asks for a reason, which everyone on the page sees. Earlier results and the earlier transfer list are kept and marked replaced; nothing recorded is removed. A session with a transfer marked paid is not reopened until the mark is removed, so no list has to account for money that already moved. While reopened, the results are left out of the totals and the stats. [Plan](doc/plan/1791699815_reopen_set_and_session.md).
+
+## 2026-10-11 addendum — Share results
+
+After a session is closed, any member can send it to the group chat: one picture with every player's result and who pays whom, and the same figures as text. The picture is drawn on the member's phone and leaves only through the app they choose; PokerNights sends nothing and offers no public link. SPEC.md's CSV export is not built. [Plan](doc/plan/1791701751_share_results.md).

@@ -10,8 +10,8 @@ register = template.Library()
 def plain(value, unit):
     return plain_amount(value, unit)
 
-@register.simple_tag
-def player_token(participant, participants):
+def token(participant, participants) -> tuple:
+    """``(label, colour number)`` of a player's chip: an initial, or two letters when initials collide."""
     name = participant.member.display_name.strip()
     initial = name[:1].upper() or "?"
     peers = [p for p in participants if p.member.display_name.strip()[:1].upper() == initial]
@@ -27,7 +27,12 @@ def player_token(participant, participants):
             if peer is participant or (getattr(participant, "pk", None) is not None and peer.pk == participant.pk):
                 initial = label
                 break
-    colour = (participant.join_order - 1) % 10 + 1
+    return initial, (participant.join_order - 1) % 10 + 1
+
+
+@register.simple_tag
+def player_token(participant, participants):
+    initial, colour = token(participant, participants)
     # data-m names the player, so a screen change can carry the chip to the same player's row (turbo-setup.js).
     return format_html('<span class="chip k{}" data-m="{}" aria-hidden="true">{}</span>', colour, getattr(participant.member, "pk", ""), initial)
 

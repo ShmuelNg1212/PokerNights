@@ -17,7 +17,10 @@ if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translat
 // A sheet that confirms something says where focus starts, so a stray Enter does not confirm it.
 var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
+shown();
 }
+// Other scripts prepare a sheet's content when it shows (share.js draws the card).
+function shown() { document.dispatchEvent(new CustomEvent("sheet:shown", {detail: {key: S.key, body: S.body}})); }
 // The recap's result bars grow when their list is first seen, once per opening. The mark is set
 // before the sheet shows, so no bar is drawn full for a frame; without it the bars are simply there.
 function watchBars(sheet) {
@@ -58,6 +61,7 @@ window.pokerMotion.settle(S.body, window.pokerMotion.run(S.body, { opacity: [0, 
 }
 var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
 if (field) { field.focus(); if (field.select) field.select(); }
+shown();
 }
 function close() {
 var dialog = S.dialog;

@@ -895,6 +895,16 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Replaced records.** Earlier results in the set log and earlier transfer lists on the session page are struck, under a “Replaced” badge with the reason. Earlier transfer lists are a closed disclosure beside Payment records.
 - **Measured.** `reopen.mjs`, 24 checks at 390 and 1280px: 48px targets, no horizontal overflow, focus, the one-time arrival and its absence after a reload, 4.5:1 for the three text colours of the reason line on the felt, reduced motion, the paid-mark refusal, and a player's view.
 
+### Share results (2026-10-11)
+
+[Plan](doc/plan/1791701751_share_results.md). No new colour, font or asset; one new set of keyframes.
+
+- **The opener** is a neutral full-width button under the quiet "View session recap", and the last control of the recap sheet, where it swaps the sheet's content.
+- **The card** (a 1080px-wide picture) is the Rack at poster size: Ground, a Rail panel with a Rule edge and 52px corners, a short Brass tab on its top edge. The mark and "PokerNights" in Bone Dim; the table name in Bone at 96px weight 800 (down to 60px, then two lines); two Bone Dim fact lines. "Results" and "Who pays whom" are Bone Dim headings under a Rule line. Result rows carry place, the player's chip, the name, and the signed amount in the condensed money width with its arrow, in the win or loss colour; a 6px bar shows the size of the result. A winning first place is one step larger. Transfer rows are payer, a Brass arrow, payee and a Bone amount. The foot is one Bone Dim line.
+- **The sheet.** The card's preview, at most 46% of the screen's height so that it and the three actions fit together on a phone; one primary (Share, or Save image where pictures cannot be shared), then neutral and quiet; a status line; "Results as text" as a closed disclosure under a Line rule.
+- **Motion.** One moment per opening: the card is dealt (from 16px low, 96% and −1.5°, with the `arrive` spring over 520ms) while its shadow fades in, and from 160ms it is uncovered top to bottom over 460ms. The picture is complete before it shows; nothing in it moves or counts. An accepted action pulses once as its label changes to Shared, Saved or Copied for two seconds. Only transform, opacity and clip-path animate. Reduced motion shows the card at rest.
+- **Measured.** `share.mjs`, 29 checks at 390 and 1280px: the picture's width, font and content, the three ways out and their refusals, focus, 48px targets, no horizontal overflow, the card and actions in view together, a twelve-player card, reduced motion, and the text-only fallback.
+
 ## Do's and Don'ts
 
 ### Do:

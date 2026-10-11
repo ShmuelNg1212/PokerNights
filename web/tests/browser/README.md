@@ -172,3 +172,11 @@ node web/tests/browser/reopen.mjs
 ```
 
 It reopens the fixture's sets and sessions, so use another fresh database for a second run.
+
+For Share results, seed a fresh temporary database with `seed_share.py` alone, serve it, then:
+
+```sh
+node web/tests/browser/share.mjs
+```
+
+It writes nothing, so it can be rerun on the same database. The drawn cards are saved beside the captures as `share-card-*.png`.

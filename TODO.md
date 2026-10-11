@@ -4,6 +4,15 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Share results ([plan](doc/plan/1791701751_share_results.md), [study](doc/study/1791701725_share_results.md)): built on `feat/share-results` on 2026-10-11. Not merged, not pushed. No migration.
+
+- [ ] After release, on your phone on a closed session: tap Share results. The card should be dealt onto the sheet and uncovered from the top.
+- [ ] Tap Share and send it to a chat. Check the picture reads clearly there, and whether the text arrives with it (some chat apps keep only the picture).
+- [ ] Tap Save image, then Copy text and paste it somewhere.
+- [ ] Open the recap, scroll to its end and tap Share results there.
+- [ ] Try it from the installed app as well as from Safari.
+- [ ] Say if the card should carry anything else, or less.
+
 Reopen a set or a session ([plan](doc/plan/1791699815_reopen_set_and_session.md), [study](doc/study/1791699745_reopen_set_and_session.md)): built on `feat/reopen` on 2026-10-11. Released 2026-10-11 as `be3bcf2` (previous production commit `800e29e`); the live site serves the new styles. Two migrations ran in the build (`ledger 0014`, `settlement 0007`). If anything is wrong, set `REOPENING=False` in Vercel first.
 
 - [ ] After release, as a host on a finalized set of an open session: tap Reopen set, give a reason, and watch the set come back to counting up with the brass line.

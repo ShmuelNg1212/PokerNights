@@ -30,6 +30,7 @@ from settlement import queries as settlement_queries
 
 from . import stats as stats_pages
 from . import prep
+from . import share
 from .home import archived_groups, home_cards
 
 
@@ -346,6 +347,8 @@ def night(request, night_id):
             night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()},
             results=outcome.results, viewer_id=me.pk,
         )
+        if settings.SHARE_RESULTS and outcome.plan is not None:
+            context["share"] = share.card(night, outcome, context["recap"])
     if host.is_host:
         context["manage"] = {
             "unfinished": [s for s in all_sets if s.state in games.UNFINISHED_STATES],
