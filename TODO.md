@@ -4,7 +4,7 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Unpaid transfers carried into a later session ([plan](doc/plan/1791728777_carried_debts.md), [study](doc/study/1791728776_carried_debts.md)): built on `feat/carried-debts` on 2026-10-11. Not merged, not pushed. One migration that adds one table. `CARRY_DEBTS=False` turns it off.
+Unpaid transfers carried into a later session ([plan](doc/plan/1791728777_carried_debts.md), [study](doc/study/1791728776_carried_debts.md)): built on `feat/carried-debts` on 2026-10-11. Released 2026-10-11 as `c91dc68` (previous production commit `dc6e00c`); the live site serves `carry.js` and its styles. One migration that adds one table. Phone acceptance is open. `CARRY_DEBTS=False` turns it off.
 
 - [ ] After release, with a real unpaid transfer between two people who play again: close the new session with it ticked. Check the one list against your own arithmetic, and that the old transfer reads "Carried" with a link.
 - [ ] As one of those two people, check "To settle" and its lines on the new session, and that Your groups counts the debt once.

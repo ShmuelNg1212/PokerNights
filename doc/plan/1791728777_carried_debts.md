@@ -1,6 +1,6 @@
 # Unpaid transfers carried into a later session: plan
 
-Status: approved 2026-10-11 ("approved. make sure to use motion.dev and UI skills for polishing this feature implementation."); all six decisions as recommended. Built; kept local. Date: 2026-10-11, Asia/Manila. Study: [Unpaid transfers carried into a later session](../study/1791728776_carried_debts.md).
+Status: approved 2026-10-11 ("approved. make sure to use motion.dev and UI skills for polishing this feature implementation."); all six decisions as recommended. Built and released. Date: 2026-10-11, Asia/Manila. Study: [Unpaid transfers carried into a later session](../study/1791728776_carried_debts.md).
 
 ## Outcome
 
@@ -108,3 +108,5 @@ Acceptance: 1 to 5 are met in headless Chrome and in the service tests; 6 on SQL
 Not verified: real phones; PostgreSQL (before release); two hosts closing at the same moment on PostgreSQL, where the locks matter (SQLite does not lock rows, so the tests cover the re-check and not the waiting); a screen reader. A fresh reviewer did not read the branch.
 
 Documentation synced: wiki (features, architecture, deployment), PRODUCT.md, DESIGN.md, browser README, TODO.
+
+2026-10-11 release: the human said "push". `feat/carried-debts` was merged to `main` as `c91dc68` and pushed (previous production commit `dc6e00c`). 1100 tests passed on SQLite and on PostgreSQL 17 on the merged `main` before the push. One migration, `settlement/0008_carried_transfer`, which the build runs. About five minutes later the live login page named `carry.js`, which is served, and the live stylesheet held the new rules. That the build went live is the only evidence that the migration ran: no session was opened signed in on the live site, and nothing was carried there.
