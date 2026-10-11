@@ -15,9 +15,14 @@ S.dialog.showModal();
 S.dialog.scrollTop = 0;
 if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
 // A sheet that confirms something says where focus starts, so a stray Enter does not confirm it.
-var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
-if (field) { field.focus(); if (field.select) field.select(); }
+focusStart(source);
 shown();
+}
+// Where focus starts. A sheet that is read from its top (the recap) starts on Close, because the
+// browser scrolls to what takes focus and its only button is its last line.
+function focusStart(source) {
+var field = "sheetReads" in source.dataset ? S.dialog.querySelector(".sheet-head button") : S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
+if (field) { field.focus(); if (field.select) field.select(); }
 }
 // Other scripts prepare a sheet's content when it shows (share.js draws the card).
 function shown() { document.dispatchEvent(new CustomEvent("sheet:shown", {detail: {key: S.key, body: S.body}})); }
@@ -53,14 +58,14 @@ putBack(S);
 S.key = id;
 S.dialog.querySelector("h2").textContent = source.dataset.title;
 S.body.appendChild(source.querySelector(".sheet-content"));
+S.dialog.scrollTop = 0; // the next sheet starts at its top, wherever the last one was left
 if (window.pokerNumpad) window.pokerNumpad.prepare(S.body);
 if (window.pokerMotion && window.pokerMotion.on()) {
 // The first keyframe is written before Motion starts (footgun: motion starts a frame late).
 S.body.style.opacity = "0"; S.body.style.transform = "translateY(8px)";
 window.pokerMotion.settle(S.body, window.pokerMotion.run(S.body, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift"), ["opacity", "transform"]);
 }
-var field = S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
-if (field) { field.focus(); if (field.select) field.select(); }
+focusStart(source);
 shown();
 }
 function close() {
