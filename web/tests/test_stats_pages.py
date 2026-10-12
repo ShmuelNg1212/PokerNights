@@ -3,7 +3,7 @@
 import datetime
 
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
@@ -156,10 +156,3 @@ class StatsPagesTests(TestCase):
         for day in (D(2026, 10, 5), D(2026, 10, 6)):
             self.club.session(day, {name: (1000, 1000) for name in ("Ana", "Ben", "Carlo", "Dani", "Eli", "Fe")})
         self.assertEqual((count(self.stats), count(lambda: self.player(self.ana))), (board, page))
-
-    @override_settings(STATS_PAGES=False)
-    def test_switch_off(self):
-        page = self.stats()
-        self.assertContains(page, "Player stats")
-        self.assertNotContains(page, "Not ranked yet")
-        self.assertEqual(self.player(self.ana).status_code, 404)

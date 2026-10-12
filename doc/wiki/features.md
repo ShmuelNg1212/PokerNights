@@ -420,7 +420,7 @@ A player who was only a name on the roster gets their own login and keeps their 
 - **Reading the chart.** A touch, a pointer or the arrow keys pick a session: a line, a dot and a ring mark it, and the line under the chart says its date, table, result and running total. The chart needs three sessions; a longer record draws its latest 60.
 - **How figures are worked out.** Average and per hour round toward zero to the centavo or chip; return and win rate to the whole percent. Per hour uses only sessions with recorded time and says how many. Rebuys are buy-ins beyond the first in each set. A run is sessions in a row with a profit, or with a loss; a break-even session ends it. Rake is already inside the profit or loss.
 - **Changing period, unit or order** stays on the screen where it was scrolled, moves the chosen pill and the rows to their new places, and does not add a step to the Back button.
-- **Switch:** `STATS_PAGES=False` returns the tab to the single ranked list and makes player pages not found.
+- The `STATS_PAGES` switch and the earlier single ranked list were removed on 2026-10-12, after the human accepted the board.
 - Code: `settlement/stats.py` (the figures), `web/charts.py` (the geometry), `web/stats.py` (what the pages show), `templates/web/_group_stats.html`, `player.html`, `_running_chart.html`, `static/js/stats.js`.
 
 ## Numpad motion (2026-10-09)

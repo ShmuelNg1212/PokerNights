@@ -2,7 +2,7 @@
 {% load table_tags %}
 {% block title %}{{ group.name }} · PokerNights{% endblock %}
 {% block page_class %}hub-page group-page{% endblock %}
-{% block screen %} data-depth="1" data-tab="{% if view == 'settings' %}2{% elif view == 'stats' %}1{% else %}0{% endif %}"{% if view == 'stats' and stats_pages %} data-stats="board"{% endif %}{% endblock %}
+{% block screen %} data-depth="1" data-tab="{% if view == 'settings' %}2{% elif view == 'stats' %}1{% else %}0{% endif %}"{% if view == 'stats' %} data-stats="board"{% endif %}{% endblock %}
 {# Only the Sessions tab is redrawn by itself: Group settings shows links once, and a redraw would lose them. #}
 {% block head %}{% if view == 'sessions' %}<meta name="turbo-refresh-method" content="morph"><meta name="turbo-refresh-scroll" content="preserve">{% endif %}{% endblock %}
 {% block content %}
@@ -13,5 +13,5 @@
   {% if has_stats %}<a href="{% url 'group' group.pk %}?view=stats" {% if view == 'stats' %}aria-current="page"{% endif %}>{% if view == 'stats' %}<span class="tab-marker" aria-hidden="true"></span>{% endif %}Stats</a>{% endif %}
   <a href="{% url 'group' group.pk %}?view=settings" {% if view == 'settings' %}aria-current="page"{% endif %}>{% if view == 'settings' %}<span class="tab-marker" aria-hidden="true"></span>{% endif %}Group settings</a>
 </nav>
-{% if view == 'settings' %}{% include "web/_group_settings.html" %}{% elif view == 'stats' %}{% if stats_pages %}{% include "web/_group_stats.html" %}{% else %}{% include "web/_group_stats_legacy.html" %}{% endif %}{% else %}{% include "web/_group_sessions.html" %}{% endif %}
+{% if view == 'settings' %}{% include "web/_group_settings.html" %}{% elif view == 'stats' %}{% include "web/_group_stats.html" %}{% else %}{% include "web/_group_sessions.html" %}{% endif %}
 {% endblock %}

@@ -293,7 +293,7 @@ Two things now replace content on the set page without a reload: the 4-second po
 - **Nothing is stored.** No table, no migration, no write, no audit event.
 - **Charts** are positions worked out in `web/charts.py` as percentages of a box. The template draws the line as one SVG path stretched to the box (`preserveAspectRatio="none"`, `vector-effect: non-scaling-stroke`) and the labels, end mark and bars as positioned HTML, so text and round ends never distort. `stats.js` adds the readout; without it the chart and the list are complete.
 - **A stats filter is the same screen.** `main` carries `data-stats`; when a visit goes from one stats screen to the same kind, `turbo-setup.js` starts no view transition. `stats.js` holds, from the tap until the new screen is in, the scroll position, which pill was chosen and where, and each row's place. It marks Turbo's visit as already scrolled (`Turbo.navigator.currentVisit.scrolled`, an internal of the vendored 8.0.23) and sets the position again on `turbo:load`; then it slides the pill marker, brings in `[data-stat-body]`, or moves the rows. The links and the Month form use `data-turbo-action="replace"`; the form needs `data-turbo="true"` because forms are opt-in here.
-- **Older stats code stays:** `queries.group_stats` and `member_records` serve Your groups and the switched-off tab (`_group_stats_legacy.html`).
+- **Older stats code stays:** `queries.member_records` serves Your groups. `queries.group_stats` served the single ranked list removed on 2026-10-12; no page calls it now, and the tests keep it as a second sum to check the board against.
 
 ## Reopening
 
