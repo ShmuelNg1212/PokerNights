@@ -468,7 +468,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - The host bar keeps the running total and the main action when folded. Open, it shows its hint only when there is no action.
 - A player sees "Your count" first: the field and Send to host, what they entered, and what the host confirmed.
 - `templates/web/_count_v2.html`, `_count_rows.html`, `_count_own.html` and `_books.html`. The field keeps `data-count-input`, `data-saved`, `data-entered` and `data-keep`, so `counts.js` and `numpad.js` are unchanged.
-- Switch: `COUNT_REVAMP=False`. Checks: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`.
+- The `COUNT_REVAMP` switch and the earlier count-up were removed on 2026-10-12, after the human accepted the new one. Checks: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`.
 
 **The closed session page**
 
@@ -493,7 +493,6 @@ A host can take back a finalized set or a closed session to correct a mistake or
 - **What everyone sees.** A brass line on the page: “Reopened to correct.” with the reason, who and when; “Corrected.” on the final page of a set finalized again; “Reopened.” on the open session. On a set page the line's rule draws once per reopening and browser.
 - Resume play is available on a reopened set only when no later set of the session has started, as before.
 - The closing recap does not open by itself a second time; “View session recap” shows the corrected figures.
-- With `COUNT_REVAMP=False` the earlier count-up has no “Add a missed buy-in”.
 - Switch: `REOPENING=False` hides both controls and makes both services refuse. Check: `web/tests/browser/reopen.mjs` with `seed_reopen.py`.
 
 ## Share results (2026-10-11)

@@ -207,7 +207,6 @@ def session_context(session, me) -> dict:
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
         "table_revamp": settings.TABLE_REVAMP,
-        "count_revamp": settings.COUNT_REVAMP,
         "any_entered": any(line.entered for line in summary.lines),
         "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
     }

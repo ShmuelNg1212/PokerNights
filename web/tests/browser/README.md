@@ -159,7 +159,6 @@ Since the count-up and settle-up revamp (2026-10-10, [plan](../../../doc/plan/17
 - `player_entries.mjs` (48 checks) finds a player's own count in the "Your count" block above the list, and an entered count as "entered ₱1,450" on the row.
 - `end_set.mjs` runs to its end again (47 checks, 46 pass). Its no-JavaScript chips walk had stopped on `.next-action`, which is the hidden confirm button; it now follows the link and the finalize form. The one failure, the slate contrast pair, was already stale on `main` (the slate surface was removed).
 - `transfer_layout.mjs` describes the earlier stacked transfer card. 55 of its 155 checks no longer apply; the row is covered by `night.mjs`. It is kept for reference and is not part of a release run.
-- A count-up run with `COUNT_REVAMP=False` needs the earlier expectations: four of `count_flow.mjs`'s checks name the new layout.
 
 For the pot's figure (2026-10-11), seed a fresh temporary database with `seed.py` and `seed_pot.py`, serve it, then run `pot.mjs` (53 checks). `PN_DB` names the SQLite file (default `/private/tmp/pn-pot-check.sqlite3`); the fixture writes `/private/tmp/pn-pot-manifest.json`. The "grow" set allows buy-ins up to ₱1,000,000 so the figure can reach its long size. Waits after a redraw are measured from the redraw, not from the previous check.
 
