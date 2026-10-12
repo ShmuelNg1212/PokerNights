@@ -327,7 +327,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 /* End of set: inline counting work, a slate overview and frozen results. */
 .count-progress { margin: 0; font-size: .9375rem; color: var(--felt-ink); }
 .count-progress strong { color: var(--bone); font-variant-numeric: tabular-nums; }
-.count-stages { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: .8125rem; }
 .set-totals { margin: 16px 0 0; padding-top: 8px; border-top: 1px solid var(--line); }
 .set-totals > div, .result-facts > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 6px; }
 .set-totals dt { font-size: .84375rem; color: var(--felt-ink); }
@@ -391,7 +390,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .end-balance { order: 4; }
   .books-known > .end-balance { order: 1; }
   .count-workspace { order: 2; }
-  .count-facts { order: 3; }
   .end-set-layout .host-more > summary { min-height: var(--tap); }
   .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 154px; }
   .table-page:has(.final-layout), .table-page:has(.review-layout) { padding-bottom: 48px; }
@@ -983,9 +981,6 @@ input.numpad-refused { border-color: var(--down); }
 }
 
 /* Count-up: players first, one total, then reference figures (count-layout). */
-.count-facts { --felt-ink: var(--muted); padding: var(--s-4) 0 var(--s-2); }
-.count-facts h2 { margin: 0 0 var(--s-2); font-size: 1.0625rem; }
-.count-facts .set-totals { margin-top: var(--s-2); padding-top: 0; border-top: 0; }
 #balance { scroll-margin-top: 90px; }
 .counts-enhanced .confirm-all { display: none; }
 .count-layout .section-heading h2 .small { display: inline; margin-left: var(--s-1); }
@@ -999,11 +994,9 @@ input.numpad-refused { border-color: var(--down); }
   .count-layout { grid-template-rows: auto auto auto auto 1fr; row-gap: var(--s-4); }
   .count-layout > .felt { grid-column: 1; grid-row: 1; }
   .count-layout > .host-controls { grid-column: 1; grid-row: 2; margin: 0; }
-  .count-layout > .count-facts { grid-column: 1; grid-row: 3; padding-top: 0; }
   .count-layout > .end-balance { grid-column: 1; grid-row: 4; }
   .count-layout.books-known > .end-balance { grid-row: 2; }
   .count-layout.books-known > .host-controls { grid-row: 3; }
-  .count-layout.books-known > .count-facts { grid-row: 4; }
   .count-layout > .count-workspace { grid-column: 2; grid-row: 1 / -1; }
 }
 @media (max-width: 899px) {
@@ -1296,8 +1289,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 /* The chip lands in the top bar: the mark sinks and comes back, as a pressed button does. */
 body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
 
-/* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2, so the
-   classic templates kept behind TABLE_REVAMP are untouched. */
+/* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2. */
 /* The lead panel: the figure, the timer and the blinds; the rest is one line with the facts behind it. */
 .table-v2 .felt .pot { margin-top: var(--s-3); }
 .set-facts { margin-top: var(--s-3); border-top: 1px solid var(--line); }

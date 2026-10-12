@@ -420,7 +420,7 @@ A player who was only a name on the roster gets their own login and keeps their 
 - **Reading the chart.** A touch, a pointer or the arrow keys pick a session: a line, a dot and a ring mark it, and the line under the chart says its date, table, result and running total. The chart needs three sessions; a longer record draws its latest 60.
 - **How figures are worked out.** Average and per hour round toward zero to the centavo or chip; return and win rate to the whole percent. Per hour uses only sessions with recorded time and says how many. Rebuys are buy-ins beyond the first in each set. A run is sessions in a row with a profit, or with a loss; a break-even session ends it. Rake is already inside the profit or loss.
 - **Changing period, unit or order** stays on the screen where it was scrolled, moves the chosen pill and the rows to their new places, and does not add a step to the Back button.
-- **Switch:** `STATS_PAGES=False` returns the tab to the single ranked list and makes player pages not found.
+- The `STATS_PAGES` switch and the earlier single ranked list were removed on 2026-10-12, after the human accepted the board.
 - Code: `settlement/stats.py` (the figures), `web/charts.py` (the geometry), `web/stats.py` (what the pages show), `templates/web/_group_stats.html`, `player.html`, `_running_chart.html`, `static/js/stats.js`.
 
 ## Numpad motion (2026-10-09)
@@ -448,11 +448,11 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 
 ## Set page (2026-10-09)
 
-- `templates/web/_session_live.html` chooses the page: the felt panel with `details.set-facts` in play, the `.prep` checklist for a draft or an open set, and `_session_live_classic.html` with `_players_classic.html` when `TABLE_REVAMP=False`. `web/prep.py` works out each step's state from the summary the page already has; no query is added.
+- `templates/web/_session_live.html` chooses the page: the felt panel with `details.set-facts` in play, and the `.prep` checklist for a draft or an open set. `web/prep.py` works out each step's state from the summary the page already has; no query is added.
 - `_player_row.html` is one row and its sheet sources. `sheets.js` can swap one sheet's content for another's inside the open dialog (`data-sheet-swap`); that is how Cash out is reached on a phone.
 - `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` holds the movement and remembers the steps in `sessionStorage` to know what changed.
 - `GameSession.state_word` gives the words Draft, Open, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
-- Switch: `TABLE_REVAMP=False`. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).
+- The `TABLE_REVAMP` switch and the earlier set page were removed on 2026-10-12, after the human accepted the new one. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).
 
 ## Count-up in one line and settle-up in rows (2026-10-10)
 
@@ -468,7 +468,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - The host bar keeps the running total and the main action when folded. Open, it shows its hint only when there is no action.
 - A player sees "Your count" first: the field and Send to host, what they entered, and what the host confirmed.
 - `templates/web/_count_v2.html`, `_count_rows.html`, `_count_own.html` and `_books.html`. The field keeps `data-count-input`, `data-saved`, `data-entered` and `data-keep`, so `counts.js` and `numpad.js` are unchanged.
-- Switch: `COUNT_REVAMP=False`. Checks: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`.
+- The `COUNT_REVAMP` switch and the earlier count-up were removed on 2026-10-12, after the human accepted the new one. Checks: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`.
 
 **The closed session page**
 
@@ -493,7 +493,6 @@ A host can take back a finalized set or a closed session to correct a mistake or
 - **What everyone sees.** A brass line on the page: “Reopened to correct.” with the reason, who and when; “Corrected.” on the final page of a set finalized again; “Reopened.” on the open session. On a set page the line's rule draws once per reopening and browser.
 - Resume play is available on a reopened set only when no later set of the session has started, as before.
 - The closing recap does not open by itself a second time; “View session recap” shows the corrected figures.
-- With `COUNT_REVAMP=False` the earlier count-up has no “Add a missed buy-in”.
 - Switch: `REOPENING=False` hides both controls and makes both services refuse. Check: `web/tests/browser/reopen.mjs` with `seed_reopen.py`.
 
 ## Share results (2026-10-11)

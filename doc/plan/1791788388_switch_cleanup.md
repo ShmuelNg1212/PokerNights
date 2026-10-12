@@ -64,3 +64,14 @@ No migration. The release changes nothing a person sees, so there is no phone ch
 ## Sync docs
 
 `doc/wiki/README.md` journal row, the roadmap's Cleanup section, `TODO.md`.
+
+## Result, 2026-10-12
+
+Built on `chore/switch-cleanup`: stage 1 `a711584`, stage 2 `dc51c17`, stage 3 `5980b97`. Not merged and not released.
+
+- 152 pages (every set page, group tab and player page for each login, on two seeded databases) were fetched before the first stage and after each stage. They are the same, running clocks aside.
+- Tests: 1,103 before, 1,095 after, on SQLite and on PostgreSQL 17. The 8 removed tested the switches. Two tests of the earlier Stats list were kept and now run against the board: when the tab appears, and who may open it.
+- Browser checks on the branch: `count_flow.mjs` 91 of 91; `seat_draw.mjs` 50 of 50; `stats.mjs` 75 of 75 on its second run (the first hung after 26 checks with no failure and was stopped; `main` gives 75 of 75); `table.mjs` passes 47 and stops at "a player on an open set", where `main` also stops (46 passed there; "a change from another device arrives in place" failed on `main` only, in one run each).
+- Different from the plan: stages 2 and 3 removed no style, because every class of the deleted templates is also named by a template that stays. `web/views.py` lost `group_stats_context`. `settlement.queries.group_stats` now has no page calling it and was left, because the tests use it as a second sum. The switch block of `table.mjs` and `PN_OFF_URL` were removed.
+- Not done: the 69 merged branches are untouched; the human asked what deleting them does and has not said to do it.
+

@@ -3,7 +3,7 @@
 import datetime
 import uuid
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 
 from games import services as games
@@ -151,9 +151,8 @@ class RosterActivityTests(TestCase):
             self.assertEqual(queries.roster_activity([]), {})
 
 
-@override_settings(STATS_PAGES=False)
 class GroupStatsPageTests(TestCase):
-    """The single ranked list that ``STATS_PAGES=False`` returns to. The board is in web.tests.test_stats_pages."""
+    """When the Stats tab appears and who may open it. The board itself is in web.tests.test_stats_pages."""
 
     def setUp(self):
         self.club = Club()
@@ -169,43 +168,9 @@ class GroupStatsPageTests(TestCase):
         self.assertContains(self.client.get(self.url), f'{self.url}?view=stats"')
         self.assertContains(self.client.get(self.url, {"view": "settings"}), f'{self.url}?view=stats"')
 
-    def test_page_shows_figures_definitions_and_period_choice(self):
-        self.club.session(SEP_30, {"A": (1000, 1500), "B": (1000, 500)})
-        self.club.session(OCT_1, {"A": (1000, 1000), "B": (1000, 1000)})
-        page = self.client.get(self.url, {"view": "stats"})
-        self.assertContains(page, "+₱500")
-        self.assertContains(page, "−₱500")
-        self.assertContains(page, "2 sessions · won 1 · 50% win rate")
-        self.assertContains(page, "not a rate of hands won")
-        self.assertContains(page, "after rake")
-        self.assertContains(page, "month=2026-09")
-        self.assertNotContains(page, 'aria-label="Unit"')  # one unit: no unit choice
-        month = self.client.get(self.url, {"view": "stats", "month": "2026-10"})
-        self.assertContains(month, "Sessions dated October 2026")
-        self.assertContains(month, "1 session · won 0 · 0% win rate")
-        self.assertNotContains(month, "+₱500")
-        # An unknown month or unit falls back instead of failing.
-        self.assertContains(self.client.get(self.url, {"view": "stats", "month": "junk", "unit": "gold"}), "Every closed session")
-
-    def test_chips_choice_never_shows_pesos(self):
-        self.club.session(OCT_1, {"A": (1000, 1500), "B": (1000, 500)})
-        self.club.session(OCT_1, {"A": (1000, 400), "B": (1000, 1600)}, unit="chips")
-        page = self.client.get(self.url, {"view": "stats", "unit": "chips"})
-        self.assertContains(page, 'aria-label="Unit"')
-        self.assertContains(page, "+600 chips")
-        body = page.content.decode().split('<ol class="stat-list">')[1].split("</ol>")[0]
-        self.assertNotIn("₱", body)
-
     def test_player_can_read_and_outsider_cannot(self):
         self.club.session(OCT_1, {"A": (1000, 1500), "B": (1000, 500)})
         self.client.force_login(add_player(self.club.group, "viewer").user)
         self.assertContains(self.client.get(self.url, {"view": "stats"}), "Player stats")
         self.client.force_login(make_user("outsider"))
         self.assertEqual(self.client.get(self.url, {"view": "stats"}).status_code, 404)
-
-    def test_reading_stats_writes_nothing(self):
-        from audit.models import AuditEvent
-        self.club.session(OCT_1, {"A": (1000, 1500), "B": (1000, 500)})
-        before = (AuditEvent.objects.count(), PlayerResult.objects.count())
-        self.client.get(self.url, {"view": "stats"})
-        self.assertEqual((AuditEvent.objects.count(), PlayerResult.objects.count()), before)

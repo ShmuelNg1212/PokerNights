@@ -829,7 +829,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | Details opened by a tap | The facts fade in over 6px (`fade`). Opened by a live update or a wide screen: nothing |
 | Cash out in the sheet | The sheet's content fades to the form (`shift`) |
 
-Reduced motion and a missing Motion file move nothing; the page is complete either way. `TABLE_REVAMP=False` returns the earlier page.
+Reduced motion and a missing Motion file move nothing; the page is complete either way. The earlier page and its switch were removed on 2026-10-12.
 
 **Measured.** `table.mjs`, 63 checks. At 390 × 844 with eight players: panel 223px (was 351), row 65px (was 142), six whole rows on the first screen, page 1,114px (was 1,758). No late frame at the start with the processor slowed four times. Critique 28 of 40, then one fix batch (`.impeccable/critique/`).
 
@@ -851,7 +851,7 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 ### Count-up in one line (2026-10-10)
 
-[Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md). This replaces the row and the order described in "Count-up" and in the count-up part of the 2026-10-05 addendum. The accounting, the one counts form, the running total, the numpad panel, the verdict and the one main action per state are unchanged. No new colour, font or raster asset. `COUNT_REVAMP=False` returns the earlier count-up.
+[Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md). This replaces the row and the order described in "Count-up" and in the count-up part of the 2026-10-05 addendum. The accounting, the one counts form, the running total, the numpad panel, the verdict and the one main action per state are unchanged. No new colour, font or raster asset. The earlier count-up and its switch were removed on 2026-10-12.
 
 - **A count row is one line**, 63px: a 36px identity chip, the name over a 13px Bone Dim line ("₱1,000 in"), and the count field in a right column of 36% of the row, at least 104px and at most 180px. The field is 48px high with a right-aligned 700 tabular figure.
 - **The field states the count.** Empty means awaiting. A confirmed count is the field's placeholder in Bone Dim with an 18px Up tick at the field's left edge. A player's own entry is the placeholder, and the line under the name adds "entered ₱450" in Brass. Typing hides the tick. There is no state badge and no visible label; the field is named "Final count of Miguel" and a hidden status says "Ready to cash out. Counted ₱450".

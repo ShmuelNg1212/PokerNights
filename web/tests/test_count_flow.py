@@ -253,13 +253,3 @@ class CountRevampTests(TestCase):
         row = row[:row.index("</li>")]
         self.assertNotIn("data-count-input", row)
         self.assertIn('<small>Cashed out</small><span class="num">₱900</span>', row)
-
-    def test_the_switch_returns_the_earlier_count_up(self):
-        from django.test import override_settings
-        with override_settings(COUNT_REVAMP=False):
-            html = self.client.get(self.url).content.decode()
-        self.assertNotIn("count-v2", html)
-        self.assertIn("Set totals", html)
-        self.assertIn("Balance check", html)
-        self.assertIn("Final count (₱)", html)
-        self.assertIn('name="count_', html)

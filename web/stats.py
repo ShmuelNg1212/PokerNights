@@ -107,7 +107,6 @@ def board_context(request, me, periods) -> dict:
         "stat_mine_last": Figure(signed(mine.record.last.net, unit), mine.record.last.net) if mine else None,
         "stat_where": where(period),
         "stat_keep": keep,
-        "stats_pages": True,
     }
 
 

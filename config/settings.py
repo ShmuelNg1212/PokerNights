@@ -189,16 +189,10 @@ ANSWER_IN_PLACE = env.bool("ANSWER_IN_PLACE", default=True)
 RESET_LINKS = env.bool("RESET_LINKS", default=True)
 # Turn off to make rebuys and final counts host-only again (see ledger/services.py).
 PLAYER_ENTRIES = env.bool("PLAYER_ENTRIES", default=True)
-# Turn off to return the Stats tab to one ranked list and make player pages not found (see web/stats.py).
-STATS_PAGES = env.bool("STATS_PAGES", default=True)
 # Turn off to hide claim links and refuse every one already sent (see groups/services.py).
 CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 # Turn off to return Group settings → Players to add, rename and remove only (see groups/services.py).
 ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
-# Turn off to return the set page (preparing and in play) to its layout before 2026-10-09 (see templates/web/_session_live_classic.html).
-TABLE_REVAMP = env.bool("TABLE_REVAMP", default=True)
-# The one-line count-up. False returns the earlier count-up for one release.
-COUNT_REVAMP = env.bool("COUNT_REVAMP", default=True)
 # Turn off to stop suggesting the home screen after a login and to hide Join with a link (see static/js/install.js).
 INSTALL_PROMPT = env.bool("INSTALL_PROMPT", default=True)
 # Turn off to remove Share results from closed sessions (see web/share.py).

@@ -1,6 +1,5 @@
 {% load money_tags clock_tags table_tags %}
-{% if not table_revamp %}{% include "web/_session_live_classic.html" %}
-{% elif session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
+{% if session.state == 'setup' or session.state == 'open' or session.state == 'running' %}
 <div class="table-layout table-v2">
   <aside class="table-left">
     {% if session.state == 'running' %}
@@ -70,6 +69,6 @@
   </aside>
   {% include "web/_players.html" %}
 </div>
-{% elif session.state == 'reconciliation' %}{% if count_revamp %}{% include "web/_count_v2.html" %}{% else %}{% include "web/_count_up.html" %}{% endif %}
+{% elif session.state == 'reconciliation' %}{% include "web/_count_v2.html" %}
 {% elif session.state == 'finalized' %}{% include "web/_final_set.html" %}
 {% else %}{% include "web/_session_legacy.html" %}{% endif %}

@@ -69,7 +69,7 @@ def group(request, group_id):
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
     elif context["view"] == "stats":
-        context.update(stats_pages.board_context(request, me, periods) if settings.STATS_PAGES else group_stats_context(request, me, periods))
+        context.update(stats_pages.board_context(request, me, periods))
     else:
         nights = [n for n in visible_nights(me) if n.shown_sets]
         context["open_nights"] = [n for n in nights if not n.is_closed]
@@ -86,29 +86,11 @@ def player(request, group_id, member_id):
     """One player's record in the group. Open to every member; the player may have left the group."""
     me = member_for(request.user, group_id)
     member = Member.objects.filter(group_id=group_id, pk=member_id).first()
-    if member is None or not settings.STATS_PAGES:
+    if member is None:
         raise Http404("Not found")
     periods = settlement_queries.stat_periods(me.group)
     context = {"me": me, "group": me.group, **stats_pages.player_context(request, me, member, periods)}
     return render(request, "web/player.html", context)
-
-
-def group_stats_context(request, me, periods) -> dict:
-    """Profit or loss, sessions played and win rate for one unit and one period. Read-only."""
-    unit = request.GET.get("unit")
-    if unit not in periods:
-        unit = money.PHP if money.PHP in periods or not periods else next(iter(periods))
-    months = periods.get(unit, [])
-    month = next((m for m in months if m.strftime("%Y-%m") == request.GET.get("month")), None)
-    stats = settlement_queries.group_stats(me.group, unit, month) if months else []
-    return {
-        "stats": stats,
-        "stat_members": [line.member for line in stats],
-        "stat_unit": unit,
-        "stat_units": [u for u in (money.PHP, money.CHIPS) if u in periods],
-        "stat_month": month,
-        "stat_months": months,
-    }
 
 
 def activity_label(found, today) -> str:
@@ -206,12 +188,10 @@ def session_context(session, me) -> dict:
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
-        "table_revamp": settings.TABLE_REVAMP,
-        "count_revamp": settings.COUNT_REVAMP,
         "any_entered": any(line.entered for line in summary.lines),
-        "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
+        "prep": prep.states(session, summary, me),
     }
-    if settings.SEAT_DRAW and settings.TABLE_REVAMP and session.state in ("open", "running"):
+    if settings.SEAT_DRAW and session.state in ("open", "running"):
         seating = seat_draws.seating(session, participants) if getattr(session, "has_seat_draw", True) else None
         live = not session.night.is_archived
         context["seating"] = seating
