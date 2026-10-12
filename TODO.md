@@ -4,6 +4,12 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Switch cleanup ([plan](doc/plan/1791788388_switch_cleanup.md), [study](doc/study/1791788387_switch_cleanup.md)): **waiting for your approval**, written 2026-10-12. Nothing is built. Stage 1 removes the earlier count-up and `COUNT_REVAMP`; stages 2 and 3 remove the earlier set page (`TABLE_REVAMP`) and the earlier Stats tab (`STATS_PAGES`) if you accept those two screens. The 13 switches that turn a feature off stay. No migration, nothing a person sees changes.
+
+- [ ] Approve the plan, and answer its four questions: is the set page accepted, is the Stats tab accepted, are the three switches absent or `True` in Vercel, and should the 69 merged local branches be deleted.
+
+Docs brought up to date on 2026-10-12, at the human's request: `SPEC.md` now describes the app as built (the human asked the agent to edit it this once), the [wiki front page](doc/wiki/README.md) says the app is live and its journal lists every cycle, and the [roadmap](doc/roadmap/README.md) marks seating, reopening and the live pages as built.
+
 The look of the table in the seat draw ([plan](doc/plan/1791735776_draw_table_look.md), [study](doc/study/1791735775_draw_table_look.md)): built on `feat/draw-table-look` on 2026-10-12. Merged as `0c168bc` and pushed 2026-10-12 (previous production commit `c91dc68`). Accepted 2026-10-12: the human said "the revamped table works on the live version." No migration.
 
 - [x] After release, on two phones: draw seats on an open set. Say whether the table now reads as a poker table, whether the light and the winner's moment are enough, and whether the shorter draw (about two and a half seconds) is the right length.
@@ -21,121 +27,121 @@ Seat draw before a set starts ([plan](doc/plan/1791717121_seat_draw.md), [study]
 - [x] Tap a seat (on the winner's phone, or on the host's for them). Both phones should deal everyone to the same seats. Say whether the draw is the right length and whether it feels like a draw.
 - [x] Start the set and check the "Seats" line under the pot. Add a late player and seat them.
 
-The session recap opens at its top ([plan](doc/plan/1791715366_recap_opens_at_bottom.md), [study](doc/study/1791715365_recap_opens_at_bottom.md)): built on `fix/recap-opens-at-top` on 2026-10-11. Released 2026-10-11 as `f3b321f` (previous production commit `1da9bfd`); the live `sheets.js` carries the fix. No migration. Phone acceptance is open.
+The session recap opens at its top ([plan](doc/plan/1791715366_recap_opens_at_bottom.md), [study](doc/study/1791715365_recap_opens_at_bottom.md)): built on `fix/recap-opens-at-top` on 2026-10-11. Released 2026-10-11 as `f3b321f` (previous production commit `1da9bfd`); the live `sheets.js` carries the fix. No migration. Phone checks reported done 2026-10-12.
 
-- [ ] After release, on your phone: open a closed session and tap "View session recap". It should show its first line. Scroll to the end, tap "Share results": the share sheet should also start at its top.
+- [x] After release, on your phone: open a closed session and tap "View session recap". It should show its first line. Scroll to the end, tap "Share results": the share sheet should also start at its top.
 
-Your groups and a group's sessions update by themselves ([plan](doc/plan/1791711535_hub_pages_live.md), [study](doc/study/1791711534_hub_pages_live.md)): built on `fix/hub-pages-live` on 2026-10-11. Released 2026-10-11 as `1da9bfd` (previous production commit `6cae533`); the live site answers the new state address and serves the new `nightlive.js`. No migration. Phone acceptance is open.
+Your groups and a group's sessions update by themselves ([plan](doc/plan/1791711535_hub_pages_live.md), [study](doc/study/1791711534_hub_pages_live.md)): built on `fix/hub-pages-live` on 2026-10-11. Released 2026-10-11 as `1da9bfd` (previous production commit `6cae533`); the live site answers the new state address and serves the new `nightlive.js`. No migration. Phone checks reported done 2026-10-12.
 
-- [ ] After release, with a player's phone on Your groups: as the host, create a session and open its set. Within about 5 seconds the player's card should show the table.
-- [ ] With the player on the group's Sessions tab: start the set and watch "Open" become "In play".
-- [ ] Close a session and watch it move to past sessions, and "To settle" appear on the player's Your groups.
-- [ ] If the screen you meant was a different one, say which and what you did just before.
+- [x] After release, with a player's phone on Your groups: as the host, create a session and open its set. Within about 5 seconds the player's card should show the table.
+- [x] With the player on the group's Sessions tab: start the set and watch "Open" become "In play".
+- [x] Close a session and watch it move to past sessions, and "To settle" appear on the player's Your groups.
+- [x] If the screen you meant was a different one, say which and what you did just before.
 
 "Your count" card ([plan](doc/plan/1791710364_your_count_gap.md), [study](doc/study/1791710363_your_count_gap.md)): built on `fix/your-count-gap` on 2026-10-11. Released 2026-10-11 as `6cae533` (previous production commit `243ce78`); the live stylesheet holds the gap and the step rules. No migration.
 
-- [ ] After release, as a player on a set that is counting up: "Your count" should sit clear of the panel above it.
-- [ ] Send a count: the Counted step should draw in with a tick and Confirmed should breathe.
-- [ ] Have the host confirm and then cash you out, and watch each step complete on your phone.
-- [ ] Say if the breathing mark is distracting at the table.
+- [x] After release, as a player on a set that is counting up: "Your count" should sit clear of the panel above it.
+- [x] Send a count: the Counted step should draw in with a tick and Confirmed should breathe.
+- [x] Have the host confirm and then cash you out, and watch each step complete on your phone.
+- [x] Say if the breathing mark is distracting at the table.
 
 The session page updates by itself ([plan](doc/plan/1791706983_session_page_live.md), [study](doc/study/1791706965_session_page_live.md)): built on `fix/session-page-live` on 2026-10-11. Released 2026-10-11 as `243ce78` (previous production commit `6090ce1`); the live site serves `nightlive.js` and the new address answers. No migration.
 
-- [ ] After release, with two phones on a closed session: mark a transfer paid on the host's. Within about 5 seconds the row should settle on the player's, without a reload.
-- [ ] Undo it and watch it return on the player's phone.
-- [ ] With a player on an open session's page, close the session as the host: the player's page should become the settle-up page and the recap should open.
-- [ ] On the player's phone open Share results, mark a transfer on the host's, then close the sheet: the change should land a moment after it closes.
-- [ ] Say if 5 seconds feels slow.
+- [x] After release, with two phones on a closed session: mark a transfer paid on the host's. Within about 5 seconds the row should settle on the player's, without a reload.
+- [x] Undo it and watch it return on the player's phone.
+- [x] With a player on an open session's page, close the session as the host: the player's page should become the settle-up page and the recap should open.
+- [x] On the player's phone open Share results, mark a transfer on the host's, then close the sheet: the change should land a moment after it closes.
+- [x] Say if 5 seconds feels slow.
 
 Home screen suggestion and Join with a link ([plan](doc/plan/1791703670_install_prompt.md), [study](doc/study/1791703645_install_prompt.md)): built on `feat/install-prompt` on 2026-10-11. Released 2026-10-11 as `6090ce1` (previous production commit `2557f50`); the live site serves `install.js`, the new manifest and the new styles. No migration. If anything is wrong, set `INSTALL_PROMPT=False` in Vercel first.
 
-- [ ] After release, in Safari on your iPhone: log out and log in. About a second after Your groups shows, the sheet should rise with the two steps.
-- [ ] Follow the steps. Open PokerNights from the home screen and log in: no sheet should appear there, and Your groups should end with "Join with a link".
-- [ ] In a chat, long-press an invite link and copy it. In the installed app, open Join with a link, paste and open it.
-- [ ] Back in Safari, log in again: the sheet shows again. Tap "Done, it's on my home screen" and log in once more: it should stay away.
-- [ ] If you have an Android phone at the table: log in with Chrome and tap Install. Then tap an invite link in a chat and see whether it opens in the installed app.
-- [ ] Open an invite link inside Messenger and log in there: the sheet should say to open the real browser.
-- [ ] Say if every login is too often once people have seen it a few times.
+- [x] After release, in Safari on your iPhone: log out and log in. About a second after Your groups shows, the sheet should rise with the two steps.
+- [x] Follow the steps. Open PokerNights from the home screen and log in: no sheet should appear there, and Your groups should end with "Join with a link".
+- [x] In a chat, long-press an invite link and copy it. In the installed app, open Join with a link, paste and open it.
+- [x] Back in Safari, log in again: the sheet shows again. Tap "Done, it's on my home screen" and log in once more: it should stay away.
+- [x] If you have an Android phone at the table: log in with Chrome and tap Install. Then tap an invite link in a chat and see whether it opens in the installed app.
+- [x] Open an invite link inside Messenger and log in there: the sheet should say to open the real browser.
+- [x] Say if every login is too often once people have seen it a few times.
 
 Share results ([plan](doc/plan/1791701751_share_results.md), [study](doc/study/1791701725_share_results.md)): built on `feat/share-results` on 2026-10-11. Released 2026-10-11 as `2557f50` (previous production commit `be3bcf2`); the live site serves `share.js` and the new styles. No migration. If anything is wrong, set `SHARE_RESULTS=False` in Vercel first.
 
-- [ ] After release, on your phone on a closed session: tap Share results. The card should be dealt onto the sheet and uncovered from the top.
-- [ ] Tap Share and send it to a chat. Check the picture reads clearly there, and whether the text arrives with it (some chat apps keep only the picture).
-- [ ] Tap Save image, then Copy text and paste it somewhere.
-- [ ] Open the recap, scroll to its end and tap Share results there.
-- [ ] Try it from the installed app as well as from Safari.
-- [ ] Say if the card should carry anything else, or less.
+- [x] After release, on your phone on a closed session: tap Share results. The card should be dealt onto the sheet and uncovered from the top.
+- [x] Tap Share and send it to a chat. Check the picture reads clearly there, and whether the text arrives with it (some chat apps keep only the picture).
+- [x] Tap Save image, then Copy text and paste it somewhere.
+- [x] Open the recap, scroll to its end and tap Share results there.
+- [x] Try it from the installed app as well as from Safari.
+- [x] Say if the card should carry anything else, or less.
 
 Reopen a set or a session ([plan](doc/plan/1791699815_reopen_set_and_session.md), [study](doc/study/1791699745_reopen_set_and_session.md)): built on `feat/reopen` on 2026-10-11. Released 2026-10-11 as `be3bcf2` (previous production commit `800e29e`); the live site serves the new styles. Two migrations ran in the build (`ledger 0014`, `settlement 0007`). If anything is wrong, set `REOPENING=False` in Vercel first.
 
-- [ ] After release, as a host on a finalized set of an open session: tap Reopen set, give a reason, and watch the set come back to counting up with the brass line.
-- [ ] Reverse one cash-out, count again, cash out and finalize. The final page should say "Corrected." with your reason; the set log should show the earlier results struck under "Replaced".
-- [ ] In a reopened set, tap a player's name and add a missed buy-in. Their cash-out should stay.
-- [ ] On a closed session with a transfer marked paid: Manage this session should say to mark it unpaid first, with no button.
-- [ ] Mark it unpaid, reopen the session, start another set, finalize it and close. The transfer list should be new; the earlier one should be under "Earlier transfer lists".
-- [ ] As a player on another phone: you should see the reason line and no reopen control.
-- [ ] Say if the reason line is too loud or too quiet on the felt.
+- [x] After release, as a host on a finalized set of an open session: tap Reopen set, give a reason, and watch the set come back to counting up with the brass line.
+- [x] Reverse one cash-out, count again, cash out and finalize. The final page should say "Corrected." with your reason; the set log should show the earlier results struck under "Replaced".
+- [x] In a reopened set, tap a player's name and add a missed buy-in. Their cash-out should stay.
+- [x] On a closed session with a transfer marked paid: Manage this session should say to mark it unpaid first, with no button.
+- [x] Mark it unpaid, reopen the session, start another set, finalize it and close. The transfer list should be new; the earlier one should be under "Earlier transfer lists".
+- [x] As a player on another phone: you should see the reason line and no reopen control.
+- [x] Say if the reason line is too loud or too quiet on the felt.
 
-Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11. Released 2026-10-11 as `800e29e` (previous production commit `08a49b5`); the live site serves `pot.js` and the new styles. The roll itself was not watched on the live site from here. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite and PostgreSQL 17; `pot.mjs` 53 of 53. Not seen on a phone.
+Pot figure motion ([plan](doc/plan/1791647086_pot_figure_motion.md), [study](doc/study/1791647037_pot_figure_motion.md)): built on `feat/pot-figure-motion` on 2026-10-11. Released 2026-10-11 as `800e29e` (previous production commit `08a49b5`); the live site serves `pot.js` and the new styles. The roll itself was not watched on the live site from here. When "Still in play" changes, its changed digits roll and "+₱500" shows beside the label for 3 seconds. No migration, no server change, no switch. 964 tests pass on SQLite and PostgreSQL 17; `pot.mjs` 53 of 53. Phone checks reported done 2026-10-12.
 
-- [ ] After release, with two phones on a set in play: rebuy on one and watch the pot on the other. The changed digits should roll up and "+₱500" should show beside "Still in play".
-- [ ] Cash a player out: the digits should roll down with a minus amount.
-- [ ] Rebuy on your own phone and tap Rebuy again at once: nothing should wait.
-- [ ] Say if the roll feels too slow, too fast or too large on the phone; the distance and the time are single numbers.
+- [x] After release, with two phones on a set in play: rebuy on one and watch the pot on the other. The changed digits should roll up and "+₱500" should show beside "Still in play".
+- [x] Cash a player out: the digits should roll down with a minus amount.
+- [x] Rebuy on your own phone and tap Rebuy again at once: nothing should wait.
+- [x] Say if the roll feels too slow, too fast or too large on the phone; the distance and the time are single numbers.
 
 Count-up and who pays whom, revamp ([plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md), [study](doc/study/1791630956_count_up_and_settle_up_revamp.md)): built on `feat/count-and-settle-revamp` on 2026-10-10. Released 2026-10-10 as `08a49b5` (previous production commit `0c736fb`); Vercel reports the deployment complete and the live site serves the new styles and `settle.js`. Neither screen was opened on the live site from here. Count-up is one line per player with the count field on it; the closed session page leads with your own part and lists one row per transfer. `COUNT_REVAMP=False` in Vercel returns the earlier count-up. No migration.
 
-- [ ] After release, as a host at the end of a set: type the counts down the list with the number keys and Next. Check six players show without scrolling and the running total follows.
-- [ ] Confirm the counts: each accepted field should get a green tick and its mark at the top should fill.
-- [ ] Tap a player's name during count-up: their records, the exception cash-out and Clear the count should be in the sheet.
-- [ ] As a player on another phone: "Your count" should be the first thing under the overview; send a count and watch the host's row say "entered".
-- [ ] Close the session. As the host, check four transfers show on the first screen; mark one paid and watch the row settle and the bar move. Mark the last one and "Settled" should arrive once.
-- [ ] As a player, open the closed session: the headline should be what you pay or receive.
-- [ ] Once you accept count-up on your phone, say so and the earlier count-up templates and the switch are removed in the next cycle.
+- [x] After release, as a host at the end of a set: type the counts down the list with the number keys and Next. Check six players show without scrolling and the running total follows.
+- [x] Confirm the counts: each accepted field should get a green tick and its mark at the top should fill.
+- [x] Tap a player's name during count-up: their records, the exception cash-out and Clear the count should be in the sheet.
+- [x] As a player on another phone: "Your count" should be the first thing under the overview; send a count and watch the host's row say "entered".
+- [x] Close the session. As the host, check four transfers show on the first screen; mark one paid and watch the row settle and the bar move. Mark the last one and "Settled" should arrive once.
+- [x] As a player, open the closed session: the headline should be what you pay or receive.
+- [x] Once you accept count-up on your phone, say so and the earlier count-up templates and the switch are removed in the next cycle. Accepted 2026-10-12: the human said "the count revamp was successful."
 
 Session recap with more detail ([plan](doc/plan/1791625392_session_recap_details.md), [study](doc/study/1791625335_session_recap_details.md)): built on `feat/session-recap` on 2026-10-10. Released 2026-10-10 as `0c736fb` (previous production commit `e812dfc`); Vercel reports the deployment complete and the live site serves the recap's styles and the new `sheets.js`. The recap itself was not opened on the live site from here. The recap of a closed session has five sections: top result and facts, your night, everyone's results with bars, highlights, and set by set. No migration. 950 tests pass on SQLite and PostgreSQL; `night.mjs` passes 68 of 68.
 
-- [ ] After release, on your phone: close a session of two sets with at least one rebuy. The recap should open by itself once.
-- [ ] Scroll the recap to its end. Close should stay at the top the whole way, on Safari and in the installed app.
-- [ ] Check the bars under Everyone's results grow as that list comes into view, and that the opening still feels quick.
-- [ ] Open the recap of an older session from "View session recap" and check its figures against what you remember.
+- [x] After release, on your phone: close a session of two sets with at least one rebuy. The recap should open by itself once.
+- [x] Scroll the recap to its end. Close should stay at the top the whole way, on Safari and in the installed app.
+- [x] Check the bars under Everyone's results grow as that list comes into view, and that the opening still feels quick.
+- [x] Open the recap of an older session from "View session recap" and check its figures against what you remember.
 
 Set page revamp ([plan](doc/plan/1791549025_set_page_revamp.md), [study](doc/study/1791548918_set_page_revamp.md)): built on `feat/set-page-revamp` on 2026-10-09. Released 2026-10-09 as `e812dfc` (previous production commit `f2bd882`); the live site serves `table.js` and the new styles, and no live login was made. In play, the pot and six players fit one phone screen, Rebuy is on the row and a tap on a player reaches cash-out; a draft or open set shows four steps and the next one; a set reads Draft, Open or In play everywhere. No migration. 934 tests pass on SQLite and PostgreSQL 17; `table.mjs` 63 of 63. `TABLE_REVAMP=False` in Vercel returns the earlier page.
 
-- [ ] After release, on your phone as a host: create a session and read the four steps; add players, open the set and start it. Watch the felt arrive once.
-- [ ] In play: check the pot and at least five players show without scrolling. Tap Rebuy on a row. Tap a player's name, then Cash out. Open Details on the panel.
-- [ ] Unfold Host controls, leave the page and come back: it should stay as you left it.
-- [ ] As a player on another phone: your own row is first, and a rebuy by the host appears without a reload.
+- [x] After release, on your phone as a host: create a session and read the four steps; add players, open the set and start it. Watch the felt arrive once.
+- [x] In play: check the pot and at least five players show without scrolling. Tap Rebuy on a row. Tap a player's name, then Cash out. Open Details on the panel.
+- [x] Unfold Host controls, leave the page and come back: it should stay as you left it.
+- [x] As a player on another phone: your own row is first, and a rebuy by the host appears without a reload.
 
-Arrival after login ([plan](doc/plan/1791546778_arrival_after_login.md), [study](doc/study/1791546703_arrival_after_login.md)): built on `feat/arrival-after-login` on 2026-10-09. Released 2026-10-09 as `f2bd882` (previous production commit `394b4f3`), with the fix for the login sheet staying over the app; the live stylesheet and `door.js` carry both. The one page after a log in, sign up, reset link or claim settles into place: on Your groups the cards rise in turn, the players are set down in a row, the "In play" badge springs in and "To settle" is underlined once; the top bar's mark lands with the chip. No migration, no new words. 915 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 36 of 36; `door.mjs` 134, `home.mjs` 60, `screens.mjs` 46, `motion.mjs` 34, `navigate.mjs` 52 pass. `DOOR_MOTION=False` stops it. Phone acceptance is open.
+Arrival after login ([plan](doc/plan/1791546778_arrival_after_login.md), [study](doc/study/1791546703_arrival_after_login.md)): built on `feat/arrival-after-login` on 2026-10-09. Released 2026-10-09 as `f2bd882` (previous production commit `394b4f3`), with the fix for the login sheet staying over the app; the live stylesheet and `door.js` carry both. The one page after a log in, sign up, reset link or claim settles into place: on Your groups the cards rise in turn, the players are set down in a row, the "In play" badge springs in and "To settle" is underlined once; the top bar's mark lands with the chip. No migration, no new words. 915 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 36 of 36; `door.mjs` 134, `home.mjs` 60, `screens.mjs` 46, `motion.mjs` 34, `navigate.mjs` 52 pass. `DOOR_MOTION=False` stops it. Phone checks reported done 2026-10-12.
 
-Front door revamp ([plan](doc/plan/1791542366_front_door_revamp.md), [study](doc/study/1791542264_front_door_revamp.md)): built on `feat/front-door` on 2026-10-09. Released 2026-10-09 as `394b4f3` (previous production commit `6119dd4`); the live login page serves the new frame, `door.js` and the arrival styles. Log in, Sign up and the other entry screens share a new frame: the chip above, the task in a raised sheet. The chip arrives once per browser session, turns as you type, spins while a form is sent, shakes on a refusal and travels into the top bar on getting in. An invited Sign up is headed "Join {group}". No migration. 905 tests pass on SQLite and PostgreSQL 17. `door.mjs` 134 of 134; `entry.mjs` 91, `reset.mjs` 43, `claim.mjs` 30, `motion.mjs` 34, `screens.mjs` 46, `navigate.mjs` 52 pass. Critique 29 of 40 (was 25). `DOOR_MOTION=False` in Vercel stops the movement. Phone acceptance is open.
+Front door revamp ([plan](doc/plan/1791542366_front_door_revamp.md), [study](doc/study/1791542264_front_door_revamp.md)): built on `feat/front-door` on 2026-10-09. Released 2026-10-09 as `394b4f3` (previous production commit `6119dd4`); the live login page serves the new frame, `door.js` and the arrival styles. Log in, Sign up and the other entry screens share a new frame: the chip above, the task in a raised sheet. The chip arrives once per browser session, turns as you type, spins while a form is sent, shakes on a refusal and travels into the top bar on getting in. An invited Sign up is headed "Join {group}". No migration. 905 tests pass on SQLite and PostgreSQL 17. `door.mjs` 134 of 134; `entry.mjs` 91, `reset.mjs` 43, `claim.mjs` 30, `motion.mjs` 34, `screens.mjs` 46, `navigate.mjs` 52 pass. Critique 29 of 40 (was 25). `DOOR_MOTION=False` in Vercel stops the movement. Phone checks reported done 2026-10-12.
 
-Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09. Released 2026-10-09 as `6119dd4` (previous production commit `ee18667`); the live site was not checked from here. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes; 891 pass on PostgreSQL 17. Phone acceptance remains open.
+Numpad digit motion ([plan](doc/plan/1791538209_numpad_digit_motion.md), [study](doc/study/1791538181_numpad_digit_motion.md)): built on `feat/numpad-digit-motion` on 2026-10-09. Released 2026-10-09 as `6119dd4` (previous production commit `ee18667`); the live site was not checked from here. The pulse of the whole field on every key is replaced: the box stays still, a typed digit fades and rises into place, a deleted one fades out, and digits in a right-aligned field glide. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 120 of 120, `count_flow.mjs` 89 of 89, `player_entries.mjs` passes; 891 pass on PostgreSQL 17. Phone checks reported done 2026-10-12.
 
-Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone acceptance remains open.
+Numpad motion ([plan](doc/plan/1791533332_numpad_motion.md), [study](doc/study/1791533294_numpad_motion.md)): built on `feat/numpad-motion` on 2026-10-09. Released 2026-10-09 as `ee18667` (previous production commit `455faab`); the live site was not checked from here. A hit key lights and the amount pulses; holding Delete shows a fill before it clears; a refused key is marked; the keys rise into a sheet; Next brings the next field's name in. No migration, no server change. 891 tests pass on SQLite; `numpad.mjs` 105 of 105, `count_flow.mjs` 89 of 89. Phone checks reported done 2026-10-12.
 
-Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09. Released 2026-10-09 as `c08d711` (previous production commit `8b51506`); the live site was not checked from here. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 75 of 75. `STATS_PAGES=False` in Vercel returns the old tab. Phone acceptance remains open.
+Stats revamp ([plan](doc/plan/1791528961_stats_revamp.md), [study](doc/study/1791528884_stats_revamp.md)): built on `feat/stats-revamp` on 2026-10-09. Released 2026-10-09 as `c08d711` (previous production commit `8b51506`); the live site was not checked from here. Stats opens with your own summary; the board orders by profit, average, return, per hour or sessions over four kinds of period, with a minimum to be ranked and movement marks; each player has a page with a running profit chart, eight figures, highlights and sessions. No migration. 891 tests pass on SQLite and PostgreSQL 17; `stats.mjs` 75 of 75. `STATS_PAGES=False` in Vercel returns the old tab. Phone checks reported done 2026-10-12.
 
-Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09 and merged to `main` with roster management. Released 2026-10-09 as `8b51506` (previous production commit `283ecc2`); the live site was not checked from here. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone acceptance remains open.
+Claim links ([plan](doc/plan/1791527506_claim_links.md), [study](doc/study/1791527468_claim_links.md)): built on `feat/claim-links` on 2026-10-09 and merged to `main` with roster management. Released 2026-10-09 as `8b51506` (previous production commit `283ecc2`); the live site was not checked from here. A host creates a claim link for a player without a login; whoever opens it signs up or confirms and becomes that player with the same history. One migration (`groups.0005`, a new table). 855 tests pass on SQLite and PostgreSQL 17; `claim.mjs` 30 of 30. `CLAIM_LINKS=False` in Vercel turns it off. Phone checks reported done 2026-10-12.
 
-Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09. Released 2026-10-09 as `8b51506` with claim links. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone acceptance remains open.
+Roster management ([plan](doc/plan/1791525658_roster_management.md), [study](doc/study/1791525548_roster_management.md)): built on `feat/roster-management` on 2026-10-09. Released 2026-10-09 as `8b51506` with claim links. Removing a player asks first and lists unpaid transfers; a player at the table of an unfinished set cannot be removed; hosts bring removed players back, save a contact note and add up to 30 names at once; anyone changes their own name; rows show sessions played and the last date. No migration. 831 tests pass on SQLite and PostgreSQL 17; `roster.mjs` 44 of 44. `ROSTER_TOOLS=False` in Vercel turns the new tools off. Phone checks reported done 2026-10-12.
 
-Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. Released 2026-10-06 as `283ecc2` (previous production commit `7639c8f`); the live site serves the new `counts.js`. Phone acceptance remains open.
+Player rebuys and player-entered counts ([plan](doc/plan/1791266619_player_rebuys_and_counts.md), [study](doc/study/1791266618_player_rebuys_and_counts.md)): built on `feat/player-entries` and merged to local `main` on 2026-10-06. A player with a login records their own rebuy and, after End play, sends their own final count; the host confirms it or types over it; a rebuy recorded from two phones is recorded once. One migration (`ledger.0013`: a new table and one empty column). 789 tests pass on SQLite and PostgreSQL 17; `player_entries.mjs` 48 of 48. `PLAYER_ENTRIES=False` in Vercel turns it off. Released 2026-10-06 as `283ecc2` (previous production commit `7639c8f`); the live site serves the new `counts.js`. Phone checks reported done 2026-10-12.
 
-Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone acceptance remains open.
+Copy button on a new link ([plan](doc/plan/1791265490_copy_link_button.md), [study](doc/study/1791265489_copy_link_button.md)): built on `feat/copy-link` and merged to local `main` on 2026-10-06. A new invite link and a new reset link have a Copy button inside their field. No migration. 748 tests pass on SQLite and PostgreSQL 17; `copy.mjs` 33 of 33. Released 2026-10-06 as `7639c8f` (previous production commit `d573ba0`); the live site serves `copy.js`. Phone checks reported done 2026-10-12.
 
-Host-issued password reset ([plan](doc/plan/1791263947_host_issued_password_reset.md), [study](doc/study/1791263946_host_issued_password_reset.md)): built on branch `feat/password-reset` and merged to local `main` on 2026-10-06. A host creates a one-use, 24-hour reset link in Group settings → Players; the player sets a new password with it and is logged in. One migration (`accounts.0002`, a new table). 744 tests pass on SQLite and PostgreSQL 17; `reset.mjs` 43 of 43. `RESET_LINKS=False` in Vercel turns it off. Released 2026-10-06 as `d573ba0`, pushed by the human (previous production commit `be53e29`). Phone acceptance remains open.
+Host-issued password reset ([plan](doc/plan/1791263947_host_issued_password_reset.md), [study](doc/study/1791263946_host_issued_password_reset.md)): built on branch `feat/password-reset` and merged to local `main` on 2026-10-06. A host creates a one-use, 24-hour reset link in Group settings → Players; the player sets a new password with it and is logged in. One migration (`accounts.0002`, a new table). 744 tests pass on SQLite and PostgreSQL 17; `reset.mjs` 43 of 43. `RESET_LINKS=False` in Vercel turns it off. Released 2026-10-06 as `d573ba0`, pushed by the human (previous production commit `be53e29`). Phone checks reported done 2026-10-12.
 
-Phone performance and smoothness ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md), [study](doc/study/1791214796_phone_performance_and_smoothness.md)): stages 1 and 2 are built on branch `perf/phone-smoothness` and verified locally on 2026-10-06. Every response carries a `Server-Timing` header and `?perf=1` shows a readout on the phone; the host dock slides without laying the page out (3 layouts per slide, from 27 to 55); links look pressed from the first frame of a touch; a changed row's mark stays inside the row and "Rebuy added" sits under the name. No migration. 682 tests pass on SQLite and PostgreSQL 17. Released 2026-10-06 as `c84f45a` (previous production commit `90ff346`); the live site answers with the `Server-Timing` header and serves `perf.js`. Phone acceptance remains open. Stage 3 (the server) is decided from the phone's numbers. The phone's numbers arrived on 2026-10-06 and are in the study's addendum. The tab fix was released as `fedaeb0`. Stage 3: **A** (fetch a touched link at once) was released as `53de23b`. **B** (kept database connection) is a Vercel variable for the human to set. **C** (fewer queries: the session page 23 → 14 and no longer growing with sets) and **D** (an in-place action answered in one trip) are built and verified on branches `perf/fewer-queries` and `perf/one-trip-actions` ([plan](doc/plan/1791219154_fewer_queries_and_one_trip_actions.md)) were released together on 2026-10-06 as `60faac0`. `DB_CONN_MAX_AGE` was set to `60` by the human before that release. The human accepted the result on the phone on 2026-10-06 ("runs smoothly now"); the readout's figures after this release were not sent.
+Phone performance and smoothness ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md), [study](doc/study/1791214796_phone_performance_and_smoothness.md)): stages 1 and 2 are built on branch `perf/phone-smoothness` and verified locally on 2026-10-06. Every response carries a `Server-Timing` header and `?perf=1` shows a readout on the phone; the host dock slides without laying the page out (3 layouts per slide, from 27 to 55); links look pressed from the first frame of a touch; a changed row's mark stays inside the row and "Rebuy added" sits under the name. No migration. 682 tests pass on SQLite and PostgreSQL 17. Released 2026-10-06 as `c84f45a` (previous production commit `90ff346`); the live site answers with the `Server-Timing` header and serves `perf.js`. Phone checks reported done 2026-10-12. Stage 3 (the server) is decided from the phone's numbers. The phone's numbers arrived on 2026-10-06 and are in the study's addendum. The tab fix was released as `fedaeb0`. Stage 3: **A** (fetch a touched link at once) was released as `53de23b`. **B** (kept database connection) is a Vercel variable for the human to set. **C** (fewer queries: the session page 23 → 14 and no longer growing with sets) and **D** (an in-place action answered in one trip) are built and verified on branches `perf/fewer-queries` and `perf/one-trip-actions` ([plan](doc/plan/1791219154_fewer_queries_and_one_trip_actions.md)) were released together on 2026-10-06 as `60faac0`. `DB_CONN_MAX_AGE` was set to `60` by the human before that release. The human accepted the result on the phone on 2026-10-06 ("runs smoothly now"); the readout's figures after this release were not sent.
 
-Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), merged locally to `main` as `0dc4c37`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Released 2026-10-05 as `4a80de9`; Vercel build passed 677 tests and had no migrations to apply. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone acceptance remains open.
+Host control gaps, the in-app numpad and the count-up rework are built ([plan](doc/plan/1791202390_host_gaps_numpad_count_up.md)), merged locally to `main` as `0dc4c37`: host controls 8px apart; the app's own number keys for every typed number on a phone; count-up with the players first, one total and a main button that follows the state; a review that says whether the books will balance; Finalize asks once; the final page leads with its proof. No migration. Released 2026-10-05 as `4a80de9`; Vercel build passed 677 tests and had no migrations to apply. 677 tests pass on SQLite and PostgreSQL 17; repeat critique 32/40 with no P1 issue. Phone checks reported done 2026-10-12.
 
 App-like experience ([plan](doc/plan/1791172782_app_like_experience.md)): stage 1 (static caching) and stage 2 ([installable app](doc/plan/1791176898_installable_app.md)) are done. Stage 3 ([actions in place](doc/plan/1791178826_actions_in_place.md)) is done: set and session page actions update without a reload, using Turbo 8.0.23. Stage 4 ([screen changes without a reload](doc/plan/1791181102_screen_changes_without_reload.md)) is done: links change the screen in the app, with every script given a start and a stop. Stage 6, the motion overhaul with Motion (motion.dev), has a [study](doc/study/1791186418_motion_overhaul.md) and a [plan](doc/plan/1791186717_motion_overhaul.md) in four stages. Stage 1 (foundation, buttons, sheets, toasts) was released on 2026-10-05 as `680c3b1`. Stage 2 ([motion on the live set page](doc/plan/1791188269_motion_live_set_page.md)) was released on 2026-10-05 as `1106548`. Stage 3 ([motion between screens](doc/plan/1791194279_motion_between_screens.md)) was released on 2026-10-05 as `648cca8`. Stage 4 needs its own plan.
 
-The Your groups redesign is done ([plan](doc/plan/1791200012_your_groups_redesign.md)): each group is a card with one settings button, and the viewer's figures are large. No migration. Merged and pushed as `f044805` on 2026-10-05, as recorded by local `main` and `origin/main`. The phone check remains open.
+The Your groups redesign is done ([plan](doc/plan/1791200012_your_groups_redesign.md)): each group is a card with one settings button, and the viewer's figures are large. No migration. Merged and pushed as `f044805` on 2026-10-05, as recorded by local `main` and `origin/main`. Phone checks reported done 2026-10-12.
 
-The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Not pushed yet.
+The entry flow fixes from the critique are done ([plan](doc/plan/1791134687_entry_flow_critique_fixes.md)): invite links open Sign up, a new account joins at once, plain wording, and honest lost-password lines. Critique score 24 → 25 of 40. No migration. Released since.
 
 The stakes forms revamp is done ([plan](doc/plan/1791121411_session_form.md)): one field box for every form, and New session, Set settings and presets in titled groups with pairs. No migration.
 
@@ -179,20 +185,23 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [x] After the next release, on your iPhone, in the home screen app: open a set that is counting up with the host menu left open. Tap the last count field: the menu should be the one-line bar on the keyboard, with the running total. Scroll up and down with the keyboard open: the bar stays a bar on the keyboard, and the page follows your finger without jumping back. If it misbehaves, add `?kb=1` to the end of the set page's address in Safari, repeat, and send a screenshot ([plan](doc/plan/1791192015_dock_keyboard_scroll.md)).
 
 - [ ] Front door, from the critique of 2026-10-09: put one line about the app under the Sign up heading and drop or shorten the description on Log in (it reverses a decision of the front door plan, so it is yours); name who invited and how many play on an invited Sign up; a live tick for the password rules.
-- [ ] A “change my password” screen for a logged-in person, and claim links for roster players. Both were left out of the password reset cycle.
+- [ ] A “change my password” screen for a logged-in person. Left out of the password reset cycle. (Claim links for roster players were built 2026-10-09.)
 - [ ] Entry pages: shorten the password help, and give a new player a first step on the group page. From the repeat critique. (The invitation as the subject was done with the front door, 2026-10-09.)
 
+- [ ] Remove the earlier count-up and the `COUNT_REVAMP` switch (count-up accepted 2026-10-12): stage 1 of the [switch cleanup plan](doc/plan/1791788388_switch_cleanup.md), waiting for approval.
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`); see the note at the end of the [browser checks README](web/tests/browser/README.md).
-- [ ] Stage 2: roster management, history list, optional banker, payments before finalization, reopen a finalized game. See the [roadmap](doc/roadmap/README.md).
-- [ ] Stage 3: leaderboard and stats.
-- [ ] Stage 4: seating.
-- [ ] Stage 5: shared use (deployment, password reset, claim links).
+- [ ] Stage 2, what remains: optional banker, payments before a session closes, filters on the list of past sessions. Roster management (2026-10-09) and reopening (2026-10-11) are built. See the [roadmap](doc/roadmap/README.md).
+- [ ] Stage 3, what remains: seasons. The board and player pages were built 2026-10-09.
+- [x] Stage 4: seating. Built 2026-10-11 as the seat draw.
+- [x] Stage 5: shared use (deployment, password reset, claim links). Deployed 2026-10-04; reset links 2026-10-06; claim links 2026-10-09.
 
 ## Waiting for the human
 
 2026-10-09: the human reported that all checks in this file are done. Every phone and try-it check here, and the five phone checks under Next, were ticked on that word. The `SPEC.md` updates, the decisions and the superuser step are not checks and stay open.
 
-- [ ] **The arrival after login was released on 2026-10-09 (`f2bd882`).** On your phone, after closing and reopening the app:
+2026-10-12: the human reported that all phone checks are done ("Ive done all the phone checks"). Every open check under Active, and the arrival after login and front door checks below, were ticked on that word. No answers to the "say if" questions were given. The `SPEC.md` updates, the decisions, the superuser step and the items under Next are not checks and stay open.
+
+- [x] **The arrival after login was released on 2026-10-09 (`f2bd882`).** On your phone, after closing and reopening the app:
   1. Log out and log in. On Your groups the cards should rise one after another and the players should slide into their row. Check your figures are readable at once and no number changes.
   2. With a set in play, look for the "In play" badge springing in; with money owed, the line under "To settle".
   3. Log in and tap a card's button straight away: it should open without waiting.
@@ -200,7 +209,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   5. Watch the moment of getting in: nothing of the login screen should stay over the new one.
   6. Say whether it reads as one movement with the chip's flight or as two, and whether it is too much on the tenth login.
 
-- [ ] **The front door was released on 2026-10-09 (`394b4f3`).** On your phone, after closing and reopening the app:
+- [x] **The front door was released on 2026-10-09 (`394b4f3`).** On your phone, after closing and reopening the app:
   1. Log out. The chip should travel from the top bar to the middle of the screen.
   2. Close the browser tab, open the site again: the chip should drop and settle, and the form should rise. Check you can type at once.
   3. Type a username and a password: the chip's ring should turn with each key. Say whether the keyboard hides the chip, on Log in and on Sign up.
@@ -235,7 +244,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   4. Tap a player. Read the Running profit line, then drag a finger across the chart: the line under it should name each session.
   5. Check a few figures against a session you remember: best night, average, total bought in.
   6. Say what feels wrong: which figures you would drop or add, the minimum to be ranked (3, 2 and 1), the size of the chart, the movement. `STATS_PAGES=False` in Vercel returns the old tab without a release.
-- [ ] `SPEC.md` step 5 lists profit, sessions, average and win rate, and a "season" filter. Update it if the spec should match the app (return, per hour, rebuys, the four periods, no seasons yet).
+- [x] `SPEC.md` step 5 lists profit, sessions, average and win rate, and a "season" filter. Update it if the spec should match the app (return, per hour, rebuys, the four periods, no seasons yet). Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 
 
@@ -254,7 +263,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   3. Record a rebuy from that phone in a running set.
   4. Open the same link again on a third account: it should say it has been used.
   5. Create a link, then Cancel link, and open it: it should not work. `CLAIM_LINKS=False` in Vercel turns the feature off without a release.
-- [ ] `SPEC.md` step 4 says only "Saved player roster for fast session setup". Add removing, restoring and own names if the spec should match the app.
+- [x] `SPEC.md` step 4 says only "Saved player roster for fast session setup". Add removing, restoring and own names if the spec should match the app. Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 - [x] **Player rebuys and counts are live. With two phones on one set** (a host and a player with a login):
   1. In play, on the player's phone tap Rebuy on your own row and confirm. Watch the host's phone: the row should change within about 5 seconds and say "Rebuy added".
@@ -263,11 +272,11 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   4. Change the number on the player's phone while the host has typed another player's count: the host's typing should stay.
   5. Type a different number over the player's on the host's phone and confirm. The player's phone should say what the host confirmed.
   6. Say what feels wrong. `PLAYER_ENTRIES=False` in Vercel turns it off without a release.
-- [ ] `SPEC.md` says nothing about players recording their own rebuy or count. Add it if the spec should match the app.
+- [x] `SPEC.md` says nothing about players recording their own rebuy or count. Add it if the spec should match the app. Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 - [x] **The copy button is live. On your iPhone:** create an invite link and tap Copy, then paste it into a chat; do the same with a reset link. Try it in Safari and in the installed app. Say whether it reads Copied and whether the pasted link is complete.
 - [x] **After it is released, try it on two phones:** as a host open Group settings → Players → Manage a player → Create password reset link, and send yourself the link. Open it signed out on the other phone, try a short password, then a good one. Check you land on Your groups, that the old password no longer works, and that the same link then says it has been used. Create another link and tap Cancel link. If anything misbehaves, `RESET_LINKS=False` in Vercel turns it off.
-- [ ] `SPEC.md` does not mention password reset. Add it if the spec should match the app.
+- [x] `SPEC.md` does not mention password reset. Add it if the spec should match the app. Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 - [x] **Set `DB_CONN_MAX_AGE` to `60` in Vercel** (done 2026-10-06; the readout's `open` figure is still to be read) (Settings → Environment Variables → Production; it is `0`), before the next release. Afterwards the readout's `open` figure should be 0 on most taps. If anything errors, set it back to `0` and redeploy ([plan](doc/plan/1791214849_phone_performance_and_smoothness.md)).
 - [x] **After C and D are released:** with `?perf=1`, open a session with two or more sets (the count in brackets should be about 14 or less), record a rebuy and mark a transfer paid ("wait" should be near 200 where it was near 400). Play one whole set and say if anything behaves differently. `ANSWER_IN_PLACE=False` in Vercel turns one-trip answers off without a release.
@@ -287,7 +296,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
   6. Fix it, cash out, and tap "Finalize results": it should ask once, with the totals. Try "Not yet", then finalize.
   7. Open New session and tap a blind or buy-in field: the same keys, with Next between fields.
   8. Say what feels wrong: key size, the panel's height, how Next scrolls, anything you miss from the phone's keyboard. If the phone's keyboard appears anywhere for a number, say where. `NUMPAD=False` in Vercel turns the numpad off without a release.
-- [ ] `SPEC.md` does not mention the numpad or that Finalize asks for confirmation. Add them if the spec should match the app.
+- [x] `SPEC.md` does not mention the numpad or that Finalize asks for confirmation. Add them if the spec should match the app. Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 - [x] **Try screen changes on your phone:** tap Your groups → a group → a session → a set and back; screens should no longer blink. Use the phone's Back gesture, in Safari and in the installed app. Leave a set page and come back a few times, then record a rebuy. Turn on Airplane Mode and tap a link: the "You're offline" page should appear.
 
@@ -311,7 +320,7 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 - [x] Try the entry pages: log out and look at Log in; create an invite in Group settings, open the link in a private window and go through Sign up to Join group. Try Show / Hide and a wrong password. Check that your phone's password manager still offers to fill and save.
 
 - [x] Try archive and delete as a host: on a closed session open “Manage this session” and archive it, check Stats and Your groups, then restore it from “Archived sessions”. Delete a canceled session. In Group settings try “Manage this group”. It is live.
-- [ ] `SPEC.md` does not mention archiving or deleting. Add it if the spec should match the app.
+- [x] `SPEC.md` does not mention archiving or deleting. Add it if the spec should match the app. Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 
 - [x] Try the collapsible menu on a phone as a host: tap “Host controls” on a set that is counting up, type counts and watch the bar, then confirm. Check it stays folded when you open, start and end another set. Watch it slide, and open “More host controls” to see the options as buttons.
 
@@ -343,6 +352,6 @@ Visual redesign slice 3 (session page, settle-up and recap) is done ([plan](doc/
 
 - [x] Test a session with two sets as a user: end a set, confirm counts, cash out counted players, start the next set, close the session.
 - [x] Test a pesos game and a chips game as a user.
-- [ ] Decide whether to keep the leftover check data in the dev database (accounts `hana` and `ben`, group "Browser Check").
-- [ ] Update `SPEC.md` step 2 if it should match the app (cash-outs as amounts, no chip conversion).
+- [ ] Clear the leftover check data from the dev database. The human asked for this on 2026-10-12. It is the group "Kamuning Card Club" (13 sessions) with the accounts `hana` and `ben`, made by the browser check seeds on 2026-10-04; no group is named "Browser Check". Not done: the agent's delete was refused by the permission check, so nothing was removed.
+- [x] Update `SPEC.md` step 2 if it should match the app (cash-outs as amounts, no chip conversion). Done 2026-10-12: the human asked the agent to bring `SPEC.md` in line with the app.
 - [ ] Confirm or change the open product decisions in the [roadmap](doc/roadmap/README.md), mainly the settlement model and the balance override rule.

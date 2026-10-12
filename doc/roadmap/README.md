@@ -5,9 +5,9 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | Stage | Outcome | `SPEC.md` step | Status |
 |---|---|---|---|
 | 1. Game night | Buy-ins and rebuys, cash-outs with balance check, settle-up with paid marks | 1, 2, 3 | Done, 2026-10-03 |
-| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). History list, banker, payments before finalization and reopening remain |
+| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). Reopening a set or a session built 2026-10-11. Past sessions are listed on the group page with their settled state, without filters. The banker, payments before a session closes and history filters remain |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Built 2026-10-09: board with five orders, four kinds of period and a minimum to be ranked; a page per player with a running profit chart, average, return, per hour, rebuys, rake and runs. Seasons remain |
-| 4. Seating | Manual seats and random draws with history | First request, item 10 | Planned |
+| 4. Seating | Manual seats and random draws with history | First request, item 10 | Built 2026-10-11 as an optional seat draw before a set starts: the server draws the dealer and the order, every phone plays it back, and a late player is seated by hand. The app does not follow the dealer button hand by hand |
 | 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployed 2026-10-04 at https://pokernights-five.vercel.app (Vercel and Neon, invite-only sign-up). Password reset by a host-issued link built 2026-10-06. Claim links built 2026-10-09 |
 
 ## Visual redesign pulled forward
@@ -17,12 +17,12 @@ The Rack slices 1–4 are built: shared foundation, active set and action sheets
 ## What Stage 1 already prepares
 
 - `PlayerResult` carries `member`, `group` and `game_date`, with indexes for leaderboard queries.
-- `Finalization` has `revision` and `is_current`, and `write_results()` already retires an older revision. Reopening needs a lifecycle action and a rule for payments made under the old revision.
+- `Finalization` has `revision` and `is_current`, and `write_results()` already retires an older revision. Reopening (built 2026-10-11) uses this; a session with a transfer marked paid is not reopened until the mark is removed.
 - `Payment` has optional `payer`, `payee` and `transfer`, so a banker and a payment before finalization fit the same table. `algorithm.balances()` already accepts payments, and its tests cover the prior-payment and banker cases.
 
 ## Decisions that changed the design
 
-- **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` itself is unchanged; its owner can update it.
+- **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` was updated to say this on 2026-10-12, at its owner's request.
 - **2026-10-04, sessions with sets.** A session holds several sets. Settle-up is once per session. Results and playing time are stored per set.
 - **2026-10-04, stats.** A "session played" is a closed session, not a set; the win rate is profitable sessions over sessions played; profit is after rake; no minimum-session threshold yet.
 - **2026-10-09, stats.** A player needs 3 sessions to be ranked in All time and This year, 2 in Last 3 months, 1 in a month. Divisions round toward zero. Per hour uses only sessions with recorded time. A chart places sessions by their order, not by the calendar. Every member can open every player's page.
@@ -41,22 +41,27 @@ These used the plan's defaults in Stage 1. They can still change.
 | Balance override | A note, and one named player or an equal share |
 | Tables per session | One. A two-table night is two sessions |
 | Audience | Private groups. On the public address sign-up needs an invite link; a superuser adds first hosts |
-| Seating | Stays in the roadmap as Stage 4 |
+| Seating | An optional seat draw, built 2026-10-11 |
 | Whole-peso rounding | None. Exact centavos |
 | Win rate | Percentage of finalized sessions with profit; the same measure as "cash rate" |
-| Ranking threshold | None in the built Stats view. 3 sessions per group stays the Stage 3 proposal |
+| Ranking threshold | 3 sessions in All time and This year, 2 in Last 3 months, 1 in a month (2026-10-09) |
 
 ## Possible follow-ups
 
 - **Breaks.** A player steps away and comes back without leaving the set. Today "Left" does this, and a host brings the player back.
 - **Correcting a set's end time.** The end time is the moment the host taps "End play". A late tap adds playing time for everyone. No edit exists.
-- **A live session page.** The session page shows changes on reload only.
-- **Reopening a finalized set or a closed session** (already Stage 2).
+- **A live session page.** Built 2026-10-11: the session page, Your groups and a group's Sessions tab update by themselves.
+- **Reopening a finalized set or a closed session.** Built 2026-10-11.
 
 - **Merging two member rows.** Nothing joins two rows of one person that both have records; a claim link is refused for such an account. the roster now refuses to create the second one from a removed name.
 
 - **New names in the player picker.** Type several new names (one per line) on "Add players"; each becomes a roster player without a login and joins the game in the same all-or-nothing action. Not built. It needs name-clash rules and its own plan. It uses the existing roster model, not a new guest-account system.
 
+## Cleanup
+
+- **Feature switches.** Each revamp shipped behind a switch that keeps the earlier code. Removing the accepted ones is planned in the [switch cleanup plan](../plan/1791788388_switch_cleanup.md), waiting for approval; `COUNT_REVAMP` is first.
+- **Stale browser scripts.** Six check scripts no longer match their screens; see the [browser checks README](../../web/tests/browser/README.md).
+
 ## Later (from `SPEC.md`, not planned)
 
-RSVP with a waitlist, recurring games, reminders, IOUs across sessions, tips, session notes, CSV or image export, chip denominations. (Rake, the session timer and the bankroll graph are built.)
+RSVP with a waitlist, recurring games, reminders, tips, session notes, CSV export, chip denominations. (Rake, the session timer, the bankroll graph, unpaid transfers carried across sessions and sharing results as an image are built.)
