@@ -37,7 +37,6 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `REOPENING` | optional | Defaults to on. Set `False` to hide Reopen set and Reopen session and refuse both without a release (`settlement/services.py`). Sets and sessions already reopened stay as they are |
 | `SHARE_RESULTS` | optional | Defaults to on. Set `False` to remove Share results from closed sessions without a release (`web/views.py`, `web/share.py`) |
 | `INSTALL_PROMPT` | optional | Defaults to on. Set `False` to stop the home-screen suggestion after a login and to remove Add to home screen and Join with a link, without a release (`config/door.py`, `static/js/install.js`) |
-| `TABLE_REVAMP` | optional | Defaults to on. Set `False` to return the set page (preparing and in play) to its earlier layout without a release (`web/views.py`, `templates/web/_session_live_classic.html`). The state words Draft, Open and In play stay. Redeploy after changing it. |
 | `STATS_PAGES` | optional | Defaults to on. Set `False` to return the Stats tab to one ranked list and make player pages not found, without a release (`web/stats.py`). Redeploy after changing it. |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
 | `DEBUG` | never set | Off |

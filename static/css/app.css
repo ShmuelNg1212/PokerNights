@@ -1289,8 +1289,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 /* The chip lands in the top bar: the mark sinks and comes back, as a pressed button does. */
 body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
 
-/* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2, so the
-   classic templates kept behind TABLE_REVAMP are untouched. */
+/* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2. */
 /* The lead panel: the figure, the timer and the blinds; the rest is one line with the facts behind it. */
 .table-v2 .felt .pot { margin-top: var(--s-3); }
 .set-facts { margin-top: var(--s-3); border-top: 1px solid var(--line); }

@@ -206,11 +206,10 @@ def session_context(session, me) -> dict:
         "can_manage_players": me.is_host and session.state in games.HOST_ADD_STATES,
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
-        "table_revamp": settings.TABLE_REVAMP,
         "any_entered": any(line.entered for line in summary.lines),
-        "prep": prep.states(session, summary, me) if settings.TABLE_REVAMP else None,
+        "prep": prep.states(session, summary, me),
     }
-    if settings.SEAT_DRAW and settings.TABLE_REVAMP and session.state in ("open", "running"):
+    if settings.SEAT_DRAW and session.state in ("open", "running"):
         seating = seat_draws.seating(session, participants) if getattr(session, "has_seat_draw", True) else None
         live = not session.night.is_archived
         context["seating"] = seating

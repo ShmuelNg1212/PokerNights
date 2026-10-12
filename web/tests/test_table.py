@@ -241,27 +241,6 @@ class SetPageRevampTests(TestCase):
         self.assertIn('class="table-layout table-v2"', answer["html"])
         self.assertIn("data-sheet-swap", answer["html"])
 
-    def test_the_switch_returns_the_page_as_it_was(self):
-        from django.test import override_settings
-        with override_settings(TABLE_REVAMP=False):
-            page = self.page()
-        self.assertNotIn("table-v2", page)
-        self.assertNotIn("set-facts", page)
-        self.assertNotIn("data-sheet-swap", page)
-        self.assertIn('<span class="badge badge-live">Running</span>', page)
-        self.assertIn("Collected rake", page)
-        self.assertIn('class="join-row"', page)
-
-    def test_no_query_is_added_for_the_new_page(self):
-        from django.db import connection
-        from django.test import override_settings
-        from django.test.utils import CaptureQueriesContext
-        with CaptureQueriesContext(connection) as new:
-            self.client.get(self.url)
-        with override_settings(TABLE_REVAMP=False), CaptureQueriesContext(connection) as old:
-            self.client.get(self.url)
-        self.assertEqual(len(new), len(old))
-
 
 class PreparationTests(TestCase):
     """A draft or open set shows what is done and what is next, and no totals before there is money."""
@@ -365,12 +344,3 @@ class PreparationTests(TestCase):
         page = self.page()
         self.assertIn('<section class="felt" data-unit', page)
         self.assertNotIn("prep-step", page)
-
-    def test_the_switch_returns_the_panel_and_the_rake_button(self):
-        from django.test import override_settings
-        with override_settings(TABLE_REVAMP=False):
-            page = self.page()
-        self.assertNotIn("prep-step", page)
-        self.assertIn('class="felt hero"', page)
-        self.assertIn('<a class="btn btn-block" href="%s">Choose rake before buy-ins</a>' % reverse("session_settings", args=[self.session.pk]), page)
-        self.assertIn("Next: Open for players", page)

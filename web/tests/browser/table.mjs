@@ -1,7 +1,6 @@
 // The set page while a set is prepared and in play (DESIGN.md, "Set page").
 // Seed a fresh temporary database with seed.py, seed_end_set.py, seed_night.py and seed_opening.py: set 3 is
-// in play with eight players, set 4 is an empty draft, sets 19 to 22 are open. PN_OFF_URL, when set, is a
-// second server on the same database started with TABLE_REVAMP=False. The script consumes its fixtures.
+// in play with eight players, set 4 is an empty draft, sets 19 to 22 are open. The script consumes its fixtures.
 import {spawn} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-rack-review';mkdirSync(OUT,{recursive:true});
@@ -14,7 +13,7 @@ ws.onmessage=e=>{const m=JSON.parse(e.data);
  if(m.method==='Runtime.exceptionThrown'){const d=m.params.exceptionDetails;errors.push(d.text+' '+((d.exception&&d.exception.description)||'').slice(0,160)+' after '+results.length+' checks');return}
  if(wait.has(m.id)){const [ok,no]=wait.get(m.id);wait.delete(m.id);m.error?no(Error(JSON.stringify(m.error))):ok(m.result)}};
 const send=(method,params={},sessionId)=>new Promise((ok,no)=>{wait.set(++id,[ok,no]);ws.send(JSON.stringify({id,method,params,sessionId}))});
-const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765', OFF=process.env.PN_OFF_URL || '';
+const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765';
 async function page(opts={}){const {browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});await send('Page.enable',{},s);await send('Runtime.enable',{},s);
  const js=async expression=>{let r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true},s);if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value};
  const size=(width,height=844)=>send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<900},s);
@@ -163,11 +162,6 @@ try {
  await L.click(`document.querySelector('.host-controls button[value=start]')`,50);await L.until(`document.getElementById('live').dataset.state==='running'`,12000);await L.js('window.__mark=window.__frames.length');await sleep(1000);
  const frames=(await L.js('window.__frames.slice(window.__mark)'));const worst=Math.round(Math.max(...frames)),late=frames.filter(d=>d>34).length;
  check('slowed four times: the sweep itself drops at most two frames',late<=2,`${frames.length} frames, ${late} over 34ms, worst ${worst}ms`);
- if(OFF){const O=await page();await O.login('hana',OFF);await O.go('/s/3/',1100,OFF);
-  check('switch off, in play: the page as it was',await O.js(`!document.querySelector('.table-v2')&&!document.querySelector('.set-facts')&&document.querySelector('.felt .badge').textContent==='Running'&&${shown('.cash-opener')}.length>=5&&!document.documentElement.classList.contains('dock-collapsed')&&!!document.querySelector('.join-row:not(.join-row-quiet)')`));
-  await O.go('/s/19/',1100,OFF);check('switch off, open set: the panel of totals and the menu as they were',await O.js(`!!document.querySelector('.felt.hero')&&!document.querySelector('.prep-step')&&${text('Still in play')}&&${shown('.host-controls > form button[value=close]')}.length===1`));
-  await O.click(`document.querySelector('.player-row .player-opener')`,500);check('switch off: sheets still work',await O.js(`document.querySelector('dialog.sheet').open&&!document.querySelector('dialog [data-sheet-swap]')`));
- } else console.log('SKIP the switch: PN_OFF_URL is not set');
  check('no script error anywhere',errors.length===0,errors.join('; '));
  writeFileSync(`${OUT}/table.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}

@@ -829,7 +829,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | Details opened by a tap | The facts fade in over 6px (`fade`). Opened by a live update or a wide screen: nothing |
 | Cash out in the sheet | The sheet's content fades to the form (`shift`) |
 
-Reduced motion and a missing Motion file move nothing; the page is complete either way. `TABLE_REVAMP=False` returns the earlier page.
+Reduced motion and a missing Motion file move nothing; the page is complete either way. The earlier page and its switch were removed on 2026-10-12.
 
 **Measured.** `table.mjs`, 63 checks. At 390 × 844 with eight players: panel 223px (was 351), row 65px (was 142), six whole rows on the first screen, page 1,114px (was 1,758). No late frame at the start with the processor slowed four times. Critique 28 of 40, then one fix batch (`.impeccable/critique/`).
 
