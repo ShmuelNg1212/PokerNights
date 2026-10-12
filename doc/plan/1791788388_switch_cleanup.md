@@ -67,7 +67,7 @@ No migration. The release changes nothing a person sees, so there is no phone ch
 
 ## Result, 2026-10-12
 
-Built on `chore/switch-cleanup`: stage 1 `a711584`, stage 2 `dc51c17`, stage 3 `5980b97`. Not merged and not released.
+Built on `chore/switch-cleanup`: stage 1 `a711584`, stage 2 `dc51c17`, stage 3 `5980b97`. Merged and released on 2026-10-12 as `70c939a` (previous production commit `0c168bc`), after the build-like test run passed (1,095). Four minutes after the push the live login page answered 200 and its stylesheet no longer held the removed count-up styles.
 
 - 152 pages (every set page, group tab and player page for each login, on two seeded databases) were fetched before the first stage and after each stage. They are the same, running clocks aside.
 - Tests: 1,103 before, 1,095 after, on SQLite and on PostgreSQL 17. The 8 removed tested the switches. Two tests of the earlier Stats list were kept and now run against the board: when the tab appears, and who may open it.
