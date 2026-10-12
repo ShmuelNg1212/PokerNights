@@ -6,7 +6,7 @@ Short active items. The detail is in the linked documents.
 
 Switch cleanup ([plan](doc/plan/1791788388_switch_cleanup.md), [study](doc/study/1791788387_switch_cleanup.md)): **waiting for your approval**, written 2026-10-12. Nothing is built. Stage 1 removes the earlier count-up and `COUNT_REVAMP`; stages 2 and 3 remove the earlier set page (`TABLE_REVAMP`) and the earlier Stats tab (`STATS_PAGES`) if you accept those two screens. The 13 switches that turn a feature off stay. No migration, nothing a person sees changes.
 
-- [ ] Approve the plan, and answer its four questions: is the set page accepted, is the Stats tab accepted, are the three switches absent or `True` in Vercel, and should the 69 merged local branches be deleted.
+- [ ] Approve the plan, and answer its two open questions: are the three switches absent or `True` in Vercel, and should the 69 merged local branches be deleted. Answered 2026-10-12: the set page and the Stats tab are accepted ("the set and stats page are accepted"), so stages 2 and 3 are in.
 
 Docs brought up to date on 2026-10-12, at the human's request: `SPEC.md` now describes the app as built (the human asked the agent to edit it this once), the [wiki front page](doc/wiki/README.md) says the app is live and its journal lists every cycle, and the [roadmap](doc/roadmap/README.md) marks seating, reopening and the live pages as built.
 

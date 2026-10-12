@@ -2,7 +2,7 @@
 
 Date: 2026-10-12, Asia/Manila. [Study](../study/1791788387_switch_cleanup.md).
 
-Status: **waiting for the human's approval.** Nothing below is built.
+Status: **approved 2026-10-12** ("the vercel variables are not there. go proceed with cleanup"). All three stages are in.
 
 ## Outcome
 
@@ -10,9 +10,9 @@ Each screen has one copy. The earlier count-up, and with the human's word the ea
 
 ## Decisions for the human
 
-1. **Is the set page accepted?** Its phone checks were ticked on 2026-10-12. If yes, stage 2 removes `TABLE_REVAMP` and the earlier set page.
-2. **Is the Stats tab accepted?** Its phone checks were ticked on 2026-10-09. If yes, stage 3 removes `STATS_PAGES` and the earlier single list.
-3. **Before the release, look at Vercel → Settings → Environment Variables → Production.** `COUNT_REVAMP`, `TABLE_REVAMP` and `STATS_PAGES` should be absent or `True`. If one is `False`, say so before the release: removing it would change the live screen.
+1. **Is the set page accepted?** Its phone checks were ticked on 2026-10-12. If yes, stage 2 removes `TABLE_REVAMP` and the earlier set page. **Answered 2026-10-12: yes** ("the set and stats page are accepted").
+2. **Is the Stats tab accepted?** Its phone checks were ticked on 2026-10-09. If yes, stage 3 removes `STATS_PAGES` and the earlier single list. **Answered 2026-10-12: yes.**
+3. **Before the release, look at Vercel → Settings → Environment Variables → Production.** `COUNT_REVAMP`, `TABLE_REVAMP` and `STATS_PAGES` should be absent or `True`. If one is `False`, say so before the release: removing it would change the live screen. **Answered 2026-10-12: none of the three is set.**
 4. **The 69 merged local branches.** Say if they should be deleted (`git branch -d`, which refuses any branch that is not merged).
 
 The 13 switches that turn a feature off stay.
