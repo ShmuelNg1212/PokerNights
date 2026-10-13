@@ -4,11 +4,11 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-A picture for the link ([plan](doc/plan/1791861228_link_preview.md), [study](doc/study/1791861227_link_preview.md)): approved and built on `feat/link-preview` on 2026-10-13, not released. A PokerNights link pasted into a chat shows a 1200 × 630 picture, the name and one line; invite links show the same card. No migration and no screen changes. 1,098 tests pass on SQLite and PostgreSQL 17. No chat app has been tried: that needs the live site.
+A picture for the link ([plan](doc/plan/1791861228_link_preview.md), [study](doc/study/1791861227_link_preview.md)): approved and built on `feat/link-preview` on 2026-10-13. Released 2026-10-13 as `d3b8d1d` (previous production commit `70c939a`); the live site serves the card's tags and the picture. A PokerNights link pasted into a chat shows a 1200 × 630 picture, the name and one line; invite links show the same card. No migration and no screen changes. 1,098 tests pass on SQLite and PostgreSQL 17. No chat app has been tried: that needs the live site.
 
 - [x] Approve the plan, and answer its two decisions. Approved 2026-10-13: the words stand, invite links get the same card.
-- [ ] Say when to merge and release it.
-- [ ] After release, paste the site's address and a new invite link into Messenger or WhatsApp. Say whether the card shows the picture, the name and the line.
+- [x] Say when to merge and release it. Released 2026-10-13.
+- [ ] Paste the site's address and a new invite link into Messenger or WhatsApp. Say whether the card shows the picture, the name and the line.
 
 Switch cleanup ([plan](doc/plan/1791788388_switch_cleanup.md), [study](doc/study/1791788387_switch_cleanup.md)): approved and built on `chore/switch-cleanup` on 2026-10-12, three commits (`a711584`, `dc51c17`, `5980b97`). Released 2026-10-12 as `70c939a` on the human's word "release" (previous production commit `0c168bc`); four minutes after the push the live site served a stylesheet without the removed count-up styles. The earlier count-up, the earlier set page and the earlier Stats list are removed with `COUNT_REVAMP`, `TABLE_REVAMP` and `STATS_PAGES`; the human accepted all three screens and found none of the three set in Vercel. The 13 switches that turn a feature off stay. No migration, and nothing a person sees changes: 152 pages fetched before and after from two seeded databases are the same, running clocks aside. 1,095 tests pass on SQLite and PostgreSQL 17 (1,103 before; the 8 removed tested the switches). Browser checks: `count_flow.mjs` 91 of 91, `seat_draw.mjs` 50 of 50, `stats.mjs` 75 of 75 (its first run hung after 26 checks and was stopped; the second ran through, as it does on `main`), `table.mjs` stops at "a player on an open set" exactly as on `main`.
 

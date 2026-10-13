@@ -1,6 +1,6 @@
 # A picture for the link: plan
 
-Status: approved 2026-10-13 ("approved, i want the same card for invite links as well"). Built, not released. Date: 2026-10-13, Asia/Manila. Study: [A picture for the link](../study/1791861227_link_preview.md).
+Status: approved 2026-10-13 ("approved, i want the same card for invite links as well"). Built and released. Date: 2026-10-13, Asia/Manila. Study: [A picture for the link](../study/1791861227_link_preview.md).
 
 ## Outcome
 
@@ -68,3 +68,5 @@ Verification:
 Not verified: any chat app. That needs the live site.
 
 Documentation synced: wiki (features, deployment, journal), DESIGN.md, PRODUCT.md, TODO.
+
+2026-10-13, release: merged as `d3b8d1d` and pushed on the human's word "rekease" (previous production commit `70c939a`). About four minutes after the push, one fetch of the home address with a chat app's user agent returned the card, with the picture at `https://pokernights-five.vercel.app/static/branding/link-preview.png`; one fetch of that address returned a PNG of 253,942 bytes. Not verified: the card as a chat app draws it.
