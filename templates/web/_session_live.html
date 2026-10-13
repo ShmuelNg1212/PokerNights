@@ -37,8 +37,8 @@
         </li>
         <li class="prep-step" data-step="stakes" data-state="{{ prep.stakes }}">
           {% include "web/_prep_mark.html" with state=prep.stakes number=2 %}
-          <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} · buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} · {% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></div>
-          <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Choose rake before buy-ins{% else %}Change set settings{% endif %}">{% if can_configure_rake and settings.rake_mode == 'off' %}Choose rake{% else %}Change{% endif %}</a>
+          <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line"><span class="fact">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} ·</span> <span class="fact">buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} ·</span> <span class="fact">{% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></span></div>
+          <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Change stakes. Choose rake before buy-ins{% else %}Change set settings{% endif %}">Change</a>
         </li>
         <li class="prep-step" data-step="open" data-state="{{ prep.open }}">
           {% include "web/_prep_mark.html" with state=prep.open number=3 %}

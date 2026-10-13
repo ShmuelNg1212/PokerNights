@@ -273,6 +273,8 @@ class PreparationTests(TestCase):
         self.assertIn("Get this set ready", page)
         self.assertIn("Nobody yet", page)
         self.assertIn("Players cannot see this set yet.", page)
+        # Step 1 says nobody is here; the Players section does not say it again to the host.
+        self.assertNotIn("No players yet", page)
         # No panel of zeros.
         for absent in ("Still in play", "Set timer", "Cashed out", "Collected rake", "prep-money"):
             self.assertNotIn(absent, page)
@@ -316,7 +318,10 @@ class PreparationTests(TestCase):
         page = self.page()
         self.assertIn("rake off", page)
         self.assertIn("buy-in ₱", page)
-        self.assertIn('href="%s" aria-label="Choose rake before buy-ins">Choose rake</a>' % reverse("session_settings", args=[self.session.pk]), page)
+        # The step is done, so its button changes it; the accessible name says that rake waits behind it.
+        self.assertIn('href="%s" aria-label="Change stakes. Choose rake before buy-ins">Change</a>' % reverse("session_settings", args=[self.session.pk]), page)
+        # The line breaks between its facts, never inside one.
+        self.assertIn('<span class="fact">buy-in ₱500 to ₱2,000 ·</span>', page)
         self.assertEqual(page.count("Choose rake before buy-ins"), 1)
 
     def test_every_step_says_its_state_in_words(self):

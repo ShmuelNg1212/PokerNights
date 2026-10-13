@@ -128,9 +128,8 @@ details > summary { cursor: pointer; min-height: var(--tap); display: flex; alig
 /* Checkbox rows: the whole row is the label, so it is one large touch target */
 [hidden] { display: none !important; }
 input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
-.check { display: flex; align-items: center; gap: 12px; min-height: var(--tap); margin: 0; font-weight: 400; cursor: pointer; }
+.check { display: flex; align-items: center; gap: 12px; min-height: var(--tap); margin: 0; font-weight: 500; cursor: pointer; }
 .rake-settings { border: 0; padding: 0; margin: 16px 0 0; min-width: 0; }
-.rake-settings legend { font-weight: 600; }
 .rake-settings .field { margin-top: 12px; }
 .check.is-disabled { color: var(--muted); cursor: default; }
 .check .grow { overflow-wrap: anywhere; }
@@ -247,7 +246,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .host-controls > * { margin: 0; }
 .host-controls h2 { margin-top: 0; font-size: 1rem; }
 .host-controls .next-action { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: calc(100% - 32px); z-index: 5; box-shadow: var(--shadow-primary), 0 8px 24px oklch(0 0 0 / .6); }
-.host-more > summary { color: var(--muted); }
+.host-more > summary { color: var(--muted); font-size: .875rem; }
 .sheet { width: min(100%, 440px); max-height: 85dvh; margin: auto auto 0; padding: 16px 20px 24px; border: 0; border-radius: var(--r-sheet) var(--r-sheet) 0 0; color: var(--bone); background: var(--rail); box-shadow: 0 -12px 48px oklch(0 0 0 / .5); overflow-y: auto; }
 .sheet::backdrop { background: oklch(0.1 0.01 60 / .7); }
 .sheet[open] { animation: sheet-open var(--t-sheet) var(--ease-out); }
@@ -543,13 +542,21 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .empty-state { padding:24px 0; }
 .empty-state h2, .empty-state h3 { margin-top:0; }
 .panel.empty-state { padding:var(--s-5) var(--s-4); }
-.form-page { max-width:600px; padding-top:28px; }
+.form-page { max-width:600px; padding-top:28px; padding-bottom:48px; }
+.form-page > .form-section:last-child { margin-bottom:0; padding-bottom:0; }
 .form-page h1 { font-size:1.75rem; font-weight:800; }
 .form-page > p { max-width:65ch; }
 .field:has(.errors) input, .field:has(.errors) select { border-color:var(--down); }
 .field input, .field textarea { caret-color:var(--brass); }
 .form-page .form-section { border-top:0; }
 .picker-fields { border:0; margin:0; padding:0; min-width:0; }
+/* Add players: two titled parts in the form pages' rhythm; a roster row is one 48px line. */
+.pick-section { margin-top:var(--s-5); }
+.form-page .pick-section > .form-section { margin:0; padding:0; }
+.pick-section .hint { margin:0 0 var(--s-3); }
+.pick-section .picker-fields .list > li { padding:0; }
+.pick-section .picker-fields legend { padding-top:var(--s-2); }
+.pick-section .sticky-actions { margin-top:var(--s-3); }
 .section-rail { margin:12px 0; padding:12px 0; border-bottom:1px solid var(--rule); }
 /* Group tabs: Sessions is the default view; settings hold the roster, invites, tables, presets and rake. */
 .tabs { display:flex; gap:var(--s-1); padding:var(--s-1); margin:0 0 var(--s-5); background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-btn); }
@@ -712,7 +719,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 /* Collapsible host dock: below 900px a host can fold the dock to one bar. The choice is a class on <html>. */
 .dock-toggle { display: none; }
 @media (max-width: 899px) {
-  .dock-enabled .table-layout .dock-toggle { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; column-gap: var(--s-2); width: 100%; min-height: var(--tap); margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+  .dock-enabled .table-layout .dock-toggle { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; align-content: center; column-gap: var(--s-2); width: 100%; min-height: var(--tap); margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
   .dock-toggle .dock-next { display: none; grid-column: 1; font-weight: 400; overflow-wrap: anywhere; }
   .dock-toggle .icon { grid-column: 2; grid-row: 1 / span 2; color: var(--muted); }
   .dock-toggle .dock-count { display: none; grid-column: 1; font-weight: 400; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -842,6 +849,15 @@ legend { padding: 0; }
 .field-pair label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rake-settings { margin: 0; }
 .rake-settings legend.group-title { margin-bottom: var(--s-2); }
+/* Only the chosen rule's amount is on the page. Both stay in the form, and the server reads the chosen one. */
+.rake-settings:has([name="rake_mode"][value="off"]:checked) .field,
+.rake-settings:has([name="rake_mode"][value="flat"]:checked) .field:has([name="rake_percentage"]),
+.rake-settings:has([name="rake_mode"][value="percent"]:checked) .field:has([name="rake_flat"]) { display: none; }
+/* New session: the preset is a group like the ones under it. With setup.js a choice fills the stakes at once and "Use" goes. */
+.form-page .preset-group { margin-bottom: 0; padding-bottom: 0; }
+.form-page .preset-group + .form-groups { margin-top: 0; padding-top: 0; }
+.preset-group label.group-title { display: block; }
+.preset-fills .preset-group [type="submit"] { display: none; }
 @media (max-width: 359px) {
   .field-pair { grid-template-columns: minmax(0, 1fr); }
   .field-pair label { white-space: normal; }
@@ -1338,6 +1354,8 @@ body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-o
   .table-v2 .player-figure small { display: inline; margin-left: var(--s-1); max-width: none; }
 }
 .join-row-quiet { padding: var(--s-2) 0; }
+.player-list > .empty-state { padding: var(--s-3) 0; }
+.player-list > .empty-state p { margin: 0; }
 .join-row-quiet form { display: flex; align-items: center; gap: var(--s-1); margin: 0; }
 .join-row .btn-primary { margin: var(--s-2) 0; }
 /* Inside a player's sheet. */
@@ -1363,12 +1381,13 @@ body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-o
 .prep-step[data-state=later] .prep-name { color: var(--muted); }
 .prep-line { color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
 .prep-step .visually-hidden { grid-column: 1; }
-.prep-step .btn { position: relative; z-index: 1; }
+.prep-step .btn { position: relative; z-index: 1; min-width: 84px; }
+.prep-line .fact { display: inline-block; max-width: 100%; }
 .prep-money { margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); color: var(--muted); }
 .prep-money strong { color: var(--text); font-variant-numeric: tabular-nums; }
 .prep-facts { margin-top: var(--s-3); border-top-color: var(--rule); }
 .prep-facts dt { color: var(--muted); }
-@media (min-width: 900px) { .prep { margin: 0; padding: 20px; border: 1px solid var(--rule); border-radius: var(--r-sheet); } }
+@media (min-width: 900px) { .prep { margin: 0; padding: 20px; border: 1px solid var(--rule); border-radius: var(--r-sheet); } .table-page:has(.table-v2) > .center { text-align: left; } }
 
 /* After the critique of 2026-10-09: the pot stays on one line on a narrow phone, a finished step of an
    open set takes one line so a player row is in view, and a hint on the rail is not felt-coloured. */

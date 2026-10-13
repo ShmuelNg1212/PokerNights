@@ -14,24 +14,14 @@
 
 {% if not can_add %}<p class="notice notice-bad">This set is {{ session.state_word }}. Players cannot be added now. Return to the set to continue.</p>
 {% elif seats_free == 0 %}<p class="notice notice-warn">The table is full. A seat must be free before another player can join.</p>{% endif %}
-<section aria-label="Add a new player">
-  <h2>Add a new player</h2>
-  <p class="small muted">Save this name to the group roster and add them to this set. Record their buy-in separately.</p>
-  <form method="post" class="form-section stack" data-once>
-    {% csrf_token %}
-    <input type="hidden" name="request_id" value="{{ new_request_id }}">
-    <input type="hidden" name="action" value="new">
-    <fieldset class="picker-fields stack" {% if not can_add or seats_free == 0 %}disabled{% endif %}>
-      {% include "partials/form_fields.html" with form=new_form %}
-      <button type="submit" class="btn btn-primary btn-block">Add new player</button>
-    </fieldset>
-  </form>
-</section>
-<h2>Choose from the roster</h2>
+{# The roster comes first: most players at a table are already on it. #}
+<section class="pick-section" aria-labelledby="pick-roster-title">
+<h2 class="group-title" id="pick-roster-title">Choose from the roster</h2>
 {% if eligible_count == 0 %}
 <p class="muted">Every player of this group is already at the table.</p>
 {% elif can_add %}
-<form method="post" class="form-section stack" data-pick data-free="{{ seats_free }}">
+{# Not a "form-section": the browser checks find the new-player form as the page's first one. #}
+<form method="post" class="stack" data-pick data-free="{{ seats_free }}">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
   <div class="field" data-pick-search-box hidden>
@@ -63,4 +53,18 @@
   </div>
 </form>
 {% endif %}
+</section>
+<section class="pick-section form-group" aria-labelledby="pick-new-title">
+  <h2 class="group-title" id="pick-new-title">Add a new player</h2>
+  <p class="hint">Save this name to the group roster and add them to this set. Record their buy-in separately.</p>
+  <form method="post" class="form-section stack" data-once>
+    {% csrf_token %}
+    <input type="hidden" name="request_id" value="{{ new_request_id }}">
+    <input type="hidden" name="action" value="new">
+    <fieldset class="picker-fields stack" {% if not can_add or seats_free == 0 %}disabled{% endif %}>
+      {% include "partials/form_fields.html" with form=new_form %}
+      <button type="submit" class="btn btn-block">Add new player</button>
+    </fieldset>
+  </form>
+</section>
 {% endblock %}

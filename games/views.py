@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from groups.access import member_for, require_host
+import json
 import uuid
 
 from django.contrib import messages
@@ -12,6 +13,7 @@ from groups.forms import NameForm
 from groups.http import attempt, request_id_from, attempt_bound, group_settings, keep_form
 from groups import services as groups
 from groups.models import Member
+from ledger import money
 
 from . import services
 from .access import night_for, session_for
@@ -57,6 +59,10 @@ def session_new(request, group_id):
         preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
     initial = {"game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else {}
     form = SessionForm(request.POST or None, initial=initial, tables=tables)
+    # What choosing each preset writes into the form, as the form shows it (static/js/setup.js).
+    presets = list(presets)
+    for p in presets:
+        p.fill = json.dumps({"game_type": p.game_type, "unit": p.unit, **{name: money.plain_amount(value, p.unit) for name, value in p.stakes().items()}})
     if request.method == "POST" and form.is_valid():
         data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
         session = attempt_bound(request, form, services.create_session, actor, data)

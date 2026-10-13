@@ -1,6 +1,8 @@
 """The stakes forms are laid out in titled groups with pairs. What they save is tested elsewhere."""
 
+import json
 import re
+from html import unescape
 import uuid
 
 from django.test import TestCase
@@ -35,9 +37,30 @@ class FormLayoutTests(TestCase):
         self.assertEqual(control_names(page), ["table_id", "game_date", "location", "game_type", "unit", *STAKES_NAMES, *RAKE_NAMES])
         html = page.content.decode()
         titles = re.findall(r'class="group-title"[^>]*>([^<]+)<', html)
-        self.assertEqual(titles, ["When and where", "Game", "Stakes", "Rake per buy-in"])
+        self.assertEqual(titles, ["Start from a preset", "When and where", "Game", "Stakes", "Rake per buy-in"])
         self.assertEqual(html.count('class="field-pair'), 3)
-        self.assertContains(page, "Type each amount in pesos, or in chips for a chips game.", count=1)
+        # The Unit help already says what an amount is; the Stakes group does not repeat it.
+        self.assertNotContains(page, "Type each amount")
+        self.assertContains(page, "Pesos: amounts are money.", count=1)
+
+    def test_each_preset_carries_what_choosing_it_fills_in(self):
+        make_preset(self.host, name="Chips 5/10", unit="chips", small_blind=5, big_blind=10, min_buy_in=200, max_buy_in=1000, default_buy_in=500)
+        html = self.client.get(self.new_url).content.decode()
+        fills = [json.loads(unescape(found)) for found in re.findall(r'<option value="\d+" data-fill="([^"]+)"', html)]
+        self.assertEqual(fills, [
+            {"game_type": "nlh", "unit": "php", "small_blind": "10", "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000"},
+            {"game_type": "nlh", "unit": "chips", "small_blind": "5", "big_blind": "10", "min_buy_in": "200", "max_buy_in": "1000", "default_buy_in": "500"},
+        ])
+        # "Use" still reloads the page with the preset where the script does not run.
+        self.assertContains(self.client.get(self.new_url), '<button type="submit" class="btn">Use</button>')
+
+    def test_new_session_without_a_preset_starts_at_when_and_where(self):
+        group, host = make_group(host_name="solo", group_name="No presets")
+        make_table(host)
+        self.client.force_login(host.user)
+        html = self.client.get(reverse("session_create", args=[group.pk])).content.decode()
+        self.assertNotIn("Start from a preset", html)
+        self.assertIn('<section class="form-group form-group-first" aria-labelledby="group-when">', html)
 
     def test_every_control_keeps_its_label_help_and_ids(self):
         html = self.client.get(self.new_url).content.decode()

@@ -130,3 +130,7 @@ After every sign-up or login in a phone's browser, PokerNights suggests adding i
 ## 2026-10-13 addendum — Link preview
 
 A PokerNights link pasted into a chat shows one card: a picture, the name and the sentence "Records buy-ins and cash-outs for a home poker game and works out who pays whom. It does not move money." Every link shows the same card, invite links included; it names no group and no person. [Plan](doc/plan/1791861228_link_preview.md).
+
+## 2026-10-13 addendum — Session setup polish
+
+Choosing a preset on New session fills the game and the stakes at once and keeps what the host already typed. Only the chosen rake rule's amount is on the page; with rake Off there is none. This revises "Both value fields stay visible" in the rake setup controls addendum: both are still sent, and only the chosen one is read. On a draft set the Stakes and rake step's button says "Change", and a host no longer reads "No players yet" under a step that says "Nobody yet". Add players lists the roster first. "More host controls" opens and closes with movement. What each step records, and who may do it, is unchanged. [Plan](doc/plan/1791872139_session_setup_polish.md).

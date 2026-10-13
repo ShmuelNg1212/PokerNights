@@ -132,6 +132,12 @@ class NewPlayerPageTests(TestCase):
         self.assertContains(page, 'Player name')
         self.assertContains(page, 'Record their buy-in separately')
 
+    def test_the_roster_comes_first_and_its_button_is_the_only_main_one(self):
+        html = self.client.get(self.url).content.decode()
+        self.assertLess(html.index('Choose from the roster'), html.index('Add a new player'))
+        self.assertIn('<button type="submit" class="btn btn-block">Add new player</button>', html)
+        self.assertIn('class="btn btn-primary btn-block" data-pick-submit', html)
+
     def test_success_returns_running_set_with_manual_buy_in(self):
         page = self.post('Late')
         self.assertRedirects(page, reverse('session', args=[self.r.session.pk]))

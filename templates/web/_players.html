@@ -16,7 +16,7 @@
     {# A player's own row comes first for them: it holds the one thing they can do. The host's order is the order of joining. #}
     {% if not me.is_host %}{% for line in summary.lines %}{% if line.participant.member_id == me.pk %}{% include "web/_player_row.html" %}{% endif %}{% endfor %}{% endif %}
     {% for line in summary.lines %}{% if me.is_host or line.participant.member_id != me.pk %}{% include "web/_player_row.html" %}{% endif %}
-    {% empty %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this set when the host opens it.{% endif %}</p></li>{% endfor %}
+    {% empty %}{% if not me.is_host or not prep %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this set when the host opens it.{% endif %}</p></li>{% endif %}{% endfor %}
     {% if can_join and not my_participant and me.is_host and seats_free > 0 %}<li class="join-row join-row-quiet">
       <form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<span class="muted">Playing too?</span> <button class="link-button" type="submit">Join this set</button></form>
     </li>{% endif %}

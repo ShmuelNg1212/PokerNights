@@ -6,21 +6,23 @@
 <p class="small"><a href="{% url 'group' group.pk %}">{{ group.name }}</a></p>
 <h1>New session</h1>
 {% if presets %}
-<form method="get" class="form-section form-row">
-  <div class="grow">
-    <label for="preset">Start from a preset</label>
-    <select id="preset" name="preset">
-      {% for p in presets %}<option value="{{ p.pk }}" {% if preset and p.pk == preset.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
-    </select>
+<form method="get" class="form-section preset-group" data-preset-form>
+  <label class="group-title" for="preset">Start from a preset</label>
+  <div class="form-row">
+    <div class="grow">
+      <select id="preset" name="preset">
+        {% for p in presets %}<option value="{{ p.pk }}" data-fill="{{ p.fill }}" {% if preset and p.pk == preset.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn">Use</button>
   </div>
-  <button type="submit" class="btn">Use</button>
 </form>
 {% endif %}
-<form method="post" class="form-section form-groups">
+<form method="post" class="form-section form-groups" data-preset-target>
   {% csrf_token %}
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}
   {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{{ form.non_field_errors }}</div>{% endif %}
-  <section class="form-group form-group-first" aria-labelledby="group-when">
+  <section class="form-group{% if not presets %} form-group-first{% endif %}" aria-labelledby="group-when">
     <h2 class="group-title" id="group-when">When and where</h2>
     {% include "partials/field.html" with field=form.table_id %}
     {% include "partials/field.html" with field=form.game_date %}
