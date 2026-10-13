@@ -71,6 +71,15 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
 
+## Session setup (polish of 2026-10-13)
+
+- New session: "Start from a preset" is a group. `static/js/setup.js` fills Poker variant, Unit and the stakes from the option's `data-fill` (built in `games.views.session_new`) and sets `preset_id`; Location, Date and Table are kept. Without the script, "Use" reloads the page with `?preset=`.
+- Rake: only the chosen rule's amount field is drawn, by CSS on the checked choice (`.rake-settings:has(...)` in `app.css`). Both fields are always posted; `RakeFields.clean` reads the chosen one.
+- Draft set: the Stakes and rake step's button reads "Change" (its accessible name still says "Choose rake before buy-ins" while rake can be chosen). Its line is three `.fact` spans. A host's empty Players section has no sentence.
+- Add players: the roster form comes first. The new-player form is still the page's first `form.form-section`, which the browser checks rely on.
+- "More host controls" flies out (`fly()` in `static/js/dock.js`): see DESIGN.md. It is skipped under reduced motion and while the dock slides.
+- Browser check: `session_setup.mjs` with `seed_setup.py` (see `web/tests/browser/README.md`).
+
 ## Rake
 
 New session offers Off (default), Flat amount, and Percentage of buy-in before the first buy-ins. On an empty draft or open set, Choose rake before buy-ins opens the same settings. Only the chosen value applies; unused value fields do not block a save. Percentage accepts 0.01%–99.99%, with at most two decimals. It rounds down separately per buy-in to a centavo or whole chip. Flat rake uses the set's unit. The amount entered for a buy-in is gross: ₱1,000 at 5% gives ₱950 in play and ₱50 collected rake. The fee must leave a positive playable amount.

@@ -4,6 +4,13 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Session setup polish ([plan](doc/plan/1791872139_session_setup_polish.md), [study](doc/study/1791872138_session_setup_polish.md)): approved and built on `feat/session-setup-polish` on 2026-10-13, not released. New session, Set settings, the draft set and Add players follow one rhythm; a preset fills the stakes and keeps what was typed; only the chosen rake rule's amount shows; "More host controls" opens with movement. No migration. 1,101 tests pass on SQLite and PostgreSQL 17; `session_setup.mjs` passes at 390 and 1280px and under reduced motion.
+
+- [x] Approve the plan, answer its six decisions, and confirm the scope. Approved 2026-10-13, all six, scope as studied; the flyout was added.
+- [ ] Say when to merge and release it.
+- [ ] After release, on your phone: make a new session, change the preset after typing a location, choose each rake rule, and open "More host controls" on the draft set. Say whether the flyout feels right and whether the roster-first Add players suits your games.
+- [ ] Say whether "Cancel this set" and "Or add one player" inside it should move too.
+
 A picture for the link ([plan](doc/plan/1791861228_link_preview.md), [study](doc/study/1791861227_link_preview.md)): approved and built on `feat/link-preview` on 2026-10-13. Released 2026-10-13 as `d3b8d1d` (previous production commit `70c939a`); the live site serves the card's tags and the picture. A PokerNights link pasted into a chat shows a 1200 × 630 picture, the name and one line; invite links show the same card. No migration and no screen changes. 1,098 tests pass on SQLite and PostgreSQL 17. No chat app has been tried: that needs the live site.
 
 - [x] Approve the plan, and answer its two decisions. Approved 2026-10-13: the words stand, invite links get the same card.

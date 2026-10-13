@@ -1001,6 +1001,21 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 
 **Measured.** `carried_debts.mjs`, 32 checks at 320, 390 and 1280px, with a host and a player side by side.
 
+### 2026-10-13 addendum — Session setup polish
+
+[Plan](doc/plan/1791872139_session_setup_polish.md). Mode: Operate. Refinement of New session, Set settings, the draft set and Add players. No new colour, font, token or raster asset.
+
+- **One title, one rhythm.** Every group on the stakes forms, the preset row and the two parts of Add players use `.group-title` (17px / 650). A group starts 24px under the last control of the one before it, under a hairline, with 16px to its title. The earlier 600 weight on the Rake legend is gone.
+- **Preset row.** "Start from a preset" is a group. With `setup.js` a choice fills Poker variant, Unit and the five stakes at once and leaves every other field as typed; "Use" is hidden. Without the script "Use" reloads the page with the preset, as before.
+- **Rake amounts.** Only the chosen rule's amount field is drawn; Off draws none. This is CSS (`:has()` on the checked choice), so it needs no script; both fields stay in the form and the server reads the chosen one. This replaces "both value fields stay visible" in the rake setup controls addendum. A browser without `:has()` draws both, as before.
+- **Choices.** `.check` text is weight 500, the body weight, everywhere.
+- **Form pages end 48px under their last button.**
+- **Preparing steps.** The Stakes and rake line is three facts and breaks only between them (a fact longer than the line still wraps). Step buttons are at least 84px wide, so the text of every step ends at one place. A done step's button says "Change".
+- **Empty draft.** A host sees "Players" and the seat count; the sentence "No players yet" is left to players, because step 1 already says "Nobody yet".
+- **Dock.** The arrow is centred on the "Host controls" line. "More host controls" is 14px from 900px (13px in the phone dock). "Full set log" is left-aligned from 900px.
+- **Add players.** The roster comes first with the page's one main button; "Add a new player" follows under a hairline with an ordinary button. A roster row is one 48px line.
+- **More host controls flyout.** A tap opens the disclosure with movement (`dock.js`). On a phone the dock grows upward: it is set down by the height it gained and rises on the sheet spring, so the controls come up from the screen's edge, and each control fades in 35ms after the one above it. From 900px the controls rise 8px as they fade in. Closing takes 180ms on an ease-in and removes the controls when they are out of sight. A second tap during the movement turns it round. Reduced motion, or a dock that is itself sliding, opens and closes at once. A live update never replays it.
+
 ## Do's and Don'ts
 
 ### Do:
