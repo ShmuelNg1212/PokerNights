@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.templatetags.static import static
 
 WORKER = """// PokerNights service worker: an offline page for failed navigations. Nothing else is cached.
 const CACHE = "pokernights-offline-1";
@@ -58,6 +59,8 @@ def offline(request):
 
 
 def flags(request):
-    """Template context: the service worker, the in-app numpad, one-trip answers to in-place actions, and password reset links."""
+    """Template context: the service worker, the in-app numpad, one-trip answers to in-place actions, password reset links, and the link preview picture."""
     return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD, "answer_in_place": settings.ANSWER_IN_PLACE, "install_prompt": settings.INSTALL_PROMPT,
-            "reset_links": settings.RESET_LINKS}
+            "reset_links": settings.RESET_LINKS,
+            # A chat app fetching a link needs the picture's full address, host included.
+            "link_preview_image": request.build_absolute_uri(static("branding/link-preview.png"))}

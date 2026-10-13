@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- PokerNights showcase thumbnail, 1600 × 900. Render with headless Chrome at that viewport.
+     live-set.png is the live set screen at 390 × 844 from a temporary database of synthetic players. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PokerNights thumbnail</title>
+<style>
+  @font-face { font-family: Archivo; src: url("../../static/fonts/archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+  :root {
+    --ground: oklch(0.17 0.012 60);
+    --rail-2: oklch(0.265 0.016 60);
+    --line: oklch(0.55 0.018 60);
+    --bone: oklch(0.93 0.025 85);
+    --bone-dim: oklch(0.74 0.028 80);
+    --felt: oklch(0.34 0.095 265);
+    --brass: oklch(0.82 0.13 85);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    position: relative;
+    font-family: Archivo, system-ui, sans-serif;
+    color: var(--bone);
+    background:
+      radial-gradient(760px 620px at 1210px 520px, oklch(0.34 0.095 265 / .8), transparent 70%),
+      var(--ground);
+  }
+  .logo { position: absolute; left: 96px; top: 84px; height: 60px; }
+  .copy { position: absolute; left: 96px; bottom: 96px; width: 800px; }
+  .copy::before { content: ""; display: block; width: 72px; height: 6px; border-radius: 999px; background: var(--brass); margin-bottom: 36px; }
+  h1 { white-space: nowrap; font-size: 104px; font-weight: 800; font-stretch: 88%; line-height: 1.02; letter-spacing: -.02em; }
+  p { margin-top: 32px; max-width: 640px; font-size: 32px; font-weight: 500; line-height: 1.4; color: var(--bone-dim); }
+  .phone {
+    position: absolute; left: 1000px; top: 84px; width: 452px;
+    padding: 11px; border-radius: 62px;
+    background: var(--rail-2);
+    box-shadow: 0 0 0 1.5px var(--line), 0 50px 110px rgb(0 0 0 / .6);
+    transform: rotate(5deg); transform-origin: 50% 40%;
+  }
+  .phone img { display: block; width: 100%; border-radius: 52px; }
+</style>
+</head>
+<body>
+  <img class="logo" src="../../static/branding/logo-horizontal.svg" alt="PokerNights">
+  <div class="copy">
+    <h1>Who pays whom,<br>worked out.</h1>
+    <p>Records buy-ins and cash-outs for a home poker game. It does not move money.</p>
+  </div>
+  <div class="phone"><img src="live-set.png" alt=""></div>
+</body>
+</html>

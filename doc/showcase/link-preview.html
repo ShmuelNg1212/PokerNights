@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- PokerNights link preview, 1200 × 630. Render with headless Chrome at that viewport to static/branding/link-preview.png.
+     The logo and headline stay inside the middle 630 px square, because some chat apps show only that square.
+     live-set.png is the live set screen at 390 × 844 from a temporary database of synthetic players. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PokerNights link preview</title>
+<style>
+  @font-face { font-family: Archivo; src: url("../../static/fonts/archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+  :root {
+    --ground: oklch(0.17 0.012 60);
+    --rail-2: oklch(0.265 0.016 60);
+    --line: oklch(0.55 0.018 60);
+    --bone: oklch(0.93 0.025 85);
+    --felt: oklch(0.34 0.095 265);
+    --brass: oklch(0.82 0.13 85);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    position: relative;
+    font-family: Archivo, system-ui, sans-serif;
+    color: var(--bone);
+    background:
+      radial-gradient(560px 460px at 1000px 380px, oklch(0.34 0.095 265 / .8), transparent 70%),
+      var(--ground);
+  }
+  .mark { position: absolute; left: -250px; top: 35px; width: 560px; opacity: .13; }
+  .logo { position: absolute; left: 300px; top: 150px; height: 56px; }
+  .copy { position: absolute; left: 300px; top: 290px; }
+  .copy::before { content: ""; display: block; width: 60px; height: 5px; border-radius: 999px; background: var(--brass); margin-bottom: 28px; }
+  h1 { white-space: nowrap; font-size: 70px; font-weight: 800; font-stretch: 88%; line-height: 1.04; letter-spacing: -.02em; }
+  .phone {
+    position: absolute; left: 842px; top: 64px; width: 310px;
+    padding: 8px; border-radius: 46px;
+    background: var(--rail-2);
+    box-shadow: 0 0 0 1.5px var(--line), 0 36px 80px rgb(0 0 0 / .6);
+    transform: rotate(5deg); transform-origin: 50% 40%;
+  }
+  .phone img { display: block; width: 100%; border-radius: 38px; }
+</style>
+</head>
+<body>
+  <img class="mark" src="../../static/branding/logo-mark.svg" alt="">
+  <img class="logo" src="../../static/branding/logo-horizontal.svg" alt="PokerNights">
+  <div class="copy"><h1>Who pays whom,<br>worked out.</h1></div>
+  <div class="phone"><img src="live-set.png" alt=""></div>
+</body>
+</html>
