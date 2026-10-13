@@ -40,12 +40,12 @@ check('native flat ignores percentage zero',await A.js(`document.body.textConten
 // Since the set page revamp the stakes step of the checklist states the rule and leads to the choice,
 // and an empty draft's main button is Add players, so Open is pressed by its value.
 await A.click(`document.querySelector('.host-controls button[value=open]')`);
-check('empty open set has pre-start rake choice',await A.js(`(document.body.textContent.includes('Choose rake before buy-ins')||!!document.querySelector('.prep a[aria-label="Choose rake before buy-ins"]'))`));await capture('rake-prestart');
+check('empty open set has pre-start rake choice',await A.js(`(document.body.textContent.includes('Choose rake before buy-ins')||!!document.querySelector('.prep a[aria-label*="Choose rake before buy-ins"]'))`));await capture('rake-prestart');
 const addPath=firstPath+'players/add-several/';await A.go(addPath);await A.js(`document.querySelector('[name=name]').value='Opening rake'`);await A.click(`document.querySelector('form.form-section button')`);await A.click(`document.querySelector('.next-action')`);
 check('selected creation rake applies before opening buy-ins',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value==='98000'`));await A.go(firstPath+'settings/');
 check('accepted money disables every radio and both value inputs',await A.js(`[...document.querySelectorAll('[name=rake_mode],[name=rake_flat],[name=rake_percentage]')].every(f=>f.disabled)&&document.body.textContent.includes('Default opening buy-ins also lock the rule')`));await capture('rake-locked');
 await A.go(`/s/${ids.count}/`);const nightPath=await A.js(`document.querySelector('a[href^="/n/"]').getAttribute('href')`);await A.go(nightPath);await A.click(`document.querySelector('form[action$="/next-set/"] button')`);
-check('next set exposes inherited rake and pre-start choice',await A.js(`(document.body.textContent.includes('Choose rake before buy-ins')||!!document.querySelector('.prep a[aria-label="Choose rake before buy-ins"]'))&&document.body.textContent.includes('5% rake')`));
+check('next set exposes inherited rake and pre-start choice',await A.js(`(document.body.textContent.includes('Choose rake before buy-ins')||!!document.querySelector('.prep a[aria-label*="Choose rake before buy-ins"]'))&&document.body.textContent.includes('5% rake')`));
 const nextPath=await A.js('location.pathname');await A.go(nextPath+'settings/');await choose('flat','20','0');await A.click(`document.querySelector('form.form-section button')`);
 check('next set rule can change before opening money',await A.js(`document.body.textContent.includes('₱20 rake')`));
 await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);

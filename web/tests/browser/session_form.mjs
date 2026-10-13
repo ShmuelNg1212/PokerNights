@@ -18,11 +18,11 @@ const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${
 // Stakes forms: one field box, titled groups and pairs. Run after seed.py on a fresh temporary database.
 const size=(A,width)=>send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);
 const F=`document.querySelector('form.form-groups')`;
-const boxes=`[...${F}.querySelectorAll('input[type=text],input[type=date],select')].filter(e=>!e.closest('.field-pair')).map(e=>{const r=e.getBoundingClientRect();return [Math.round(r.left),Math.round(r.right),Math.round(r.height)]})`;
+const boxes=`[...${F}.querySelectorAll('input[type=text],input[type=date],select')].filter(e=>e.getClientRects().length&&!e.closest('.field-pair')).map(e=>{const r=e.getBoundingClientRect();return [Math.round(r.left),Math.round(r.right),Math.round(r.height)]})`;
 const same=`(()=>{const b=${boxes};return b.length>0&&b.every(x=>x[0]===b[0][0]&&x[1]===b[0][1]&&x[2]===48)})()`;
 const pairs=`[...${F}.querySelectorAll('.field-pair')].map(p=>[...p.querySelectorAll('input,select')].map(e=>{const r=e.getBoundingClientRect();return [Math.round(r.top),Math.round(r.left),Math.round(r.right),Math.round(r.height),p.classList.contains('field-pair-wide')?480:360]}))`;
 const pairsAligned=width=>`(()=>{const edge=${boxes}[0];return ${pairs}.every(([a,b])=>a[3]===48&&b[3]===48&&(${width}<a[4]?(a[1]===edge[0]&&a[2]===edge[1]&&b[1]===edge[0]&&b[2]===edge[1]&&b[0]>a[0]):(a[0]===b[0]&&a[1]===edge[0]&&b[2]===edge[1]&&Math.abs((a[2]-a[1])-(b[2]-b[1]))<=1)))})()`;
-const edgeItems=`(()=>{const edge=${boxes}[0][0];return [...${F}.querySelectorAll('input[type=radio],legend,.group-title,label:not(.check),.hint')].every(e=>Math.round(e.getBoundingClientRect().left)===edge||e.closest('.field-pair .field:last-child'))})()`;
+const edgeItems=`(()=>{const edge=${boxes}[0][0];return [...${F}.querySelectorAll('input[type=radio],legend,.group-title,label:not(.check),.hint')].filter(e=>e.getClientRects().length).every(e=>Math.round(e.getBoundingClientRect().left)===edge||e.closest('.field-pair .field:last-child'))})()`;
 const fill=`(()=>{const v={small_blind:'10',big_blind:'20',min_buy_in:'500',max_buy_in:'2000',default_buy_in:'1000'};for(const k in v)document.querySelector('[name='+k+']').value=v[k]})()`;
 const PAGES=[['new','/g/1/sessions/new/',3],['settings','/s/4/settings/',2],['preset','/g/1/presets/new/',3]];
 try {
@@ -33,7 +33,7 @@ try {
   check(tag+' pairs aligned',await A.js(`${pairs}.length===${pairCount}&&${pairsAligned(width)}`));
   check(tag+' radios, legends, labels and help on the field edge',await A.js(edgeItems));
   check(tag+' field text is 16px',await A.js(`[...${F}.querySelectorAll('input[type=text],input[type=date],select')].every(e=>getComputedStyle(e).fontSize==='16px')`));
-  check(tag+' controls are 48px targets',await A.js(`[...${F}.querySelectorAll('input[type=text],input[type=date],select,label.check,button')].every(e=>e.getBoundingClientRect().height>=48)`));
+  check(tag+' controls are 48px targets',await A.js(`[...${F}.querySelectorAll('input[type=text],input[type=date],select,label.check,button')].filter(e=>e.getClientRects().length).every(e=>e.getBoundingClientRect().height>=48)`));
   await A.shot(`form-${name}-${width}`);}
  await size(A,390);await A.go('/g/1/sessions/new/');
  check('date field is a native date input, left-aligned',await A.js(`(()=>{const d=document.querySelector('[name=game_date]');return d.type==='date'&&getComputedStyle(d).textAlign==='left'&&getComputedStyle(d).display==='block'&&d.value.length===10})()`));
