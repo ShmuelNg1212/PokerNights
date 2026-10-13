@@ -126,3 +126,7 @@ After a session is closed, any member can send it to the group chat: one picture
 ## 2026-10-11 addendum — Home screen
 
 After every sign-up or login in a phone's browser, PokerNights suggests adding itself to the home screen and shows how on that phone; on Android one tap installs it. It claims only what is true: full screen, one tap away. On an iPhone the installed app has its own login, and links tapped in a chat open in the browser, so the installed app has Join with a link to paste one. [Plan](doc/plan/1791703670_install_prompt.md).
+
+## 2026-10-13 addendum — Link preview
+
+A PokerNights link pasted into a chat shows one card: a picture, the name and the sentence "Records buy-ins and cash-outs for a home poker game and works out who pays whom. It does not move money." Every link shows the same card, invite links included; it names no group and no person. [Plan](doc/plan/1791861228_link_preview.md).
