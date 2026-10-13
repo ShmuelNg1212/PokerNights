@@ -131,6 +131,7 @@
   function halt() {
     var motion = sliding; sliding = null;
     if (motion) motion.cancel();
+    land();
     followers.splice(0).forEach(function (motion) { motion.cancel(); });
     root.classList.remove("dock-closing");
   }
@@ -168,6 +169,54 @@
     // "open" is remembered too: while a set is in play the dock starts folded unless the host opened it.
     try { localStorage.setItem(KEY, collapsed ? "collapsed" : "open"); } catch (_) {}
     sync();
+  });
+  // "More host controls" flies out. On a phone the dock grows upward, so the dock is set down
+  // by the height it gained and rises into place: the new controls come up from the screen's
+  // edge. From 900px the panel is in the page and the controls rise a few pixels as they
+  // appear. Closing runs the other way and removes them when they are out of sight. A live
+  // update reopens the disclosure by its "open" attribute, so it is not animated again.
+  var flying = null;
+  function land() {
+    var flight = flying; flying = null;
+    if (!flight) return;
+    flight.motions.forEach(function (motion) { motion.cancel(); });
+    if (flight.closing) flight.more.open = false;
+  }
+  function fly(more, dock, opening) {
+    var fixed = getComputedStyle(dock).position === "fixed", items = [], motions = [], rise = 0;
+    if (opening) more.open = true;
+    Array.prototype.forEach.call(more.children, function (el) { if (el.tagName !== "SUMMARY") items.push(el); });
+    if (fixed) {
+      // The height the open controls add, read without a frame in between.
+      var tall = dock.offsetHeight; more.open = false;
+      rise = tall - dock.offsetHeight; more.open = true;
+    }
+    var spring = opening && window.pokerMotion && window.pokerMotion.timing("sheet");
+    var timing = opening ? (spring || { duration: 320, easing: "cubic-bezier(0.16,1,0.3,1)" }) : { duration: 180, easing: "cubic-bezier(0.4,0,1,1)" };
+    var hidden = "translateY(" + (fixed ? rise : 8) + "px)";
+    try {
+      if (fixed && rise > 0) motions.push(dock.animate([{ transform: opening ? hidden : "translateY(0px)" }, { transform: opening ? "translateY(0px)" : hidden }], timing));
+      items.forEach(function (el, at) {
+        var frames = fixed ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: hidden }, { opacity: 1, transform: "translateY(0px)" }];
+        if (!opening) frames.reverse();
+        // Each control follows the one above it; they leave together.
+        motions.push(el.animate(frames, { duration: opening ? 220 : 140, delay: opening ? 40 + at * 35 : 0, easing: opening ? "cubic-bezier(0.16,1,0.3,1)" : "ease-in", fill: "both" }));
+      });
+    } catch (_) {}
+    if (!motions.length) { more.open = opening; return; }
+    var flight = flying = { more: more, closing: !opening, motions: motions };
+    var last = opening ? motions[motions.length - 1] : motions[0];
+    last.onfinish = function () { if (flying === flight) land(); };
+  }
+  document.addEventListener("click", function (event) {
+    var summary = region && event.target.closest && event.target.closest(".host-more > summary");
+    if (!summary || !region.contains(summary)) return;
+    var more = summary.parentElement, dock = more.closest(".host-controls");
+    if (!dock || !dock.animate || sliding || matchMedia("(prefers-reduced-motion: reduce)").matches) return; // the disclosure opens by itself
+    event.preventDefault();
+    var opening = flying ? flying.closing : !more.open; // a tap during the flight turns it round
+    land();
+    fly(more, dock, opening);
   });
   function keyboard0() { keyboard(); } // an event listener passes its event; it is not a reveal
   document.addEventListener("live:updated", function () { sync(); keyboard(); });
