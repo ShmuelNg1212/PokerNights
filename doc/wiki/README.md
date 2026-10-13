@@ -110,3 +110,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Unpaid transfers carried into a later session | [study](../study/1791728776_carried_debts.md) | [plan](../plan/1791728777_carried_debts.md) | Done, released 2026-10-11 as `c91dc68`; accepted 2026-10-12 |
 | The look of the table in the seat draw | [study](../study/1791735775_draw_table_look.md) | [plan](../plan/1791735776_draw_table_look.md) | Done, released 2026-10-12 as `0c168bc`; accepted 2026-10-12 |
 | Switch cleanup: remove the earlier copies of revamped screens | [study](../study/1791788387_switch_cleanup.md) | [plan](../plan/1791788388_switch_cleanup.md) | Done, released 2026-10-12 as `70c939a` |
+| A picture for the link: the card chat apps show | [study](../study/1791861227_link_preview.md) | [plan](../plan/1791861228_link_preview.md) | Built 2026-10-13 on `feat/link-preview`, not released |

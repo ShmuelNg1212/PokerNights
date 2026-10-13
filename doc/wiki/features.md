@@ -256,6 +256,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
   - The month is the session's date. Players who left the group keep their history. There is no minimum number of sessions.
 - Words: a **Session** is the whole gathering and its settle-up; a **Set** is one round of buy-ins, counting and results. Screens say Set settings, Set log, Join this set and Poker variant. "Pesos game" and "chips game" still name the unit.
 - Branding: `static/branding/` has `logo-mark.svg` (a notched chip with a crescent), `logo-horizontal.svg`, `app-icon.svg` and `logo-mono.svg` for cream backgrounds. The header shows the mark beside the name; the mark is the favicon.
+- Link preview: every page's head carries one card for chat apps (`templates/base.html`): the title PokerNights, the manifest's sentence, and `static/branding/link-preview.png` (1200 × 630). `config.pwa.flags` builds the picture's full address from the request. There is no `og:url`, because invite, reset and claim addresses contain a token; the card names no group. A signed-out fetch of an invite link is redirected to sign-up, which carries the same card. The picture's source is `doc/showcase/link-preview.html`; `doc/showcase/thumbnail.png` is a 1600 × 900 cover for use outside the app.
 
 ## Motion (stage 1 of the motion overhaul)
 
