@@ -1,6 +1,6 @@
 # Session setup polish: plan
 
-Status: approved 2026-10-13 ("approved, the scope is fine"); all six decisions as recommended, and the scope as studied. The human added a request in the same message: "add flyout animations whenever the host clicks more host controls as well"; it is stage 3 below. Built, not released. Date: 2026-10-13, Asia/Manila. Study: [Session setup polish](../study/1791872138_session_setup_polish.md).
+Status: approved 2026-10-13 ("approved, the scope is fine"); all six decisions as recommended, and the scope as studied. The human added a request in the same message: "add flyout animations whenever the host clicks more host controls as well"; it is stage 3 below. Built and released. Date: 2026-10-13, Asia/Manila. Study: [Session setup polish](../study/1791872138_session_setup_polish.md).
 
 ## Outcome
 
@@ -115,3 +115,5 @@ Not verified: a real phone, how the flyout feels at a real frame rate, a screen 
 A mistake during the checks: one inspection run started a local server without its temporary database setting, so it served the development database (`db.sqlite3`) for about a minute. The script logged in there as `hana` and stopped at its first check. The only writes were that login (a session row and `last_login`); no session, set or money record was created.
 
 Documentation synced: DESIGN.md, PRODUCT.md, wiki (features, journal), the forms surface brief, the browser checks' README, TODO.
+
+2026-10-13, release: merged as `899a93e` and pushed on the human's word "release" (previous production commit `d3b8d1d`). About four minutes after the push, one fetch of `/static/js/setup.js` returned 200 and one fetch of the log-in page showed it loading `setup.js` and the stylesheet under a new release tag. Not verified: the screens themselves on the live site, which need a login, and a real phone.
