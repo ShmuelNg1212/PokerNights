@@ -8,7 +8,8 @@ A splash screen for the installed app ([plan](doc/plan/1791953083_launch_splash.
 
 - [x] Approve the plan and answer its three decisions. Approved 2026-10-14: mark and name, the clear Android icon, no movement this cycle.
 - [x] Say when to merge and release it. Released 2026-10-14.
-- [ ] After release, on your iPhone: remove PokerNights from the home screen, add it again from Safari, log in, close it fully, and open it. Say whether the launch looks right and the change to the first screen feels smooth. Also open it once logged out: say whether the chip blinking out and dropping back in on the front door bothers you.
+- [x] After release, on your iPhone: re-add the app and open it. Accepted 2026-10-14: "ok the splash screen works".
+- [ ] Optional: open it once logged out and say whether the chip blinking out and dropping back in on the front door bothers you. If it does, that is the movement follow-up.
 
 Several new names at once on Add players ([plan](doc/plan/1791948616_new_names_at_once.md), [study](doc/study/1791948615_new_names_at_once.md)): approved and built on `feat/new-names-at-once` on 2026-10-14. Released 2026-10-14 as `f51f4ac` (previous production commit `899a93e`); the live site serves the new picker script. Tick regulars and type newcomers, one per line, and add everyone with one button; a name on the roster is offered as a tick; the arrivals are marked on the set page. No migration. 1,114 tests pass on SQLite and PostgreSQL 17; `new_names.mjs` passes at 390 and 1280px and under reduced motion.
 

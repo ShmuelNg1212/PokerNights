@@ -70,3 +70,7 @@ Built and checked locally, then held for the human's word, as usual. After a rel
 ### Ruling made while building
 
 - **The front door's arrival after the splash.** On a signed-out cold launch the splash shows the chip, then the front door paints with its chip hidden and drops it in (`door-drop`, 700 ms), so the chip blinks out and back. Signed in, the launch goes to Your groups, which has no arrival, and the change is a cut. Left as it is: the plan adds no movement. If the blink shows on the phone, the movement follow-up (decision 3) is where it belongs: on a launch from the home screen, the hero should start visible and still.
+
+## After the release (2026-10-14)
+
+Accepted on the human's iPhone: "ok the splash screen works". The logged-out launch (the front door's chip blinking out and back) has not been reported on; it stays an optional check in TODO.md.
