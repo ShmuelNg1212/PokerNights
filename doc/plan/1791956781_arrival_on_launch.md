@@ -1,6 +1,6 @@
 # The arrival on every app open: plan
 
-Status: approved 2026-10-14 ("approved", with the recommended answers: each time the app is started; the installed app and a new browser tab alike). Built on `feat/arrival-on-launch`, not released. Date: 2026-10-14, Asia/Manila. Study: [The arrival on every app open](../study/1791956780_arrival_on_launch.md).
+Status: approved 2026-10-14 ("approved", with the recommended answers: each time the app is started; the installed app and a new browser tab alike). Built on `feat/arrival-on-launch`; released 2026-10-14 as `e254122` on the human's word "release" (previous production commit `1237df4`). Four minutes after the push the live `app.css` and `door.js` carried the launch mark. Date: 2026-10-14, Asia/Manila. Study: [The arrival on every app open](../study/1791956780_arrival_on_launch.md).
 
 ## Outcome
 
@@ -47,7 +47,7 @@ Built and checked locally, then held for the human's word. After a release, one 
 
 - [x] Approve the plan and answer the two decisions. Approved 2026-10-14.
 - [x] Build, test, and run the browser check.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-14.
 - [ ] On your iPhone: close the app fully and open it, then move around and switch away and back. Say whether the arrival feels right each time you open it.
 
 ## Verification record (2026-10-14)

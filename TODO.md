@@ -4,10 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-The arrival on every app open ([plan](doc/plan/1791956781_arrival_on_launch.md), [study](doc/study/1791956780_arrival_on_launch.md)): approved and built on `feat/arrival-on-launch` on 2026-10-14. Not released. Each time the app is started (or a new tab is opened), signed in, Your groups arrives as it does after a log-in; nothing plays for the rest of that visit or on a return from the background. No migration. 1,123 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 54 of 54, `door.mjs` 134 of 134. `LAUNCH_ARRIVAL=False` turns it off.
+The arrival on every app open ([plan](doc/plan/1791956781_arrival_on_launch.md), [study](doc/study/1791956780_arrival_on_launch.md)): approved and built on `feat/arrival-on-launch` on 2026-10-14. Released 2026-10-14 as `e254122` (previous production commit `1237df4`); four minutes after the push the live stylesheet and `door.js` carried the launch mark. Each time the app is started (or a new tab is opened), signed in, Your groups arrives as it does after a log-in; nothing plays for the rest of that visit or on a return from the background. No migration. 1,123 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 54 of 54, `door.mjs` 134 of 134. `LAUNCH_ARRIVAL=False` turns it off.
 
 - [x] Approve the plan and answer its two decisions. Approved 2026-10-14: each start of the app, installed app and browser tab alike.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-14.
 - [ ] After release, on your iPhone: close the app fully (swipe it away) and open it; Your groups should arrive after the splash. Open a group and come back, and switch to another app and back: nothing should play. Say whether it feels right the fifth time as well as the first.
 
 A splash screen for the installed app ([plan](doc/plan/1791953083_launch_splash.md), [study](doc/study/1791953082_launch_splash.md)): approved and built on `feat/launch-splash` on 2026-10-14. Released 2026-10-14 as `c222173` (previous production commit `6c39be3`); the first push, `ba7e297`, failed the Vercel build ([footgun](doc/wiki/footguns/vercel_build_lacks_ignored_files.md)) and production stayed on the previous build. Four minutes after the fix the live site served a launch image and the new manifest. Opening the installed app shows the front door's chip and name on the dark ground until the first screen; Android's launch loses the lighter square behind the chip. No migration. 1,118 tests pass on SQLite and PostgreSQL 17.
