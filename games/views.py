@@ -9,7 +9,9 @@ import uuid
 from django.contrib import messages
 
 from groups.errors import RuleError
-from groups.forms import NameForm
+from django.conf import settings
+
+from groups.forms import NameForm, NamesForm
 from groups.http import attempt, request_id_from, attempt_bound, group_settings, keep_form
 from groups import services as groups
 from groups.models import Member
@@ -118,40 +120,44 @@ def participant_left(request, session_id, participant_id):
 
 
 def participants_add(request, session_id):
-    """The "Add players" picker: a host ticks several members and confirms once."""
+    """The "Add players" page: a host ticks roster players, types new names one per line, and adds them all at once."""
     session, actor = session_for(request.user, session_id)
     require_host(actor)
     selected, error = set(), ""
-    creating = request.method == "POST" and request.POST.get("action") == "new"
-    new_form = NameForm(request.POST if creating else None, auto_id="new_player_%s")
-    new_form.fields["name"].label = "Player name"
-    if request.method == "POST":
+    posted = request.method == "POST"
+    # A page drawn before several names existed sends one "name".
+    data = {"names": request.POST.get("names", request.POST.get("name", ""))} if posted else None
+    names_form = NamesForm(data, auto_id="new_names_%s")
+    field = names_form.fields["names"]
+    field.label, field.required = "New names", False
+    field.help_text = "One name per line. Each joins the roster without a login and takes a seat now." if settings.ROSTER_TOOLS else "One name. They join the roster without a login and take a seat now."
+    field.widget.attrs.update({"rows": 2, "data-names": ""})
+    if posted:
         ids = request.POST.getlist("member_id")
+        names_form.is_valid()
+        lines = names_form.cleaned_data.get("names", "").splitlines()
         try:
-            if creating:
-                if not new_form.is_valid():
-                    raise RuleError("Check the player name. Nothing was added.")
-                added = services.add_new_player(session.pk, actor, new_form.cleaned_data["name"], request_id_from(request))
-            else:
-                added = services.add_participants(session.pk, actor, ids, request_id_from(request))
+            added = services.add_players(session.pk, actor, ids, lines, request_id_from(request))
         except RuleError as refused:
             error = str(refused)
-            if creating and not new_form.errors:
-                new_form.add_error("name", error)
+            if isinstance(refused, services.NamesRefused):
+                names_form.add_error("names", "Check the names above. Nothing was added.")
             selected = {int(value) for value in ids if value.isdecimal()}
         else:
             names = ", ".join(p.member.display_name for p in added)
             count = len(added)
             messages.success(request, f"Added {count} player{'' if count == 1 else 's'}: {names}.")
+            # The set page marks these rows once, on its next view.
+            request.session["players_arrived"] = {str(session.pk): [p.pk for p in added]}
             return redirect("session", session_id=session.pk)
         session.refresh_from_db()
     can_add = session.state in services.HOST_ADD_STATES
-    if not can_add and not creating:
+    if not can_add and not posted:
         messages.error(request, "Players cannot be added at this stage of the set.")
         return redirect("session", session_id=session.pk)
 
     status = dict(Participant.objects.filter(session=session).values_list("member_id", "status"))
-    rows = []
+    rows, seated_names, roster = [], [], {}
     for member in Member.objects.filter(group_id=session.group_id, status=Member.Status.ACTIVE):
         at_table = status.get(member.pk) == Participant.Status.JOINED
         rows.append({
@@ -160,6 +166,11 @@ def participants_add(request, session_id):
             "left_earlier": status.get(member.pk) in (Participant.Status.LEFT, Participant.Status.WITHDRAWN),
             "checked": member.pk in selected and not at_table,
         })
+        if at_table:
+            seated_names.append(member.display_name.lower())
+        else:
+            roster[member.display_name.lower()] = member.pk
+    removed = Member.objects.filter(group_id=session.group_id, status=Member.Status.REMOVED).values_list("display_name", flat=True) if settings.ROSTER_TOOLS else []
     seated = sum(1 for row in rows if row["at_table"])
     context = {
         "session": session,
@@ -167,11 +178,12 @@ def participants_add(request, session_id):
         "error": error,
         "seats_free": session.seat_count - seated,
         "selected_count": sum(1 for row in rows if row["checked"]),
-        "new_form": new_form,
-        "new_request_id": uuid.uuid4(),
+        "names_form": names_form,
         "can_add": can_add,
         "eligible_count": sum(1 for row in rows if not row["at_table"]),
         "request_id": uuid.uuid4(),
+        # What the page's preview checks a typed name against. The server checks again.
+        "known": json.dumps({"roster": roster, "seated": seated_names, "removed": sorted({name.lower() for name in removed}), "several": settings.ROSTER_TOOLS}),
     }
     return render(request, "games/add_players.html", context)
 

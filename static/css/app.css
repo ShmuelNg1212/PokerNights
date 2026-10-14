@@ -552,11 +552,21 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .picker-fields { border:0; margin:0; padding:0; min-width:0; }
 /* Add players: two titled parts in the form pages' rhythm; a roster row is one 48px line. */
 .pick-section { margin-top:var(--s-5); }
-.form-page .pick-section > .form-section { margin:0; padding:0; }
+.form-page .pick-form { margin:var(--s-4) 0 0; padding:0; }
+.pick-form > .picker-fields > .pick-section:first-child { margin-top:0; }
 .pick-section .hint { margin:0 0 var(--s-3); }
 .pick-section .picker-fields .list > li { padding:0; }
 .pick-section .picker-fields legend { padding-top:var(--s-2); }
-.pick-section .sticky-actions { margin-top:var(--s-3); }
+.pick-form .sticky-actions { margin-top:var(--s-4); }
+/* New players: the box grows with what is typed, and each name says whether it can join. */
+.pick-section textarea[data-names] { min-height:calc(2lh + 26px); field-sizing:content; max-height:50dvh; resize:vertical; }
+.name-preview { list-style:none; margin:var(--s-2) 0 0; padding:0; }
+.name-preview li { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-1) var(--s-2); min-height:40px; padding:var(--s-1) 0; border-top:1px solid var(--rule); }
+.name-preview li:first-child { border-top:0; }
+.name-preview .name { font-weight:600; overflow-wrap:anywhere; }
+.name-preview .state { color:var(--muted); font-size:.875rem; }
+.name-preview li[data-problem] .state { color:var(--down); }
+.name-preview .link-button { min-height:var(--tap); margin-left:auto; }
 .section-rail { margin:12px 0; padding:12px 0; border-bottom:1px solid var(--rule); }
 /* Group tabs: Sessions is the default view; settings hold the roster, invites, tables, presets and rake. */
 .tabs { display:flex; gap:var(--s-1); padding:var(--s-1); margin:0 0 var(--s-5); background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-btn); }

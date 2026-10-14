@@ -44,10 +44,41 @@
     });
   });
 
+  // Players just added on Add players arrive once: they rise into place 40ms apart, as rows
+  // that arrive by a live update do, and carry the brass mark for three seconds. Under reduced
+  // motion they carry the mark only. The first keyframe is written before Motion starts
+  // (doc/wiki/footguns/motion_starts_a_frame_late.md).
+  var HOLD_MS = 3000, FADE_MS = 400;
+  function arrive(timers) {
+    var rows = Array.prototype.slice.call(region.querySelectorAll("li[data-arrived]"));
+    if (!rows.length) return;
+    rows.forEach(function (row, at) {
+      row.removeAttribute("data-arrived");
+      row.classList.add("just-changed");
+      if (moving()) {
+        row.style.opacity = "0"; row.style.transform = "translateY(12px)";
+        go(row, { opacity: [0, 1], transform: ["translateY(12px)", REST] }, "shift", { delay: 0.04 * Math.min(at, 8) });
+      }
+    });
+    timers.push(setTimeout(function () { rows.forEach(function (row) { row.classList.add("change-fading"); }); }, HOLD_MS - FADE_MS));
+    timers.push(setTimeout(function () { rows.forEach(function (row) { row.classList.remove("just-changed", "change-fading"); }); }, HOLD_MS));
+    // The arrivals are brought into sight above the dock and the message over it, once the dock
+    // has measured itself (dock.js reserves its height below the page), and never past the first.
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      if (!rows[0].isConnected) return;
+      var dock = region.querySelector(".host-controls"), limit = window.innerHeight;
+      if (dock && getComputedStyle(dock).position === "fixed") limit = dock.getBoundingClientRect().top - 96;
+      var below = rows[rows.length - 1].getBoundingClientRect().bottom - limit, room = rows[0].getBoundingClientRect().top - 80;
+      if (below > 0) window.scrollBy({ top: Math.min(below, room), behavior: moving() ? "smooth" : "auto" });
+    }); });
+  }
+
   // motion.js cancels every running animation when the page is left.
   window.pokerPage.register(function () {
+    var timers = [];
     region = document.getElementById("live");
     before = null;
-    return function () { region = null; before = null; };
+    if (region) arrive(timers);
+    return function () { timers.forEach(clearTimeout); region = null; before = null; };
   });
 })();

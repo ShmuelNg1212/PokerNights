@@ -250,6 +250,11 @@ def session(request, session_id):
     session, me = session_for(request.user, session_id)
     context = session_context(session, shown_as(me, session.night))
     context["real_host"] = me.is_host
+    # Players just added on Add players are marked once (static/js/flow.js).
+    arrived = request.session.get("players_arrived", {})
+    if str(session.pk) in arrived:
+        context["arrived"] = set(arrived.pop(str(session.pk)))
+        request.session["players_arrived"] = arrived
     # Counts that were typed but refused are shown again, once.
     drafts = request.session.get("count_drafts", {})
     typed = drafts.pop(str(session.pk), None)

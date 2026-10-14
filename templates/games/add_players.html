@@ -8,63 +8,58 @@
 <h1>Add players</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"D, M j" }}</p>
 
-{% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
+{% if error %}<div class="notice notice-bad" role="alert" id="pick-error">{{ error }}</div>{% endif %}
 
 <p id="pick-capacity"><strong>{{ seats_free }}</strong> of {{ session.seat_count }} seat{{ session.seat_count|pluralize }} {{ seats_free|pluralize:"is,are" }} free.</p>
 
 {% if not can_add %}<p class="notice notice-bad">This set is {{ session.state_word }}. Players cannot be added now. Return to the set to continue.</p>
 {% elif seats_free == 0 %}<p class="notice notice-warn">The table is full. A seat must be free before another player can join.</p>{% endif %}
-{# The roster comes first: most players at a table are already on it. #}
-<section class="pick-section" aria-labelledby="pick-roster-title">
-<h2 class="group-title" id="pick-roster-title">Choose from the roster</h2>
-{% if eligible_count == 0 %}
-<p class="muted">Every player of this group is already at the table.</p>
-{% elif can_add %}
-{# Not a "form-section": the browser checks find the new-player form as the page's first one. #}
-<form method="post" class="stack" data-pick data-free="{{ seats_free }}">
+{# One send: the roster players ticked and the new names typed. The script previews the names; the server checks everything again. #}
+<form method="post" class="form-section pick-form" data-pick data-free="{{ seats_free }}" data-known="{{ known }}">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
-  <div class="field" data-pick-search-box hidden>
-    <label for="pick-search">Search players</label>
-    <input id="pick-search" type="text" autocomplete="off" inputmode="search" data-pick-search>
-  </div>
-  <fieldset class="picker-fields">
-    <legend class="small muted">Tick each player to add</legend>
-    <ul class="list">
-      {% for row in rows %}
-      <li data-pick-row data-name="{{ row.member.display_name|lower }}">
-        <label class="check {% if row.at_table %}is-disabled{% endif %}">
+  {# A refusal can come back after the set moved on or filled up: what was typed stays, and nothing can be sent. #}
+  <fieldset class="picker-fields"{% if seats_free <= 0 or not can_add %} disabled{% endif %}>
+  <section class="pick-section" aria-labelledby="pick-roster-title">
+    <h2 class="group-title" id="pick-roster-title">Choose from the roster</h2>
+    {% if eligible_count == 0 %}
+    <p class="muted">Every player of this group is already at the table.</p>
+    {% else %}
+    <div class="field" data-pick-search-box hidden>
+      <label for="pick-search">Search players</label>
+      <input id="pick-search" type="text" autocomplete="off" inputmode="search" data-pick-search>
+    </div>
+    <fieldset class="picker-fields">
+      <legend class="small muted">Tick each player to add</legend>
+      <ul class="list">
+        {% for row in rows %}
+        <li data-pick-row data-name="{{ row.member.display_name|lower }}">
+          <label class="check {% if row.at_table %}is-disabled{% endif %}">
           <input type="checkbox" name="member_id" value="{{ row.member.pk }}" data-label="{{ row.member.display_name }}"
                  {% if row.at_table %}disabled{% endif %} {% if row.checked %}checked{% endif %}>
-          <span class="grow">{{ row.member.display_name }}</span>
-          {% if row.at_table %}<span class="badge badge-good">At the table</span>
-          {% elif row.left_earlier %}<span class="badge">Left earlier</span>{% endif %}
-          {% if not row.member.has_login %}<span class="badge">No login</span>{% endif %}
-        </label>
-      </li>
-      {% endfor %}
-    </ul>
-    <p class="muted" data-pick-empty hidden>No player matches the search.</p>
+            <span class="grow">{{ row.member.display_name }}</span>
+            {% if row.at_table %}<span class="badge badge-good">At the table</span>
+            {% elif row.left_earlier %}<span class="badge">Left earlier</span>{% endif %}
+            {% if not row.member.has_login %}<span class="badge">No login</span>{% endif %}
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="muted" data-pick-empty hidden>No player matches the search.</p>
+    </fieldset>
+    {% endif %}
+  </section>
+  <section class="pick-section form-group" aria-labelledby="pick-new-title">
+    <h2 class="group-title" id="pick-new-title">New players</h2>
+    {% include "partials/field.html" with field=names_form.names %}
+    {# Filled by pick.js: each typed name and whether it can join. #}
+    <ul class="name-preview" data-names-preview hidden></ul>
+  </section>
   </fieldset>
   <div class="sticky-actions stack">
     <p class="small" data-pick-summary aria-live="polite">{% if selected_count %}{{ selected_count }} selected.{% else %}No player selected.{% endif %}</p>
     <p class="notice notice-bad" data-pick-warning role="alert" hidden></p>
-    <button type="submit" class="btn btn-primary btn-block" data-pick-submit {% if seats_free == 0 %}disabled{% endif %}>Add selected players</button>
+    <button type="submit" class="btn btn-primary btn-block" data-pick-submit{% if seats_free <= 0 or not can_add %} disabled{% endif %}>Add players</button>
   </div>
 </form>
-{% endif %}
-</section>
-<section class="pick-section form-group" aria-labelledby="pick-new-title">
-  <h2 class="group-title" id="pick-new-title">Add a new player</h2>
-  <p class="hint">Save this name to the group roster and add them to this set. Record their buy-in separately.</p>
-  <form method="post" class="form-section stack" data-once>
-    {% csrf_token %}
-    <input type="hidden" name="request_id" value="{{ new_request_id }}">
-    <input type="hidden" name="action" value="new">
-    <fieldset class="picker-fields stack" {% if not can_add or seats_free == 0 %}disabled{% endif %}>
-      {% include "partials/form_fields.html" with form=new_form %}
-      <button type="submit" class="btn btn-block">Add new player</button>
-    </fieldset>
-  </form>
-</section>
 {% endblock %}

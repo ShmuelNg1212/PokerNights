@@ -81,7 +81,7 @@ try {
   await go(draft + 'players/add-several/'); await shot('add-players');
   const rows = await js(`[...document.querySelectorAll('[data-pick-row]')].slice(0,3).map(e=>Math.round(e.getBoundingClientRect().height))`);
   check('roster rows are one 48px line (+ rule)', rows.every(h => h >= 48 && h <= 49), rows);
-  check('roster is first; one primary button', await js(`document.body.innerHTML.indexOf('Choose from the roster')<document.body.innerHTML.indexOf('Add a new player')&&document.querySelectorAll('#main .btn-primary').length===1`));
+  check('roster is first; one primary button', await js(`document.body.innerHTML.indexOf('Choose from the roster')<document.body.innerHTML.indexOf('New players')&&document.querySelectorAll('#main .btn-primary').length===1`));
   check('no page overflows sideways', await js(`document.documentElement.scrollWidth<=${W}`));
 } finally { await send('Browser.close').catch(() => {}); ws.close(); chrome.kill(); }
 console.log(`${results.filter(Boolean).length} of ${results.length}`);
