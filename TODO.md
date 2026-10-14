@@ -4,11 +4,11 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Several new names at once on Add players ([plan](doc/plan/1791948616_new_names_at_once.md), [study](doc/study/1791948615_new_names_at_once.md)): approved and built on `feat/new-names-at-once` on 2026-10-14, not released. Tick regulars and type newcomers, one per line, and add everyone with one button; a name on the roster is offered as a tick; the arrivals are marked on the set page. No migration. 1,114 tests pass on SQLite and PostgreSQL 17; `new_names.mjs` passes at 390 and 1280px and under reduced motion.
+Several new names at once on Add players ([plan](doc/plan/1791948616_new_names_at_once.md), [study](doc/study/1791948615_new_names_at_once.md)): approved and built on `feat/new-names-at-once` on 2026-10-14. Released 2026-10-14 as `f51f4ac` (previous production commit `899a93e`); the live site serves the new picker script. Tick regulars and type newcomers, one per line, and add everyone with one button; a name on the roster is offered as a tick; the arrivals are marked on the set page. No migration. 1,114 tests pass on SQLite and PostgreSQL 17; `new_names.mjs` passes at 390 and 1280px and under reduced motion.
 
 - [x] Approve the plan and answer its three decisions. Approved 2026-10-14: one form, refuse and offer, mark the arrivals.
-- [ ] Say when to merge and release it.
-- [ ] After release, at the table on your phone: tick a regular, type two newcomers and one name already on the roster, use "Tick … instead", and add them. Say whether the arrival on the set page reads well and whether the box is easy to type into with the keyboard up.
+- [x] Say when to merge and release it. Released 2026-10-14.
+- [ ] At the table on your phone: tick a regular, type two newcomers and one name already on the roster, use "Tick … instead", and add them. Say whether the arrival on the set page reads well and whether the box is easy to type into with the keyboard up.
 
 Session setup polish ([plan](doc/plan/1791872139_session_setup_polish.md), [study](doc/study/1791872138_session_setup_polish.md)): approved and built on `feat/session-setup-polish` on 2026-10-13. Released 2026-10-13 as `899a93e` (previous production commit `d3b8d1d`); the live site serves `setup.js` and a new stylesheet. New session, Set settings, the draft set and Add players follow one rhythm; a preset fills the stakes and keeps what was typed; only the chosen rake rule's amount shows; "More host controls" opens with movement. No migration. 1,101 tests pass on SQLite and PostgreSQL 17; `session_setup.mjs` passes at 390 and 1280px and under reduced motion.
 

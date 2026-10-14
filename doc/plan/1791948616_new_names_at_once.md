@@ -1,6 +1,6 @@
 # Several new names at once on Add players: plan
 
-Status: approved 2026-10-14 ("approved"): one form; refuse and offer; mark the arrivals. Built, not released. Date: 2026-10-14, Asia/Manila. Study: [Several new names at once](../study/1791948615_new_names_at_once.md).
+Status: approved 2026-10-14 ("approved"): one form; refuse and offer; mark the arrivals. Built and released. Date: 2026-10-14, Asia/Manila. Study: [Several new names at once](../study/1791948615_new_names_at_once.md).
 
 ## Outcome
 
@@ -88,3 +88,5 @@ Acceptance: 1 to 5 are met in headless Chrome; 5 by `late_player.mjs` with scrip
 Not verified: a real phone (the keyboard over the box, the scroll on arrival), a screen reader reading the preview and the bar, the in-app numpad (not used by this text box).
 
 Documentation synced: DESIGN.md, PRODUCT.md, wiki (features, journal), roadmap, the browser checks' README, TODO.
+
+2026-10-14, release: merged as `f51f4ac` and pushed on the human's word "release" (previous production commit `899a93e`). About four minutes after the push, one fetch of `/static/js/pick.js` returned the new script (it holds "Tick … instead"), and one fetch of the log-in page showed it under a new release tag. Not verified: the pages themselves on the live site, which need a login, and a real phone.
