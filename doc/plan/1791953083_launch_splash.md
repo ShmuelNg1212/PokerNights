@@ -1,6 +1,6 @@
 # A splash screen for the installed app: plan
 
-Status: approved 2026-10-14 ("approve", with the recommended answers: mark and name, the clear Android icon, no movement this cycle). Built on `feat/launch-splash`, not released. Date: 2026-10-14, Asia/Manila. Study: [A splash screen for the installed app](../study/1791953082_launch_splash.md).
+Status: approved 2026-10-14 ("approve", with the recommended answers: mark and name, the clear Android icon, no movement this cycle). Built on `feat/launch-splash`; released 2026-10-14 as `c222173` on the human's word "release" (previous production commit `6c39be3`). The first push, `ba7e297`, failed the Vercel build: a new test read `make_splash.mjs`, which `.vercelignore` leaves out ([footgun](../wiki/footguns/vercel_build_lacks_ignored_files.md)). The test now skips there; four minutes after the fix the live site served `splash-1179x2556.png` (46,544 bytes, as built) and a manifest naming `app-any-512.png`. Date: 2026-10-14, Asia/Manila. Study: [A splash screen for the installed app](../study/1791953082_launch_splash.md).
 
 ## Outcome
 
@@ -54,7 +54,7 @@ Built and checked locally, then held for the human's word, as usual. After a rel
 
 - [x] Approve the plan and answer the three decisions. Approved 2026-10-14.
 - [x] Build, test, and look at the images.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-14.
 - [ ] On your iPhone: remove PokerNights from the home screen, add it again from Safari, log in, close it fully, and open it. Say whether the splash looks right and whether the change to the first screen feels smooth.
 
 ## Verification record (2026-10-14)
