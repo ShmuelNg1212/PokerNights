@@ -205,6 +205,8 @@ CARRY_DEBTS = env.bool("CARRY_DEBTS", default=True)
 SEAT_DRAW = env.bool("SEAT_DRAW", default=True)
 # Turn off to stop every movement on the log in and sign up screens; the frame stays (see config/door.py).
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
+# Turn off to play the arrival into the app only after a log-in, not also each time the app is started (see config/door.py).
+LAUNCH_ARRIVAL = env.bool("LAUNCH_ARRIVAL", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

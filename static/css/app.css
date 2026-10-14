@@ -1281,8 +1281,9 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 }
 
 /* Arrival into the app (DESIGN.md, "Front door"): the one page after a login. The server writes data-welcome
-   on <main>. As above, every keyframe runs from a start state to the ordinary state, and a figure inside a
-   card is at its value from the first frame. Only cards and their parts move; <main> itself does not,
+   on <main>; on a new window's first page a script in the head writes data-launch on <html> (config/door.py).
+   As above, every keyframe runs from a start state to the ordinary state, and a figure inside a card is at
+   its value from the first frame. Only cards and their parts move; <main> itself does not,
    because a transform on it would re-anchor the fixed toasts and the host dock inside it. */
 @keyframes welcome-rise { from { opacity: 0; transform: translateY(16px); } }
 @keyframes welcome-token { from { opacity: 0; transform: translateX(14px); } }
@@ -1290,30 +1291,30 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 @keyframes welcome-fade { from { opacity: 0; } }
 @keyframes welcome-mark { from { opacity: 1; transform: scaleX(0); } 55%, 75% { opacity: 1; transform: scaleX(1); } to { opacity: 0; transform: scaleX(1); } }
 @keyframes welcome-land { 40% { transform: translateY(2px); } }
-[data-welcome] .group-home { animation: welcome-rise 500ms var(--spring-shift) 100ms backwards; }
-[data-welcome] .group-home:nth-child(2) { animation-delay: 170ms; }
-[data-welcome] .group-home:nth-child(3) { animation-delay: 240ms; }
-[data-welcome] .group-home:nth-child(n+4) { animation-delay: 310ms; }
+:is([data-welcome], [data-launch]) .group-home { animation: welcome-rise 500ms var(--spring-shift) 100ms backwards; }
+:is([data-welcome], [data-launch]) .group-home:nth-child(2) { animation-delay: 170ms; }
+:is([data-welcome], [data-launch]) .group-home:nth-child(3) { animation-delay: 240ms; }
+:is([data-welcome], [data-launch]) .group-home:nth-child(n+4) { animation-delay: 310ms; }
 /* The players are set down in a row, one after another. */
-[data-welcome] .token-stack > * { animation: welcome-token 500ms var(--spring-shift) 220ms backwards; }
-[data-welcome] .token-stack > :nth-child(2) { animation-delay: 250ms; }
-[data-welcome] .token-stack > :nth-child(3) { animation-delay: 280ms; }
-[data-welcome] .token-stack > :nth-child(4) { animation-delay: 310ms; }
-[data-welcome] .token-stack > :nth-child(5) { animation-delay: 340ms; }
-[data-welcome] .token-stack > :nth-child(n+6) { animation-delay: 370ms; }
+:is([data-welcome], [data-launch]) .token-stack > * { animation: welcome-token 500ms var(--spring-shift) 220ms backwards; }
+:is([data-welcome], [data-launch]) .token-stack > :nth-child(2) { animation-delay: 250ms; }
+:is([data-welcome], [data-launch]) .token-stack > :nth-child(3) { animation-delay: 280ms; }
+:is([data-welcome], [data-launch]) .token-stack > :nth-child(4) { animation-delay: 310ms; }
+:is([data-welcome], [data-launch]) .token-stack > :nth-child(5) { animation-delay: 340ms; }
+:is([data-welcome], [data-launch]) .token-stack > :nth-child(n+6) { animation-delay: 370ms; }
 /* What needs the person: a set in play, then money to settle. */
-[data-welcome] .home-band .badge-live { animation: welcome-pop 550ms var(--spring-sheet) 320ms backwards; }
-[data-welcome] .home-dues h3 { position: relative; width: fit-content; }
-[data-welcome] .home-dues h3::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); opacity: 0; transform-origin: left; animation: welcome-mark 540ms var(--ease-out) 340ms backwards; }
-[data-welcome] .home-create { animation: welcome-fade 300ms var(--ease-out) 420ms backwards; }
+:is([data-welcome], [data-launch]) .home-band .badge-live { animation: welcome-pop 550ms var(--spring-sheet) 320ms backwards; }
+:is([data-welcome], [data-launch]) .home-dues h3 { position: relative; width: fit-content; }
+:is([data-welcome], [data-launch]) .home-dues h3::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); opacity: 0; transform-origin: left; animation: welcome-mark 540ms var(--ease-out) 340ms backwards; }
+:is([data-welcome], [data-launch]) .home-create { animation: welcome-fade 300ms var(--ease-out) 420ms backwards; }
 /* A newcomer's first screen. */
-[data-welcome] .home-first > * { animation: welcome-rise 500ms var(--spring-shift) 100ms backwards; }
-[data-welcome] .home-first > :nth-child(2) { animation-delay: 160ms; }
-[data-welcome] .home-first > :nth-child(3) { animation-delay: 220ms; }
-[data-welcome] .home-first > :nth-child(4) { animation-delay: 280ms; }
-[data-welcome] .home-first > :nth-child(n+5) { animation-delay: 340ms; }
+:is([data-welcome], [data-launch]) .home-first > * { animation: welcome-rise 500ms var(--spring-shift) 100ms backwards; }
+:is([data-welcome], [data-launch]) .home-first > :nth-child(2) { animation-delay: 160ms; }
+:is([data-welcome], [data-launch]) .home-first > :nth-child(3) { animation-delay: 220ms; }
+:is([data-welcome], [data-launch]) .home-first > :nth-child(4) { animation-delay: 280ms; }
+:is([data-welcome], [data-launch]) .home-first > :nth-child(n+5) { animation-delay: 340ms; }
 /* The chip lands in the top bar: the mark sinks and comes back, as a pressed button does. */
-body:has([data-welcome]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
+:is(body:has([data-welcome]), [data-launch]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
 
 /* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2. */
 /* The lead panel: the figure, the timer and the blinds; the rest is one line with the facts behind it. */

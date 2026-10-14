@@ -26,7 +26,12 @@
   <link rel="apple-touch-icon" href="{% static 'icons/app-180.png' %}">
   {# The installed app's launch screen on an iPhone, one per screen size (config/pwa.py). On every page, because Add to Home Screen reads the page it is on. #}
   {% for image in startup_images %}<link rel="apple-touch-startup-image" media="{{ image.media }}" href="{{ image.href }}">
-  {% endfor %}  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  {% endfor %}<link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  {% comment %}The arrival on a new window's first page: the app just started, or a new tab (config/door.py). In the head
+     and before the stylesheet, so it waits for nothing and the mark is on <html> before the first paint. Later pages
+     in the window, a reload and Back find the window marked and play nothing; a refused storage plays nothing.
+     door.js takes the mark off when the arrival is over.{% endcomment %}
+  {% block launch %}{% if door.launch %}<script>(function(r){try{var w=sessionStorage,n=performance.getEntriesByType("navigation")[0];if(w.getItem("pn-launched"))return;w.setItem("pn-launched","1");if(!n||n.type==="navigate")r.dataset.launch=""}catch(e){}})(document.documentElement)</script>{% endif %}{% endblock %}
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}" data-turbo-track="reload">
   <meta name="turbo-cache-control" content="no-cache">

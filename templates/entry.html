@@ -4,6 +4,7 @@
 {% block screen %}{% with arrival=door.arrival %}{% if arrival %} data-arrival="{{ arrival }}"{% endif %}{% endwith %}{% endblock %}
 {# A front-door screen seen signed in (Join, Claim) leaves the arrival for the page behind it. #}
 {% block welcome %}{% endblock %}
+{% block launch %}{% endblock %}
 {% block content %}
 {% block hero %}{% endblock %}
 <section class="door-sheet">
