@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "doc/showcase/splash.html"
+        ],
+        "createdAt": "2026-10-14T05:23:22.177Z",
+        "reason": "agent: splash.html has no animation or gradient; the findings come from the linked shared app.css, and the rendered launch image is flat Ground with the static mark"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "doc/showcase/splash.html"
+        ],
+        "createdAt": "2026-10-14T05:23:22.194Z",
+        "reason": "agent: splash.html has no animation or gradient; the findings come from the linked shared app.css, and the rendered launch image is flat Ground with the static mark"
+      },
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "doc/showcase/splash.html"
+        ],
+        "createdAt": "2026-10-14T05:23:22.211Z",
+        "reason": "agent: splash.html has no animation or gradient; the findings come from the linked shared app.css, and the rendered launch image is flat Ground with the static mark"
+      }
+    ]
+  }
+}
