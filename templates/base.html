@@ -24,7 +24,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="{% static 'branding/logo-mark.svg' %}">
   <link rel="apple-touch-icon" href="{% static 'icons/app-180.png' %}">
-  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  {# The installed app's launch screen on an iPhone, one per screen size (config/pwa.py). On every page, because Add to Home Screen reads the page it is on. #}
+  {% for image in startup_images %}<link rel="apple-touch-startup-image" media="{{ image.media }}" href="{{ image.href }}">
+  {% endfor %}  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
   <link rel="preload" href="{% static 'fonts/archivo.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}" data-turbo-track="reload">
   <meta name="turbo-cache-control" content="no-cache">
