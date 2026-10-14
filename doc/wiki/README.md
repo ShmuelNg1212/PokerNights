@@ -114,4 +114,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Session setup polish and the More host controls flyout | [study](../study/1791872138_session_setup_polish.md) | [plan](../plan/1791872139_session_setup_polish.md) | Done, released 2026-10-13 as `899a93e` |
 | Several new names at once on Add players | [study](../study/1791948615_new_names_at_once.md) | [plan](../plan/1791948616_new_names_at_once.md) | Done, released 2026-10-14 as `f51f4ac` |
 | A splash screen for the installed app | [study](../study/1791953082_launch_splash.md) | [plan](../plan/1791953083_launch_splash.md) | Done, released 2026-10-14 as `c222173`; accepted 2026-10-14 |
-| The arrival on every app open | [study](../study/1791956780_arrival_on_launch.md) | [plan](../plan/1791956781_arrival_on_launch.md) | Done, released 2026-10-14 as `e254122` |
+| The arrival on every app open | [study](../study/1791956780_arrival_on_launch.md) | [plan](../plan/1791956781_arrival_on_launch.md) | Done, released 2026-10-14 as `e254122`; accepted 2026-10-14 |

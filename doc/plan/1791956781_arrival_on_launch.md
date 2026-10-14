@@ -63,3 +63,7 @@ Built and checked locally, then held for the human's word. After a release, one 
 2. **A comment that broke the head.** A four-line `{# #}` comment printed as text in the head and cost the screen-change opt-in. Found by `welcome.mjs`, fixed with `{% comment %}`, and guarded by a test ([footgun](../wiki/footguns/django_comment_is_one_line.md)).
 3. **Front-door screens seen signed in** (Join, Claim) empty the `launch` block as they empty `welcome`, so the page behind them is the one that arrives.
 4. **If `door.js` failed to load,** the `data-launch` mark would stay on `<html>` and Your groups would arrive again on each visit in that window. Every page script loads together from the head, so this is not expected; `LAUNCH_ARRIVAL=False` is the way out.
+
+## After the release (2026-10-14)
+
+Accepted on the human's iPhone: "nice it works now". The arrival plays when the installed app is started, so iOS does empty `sessionStorage` when it closes the app.
