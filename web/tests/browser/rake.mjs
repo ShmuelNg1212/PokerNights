@@ -34,7 +34,7 @@ await A.go(`/s/${ids.percent}/`);await A.js(`document.querySelector('details[dat
 const buyAction=await A.js(`document.querySelector('form.buy-form').getAttribute('action')`);const participant=await A.js(`document.querySelector('form.buy-form [name=participant_id]').value`);
 await post(A,buyAction,{participant_id:participant,amount:'1000',request_id:crypto.randomUUID()});await A.go(`/s/${ids.percent}/`);
 check('rebuy deducts same percentage',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value==='285000'&&document.body.textContent.includes('Collected rake')`));
-await A.go(`/s/${ids.percent}/players/add-several/`);await A.js(`document.querySelector('[name=name]').value='Late rake'`);await A.click(`document.querySelector('form.form-section button')`);
+await A.go(`/s/${ids.percent}/players/add-several/`);await A.js(`(()=>{const b=document.querySelector('[name=names]');b.value='Late rake';b.dispatchEvent(new Event('input',{bubbles:true}))})()`);await A.click(`document.querySelector('[data-pick-submit]')`);
 const late=await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late rake')).querySelector('[name=participant_id]').value`);
 await post(A,buyAction,{participant_id:late,amount:'1000',request_id:crypto.randomUUID()});await A.go(`/s/${ids.percent}/`);
 check('late player buy-in uses agreed deduction',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value==='380000'`));

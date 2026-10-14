@@ -1016,6 +1016,15 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 - **Add players.** The roster comes first with the page's one main button; "Add a new player" follows under a hairline with an ordinary button. A roster row is one 48px line.
 - **More host controls flyout.** A tap opens the disclosure with movement (`dock.js`). On a phone the dock grows upward: it is set down by the height it gained and rises on the sheet spring, so the controls come up from the screen's edge, and each control fades in 35ms after the one above it. From 900px the controls rise 8px as they fade in. Closing takes 180ms on an ease-in and removes the controls when they are out of sight. A second tap during the movement turns it round. Reduced motion, or a dock that is itself sliding, opens and closes at once. A live update never replays it.
 
+### 2026-10-14 addendum — Several new names at once
+
+[Plan](doc/plan/1791948616_new_names_at_once.md). Mode: Operate. No new colour, font, token or raster asset.
+
+- **One form.** Add players is one form with one main button: "Choose from the roster", then "New players" under a hairline with a "New names" box (one name per line), then the sticky bar. The button names the total of ticks and names ("Add 5 players"); the bar's line counts them ("1 ticked · 2 new.") and is read out as it changes, so it holds counts only while names are typed.
+- **The box** starts two lines tall and grows with what is typed (`field-sizing: content`, at most half the screen).
+- **The preview** under the box is one line per typed name: the name at 600 and its state at 14px, "New" in the muted voice or the problem in `--down`. A name on the roster carries a link-style "Tick … instead" at the line's end (48px target), which ticks the row, gives it the brass mark for three seconds and brings it into sight. While a name has a problem the bar says how many need a change and the button waits.
+- **Motion.** One authored moment: the arrival on the set page. The rows of the players just added rise 12px into place 40ms apart on the `shift` spring and carry the brass mark for three seconds, and the page scrolls them into sight above the dock and its message. The preview's new lines only fade in (`fade`, 180ms); nothing moves sideways while the host types. Both write their first keyframe before Motion starts. Under reduced motion the marks stay and nothing moves.
+
 ## Do's and Don'ts
 
 ### Do:

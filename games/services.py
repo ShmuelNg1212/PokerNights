@@ -15,6 +15,7 @@ from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
 from groups.models import GroupRakeAccount
+from groups import services as groups_services
 from groups.services import clean_name, add_roster_player, lock_group
 
 from . import clock
@@ -675,6 +676,56 @@ def add_new_player(session_id, actor: Member, name: str, request_id) -> list:
             raise RuleError(f"{error} {recovery}") from None
         raise
     return add_participants(session.pk, actor, [member.pk], request_id)
+
+
+class NamesRefused(RuleError):
+    """A refusal that is about the typed names, so the page marks the box."""
+
+
+# Said after the names a host typed that are on the roster already: the list above holds them.
+ON_ROSTER = "Tick them in the list instead."
+
+
+@transaction.atomic
+def add_players(session_id, actor: Member, member_ids, lines, request_id) -> list:
+    """Add Players in one send: the roster players ticked, and new names typed one per line.
+
+    Each new name joins the roster without a login and takes a seat in the same transaction.
+    Everyone is added, or nobody is and every problem is named. The seats are counted for
+    the ticks and the names together. The same ``request_id`` returns the first call's players.
+    """
+    require_host(actor)
+    session = lock_session(session_id, actor.group_id)
+    repeated = ParticipantBatch.objects.filter(session=session, request_id=request_id).first()
+    if repeated is not None:
+        return list(repeated.participants.select_related("member").order_by("join_order"))
+    if session.state not in HOST_ADD_STATES:
+        raise RuleError("Players cannot be added at this stage of the set.")
+    names = groups_services.typed_names(lines)
+    ticked = list(dict.fromkeys(str(member_id) for member_id in member_ids))
+    if not names:
+        return add_participants(session.pk, actor, ticked, request_id)
+    if len(names) > 1 and not settings.ROSTER_TOOLS:
+        raise NamesRefused("Type one new name at a time.")
+    free = session.seat_count - _seats_taken(session)
+    wanted = len(ticked) + len(names)
+    if wanted > free:
+        over = wanted - free
+        seats = "No seat is free" if free == 0 else f"Only {free} seat{' is' if free == 1 else 's are'} free"
+        raise RuleError(
+            f"{seats} and you are adding {wanted} player{'' if wanted == 1 else 's'}. "
+            f"Remove {over} player{'' if over == 1 else 's'}. Nothing was added."
+        )
+    seated = {
+        name.lower() for name in Participant.objects.filter(
+            session=session, status=Participant.Status.JOINED, member__status=Member.Status.ACTIVE,
+        ).values_list("member__display_name", flat=True)
+    }
+    try:
+        members = groups_services.create_roster_players(actor, names, seated=seated, taken_note=ON_ROSTER)
+    except RuleError as error:
+        raise NamesRefused(f"{error} Nothing was added.") from None
+    return add_participants(session.pk, actor, ticked + [member.pk for member in members], request_id)
 
 
 @transaction.atomic

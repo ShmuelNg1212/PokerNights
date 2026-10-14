@@ -55,7 +55,7 @@ These used the plan's defaults in Stage 1. They can still change.
 
 - **Merging two member rows.** Nothing joins two rows of one person that both have records; a claim link is refused for such an account. the roster now refuses to create the second one from a removed name.
 
-- **New names in the player picker.** Type several new names (one per line) on "Add players"; each becomes a roster player without a login and joins the game in the same all-or-nothing action. Not built. It needs name-clash rules and its own plan. It uses the existing roster model, not a new guest-account system.
+- **New names in the player picker.** Built 2026-10-14 ([plan](../plan/1791948616_new_names_at_once.md)): ticks and new names in one send on Add players; a name on the roster is refused with an offer to tick that player.
 
 ## Cleanup
 

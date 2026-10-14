@@ -80,6 +80,14 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 - "More host controls" flies out (`fly()` in `static/js/dock.js`): see DESIGN.md. It is skipped under reduced motion and while the dock slides.
 - Browser check: `session_setup.mjs` with `seed_setup.py` (see `web/tests/browser/README.md`).
 
+## Add players in one send (2026-10-14)
+
+- `games.services.add_players(session_id, actor, member_ids, lines, request_id)`: ticks plus new names, one transaction, one `ParticipantBatch`, all or nobody. The typed names are checked by `groups.services.new_name_problems` (shared with Group settings' several-names box), with "Already at the table" named apart and "Tick them in the list instead." after names on the roster. A refusal about the names is a `NamesRefused`, so the page marks the box. Seats are counted for ticks and names together before any roster player is made.
+- `games.views.participants_add` reads `member_id` and `names` (a page drawn before this sends one `name`, which still works). The page carries `data-known` (roster names and ids, names at the table, removed names) for `static/js/pick.js`'s preview; the server checks again.
+- On success the session holds `players_arrived` for one view of the set page; `_player_row.html` marks those rows `data-arrived` and `flow.js` gives them the mark and the rise. Polls never carry it.
+- `add_new_player` and `add_participants` stay for their other callers and the race tests.
+- Browser check: `new_names.mjs` with `seed_new_names.py`.
+
 ## Rake
 
 New session offers Off (default), Flat amount, and Percentage of buy-in before the first buy-ins. On an empty draft or open set, Choose rake before buy-ins opens the same settings. Only the chosen value applies; unused value fields do not block a save. Percentage accepts 0.01%–99.99%, with at most two decimals. It rounds down separately per buy-in to a centavo or whole chip. Flat rake uses the set's unit. The amount entered for a buy-in is gross: ₱1,000 at 5% gives ₱950 in play and ₱50 collected rake. The fee must leave a positive playable amount.

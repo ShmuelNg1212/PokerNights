@@ -24,24 +24,26 @@ await A.go(`/s/${ids.running}/`);await B.go(`/s/${ids.running}/`);
 const path=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);
 const before=await A.js(`document.querySelector('[data-watch=in-play]').dataset.value`);
 check('Add players visible with every roster member seated',path.includes('players'));
-for(const width of [390,1280]) {await send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);await A.go(path);check('picker no overflow '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));check('new name offered with no eligible roster',await A.js(`!!document.querySelector('[name=name]')&&!document.querySelector('[data-pick]')&&document.body.textContent.includes('Every player of this group')`));await A.shot('late-picker-'+width);}
+for(const width of [390,1280]) {await send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);await A.go(path);check('picker no overflow '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));check('new name offered with no eligible roster',await A.js(`!!document.querySelector('[name=names]')&&!document.querySelector('[data-pick-row]')&&document.body.textContent.includes('Every player of this group')`));await A.shot('late-picker-'+width);}
 await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},A.s);
 await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);
-await A.js(`document.querySelector('[name=name]').value='Late arrival'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
+// Drawn again without scripts: the picker's script holds the button until something is chosen.
+await A.go(path);
+await A.js(`document.querySelector('[name=names]').value='Late arrival'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
 check('native creation returns running set',await A.js(`location.pathname==='/s/${ids.running}/'&&document.body.textContent.includes('Late arrival')&&document.querySelector('.next-action').textContent.includes('End play')`));
 check('no automatic late buy-in',await A.js(`document.querySelector('[data-watch=in-play]').dataset.value===${JSON.stringify(before)}&&[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late arrival')).textContent.includes('No buy-in yet')`));
 await sleep(4600);check('second host sees live arrival',await B.js(`document.body.textContent.includes('Late arrival')`));
 check('new join timer shown',await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late arrival')).textContent.includes('Played')`));
-await A.go(path);await A.js(`document.querySelector('[name=name]').value='late ARRIVAL'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
-check('duplicate bound name and seated recovery',await A.js(`document.querySelector('[name=name]').value==='late ARRIVAL'&&document.querySelector('[name=name]').getAttribute('aria-invalid')==='true'&&document.body.textContent.includes('already at the table. Return to the set.')`));await A.shot('late-duplicate-390');
+await A.go(path);await A.js(`document.querySelector('[name=names]').value='late ARRIVAL'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
+check('duplicate bound name and seated recovery',await A.js(`document.querySelector('[name=names]').value==='late ARRIVAL'&&document.querySelector('[name=names]').getAttribute('aria-invalid')==='true'&&document.body.textContent.includes('Already at the table: late ARRIVAL.')`));await A.shot('late-duplicate-390');
 await A.go(`/g/1/`);check('new identity saved to group roster',await A.js(`document.body.textContent.includes('Late arrival')`));
 await A.go(`/s/${ids.full}/`);const fullPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(fullPath);
-check('full table explains disabled new action',await A.js(`document.body.textContent.includes('The table is full')&&document.querySelector('[name=name]').matches(':disabled')&&document.querySelector('form.form-section button').matches(':disabled')`));
-await A.go(`/s/${ids.stale}/`);const stalePath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(stalePath);await A.js(`document.querySelector('[name=name]').value='After end'`);
+check('full table explains disabled new action',await A.js(`document.body.textContent.includes('The table is full')&&document.querySelector('[name=names]').matches(':disabled')&&document.querySelector('[data-pick-submit]').matches(':disabled')`));
+await A.go(`/s/${ids.stale}/`);const stalePath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(stalePath);await A.js(`document.querySelector('[name=names]').value='After end'`);
 await B.go(`/s/${ids.stale}/`);const endPath=await B.js(`document.querySelector('.next-action').closest('form').getAttribute('action')`);await post(B,endPath,{action:'end'});await A.click(`document.querySelector('form.form-section [type=submit]')`);
-check('ended race retains name and disables add',await A.js(`document.querySelector('[name=name]').value==='After end'&&document.querySelector('[name=name]').matches(':disabled')&&document.body.textContent.includes('Players cannot be added now')`));
+check('ended race retains name and disables add',await A.js(`document.querySelector('[name=names]').value==='After end'&&document.querySelector('[name=names]').matches(':disabled')&&document.body.textContent.includes('Players cannot be added now')`));
 await B.go(`/s/${ids.stale}/`);check('ended race added no player',await B.js(`!document.body.textContent.includes('After end')`));
-await A.go(`/s/${ids.chips}/`);const chipsPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(chipsPath);await A.js(`document.querySelector('[name=name]').value='Chip newcomer'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
+await A.go(`/s/${ids.chips}/`);const chipsPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(chipsPath);await A.js(`document.querySelector('[name=names]').value='Chip newcomer'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
 check('chips late join keeps native unit and no money',await A.js(`!document.body.textContent.includes('₱')&&[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer')).textContent.includes('0 chips')`));
 await A.js(`window.row=[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer'));row.querySelector('details').open=true;row.querySelector('input[name=amount]').value='1000'`);await A.click(`row.querySelector('form button')`);
 check('native manual buy-in after late arrival',await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer')).textContent.includes('1,000 chips')`));
@@ -50,7 +52,7 @@ await P.go(`/s/${ids.running}/`);check('player sees arrival without host add act
 await A.go('/s/3/');const existingPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(existingPath);
 await A.js(`document.querySelector('[data-pick] input[data-label="Late arrival"]').checked=true;document.querySelector('[data-pick]').dispatchEvent(new Event('change',{bubbles:true}))`);await A.click(`document.querySelector('[data-pick-submit]')`);
 check('existing roster selection still joins without money',await A.js(`location.pathname==='/s/3/'&&[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late arrival')).textContent.includes('No buy-in yet')`));
-await A.go(path);check('new form has48px target and label',await A.js(`document.querySelector('form.form-section button').getBoundingClientRect().height>=48&&document.querySelector('[name=name]').labels.length===1`));
+await A.go(path);check('new form has48px target and label',await A.js(`document.querySelector('[data-pick-submit]').getBoundingClientRect().height>=48&&document.querySelector('[name=names]').labels.length===1`));
 check('no runtime errors',errors.length===0,errors);writeFileSync(`${OUT}/late-player.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill();}
 if(results.some(x=>!x.ok))process.exitCode=1;

@@ -118,24 +118,25 @@ class NewPlayerPageTests(TestCase):
         self.url = reverse('participants_add', args=[self.r.session.pk])
         self.client.force_login(self.r.host.user)
 
-    def post(self, name, **extra):
-        return self.client.post(self.url, {'action': 'new', 'name': name, 'request_id': str(uuid.uuid4()), **extra}, follow=True)
+    def post(self, names, **extra):
+        return self.client.post(self.url, {'names': names, 'request_id': str(uuid.uuid4()), **extra}, follow=True)
 
-    def test_empty_eligible_roster_keeps_entry_and_new_name_form(self):
+    def test_empty_eligible_roster_keeps_entry_and_new_names(self):
         self.r.add()
         services.add_participant(self.r.session.pk, self.r.host, self.r.host.pk)
         page = self.client.get(reverse('session', args=[self.r.session.pk]))
         self.assertContains(page, self.url)
         page = self.client.get(self.url)
         self.assertContains(page, 'Every player of this group is already at the table')
-        self.assertContains(page, 'Add new player')
-        self.assertContains(page, 'Player name')
-        self.assertContains(page, 'Record their buy-in separately')
+        self.assertContains(page, '<label for="new_names_names">New names</label>')
+        self.assertContains(page, 'Each joins the roster without a login and takes a seat now.')
 
-    def test_the_roster_comes_first_and_its_button_is_the_only_main_one(self):
+    def test_one_form_with_the_roster_first_and_one_button(self):
         html = self.client.get(self.url).content.decode()
-        self.assertLess(html.index('Choose from the roster'), html.index('Add a new player'))
-        self.assertIn('<button type="submit" class="btn btn-block">Add new player</button>', html)
+        self.assertLess(html.index('Choose from the roster'), html.index('New players'))
+        main = html.split('<main', 1)[1]
+        self.assertEqual(main.count('<form method="post"'), 1)
+        self.assertEqual(main.count('type="submit"'), 1)
         self.assertIn('class="btn btn-primary btn-block" data-pick-submit', html)
 
     def test_success_returns_running_set_with_manual_buy_in(self):
@@ -146,43 +147,49 @@ class NewPlayerPageTests(TestCase):
         self.assertContains(page, 'No buy-in yet')
         self.assertFalse(BuyIn.objects.exists())
 
-    def test_duplicate_name_keeps_bound_value_and_field_error(self):
-        page = self.post('aNA')
-        self.assertContains(page, 'value="aNA"')
-        self.assertContains(page, 'Choose that player from the roster')
-        self.assertContains(page, 'aria-invalid="true"')
+    def test_a_page_drawn_before_several_names_still_adds_its_one_name(self):
+        page = self.client.post(self.url, {'action': 'new', 'name': 'Late', 'request_id': str(uuid.uuid4())}, follow=True)
+        self.assertContains(page, 'Added 1 player: Late.')
 
-    def test_seated_duplicate_has_possible_recovery(self):
+    def test_a_name_on_the_roster_keeps_what_was_typed_and_points_to_the_list(self):
+        page = self.post('aNA', member_id=[self.r.members['Ben'].pk])
+        self.assertContains(page, '>\naNA</textarea>')
+        self.assertContains(page, 'Already in this group: aNA. Tick them in the list instead. Nothing was added.')
+        self.assertContains(page, 'aria-invalid="true"')
+        self.assertRegex(page.content.decode(), r'value="%d" data-label="Ben"\s+checked' % self.r.members['Ben'].pk)
+
+    def test_seated_name_is_named_as_at_the_table(self):
         self.r.add('Ana')
         page = self.post('aNA')
-        self.assertContains(page, 'Return to the set.')
-        self.assertNotContains(page, 'Choose that player from the roster')
+        self.assertContains(page, 'Already at the table: aNA.')
+        self.assertNotContains(page, 'Tick them in the list instead')
 
-    def test_blank_and_overlong_names_keep_error(self):
-        self.assertContains(self.post(''), 'This field is required')
-        self.assertContains(self.post('x'*61), 'at most 60 characters')
+    def test_nothing_chosen_and_overlong_names_are_refused(self):
+        self.assertContains(self.post(''), 'Select at least one player.')
+        self.assertContains(self.post('x'*61), 'Too long (60 characters at most)')
 
     def test_full_table_disables_add_and_keeps_refused_name(self):
         self.r.session.seat_count = 2
         self.r.session.save(update_fields=['seat_count'])  # fixture only
         self.r.add('Ana', 'Ben')
         page = self.post('Late')
-        self.assertContains(page, '<fieldset class="picker-fields stack" disabled>')
-        self.assertContains(page, 'value="Late"')
+        self.assertContains(page, '<fieldset class="picker-fields" disabled>')
+        self.assertContains(page, '>\nLate</textarea>')
+        self.assertContains(page, 'No seat is free and you are adding 1 player. Remove 1 player. Nothing was added.')
         self.assertFalse(Member.objects.filter(group=self.r.group, display_name='Late').exists())
 
     def test_ended_set_race_keeps_name_and_disables_form(self):
         services.transition(self.r.session.pk, self.r.host, 'end')
         page = self.post('Late')
-        self.assertContains(page, 'value="Late"')
-        self.assertContains(page, '<fieldset class="picker-fields stack" disabled>')
+        self.assertContains(page, '>\nLate</textarea>')
+        self.assertContains(page, '<fieldset class="picker-fields" disabled>')
         self.assertContains(page, 'Players cannot be added now')
 
     def test_host_only_and_outsider_404(self):
         self.client.force_login(self.r.members['Ana'].user)
-        self.assertEqual(self.client.post(self.url, {'action':'new','name':'Late'}).status_code,403)
+        self.assertEqual(self.client.post(self.url, {'names': 'Late'}).status_code, 403)
         self.client.force_login(make_user('outsider'))
-        self.assertEqual(self.client.post(self.url, {'action':'new','name':'Late'}).status_code,404)
+        self.assertEqual(self.client.post(self.url, {'names': 'Late'}).status_code, 404)
 
 
 @skipUnlessDBFeature('has_select_for_update')

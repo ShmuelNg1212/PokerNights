@@ -372,12 +372,66 @@ def add_roster_player(actor: Member, name: str, contact: str = "") -> Member:
     return _create_roster_player(actor, group, name, (contact or "").strip()[:CONTACT_MAX])
 
 
+def typed_names(lines) -> list:
+    """The names in a box of lines: spaces collapsed, blank lines dropped."""
+    names = [" ".join((line or "").split()) for line in lines]
+    return [name for name in names if name]
+
+
+def new_name_problems(group, names, *, seated=frozenset(), taken_note="") -> list:
+    """Every reason these names cannot join the roster, in words a host can act on. Empty when they all can.
+
+    ``seated`` holds the lower-case names already at the table, which are named apart from the
+    rest of the roster; ``taken_note`` follows the names that are on the roster already.
+    """
+    active = {name.lower() for name in Member.objects.filter(group=group, status=Member.Status.ACTIVE).values_list("display_name", flat=True)}
+    removed = _removed_names(group)
+    taken, here, twice, gone, long, seen = [], [], [], [], [], set()
+    for name in names:
+        key = name.lower()
+        if len(name) > NAME_MAX:
+            long.append(f"{name[:20]}…")
+        elif key in seen:
+            twice.append(name)
+        elif key in seated:
+            here.append(name)
+        elif key in active:
+            taken.append(name)
+        elif key in removed:
+            gone.append(name)
+        seen.add(key)
+    problems = []
+    if taken:
+        problems.append(f"Already in this group: {', '.join(taken)}.{' ' + taken_note if taken_note else ''}")
+    if here:
+        problems.append(f"Already at the table: {', '.join(here)}.")
+    if twice:
+        problems.append(f"Typed twice: {', '.join(twice)}.")
+    if gone:
+        problems.append(REMOVED_NAME.format(names=", ".join(gone)))
+    if long:
+        problems.append(f"Too long ({NAME_MAX} characters at most): {', '.join(long)}")
+    return problems
+
+
+def create_roster_players(actor: Member, names, *, seated=frozenset(), taken_note="") -> list:
+    """Add these cleaned names to the roster without logins: everyone, or nobody with every problem named.
+
+    For a caller that already holds its own transaction (a set adding new names), under the group lock.
+    """
+    require_host(actor)
+    group = _lock_group(actor.group_id)
+    problems = new_name_problems(group, names, seated=seated, taken_note=taken_note)
+    if problems:
+        raise RuleError(" ".join(problems))
+    return [_create_roster_player(actor, group, name) for name in names]
+
+
 @transaction.atomic
 def add_roster_players(actor: Member, names) -> list:
     """Add several players without logins. Everyone is added, or nobody is; every problem is named at once."""
     require_host(actor)
-    typed = [" ".join((name or "").split()) for name in names]
-    typed = [name for name in typed if name]
+    typed = typed_names(names)
     if not typed:
         raise RuleError("Type at least one name.")
     if len(typed) == 1:
@@ -386,33 +440,7 @@ def add_roster_players(actor: Member, names) -> list:
         raise RuleError(TURNED_OFF)
     if len(typed) > ADD_MAX:
         raise RuleError(f"Add {ADD_MAX} players at most at a time.")
-    group = _lock_group(actor.group_id)
-    active = {name.lower() for name in Member.objects.filter(group=group, status=Member.Status.ACTIVE).values_list("display_name", flat=True)}
-    removed = _removed_names(group)
-    taken, twice, gone, long, seen = [], [], [], [], set()
-    for name in typed:
-        key = name.lower()
-        if len(name) > NAME_MAX:
-            long.append(f"{name[:20]}…")
-        elif key in seen:
-            twice.append(name)
-        elif key in active:
-            taken.append(name)
-        elif key in removed:
-            gone.append(name)
-        seen.add(key)
-    problems = []
-    if taken:
-        problems.append(f"Already in this group: {', '.join(taken)}.")
-    if twice:
-        problems.append(f"Typed twice: {', '.join(twice)}.")
-    if gone:
-        problems.append(REMOVED_NAME.format(names=", ".join(gone)))
-    if long:
-        problems.append(f"Too long ({NAME_MAX} characters at most): {', '.join(long)}")
-    if problems:
-        raise RuleError(" ".join(problems))
-    return [_create_roster_player(actor, group, name) for name in typed]
+    return create_roster_players(actor, typed)
 
 
 def _rename(actor, group, member, name) -> bool:
