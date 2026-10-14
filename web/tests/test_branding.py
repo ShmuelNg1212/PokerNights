@@ -1,11 +1,16 @@
+import json
 import os
+import re
 import struct
+import zlib
 from xml.etree import ElementTree
 
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.test import TestCase
 from django.urls import reverse
 
+from config.pwa import SPLASH_SIZES, splash_file
 from groups import services as groups
 from groups.tests.helpers import make_group
 
@@ -75,3 +80,66 @@ class LinkPreviewTests(TestCase):
         self.assertEqual(struct.unpack(">II", header[16:24]), (1200, 630))
         # WhatsApp has dropped larger pictures.
         self.assertLess(os.path.getsize(path), 300_000)
+
+
+def png_size(path):
+    with open(path, "rb") as picture:
+        header = picture.read(24)
+    assert header[:8] == b"\x89PNG\r\n\x1a\n", path
+    return struct.unpack(">II", header[16:24])
+
+
+def first_pixel_alpha(path):
+    """The top-left pixel's alpha, for an 8-bit RGBA PNG. Every row filter leaves a row's first pixel as stored."""
+    with open(path, "rb") as picture:
+        data = picture.read()
+    position, compressed, colour_type = 8, b"", None
+    while position < len(data):
+        length, kind = struct.unpack(">I4s", data[position:position + 8])
+        chunk = data[position + 8:position + 8 + length]
+        if kind == b"IHDR":
+            colour_type = chunk[9]
+        elif kind == b"IDAT":
+            compressed += chunk
+        position += 12 + length
+    assert colour_type == 6, "not RGBA"
+    return zlib.decompress(compressed)[4]
+
+
+class LaunchScreenTests(TestCase):
+    """The installed app's launch: an image per iPhone screen, and clear-ground icons for Android's."""
+
+    def test_every_page_names_a_launch_screen_for_each_iphone(self):
+        page = self.client.get(reverse("login")).content.decode()
+        tags = re.findall(r'<link rel="apple-touch-startup-image" media="([^"]+)" href="([^"]+)">', page)
+        self.assertEqual(len(tags), len(SPLASH_SIZES))
+        for (media, href), (width, height, ratio) in zip(tags, SPLASH_SIZES):
+            self.assertEqual(media, f"(device-width: {width}px) and (device-height: {height}px) and (-webkit-device-pixel-ratio: {ratio}) and (orientation: portrait)")
+            self.assertEqual(href, f"/static/{splash_file(width, height, ratio)}")
+
+    def test_each_image_fills_its_screen_exactly(self):
+        # An iPhone skips an image that is not its exact size; it does not stretch one.
+        for width, height, ratio in SPLASH_SIZES:
+            path = finders.find(splash_file(width, height, ratio))
+            self.assertIsNotNone(path, (width, height, ratio))
+            self.assertEqual(png_size(path), (width * ratio, height * ratio))
+            self.assertLess(os.path.getsize(path), 60_000)
+
+    def test_the_renderer_draws_the_same_sizes(self):
+        script = open(os.path.join(settings.BASE_DIR, "web/tests/browser/make_splash.mjs")).read()
+        listed = re.search(r"const SIZES=\[(.*?)\];", script).group(1)
+        self.assertEqual(tuple(tuple(map(int, size)) for size in re.findall(r"\[(\d+),(\d+),(\d+)\]", listed)), SPLASH_SIZES)
+
+    def test_android_draws_its_launch_from_a_clear_ground_icon(self):
+        manifest = json.load(open(finders.find("manifest.webmanifest")))
+        self.assertEqual(manifest["background_color"], "#130e0a")
+        icons = {icon["purpose"] + " " + icon["sizes"]: icon["src"] for icon in manifest["icons"]}
+        self.assertEqual(icons, {
+            "any 192x192": "/static/icons/app-any-192.png",
+            "any 512x512": "/static/icons/app-any-512.png",
+            "maskable 512x512": "/static/icons/app-maskable-512.png",
+        })
+        for name, size in [("app-any-192.png", 192), ("app-any-512.png", 512)]:
+            path = finders.find("icons/" + name)
+            self.assertEqual(png_size(path), (size, size))
+            self.assertEqual(first_pixel_alpha(path), 0)

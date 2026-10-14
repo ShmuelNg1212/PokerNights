@@ -16,7 +16,7 @@
       ]
     },
     {
-      "source": "/static/(fonts|branding|icons)/(.*)",
+      "source": "/static/(fonts|branding|icons|splash)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
