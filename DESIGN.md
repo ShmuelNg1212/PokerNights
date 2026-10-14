@@ -791,7 +791,8 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | New group | Fades in last |
 | A newcomer's first screen | The mark, the heading, the sentence, the form and the note rise in turn, 60ms apart |
 | Any other landing page | Only the top bar's mark lands |
-| A later visit, a reload, Back | Nothing |
+| Opening the app (2026-10-14) | The same arrival, on the first page of a new window: the app just started, or a new tab. Your groups arrives as above; any other first page has only the chip landing |
+| A later visit, a reload, Back, a return from the background | Nothing |
 
 **Rules.**
 
@@ -800,6 +801,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 3. The server marks the page (`data-welcome` on `<main>`, `config/door.py`): a login sets a cookie for 30 seconds, and the first page shown to the signed-in person reads and removes it. A page fetched ahead of a tap does not use it up, and a front-door screen seen signed in (Join, Claim) leaves it for the page behind it.
 4. It is CSS, as the front door's arrival is. `door.js` ends it on the first key or tap and takes the mark off after 1.2 seconds.
 5. `DOOR_MOTION=False` removes it with the rest of the front door's movement.
+6. Opening the app (2026-10-14): a script in the head, before the stylesheet, writes `data-launch` on `<html>` on the first page of a window, using `sessionStorage` to know the window is new and the navigation's type to leave out a reload. The arrival's CSS answers `data-welcome` and `data-launch` alike, and `door.js` takes both off. A return from the background is not an opening: the cards are already in view, and to rise they would first have to vanish. `LAUNCH_ARRIVAL=False` removes only this. [Plan](doc/plan/1791956781_arrival_on_launch.md).
 
 **Measured.** `welcome.mjs`, 36 checks at 320 × 568, 390 × 844 and 1280 × 800: the first frame, every figure's text on that frame against its text at rest, the order of the cards, the end within 900ms, a tap and a key ending it, a tap on a card's button during it, one card and five, a group page, a newcomer, a reload, Back, a second login, reduced motion, no JavaScript, Motion blocked and the switch. With the processor slowed four times the arrival had one late frame (50ms) where a plain visit had none.
 

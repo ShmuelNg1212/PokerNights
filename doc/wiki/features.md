@@ -464,6 +464,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - The movement is the `welcome-*` keyframes at the end of `static/css/app.css`. `door.js` ends it on the first key or tap and removes the attribute.
 - `static/js/turbo-setup.js` now ignores the browser's "transition was skipped" when a link is tapped while the chip is still being carried in; the screen changes at once.
 - Switch: `DOOR_MOTION=False`. Check: `web/tests/browser/welcome.mjs`. [Plan](../plan/1791546778_arrival_after_login.md).
+- **On every app open (2026-10-14).** The same arrival plays on the first page of a new window, signed in: the installed app just started, or a new browser tab. `config/door.py` (`door.launch`) sends a signed-in page a short script at the top of the head; it writes `pn-launched` in `sessionStorage` and, when there was none and the navigation is not a reload or Back, `data-launch` on `<html>`. The `welcome-*` CSS answers either mark; `door.js` takes both off when the arrival ends or the page is left. A return from the background plays nothing. Front-door screens (`entry.html`) empty the `launch` block, as they do `welcome`. Switch: `LAUNCH_ARRIVAL=False`, which leaves the arrival after a log-in. [Plan](../plan/1791956781_arrival_on_launch.md).
 
 ## Set page (2026-10-09)
 
