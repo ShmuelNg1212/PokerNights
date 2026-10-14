@@ -112,3 +112,4 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Switch cleanup: remove the earlier copies of revamped screens | [study](../study/1791788387_switch_cleanup.md) | [plan](../plan/1791788388_switch_cleanup.md) | Done, released 2026-10-12 as `70c939a` |
 | A picture for the link: the card chat apps show | [study](../study/1791861227_link_preview.md) | [plan](../plan/1791861228_link_preview.md) | Done, released 2026-10-13 as `d3b8d1d` |
 | Session setup polish and the More host controls flyout | [study](../study/1791872138_session_setup_polish.md) | [plan](../plan/1791872139_session_setup_polish.md) | Done, released 2026-10-13 as `899a93e` |
+| Several new names at once on Add players | [study](../study/1791948615_new_names_at_once.md) | [plan](../plan/1791948616_new_names_at_once.md) | Built 2026-10-14 on `feat/new-names-at-once`, not released |
