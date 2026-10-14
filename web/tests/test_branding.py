@@ -3,6 +3,7 @@ import os
 import re
 import struct
 import zlib
+from unittest import skipUnless
 from xml.etree import ElementTree
 
 from django.conf import settings
@@ -125,8 +126,12 @@ class LaunchScreenTests(TestCase):
             self.assertEqual(png_size(path), (width * ratio, height * ratio))
             self.assertLess(os.path.getsize(path), 60_000)
 
+    RENDERER = os.path.join(settings.BASE_DIR, "web/tests/browser/make_splash.mjs")
+
+    # .vercelignore leaves the browser scripts out of the upload, so the Vercel build skips this one.
+    @skipUnless(os.path.exists(RENDERER), "the browser scripts are not uploaded to Vercel")
     def test_the_renderer_draws_the_same_sizes(self):
-        script = open(os.path.join(settings.BASE_DIR, "web/tests/browser/make_splash.mjs")).read()
+        script = open(self.RENDERER).read()
         listed = re.search(r"const SIZES=\[(.*?)\];", script).group(1)
         self.assertEqual(tuple(tuple(map(int, size)) for size in re.findall(r"\[(\d+),(\d+),(\d+)\]", listed)), SPLASH_SIZES)
 
