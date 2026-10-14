@@ -1,5 +1,7 @@
 """The front door's frame and the arrival the server chooses for it. The words on each page are in test_entry.py."""
 
+import re
+
 from django.contrib.sessions.models import Session
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -218,3 +220,52 @@ class WelcomeTests(TestCase):
         self.assertNotIn(ARRIVED, self.log_in().cookies)
         self.client.cookies[ARRIVED] = "1"
         self.assertNotContains(self.client.get(self.home), "data-welcome")
+
+
+class LaunchArrivalTests(TestCase):
+    """The arrival also plays on a new window's first page: the installed app just started, or a new tab.
+    The browser decides that (templates/base.html); the server only sends the script to a signed-in page."""
+
+    SCRIPT = 'sessionStorage'
+
+    def setUp(self):
+        _, self.host = make_group(group_name="Kamuning Card Club")
+        self.home = reverse("home")
+
+    def test_a_signed_in_page_carries_the_script_in_the_head(self):
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.home).content.decode()
+        head, body = page.split("</head>", 1)
+        # In the head, so the mark is on <html> before the first paint; no script is in the body (ScriptsLoadOnceTests).
+        script = head.split("<script>(function(r){", 1)[1].split("</script>", 1)[0]
+        self.assertIn('"pn-launched"', script)
+        self.assertIn("r.dataset.launch", script)
+        self.assertNotIn("<script", body)
+        # Nothing in the head but tags: stray text there (a {# #} comment over several lines) ends the head early,
+        # and the stylesheet after it loses the screen-change opt-in.
+        text = re.sub(r"<(script|title)\b.*?</\1>|<[^>]+>", "", head.split("<head>", 1)[1], flags=re.S)
+        self.assertEqual(text.strip(), "")
+        self.assertIn('n.type==="navigate"', script)
+        # The server marks nothing by itself: a later visit is not an arrival.
+        self.assertNotIn("data-welcome", page)
+
+    def test_a_signed_out_page_has_no_script(self):
+        self.assertNotContains(self.client.get(reverse("login")), self.SCRIPT)
+
+    def test_a_front_door_screen_seen_signed_in_leaves_it_for_the_page_behind_it(self):
+        _, token = services.create_invite(make_group(host_name="rosa", group_name="Other Club")[1])
+        self.client.force_login(self.host.user)
+        self.assertNotContains(self.client.get(reverse("invite_accept", args=[token])), self.SCRIPT)
+
+    @override_settings(LAUNCH_ARRIVAL=False)
+    def test_its_switch_removes_it_and_leaves_the_login_arrival(self):
+        self.client.force_login(self.host.user)
+        self.assertNotContains(self.client.get(self.home), self.SCRIPT)
+        self.client.logout()
+        self.client.post(reverse("login"), {"username": "hana", "password": "tablestakes-91"})
+        self.assertContains(self.client.get(self.home), "data-welcome")
+
+    @override_settings(DOOR_MOTION=False)
+    def test_the_front_door_switch_removes_it_too(self):
+        self.client.force_login(self.host.user)
+        self.assertNotContains(self.client.get(self.home), self.SCRIPT)

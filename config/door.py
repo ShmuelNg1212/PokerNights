@@ -7,6 +7,10 @@ the browser session. The cookie holds nothing and nothing is stored on the serve
 The one page that follows a successful login plays the arrival into the app. A login marks its
 answer with a second cookie that lasts half a minute; the first page a signed-in person is shown
 reads it and removes it.
+
+The same arrival plays on the first page of a new window: the installed app just started, or a new
+browser tab. Only the browser knows that, before the first paint, so the page carries a short script
+for it (templates/base.html) and the server only says whether to send it.
 """
 
 from django.conf import settings
@@ -58,6 +62,11 @@ class Door:
             return False
         request.door_welcomed = True
         return True
+
+    @property
+    def launch(self):
+        """Whether a signed-in page carries the script that plays the arrival on a new window's first page."""
+        return settings.DOOR_MOTION and settings.LAUNCH_ARRIVAL and self.request.user.is_authenticated
 
     @property
     def came_in(self):
