@@ -42,6 +42,7 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `VAPID_SUBJECT` | optional | The contact the push services may use about our messages. Defaults to `https://pokernights-five.vercel.app` |
 | `PUSH_ALERTS` | optional | Defaults to on. Set `False` to send no phone notifications and hide the alerts panel; subscriptions are kept |
 | `TABLE_NOTICES` | optional | Defaults to on. Set `False` to hide "added you" on Your groups (`notify/services.py`). With `PUSH_ALERTS` also off, no notice is written |
+| `NEXT_SET_NOTICE` | optional | Defaults to on. Set `False` to stop an ended set's page from pointing to the session's next set ("Set 2 has started", **Go to set 2**) (`web/views.py`) |
 | `ARRIVAL_MARKS` | optional | Defaults to on. Set `False` to stop marking a player who arrives on another phone's set page: no "Joined", toast, count line or announcement (`static/js/arrivals.js`) |
 | `DEBUG` | never set | Off |
 
