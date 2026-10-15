@@ -1,8 +1,10 @@
 """What lets a phone install the site: the service worker and its offline page.
 
-The worker has one job. When a page navigation fails for lack of a connection it shows
+The worker has two jobs. When a page navigation fails for lack of a connection it shows
 the offline page. It stores that page and nothing else, so no ledger page is ever shown
-from a cache. Setting SERVICE_WORKER=False serves a worker that removes itself.
+from a cache. And it shows a table alert that the server pushed (notify/push.py), and opens
+the set when the alert is tapped. Setting SERVICE_WORKER=False serves a worker that removes
+itself, and with it the alerts.
 """
 
 from django.conf import settings
@@ -29,6 +31,24 @@ self.addEventListener("fetch", (event) => {
   if (event.request.mode !== "navigate") return;
   event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE)));
 });
+// A table alert: the title, the line under it and the set to open. One per set (the tag).
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (error) { data = {}; }
+  event.waitUntil(self.registration.showNotification(data.title || "PokerNights", {
+    body: data.body || "", tag: data.tag, icon: "__ICON__", data: { url: data.url || "/" },
+  }));
+});
+// A tap opens the set: in the app's window if one is open, otherwise in a new one.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+    const open = windows.find((client) => new URL(client.url).origin === self.location.origin && "focus" in client);
+    if (!open) return self.clients.openWindow(url);
+    return open.focus().then((client) => (client && "navigate" in client ? client.navigate(url) : client));
+  }));
+});
 """
 
 # The kill switch: a worker that deletes every cache and unregisters itself.
@@ -46,7 +66,7 @@ self.addEventListener("activate", (event) => {
 
 @login_not_required
 def service_worker(request):
-    body = WORKER if settings.SERVICE_WORKER else REMOVER
+    body = WORKER.replace("__ICON__", static("icons/app-192.png")) if settings.SERVICE_WORKER else REMOVER
     response = HttpResponse(body, content_type="text/javascript; charset=utf-8")
     response["Cache-Control"] = "no-cache"
     return response
@@ -91,7 +111,7 @@ def startup_images():
 def flags(request):
     """Template context: the service worker, the in-app numpad, one-trip answers to in-place actions, password reset links, the link preview picture and the iPhone launch screens."""
     return {"service_worker": settings.SERVICE_WORKER, "numpad": settings.NUMPAD, "answer_in_place": settings.ANSWER_IN_PLACE, "install_prompt": settings.INSTALL_PROMPT,
-            "reset_links": settings.RESET_LINKS,
+            "reset_links": settings.RESET_LINKS, "arrival_marks": settings.ARRIVAL_MARKS,
             # A chat app fetching a link needs the picture's full address, host included.
             "link_preview_image": request.build_absolute_uri(static("branding/link-preview.png")),
             "startup_images": startup_images()}

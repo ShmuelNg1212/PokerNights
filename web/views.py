@@ -27,6 +27,8 @@ from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
+from notify import push
+from notify import services as notify
 from settlement import queries as settlement_queries
 
 from . import stats as stats_pages
@@ -36,7 +38,12 @@ from .home import archived_groups, home_cards
 
 
 def home(request):
-    return render(request, "web/home.html", {"cards": home_cards(request.user), "archived_groups": archived_groups(request.user), "form": take_form(request, "home:create", GroupForm, auto_id="group_%s")})
+    return render(request, "web/home.html", {
+        "cards": home_cards(request.user), "archived_groups": archived_groups(request.user),
+        "form": take_form(request, "home:create", GroupForm, auto_id="group_%s"),
+        # Table alerts need the worker that shows them and both keys (notify/push.py).
+        "push_alerts": settings.SERVICE_WORKER and push.enabled(), "vapid_public_key": settings.VAPID_PUBLIC_KEY,
+    })
 
 
 def visible_nights(me, archived=False):
@@ -250,6 +257,8 @@ def session(request, session_id):
     session, me = session_for(request.user, session_id)
     context = session_context(session, shown_as(me, session.night))
     context["real_host"] = me.is_host
+    # A notice that this player was put in the set has done its job once they open it.
+    notify.mark_seen(request.user, session.pk)
     # Players just added on Add players are marked once (static/js/flow.js).
     arrived = request.session.get("players_arrived", {})
     if str(session.pk) in arrived:

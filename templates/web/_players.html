@@ -3,7 +3,7 @@
   {% include "web/_players_count.html" %}
 {% else %}
 <section class="table-players" aria-label="Players at the table">
-  <div class="section-heading"><h2>Players <span class="muted small">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+  <div class="section-heading"><h2>Players <span class="muted small" data-player-count="{{ summary.player_count }}">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
     {# While a set is prepared the checklist's first step adds players; in play this is the way to seat a late arrival. #}
     {% if can_manage_players and not prep %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
   </div>

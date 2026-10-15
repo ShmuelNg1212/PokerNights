@@ -17,6 +17,7 @@ urlpatterns = [
     path("sw.js", pwa.service_worker, name="service_worker"),
     path("offline/", pwa.offline, name="offline"),
     path("accounts/", include("accounts.urls")),
+    path("", include("notify.urls")),
     path("", include("groups.urls")),
     path("", include("games.urls")),
     path("", include("ledger.urls")),

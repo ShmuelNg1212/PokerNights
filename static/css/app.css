@@ -926,6 +926,12 @@ legend { padding: 0; }
 .motion-on .pot-main.just-changed { position: relative; box-shadow: none; }
 .motion-on .pot-main.just-changed::after { content: ""; position: absolute; inset: auto 0 -2px; height: 2px; background: var(--brass); transform-origin: left; animation: mark-draw var(--t-sheet) var(--ease-out); transition: opacity 400ms var(--ease-in); }
 .motion-on .pot-main.change-fading::after { opacity: 0; }
+/* A player arriving on another phone (arrivals.js): the players count draws the brass line under it, as "Still in play" does,
+   and a toast names who joined when their row is out of view. Under reduced motion the line is simply there. */
+[data-player-count] { position: relative; }
+.count-arrived::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px; background: var(--brass); transform-origin: left; animation: mark-draw var(--t-sheet) var(--ease-out); transition: opacity 400ms var(--ease-in); }
+.count-arrived.change-fading::after { opacity: 0; }
+.message-arrival { border-color: var(--brass); }
 /* pot.js: for the length of a roll the pot's figure is one cell per character, each cut to its own
    height; a changed cell holds the digit that leaves over the one that arrives. The amount added
    sits on the label's line, so nothing below it moves. */
@@ -1814,3 +1820,21 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 @media (prefers-reduced-motion: no-preference) {
   .transfer-line.just-carried .transfer-party strong, .transfer-line.just-carried .transfer-amount { animation: settle-dim 520ms var(--ease-out) both; }
 }
+
+/* Table alerts (2026-10-15). On a card: the viewer was put in this set and has not opened it yet,
+   a brass dot and the words, above the facts (alerts.js brings it in on a refresh). At the foot of
+   Your groups: the panel that turns alerts on for this phone, quiet as New group's form. */
+.band-added { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-2) 0 0; color: var(--text); font-size: 1rem; font-weight: 650; }
+.home-band.felt .band-added { color: var(--bone); }
+.band-added + .band-facts { margin-top: var(--s-1); }
+.added-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--brass); }
+.alerts-panel { margin-top: var(--s-4); padding: var(--s-4); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+.alerts-panel:has(.alerts-line:not([hidden])) { padding: var(--s-1) var(--s-4); }
+.alerts-title { margin: 0 0 var(--s-1); font-size: 1.125rem; font-weight: 750; }
+.alerts-text { margin: 0 0 var(--s-3); color: var(--muted); text-wrap: pretty; }
+.alerts-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.alerts-actions .grow { min-width: 200px; }
+.alerts-line { display: flex; align-items: center; gap: var(--s-2); margin: 0; min-height: var(--tap); }
+.alerts-tick { display: inline-flex; color: var(--good); }
+.alerts-line .link-button { flex: none; white-space: nowrap; }
+:is([data-welcome], [data-launch]) .alerts-panel { animation: welcome-fade 300ms var(--ease-out) 420ms backwards; }

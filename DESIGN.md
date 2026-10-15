@@ -245,7 +245,7 @@ The shared header stays at the top with Rail background, a bottom Line boundary 
 
 ### Badges
 
-Compact outlined pills mark state. Live state uses bone and ink; warning and positive variants use the corresponding status colours. Confirmed row changes display “Rebuy added” or “Updated” alongside the attention treatment.
+Compact outlined pills mark state. Live state uses bone and ink; warning and positive variants use the corresponding status colours. Confirmed row changes display “Rebuy added” or “Updated” alongside the attention treatment; a player added by someone else displays “Joined”, or “You’re in” on the viewer’s own row (2026-10-15).
 
 ### Player rows
 
@@ -530,7 +530,7 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 
 | Event | Motion |
 |---|---|
-| A player is added | The row fades in and rises 12px. Several arrive 40ms apart. |
+| A player is added | The row fades in and rises 12px. Several arrive 40ms apart. Since 2026-10-15, added by someone else: the brass mark and “Joined” for three seconds, the count’s brass line, and a toast with Show when the row is out of view (see “Table alerts”). |
 | A row above grows or shrinks | The rows below slide to their place. |
 | A buy-in or rebuy | The new edge drops; "Rebuy added" springs in; the brass mark fades out over its last 400ms. |
 | "Still in play" changes | The underline draws, holds and fades. The figure appears at once. Since 2026-10-11 its changed digits roll and the amount added shows beside the label. |
@@ -1027,6 +1027,22 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 - **The box** starts two lines tall and grows with what is typed (`field-sizing: content`, at most half the screen).
 - **The preview** under the box is one line per typed name: the name at 600 and its state at 14px, "New" in the muted voice or the problem in `--down`. A name on the roster carries a link-style "Tick … instead" at the line's end (48px target), which ticks the row, gives it the brass mark for three seconds and brings it into sight. While a name has a problem the bar says how many need a change and the button waits.
 - **Motion.** One authored moment: the arrival on the set page. The rows of the players just added rise 12px into place 40ms apart on the `shift` spring and carry the brass mark for three seconds, and the page scrolls them into sight above the dock and its message. The preview's new lines only fade in (`fade`, 180ms); nothing moves sideways while the host types. Both write their first keyframe before Motion starts. Under reduced motion the marks stay and nothing moves.
+
+### Table alerts (2026-10-15)
+
+[Plan](doc/plan/1792069342_table_alerts.md). A player put in a set hears about it, and every other phone sees who arrived. No new colour, font or asset; the brass attention rule, the change badge, the toast and the existing presets do it all.
+
+| Part | Rule |
+|---|---|
+| A row added by someone else | The brass row mark and the change badge “Joined” (“You’re in” on the viewer’s own row) for 3 seconds, fading over the last 400ms, with or without motion. The row rises as before; the badge springs (`arrive`). A redraw within the 3 seconds keeps the mark; a buy-in of the row’s own takes over with its own badge |
+| The players count | The 2px brass line under “9 · 3 seats free” (and the checklist’s Players line) draws with `mark-draw`, holds and fades |
+| Out of view | One toast: “Ana joined”, “Ana and Ben joined”, “Ana, Ben and Cy joined”, “Ana, Ben and 2 others joined”, with a brass edge, **Show** and Dismiss, for 6 seconds. A later arrival rewrites the words of the toast already up. Show scrolls the row to a third of the screen (instantly under reduced motion), marks it again and puts focus on it |
+| In view | No toast. A visually hidden polite line outside the redrawn area says “Ana joined the set.”, or “You were added to this set.” |
+| Who is told | Only a redraw by a poll, in a visible tab, announces. The host’s own add, sent in place, is marked but not announced: its success message speaks |
+| Your groups | A band whose set added the viewer carries “Ana added you” above its facts, led by an 8px Brass dot; its button becomes the primary one. A refresh brings it in: the line rises 8px (`shift`), the dot springs (`arrive`). First sight: it is simply there, under the arrival. Gone once the set is opened |
+| Table alerts panel | At the foot of Your groups, after New group, quiet as its form (Rail, 1px rule edge). Ask: “Table alerts”, one sentence, a neutral **Turn on table alerts** and a quiet **Not now**, both 48px. On: one line, a green tick, “Table alerts are on for this phone.” and **Turn off**. Blocked: one muted line. A change the person made cross-fades (`fade`); the tick springs in (`arrive`); Not now drops 8px and fades (`leave`). A failure nudges its message |
+
+**Measured.** `arrivals.mjs`, 41 checks at 390 × 844 and 1280 × 800: the mark, badge and count line; the toast and Show; two at once; in view; a redraw during the hold; the host’s own add; reduced motion; Your groups through a refresh and after the set is opened; each panel state with the push service stubbed; Motion animating only `transform` and `opacity` (toasts keep their `y`); no script error.
 
 ## Do's and Don'ts
 

@@ -1,0 +1,12 @@
+{% load table_tags %}{# Table alerts for this phone: shown by alerts.js only where a phone can take them. It keeps its state across redraws (permanent). #}
+<section id="alerts" class="alerts-panel" hidden data-turbo-permanent data-alerts data-key="{{ vapid_public_key }}" data-subscribe="{% url 'alerts_subscribe' %}" data-unsubscribe="{% url 'alerts_unsubscribe' %}" aria-labelledby="alerts-title">
+  {% csrf_token %}
+  <div class="alerts-ask" data-alerts-state="ask" hidden>
+    <h2 id="alerts-title" class="alerts-title">Table alerts</h2>
+    <p class="alerts-text">Get a notification when a host adds you to a set.</p>
+    <div class="alerts-actions"><button type="button" class="btn grow" data-alerts-on>Turn on table alerts</button><button type="button" class="btn btn-quiet" data-alerts-later>Not now</button></div>
+    <p class="sheet-error" role="alert" data-alerts-error hidden></p>
+  </div>
+  <p class="alerts-line" data-alerts-state="on" hidden><span class="alerts-tick">{% icon 'check' %}</span><span class="grow">Table alerts are on for this phone.</span><button type="button" class="link-button" data-alerts-off>Turn off</button></p>
+  <p class="alerts-line muted" data-alerts-state="blocked" hidden>Alerts are blocked for PokerNights in this phone’s settings.</p>
+</section>

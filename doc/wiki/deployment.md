@@ -38,6 +38,11 @@ None are in Git. Names are also in [`.env.example`](../../.env.example).
 | `SHARE_RESULTS` | optional | Defaults to on. Set `False` to remove Share results from closed sessions without a release (`web/views.py`, `web/share.py`) |
 | `INSTALL_PROMPT` | optional | Defaults to on. Set `False` to stop the home-screen suggestion after a login and to remove Add to home screen and Join with a link, without a release (`config/door.py`, `static/js/install.js`) |
 | `NUMPAD` | optional | Defaults to on. Set `False` to return every number field to the phone's own keyboard without a release (the in-app numpad, `static/js/numpad.js`). Redeploy for it to take effect |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | us, private key sensitive | Table alerts (2026-10-15): the key pair that signs each phone notification, base64url (the public key as the 65-byte point, the private key as its 32 raw bytes). Without both, nothing is pushed and the alerts panel is hidden; the in-app "added you" line still works. A new pair makes every phone subscribed so far stop receiving until it turns alerts on again (`notify/push.py`) |
+| `VAPID_SUBJECT` | optional | The contact the push services may use about our messages. Defaults to `https://pokernights-five.vercel.app` |
+| `PUSH_ALERTS` | optional | Defaults to on. Set `False` to send no phone notifications and hide the alerts panel; subscriptions are kept |
+| `TABLE_NOTICES` | optional | Defaults to on. Set `False` to hide "added you" on Your groups (`notify/services.py`). With `PUSH_ALERTS` also off, no notice is written |
+| `ARRIVAL_MARKS` | optional | Defaults to on. Set `False` to stop marking a player who arrives on another phone's set page: no "Joined", toast, count line or announcement (`static/js/arrivals.js`) |
 | `DEBUG` | never set | Off |
 
 To replace a sensitive value, remove it and add it again. A change takes effect on the next deployment.
@@ -62,7 +67,7 @@ When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects
 
 ## Service worker and its kill switch
 
-`/sw.js` is served by the Django function with `Cache-Control: no-cache`. If the worker ever misbehaves on phones: set the environment variable `SERVICE_WORKER=False` in Vercel and redeploy. The next visit from each phone then removes the worker and its cache. Remove the variable to turn it back on.
+`/sw.js` is served by the Django function with `Cache-Control: no-cache`. If the worker ever misbehaves on phones: set the environment variable `SERVICE_WORKER=False` in Vercel and redeploy. The next visit from each phone then removes the worker and its cache. Remove the variable to turn it back on. Since 2026-10-15 the worker also shows table alerts, so the kill switch stops them as well; `PUSH_ALERTS=False` stops only the alerts.
 
 App icons live under `/static/icons/` and are cached for a week without a version tag. To change the icon art, render new files under new names and update `base.html` and the manifest.
 

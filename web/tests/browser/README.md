@@ -231,3 +231,13 @@ For several new names at once on Add players, seed a fresh temporary database wi
 `late_player.mjs`, `rake.mjs` and `rake_controls.mjs` type into the names box since 2026-10-14. `late_player.mjs` passes 19 and fails the same 2 checks as before the change ("new identity saved to group roster", "native manual buy-in after late arrival"); both look at screens that changed before this cycle.
 
 For the session setup polish, seed a fresh temporary database with `seed.py` and `seed_setup.py`, then run `session_setup.mjs 390`, `session_setup.mjs 1280` and `session_setup.mjs 390 reduce` (21, 20 and 19 checks; each run wants its own fresh database, because it creates two sessions). It checks the group titles' weight and rhythm on New session, that a preset fills the stakes and keeps the typed fields, that only the chosen rake rule's amount is on the page, the draft set's step line and buttons, the "More host controls" flyout (it opens with motion, stays drawn while it closes, turns round on a second tap, and does nothing under reduced motion), and the Add players page.
+
+For table alerts (2026-10-15), seed a fresh temporary database with `seed_arrivals.py` alone, serve it on port 8765 with `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` set (any valid pair; the panel is hidden without them), then:
+
+```sh
+PN_DB=/private/tmp/pn-arrivals.sqlite3 node web/tests/browser/arrivals.mjs
+```
+
+41 checks. The fixture writes `/private/tmp/pn-arrivals-manifest.json`: group "Arrivals" (host `ari`, players `bea`, `cal`, `dan` with logins and fourteen without) with three sets in play at 12 seats, and group "Quiet room" where `cal` is in a draft. The other host writes through the real services. It covers a player arriving on another phone's set page at 390 and 1280px (the mark, "Joined", the count line, the toast and Show, two at once, in view, a redraw during the hold, the host's own add), reduced motion, the "added you" line on Your groups through a refresh, and the alerts panel's states with the phone's push service stubbed in the page. It consumes its fixtures. Served with `ARRIVAL_MARKS=False TABLE_NOTICES=False PUSH_ALERTS=False`, its arrival checks fail as `main` would.
+
+Seen on 2026-10-15 with this change: `flow.mjs` 51 of 52 and `home.mjs` 57 of 60, the same failures as `main` ("count confirmed: the status badge springs"; "every link and button in a card is at least 48px tall", with an empty list of offenders); `hub_live.mjs` 19 of 19; `table.mjs` stops at "a player on an open set" on both.

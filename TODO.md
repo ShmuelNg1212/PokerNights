@@ -4,6 +4,13 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+Table alerts ([plan](doc/plan/1792069342_table_alerts.md), [study](doc/study/1792069341_table_alerts.md)): approved and built on `feat/table-alerts` on 2026-10-15, not released. Migration `notify.0001` (two new tables). 1,162 tests pass on SQLite and PostgreSQL 17; `arrivals.mjs` 41 of 41. Switches: `PUSH_ALERTS`, `TABLE_NOTICES`, `ARRIVAL_MARKS`. A phone notification and an in-app mark for each added player when a host opens a set, and for later adds; on the set page, other phones see an added player plainly (brass mark, "Joined", a toast when out of view).
+
+- [x] Approve the plan and answer its three decisions. Approved 2026-10-15: `pywebpush`, a new `notify` app, the site's address as the VAPID contact.
+- [ ] Add `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (sensitive) in Vercel → pokernights → Settings → Environment Variables, Production. I give you the pair. `VAPID_SUBJECT` is optional (defaults to the site's address).
+- [ ] Say when to merge and release it.
+- [ ] After release, on your phones: a player with the app on the Home Screen turns on table alerts at the foot of Your groups; you add them to a set and open it; their locked phone shows "… set N is open" and a tap opens the set. Add them to a set in play: "you're in set N". A second player watching the set sees the new row marked "Joined", or a toast if it is out of view. A player without alerts sees "ari added you" on Your groups.
+
 The arrival on every app open ([plan](doc/plan/1791956781_arrival_on_launch.md), [study](doc/study/1791956780_arrival_on_launch.md)): approved and built on `feat/arrival-on-launch` on 2026-10-14. Released 2026-10-14 as `e254122` (previous production commit `1237df4`); four minutes after the push the live stylesheet and `door.js` carried the launch mark. Each time the app is started (or a new tab is opened), signed in, Your groups arrives as it does after a log-in; nothing plays for the rest of that visit or on a return from the background. No migration. 1,123 tests pass on SQLite and PostgreSQL 17; `welcome.mjs` 54 of 54, `door.mjs` 134 of 134. `LAUNCH_ARRIVAL=False` turns it off.
 
 - [x] Approve the plan and answer its two decisions. Approved 2026-10-14: each start of the app, installed app and browser tab alike.
