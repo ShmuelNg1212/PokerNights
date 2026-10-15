@@ -9,13 +9,14 @@ One Django 6.1 project with server-rendered templates, one stylesheet and small 
 | `config` | Settings from the environment, root URLs, `/healthz`, database options per engine | `settings.py`, `deploy.py` |
 | `accounts` | Custom `User`, sign-up, login, logout, and `PasswordResetLink` (a hashed one-use token; `services.py` is its only writer). `LoginRequiredMiddleware` protects each page | `views.py`, `forms.py`, `services.py` |
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
+| `notify` | Table alerts (2026-10-15): `Notice` (a player was put in a set by someone else; one per player and set) and `PushSubscription` (a phone that takes notifications). Sends Web Push after the commit | `services.py`, `push.py`, `views.py` |
 | `groups` | `GameGroup`, `GroupRakeAccount`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
 | `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, the lifecycle, the clock | `services.py`, `access.py`, `forms.py` |
 | `ledger` | `BuyIn`, `RakeEntry`, `CountEntry` (a player's own statement of their final count, never a count), `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()` for a set, `close_night()` for a session, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
-| `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. It never writes | `views.py` |
+| `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. Its one write is through another app's service: opening a set marks the viewer's notice seen (`notify.services.mark_seen`) | `views.py` |
 
-Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` depends only on `accounts`. These integration boundaries are deliberate:
+Dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` and `notify` depend only on `accounts`; `games` calls `notify.services.tell`. These integration boundaries are deliberate:
 
 - `ledger/money.py` and `settlement/algorithm.py` are pure modules with no project imports. `games` imports `ledger.money` to parse and format amounts.
 - `games.services.START_HOOKS` runs ledger-owned opening-buy-in creation while the set is open, under its lock and transaction, before clock creation. Each joined participant without an unreversed buy-in receives the current default through `ledger.services.record_buy_in()`. Child UUIDs derive from the start request and participant ID. `GameSession.start_request_id` is nullable and unique; successful same-request retries return without repeating records or timers, including empty starts. Existing sets remain null without backfill. The native start option defaults checked, supports opt-out and retains its state through live redraws.

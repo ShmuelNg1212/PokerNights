@@ -10,6 +10,7 @@ Pinned in `requirements.txt`. Verified against PyPI and against the LightChat re
 | `django-environ` | 0.14.0 | Settings from the environment and `.env` |
 | `dj-database-url` | 3.1.2 | `DATABASE_URL` to `DATABASES` |
 | `psycopg[binary]` | 3.3.6 | PostgreSQL driver |
+| `pywebpush` | 2.5.0 | Table alerts (2026-10-15): encrypts each phone notification for the phone and signs it with the VAPID key pair. Brings `cryptography`, `http-ece`, `py-vapid`, `requests` and `aiohttp` |
 
 There is no other Python runtime dependency and no build tool.
 
@@ -40,7 +41,7 @@ Motion:
 | Vercel (Hobby) | Hosting: one Python function in `sin1` and the static CDN | Project `pokernights`. See [deployment.md](deployment.md) |
 | Neon Postgres (Free) | Production database, `aws-ap-southeast-1` | Resource `pokernights-db`, added through the Vercel integration |
 
-The app calls no external API. It needs no key or secret for local use. No Python package was added for deployment.
+Since 2026-10-15 the app calls one kind of external service: the push service of each phone that turned table alerts on (Apple, Google or Mozilla, named by the subscription's address), one HTTPS request per phone, after the transaction that told the player commits. It needs the VAPID key pair for that (see [deployment.md](deployment.md)); for local use without the keys nothing is pushed. No Python package was added for deployment.
 
 ## Local visual assets
 
