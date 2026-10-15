@@ -7,3 +7,6 @@ Django==6.1.1
 django-environ==0.14.0             # SECRET_KEY, DEBUG, ALLOWED_HOSTS ... from the environment / .env
 dj-database-url==3.1.2             # DATABASE_URL → DATABASES (SQLite fallback locally)
 psycopg[binary]==3.3.6             # PostgreSQL driver
+
+# Phone notifications
+pywebpush==2.5.0                   # Web Push: encrypts and signs each message (VAPID); see notify/push.py

@@ -44,7 +44,8 @@ class QueryCountTests(TestCase):
         night = Night("A", "B", "C")
         night.buy("A", 1000)
         self.client.force_login(night.host.user)
-        self.assertLessEqual(len(self.queries(reverse("session", args=[night.session.pk]))), 13)
+        # 13, and one that marks the viewer's "added you" notice seen (notify.services.mark_seen).
+        self.assertLessEqual(len(self.queries(reverse("session", args=[night.session.pk]))), 14)
 
     def test_a_changed_poll_costs_no_more_than_the_page(self):
         night = Night("A", "B", "C")

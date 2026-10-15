@@ -1,6 +1,6 @@
 {% load money_tags clock_tags table_tags %}{# One player at the table: the row, and the sources of its sheets. #}
 {% with p=line.participant %}
-    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}"{% if arrived and p.pk in arrived %} data-arrived{% endif %} data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}">
+    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}"{% if arrived and p.pk in arrived %} data-arrived{% endif %} data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}" data-name="{{ p.member.display_name }}"{% if p.member_id == me.pk %} data-mine{% endif %}>
       <div class="player-main">
         {% player_token p participants %}
         <div class="player-identity">

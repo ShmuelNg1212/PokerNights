@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "audit",
+    "notify",
     "groups",
     "games",
     "ledger",
@@ -207,6 +208,16 @@ SEAT_DRAW = env.bool("SEAT_DRAW", default=True)
 DOOR_MOTION = env.bool("DOOR_MOTION", default=True)
 # Turn off to play the arrival into the app only after a log-in, not also each time the app is started (see config/door.py).
 LAUNCH_ARRIVAL = env.bool("LAUNCH_ARRIVAL", default=True)
+# Turn off to stop marking a player who arrives on another phone's set page: no "Joined", toast or count line (see static/js/arrivals.js).
+ARRIVAL_MARKS = env.bool("ARRIVAL_MARKS", default=True)
+# Turn off to write and show no "added you" notices on Your groups (see notify/services.py).
+TABLE_NOTICES = env.bool("TABLE_NOTICES", default=True)
+# Turn off to send no phone notifications and hide the alerts panel; subscriptions are kept (see notify/push.py).
+# Push also needs both VAPID keys. The subject is the contact the push services may use about our messages.
+PUSH_ALERTS = env.bool("PUSH_ALERTS", default=True)
+VAPID_PUBLIC_KEY = env.str("VAPID_PUBLIC_KEY", default="")
+VAPID_PRIVATE_KEY = env.str("VAPID_PRIVATE_KEY", default="")
+VAPID_SUBJECT = env.str("VAPID_SUBJECT", default="https://pokernights-five.vercel.app")
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

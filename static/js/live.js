@@ -75,7 +75,8 @@
       var el = region.querySelector('details[data-key="' + key + '"]');
       if (el) el.open = true;
     });
-    region.dispatchEvent(new Event("live:updated", {bubbles: true}));
+    // A poll says so: someone else's change, which arrivals.js may announce.
+    region.dispatchEvent(new CustomEvent("live:updated", {bubbles: true, detail: {poll: true}}));
     // A focused control that the redraw replaced gets keyboard focus again, once listeners have shown it.
     var again = focusKey && region.querySelector('[data-focus-key="' + focusKey + '"]');
     if (again) again.focus();

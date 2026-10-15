@@ -8,9 +8,11 @@ import secrets
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
+from django.urls import reverse
 from django.utils import timezone
 
 from audit import services as audit
+from notify import services as notify
 from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import Member
@@ -345,6 +347,8 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
         session.ended_at = now
     session.state = target
     session.save(update_fields=["state", "started_at", "ended_at", "cancel_reason", "start_request_id"])
+    if action == "open":
+        _tell_added(session, actor, session.participants.filter(status=Participant.Status.JOINED).select_related("member"), opened=True)
     audit.record(
         f"session.{action}", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=ACTION_LABELS[action], reason=reason,
@@ -637,9 +641,32 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         "participant.joined", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=participant,
         summary=f"{member.display_name} joined" if is_self else f"Added {member.display_name}",
     )
+    if not is_self:
+        _tell_added(session, actor, [participant])
     _table_changed(session)
     touch(session)
     return participant
+
+
+def _tell_added(session, actor: Member, participants, *, opened=False) -> None:
+    """Each player put in the set who has a login, other than the one acting, hears about it:
+    everyone already added when the set opens, and anyone added later while it is open or in play.
+    A draft set tells nobody yet; opening it does."""
+    if session.state not in JOINABLE_STATES:
+        return
+    users = [p.member.user_id for p in participants if p.member.user_id and p.member.user_id != actor.user_id]
+    if not users:
+        return
+    where = f"{session.table.name} · "
+    if opened or session.state == State.OPEN:
+        title = where + (f"set {session.set_number} is open" if opened else f"you’re in set {session.set_number}")
+        body = f"{actor.display_name} added you. Tap to see the table."
+    else:
+        title, body = where + f"you’re in set {session.set_number}", f"{actor.display_name} added you. Play has started."
+    notify.tell(
+        users, group_id=session.group_id, session_id=session.pk, kind="open" if opened else "added",
+        title=title, body=body, url=reverse("session", args=[session.pk]), actor_name=actor.display_name,
+    )
 
 
 def _names(members) -> str:
@@ -804,6 +831,7 @@ def add_participants(session_id, actor: Member, member_ids, request_id) -> list:
         added.append(participant)
     batch = ParticipantBatch.objects.create(session=session, request_id=request_id, added_by=actor.user)
     batch.participants.set(added)
+    _tell_added(session, actor, added)
     if added:
         _table_changed(session)
     touch(session)

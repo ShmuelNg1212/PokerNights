@@ -138,14 +138,15 @@ class HomeFiguresTests(TestCase):
             games.transition(live.pk, club.host, "start", opening_buy_ins=False)
         user = self.club.host.user
         build(self.club)
-        with self.assertNumQueries(11):
+        # 11, and one for the viewer's unseen "added you" notices (notify.services.unseen).
+        with self.assertNumQueries(12):
             self.assertEqual(len(home_cards(user)), 1)
         for name in ("Second", "Third", "Fourth"):
             club = Club.__new__(Club)
             club.host = groups.create_group(user, name)
             club.group, club.table, club.members = club.host.group, make_table(club.host), {}
             build(club)
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             self.assertEqual(len(home_cards(user)), 4)
 
 

@@ -12,6 +12,7 @@ from django.urls import reverse
 from games import clock
 from games.models import GameNight, GameSession, Participant, Table
 from groups.models import Member
+from notify import services as notify
 from settlement import queries as settlement_queries
 
 State = GameSession.State
@@ -50,6 +51,7 @@ class Card:
     more_dues: int = 0
     last_night: GameNight = None
     last_net: object = None
+    added: object = None  # the viewer was put in this set and has not opened it yet (a notify.Notice)
 
     @property
     def group(self):
@@ -108,6 +110,13 @@ def home_cards(user) -> list:
         for card in cards.values():
             if card.kind == "play":
                 card.seconds, card.at_table = seconds.get(card.set.pk), seated.get(card.set.pk, 0)
+
+    # A player put in a set by someone else, who has not opened it yet, is told so on the card.
+    current = [card.set.pk for card in cards.values() if card.set is not None and card.set.state in (State.OPEN, State.RUNNING)]
+    added = notify.unseen(user, current)
+    for card in cards.values():
+        if card.set is not None and card.set.pk in added:
+            card.added, card.action_primary = added[card.set.pk], True
 
     records = settlement_queries.member_records(my_ids)
     for card in cards.values():

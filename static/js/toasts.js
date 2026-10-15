@@ -37,6 +37,7 @@
     message.addEventListener("mouseleave", resume); message.addEventListener("focusout", resume);
     resume();
     restack();
+    return { dismiss: dismiss, renew: resume };
   }
   function list() {
     var found = document.querySelector("#main > .messages");
@@ -60,5 +61,7 @@
     list().appendChild(item);
     float(item, 12000);
   });
+  // A toast from a page module: an item it built, floated for `linger` ms. Returns {dismiss, renew}.
+  window.pokerToast = function (item, linger) { list().appendChild(item); return float(item, linger); };
   window.pokerPage.register(successes);
 })();

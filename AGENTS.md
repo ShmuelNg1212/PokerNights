@@ -48,4 +48,4 @@ Run the tests before each commit. Use Conventional Commits. Do not push or deplo
 8. Dates use Asia/Manila. Amounts display as `₱1,600` or `₱1,600.50` in a pesos game and as `1,600 chips` in a chips game.
 9. Screens are dark by default, single-column on phones, with 48 px action targets. The active set uses two columns from 900 px. Follow DESIGN.md. Money figures appear at their accepted value; reduced motion disables movement.
 10. A session is `GameNight`; a set is `GameSession`. Money, counts, timers and results belong to a set. Settle-up, transfers, payments and the unit belong to a session.
-11. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` is a leaf.
+11. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` and `notify` are leaves.
