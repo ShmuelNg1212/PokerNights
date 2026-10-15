@@ -1,6 +1,6 @@
 # Table alerts: plan
 
-Status: built 2026-10-15 on `feat/table-alerts`, not released. Approved 2026-10-15 ("approved": `pywebpush`; a new self-contained app `notify`; the contact address defaults to the site's address, `https://pokernights-five.vercel.app`, set in Vercel). Date: 2026-10-15, Asia/Manila. Study: [Table alerts](../study/1792069341_table_alerts.md).
+Status: built 2026-10-15 on `feat/table-alerts`; released 2026-10-15 as `525495f` on the human's word "ok release" (previous production commit `db5fa73`). The VAPID keys were added to Vercel Production before the release. Four minutes after the push the live `/sw.js` carried the push and tap handlers, and `/healthz` answered 200. Approved 2026-10-15 ("approved": `pywebpush`; a new self-contained app `notify`; the contact address defaults to the site's address, `https://pokernights-five.vercel.app`, set in Vercel). Date: 2026-10-15, Asia/Manila. Study: [Table alerts](../study/1792069341_table_alerts.md).
 
 ## Outcome
 
@@ -110,7 +110,7 @@ Built and checked locally on `feat/table-alerts`, then held for your word. After
 
 - [x] Approve the plan and answer the three decisions. Approved 2026-10-15.
 - [x] Build A, B and C; test; run the browser checks; polish pass and Motion audit. Built 2026-10-15 on `feat/table-alerts`.
-- [ ] Add the VAPID keys in Vercel; say when to release.
+- [x] Add the VAPID keys in Vercel; say when to release. Keys added and released 2026-10-15.
 - [ ] Phone checks above.
 
 ## Verification record (2026-10-15)
