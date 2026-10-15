@@ -166,7 +166,32 @@ def group_settings_context(request, me) -> dict:
     return context
 
 
-def session_context(session, me) -> dict:
+ENDED_STATES = (GameSession.State.RECONCILIATION, GameSession.State.FINALIZED, GameSession.State.CANCELED)
+UNSET = object()
+
+
+def later_set(session):
+    """The session's latest set after this one that a player can join or play: where an ended set's page points.
+
+    Asked only for an ended set, so a set in play costs no query. A draft is never shown to players.
+    """
+    if not settings.NEXT_SET_NOTICE or session.state not in ENDED_STATES:
+        return None
+    return (
+        GameSession.objects.filter(night_id=session.night_id, set_number__gt=session.set_number,
+                                   state__in=(GameSession.State.OPEN, GameSession.State.RUNNING))
+        .order_by("-set_number").first()
+    )
+
+
+def live_version(session, later):
+    """What the set page's poll compares: the set's version, a number as before. An ended set's page
+    also changes when a later set starts, without a write to the ended set (Start next set does not
+    lock it), so then it is "{version}.{later set}"."""
+    return f"{session.version}.{later.pk}" if later else session.version
+
+
+def session_context(session, me, *, later=UNSET) -> dict:
     """Everything the session screen shows. Used by the page and by the polling endpoint."""
     summary = ledger_queries.summary(session)
     participants = [line.participant for line in summary.lines]
@@ -198,6 +223,10 @@ def session_context(session, me) -> dict:
         "any_entered": any(line.entered for line in summary.lines),
         "prep": prep.states(session, summary, me),
     }
+    later = later_set(session) if later is UNSET else later
+    context["later_set"], context["live_version"] = later, live_version(session, later)
+    if later is not None:
+        context["at_later_table"] = later.participants.filter(member=me, status=Participant.Status.JOINED).exists()
     if settings.SEAT_DRAW and session.state in ("open", "running"):
         seating = seat_draws.seating(session, participants) if getattr(session, "has_seat_draw", True) else None
         live = not session.night.is_archived
@@ -277,10 +306,12 @@ def session(request, session_id):
 def session_state(request, session_id):
     """Polling endpoint: 204 while nothing changed, else a full snapshot of the live region."""
     session, me = session_for(request.user, session_id)
-    if request.GET.get("v") == str(session.version):
+    later = later_set(session)
+    version = live_version(session, later)
+    if request.GET.get("v") == str(version):
         return HttpResponse(status=204)
-    html = render_to_string("web/_session_live.html", session_context(session, shown_as(me, session.night)), request=request)
-    return JsonResponse({"version": session.version, "state": session.state, "html": html})
+    html = render_to_string("web/_session_live.html", session_context(session, shown_as(me, session.night), later=later), request=request)
+    return JsonResponse({"version": version, "state": session.state, "html": html})
 
 
 def session_log(request, session_id):

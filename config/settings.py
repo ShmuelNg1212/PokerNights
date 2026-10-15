@@ -218,6 +218,8 @@ PUSH_ALERTS = env.bool("PUSH_ALERTS", default=True)
 VAPID_PUBLIC_KEY = env.str("VAPID_PUBLIC_KEY", default="")
 VAPID_PRIVATE_KEY = env.str("VAPID_PRIVATE_KEY", default="")
 VAPID_SUBJECT = env.str("VAPID_SUBJECT", default="https://pokernights-five.vercel.app")
+# Turn off to stop an ended set's page from pointing to the session's next set ("Set 2 has started"; see web/views.py later_set).
+NEXT_SET_NOTICE = env.bool("NEXT_SET_NOTICE", default=True)
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "config.storage.VersionedStaticStorage"},

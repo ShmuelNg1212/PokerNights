@@ -69,6 +69,6 @@
   </aside>
   {% include "web/_players.html" %}
 </div>
-{% elif session.state == 'reconciliation' %}{% include "web/_count_v2.html" %}
-{% elif session.state == 'finalized' %}{% include "web/_final_set.html" %}
-{% else %}{% include "web/_session_legacy.html" %}{% endif %}
+{% elif session.state == 'reconciliation' %}{% if later_set %}{% include "web/_next_set_notice.html" %}{% endif %}{% include "web/_count_v2.html" %}
+{% elif session.state == 'finalized' %}{% if later_set %}{% include "web/_next_set_notice.html" %}{% endif %}{% include "web/_final_set.html" %}
+{% else %}{% if later_set %}{% include "web/_next_set_notice.html" %}{% endif %}{% include "web/_session_legacy.html" %}{% endif %}

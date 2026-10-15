@@ -18,7 +18,10 @@
     </section>
     <div class="session-next stack">
       {% if night.is_closed %}<p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>{% else %}<p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>{% endif %}
-      <a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>
+      {# The notice at the top holds the one primary Go to set N; this one is for a player who scrolled to the end. #}
+      {% if later_set %}<a class="btn btn-block" href="{% url 'session' later_set.pk %}">Go to set {{ later_set.set_number }}</a>
+      <p class="center"><a href="{% url 'night' session.night_id %}">Go to the session</a></p>
+      {% else %}<a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>{% endif %}
     </div>
     {% if can_reopen %}{% include "web/_reopen_set.html" %}{% endif %}
   </aside>

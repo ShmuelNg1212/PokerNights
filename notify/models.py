@@ -14,6 +14,7 @@ class Notice(models.Model):
     class Kind(models.TextChoices):
         OPEN = "open", "The set opened"
         ADDED = "added", "Added to an open set"
+        NEXT = "next", "Carried into the next set"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notices")
     group_id = models.BigIntegerField()

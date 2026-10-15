@@ -43,5 +43,25 @@ mine = Member.objects.create(group=home.group, user=cal.user, display_name='cal'
 draft = make_session(home, table_name='Quiet table')
 games.add_participants(draft.pk, home, [mine.pk], uuid.uuid4())
 manifest['draft'] = {'set': draft.pk, 'host_member': home.pk}
+# The next set (2026-10-15): set 1 counting up with bea and dan holding chips, and set 1 finalized with bea.
+from ledger import services as ledger
+from settlement import services as settlement
+
+
+def ended(name, seated, finalize):
+    session = table(name, seated, 'running')
+    players = list(session.participants.select_related('member').order_by('join_order'))
+    for p in players[:2]:
+        ledger.record_buy_in(session.pk, host, p.pk, 100000, uuid.uuid4())
+    games.transition(session.pk, host, 'end')
+    if finalize:
+        for p in players[:2]:
+            ledger.record_cash_out(session.pk, host, p.pk, 100000, uuid.uuid4())
+        settlement.finalize(session.pk, host)
+    return session
+
+
+manifest['between'] = {'set': ended('Rail between', [bea, dan] + roster[:3], False).pk}
+manifest['final'] = {'set': ended('Rail final', [bea] + roster[:3], True).pk}
 Path('/private/tmp/pn-arrivals-manifest.json').write_text(json.dumps(manifest))
 print('ARRIVALS', manifest)

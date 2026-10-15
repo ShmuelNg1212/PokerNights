@@ -15,7 +15,7 @@ const py=code=>{const r=spawnSync('.venv/bin/python',['manage.py','shell','-c',`
 from games import services as games
 from ledger import services as ledger
 from groups.models import Member
-from games.models import Participant
+from games.models import Participant, GameSession
 from notify.models import PushSubscription
 host=Member.objects.get(user__username='ari',group__name='Arrivals')
 u=uuid.uuid4
@@ -154,6 +154,43 @@ const inView=n=>`(()=>{const b=${row(n)}.getBoundingClientRect();return b.top>=0
  await P.js(`document.getElementById('alerts').scrollIntoView({block:'center'})`);await sleep(150);await P.shot('alerts-blocked-390');
  check(`${W2}: no script error`,(await P.js('__errors')).length===0);
  check(`${W2}: Motion animates only transform and opacity`,await P.js(only));
+}
+
+// --- The next set has started: an ended set's page points to it ------------------------------------------
+const nextSet=id=>py(`print(games.start_next_set(GameSession.objects.get(pk=${id}).night_id,host).pk)`);
+const notice=`(()=>{const n=document.querySelector('[data-next-set]');if(!n)return null;const b=n.querySelector('.next-set-go').getBoundingClientRect();return {title:n.querySelector('.next-set-title').textContent,line:n.querySelector('.next-set-line').textContent,go:n.querySelector('.next-set-go').textContent,href:n.querySelector('.next-set-go').getAttribute('href'),h:b.height,arrived:n.classList.contains('next-set-arrived')}})()`;
+{const S=M.between,W='390px counting up';
+ const P=await user('bea',390);await P.go(`/s/${S.set}/`);
+ const Q=await user('dan',390,{reduce:true});await Q.go(`/s/${S.set}/`);
+ check(`${W}: no notice before the next set`,await P.js(`!document.querySelector('[data-next-set]')`)&&await P.js(`!!document.getElementById('own-count')`));
+ const second=nextSet(S.set);
+ await P.redraw();
+ const n=await P.js(notice);
+ check(`${W}: the poll brings "Set 2 has started" for a player at the new table`,n&&n.title==='Set 2 has started'&&n.line==='You’re at the table.'&&n.go==='Go to set 2'&&n.href===`/s/${second}/`);
+ check(`${W}: the button is 48px and nothing is wider than the screen`,n.h>=48&&await P.js(`document.documentElement.scrollWidth<=390`));
+ check(`${W}: it arrives: the edge draws, the words rise, the button fades in`,n.arrived&&await P.js(`__runs.some(r=>r.el.includes('next-set-text'))&&__runs.some(r=>r.el.includes('next-set-go'))`));
+ await sleep(150);
+ check(`${W}: screen readers hear it`,await P.js(`document.getElementById('arrival-news').textContent`)==='Set 2 has started.');
+ check(`${W}: the player's own count form is still there`,await P.js(`!!document.getElementById('own-count')`));
+ await sleep(700);await P.shot('next-set-390');
+ check(`${W}: at rest, no inline style left`,await P.js(`(()=>{const t=document.querySelector('.next-set-text');return !t.getAttribute('style')&&getComputedStyle(t).opacity==='1'})()`));
+ await Q.redraw();
+ check(`390px reduced motion: the notice is there and nothing moved`,(await Q.js(notice))?.title==='Set 2 has started'&&await Q.js(`__runs.length===0`));
+ await P.js(`document.querySelector('.next-set-go').click()`);await sleep(1200);
+ check(`${W}: Go to set 2 opens set 2`,await P.js('location.pathname')===`/s/${second}/`);
+ await P.go(`/s/${S.set}/`);
+ check(`${W}: back on set 1 it is simply there, once only`,(await P.js(notice))?.arrived===false&&await P.js(`!__runs.some(r=>r.el.includes('next-set'))`));
+ check(`${W}: Motion animates only transform and opacity`,await P.js(only));
+ check(`${W}: no script error`,(await P.js('__errors')).length+(await Q.js('__errors')).length===0);
+}
+{const S=M.final,W='1280px final';
+ const P=await user('bea',1280);await P.go(`/s/${S.set}/`);
+ const second=nextSet(S.set);
+ await P.redraw();
+ check(`${W}: the notice sits beside its button`,await P.js(`(()=>{const n=document.querySelector('[data-next-set]');const t=n.querySelector('.next-set-text').getBoundingClientRect(),b=n.querySelector('.next-set-go').getBoundingClientRect();return b.left>t.right-1&&Math.abs((t.top+t.bottom)/2-(b.top+b.bottom)/2)<24})()`));
+ check(`${W}: the final page's button leads to set 2, and the notice's is the one primary`,await P.js(`(()=>{const a=document.querySelector('.session-next a.btn');return a.textContent==='Go to set 2'&&a.getAttribute('href')==='/s/${second}/'&&document.querySelectorAll('#live .btn-primary').length===1})()`)&&await P.js(`[...document.querySelectorAll('.session-next a')].some(a=>a.textContent==='Go to the session')`));
+ await sleep(700);await P.shot('next-set-1280');
+ check(`${W}: no script error`,(await P.js('__errors')).length===0);
 }
 
 const failed=results.filter(r=>!r.ok);

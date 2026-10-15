@@ -1838,3 +1838,12 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 .alerts-tick { display: inline-flex; color: var(--good); }
 .alerts-line .link-button { flex: none; white-space: nowrap; }
 :is([data-welcome], [data-launch]) .alerts-panel { animation: welcome-fade 300ms var(--ease-out) 420ms backwards; }
+
+/* The next set has started (2026-10-15): on an ended set's page, a Rail panel with a brass top edge,
+   the news and Go to set N. From 900px the button sits beside the words. arrivals.js marks its arrival. */
+.next-set { position: relative; display: grid; gap: var(--s-3); margin: 0 0 var(--s-4); padding: var(--s-4); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.next-set::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--brass); transform-origin: left; }
+.next-set-title { margin: 0; font-size: 1.125rem; font-weight: 750; }
+.next-set-line { margin: var(--s-1) 0 0; color: var(--muted); }
+.next-set-arrived::before { animation: mark-draw var(--t-sheet) var(--ease-out); }
+@media (min-width: 900px) { .next-set { grid-template-columns: 1fr minmax(220px, auto); align-items: center; } }

@@ -149,3 +149,42 @@
     return function () { timers.forEach(clearTimeout); timers = []; region = null; toast = null; };
   });
 })();
+
+// The next set has started (web/_next_set_notice.html, on an ended set's page). Brought by a redraw,
+// it arrives once per set and browser: its brass edge draws (CSS), the words rise 8px, then the button
+// fades in, and the polite line says so. On a first sight, a reload, a hidden tab or under reduced
+// motion it is simply there. NEXT_SET_NOTICE=False leaves it out of the page.
+(function () {
+  "use strict";
+  var region = null, shown = null;
+  function enter(el, keyframes, preset, extra) {
+    var M = window.pokerMotion;
+    if (!el || !M || !M.on() || document.hidden) return;
+    Object.keys(keyframes).forEach(function (name) { el.style[name] = keyframes[name][0]; });
+    M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
+  }
+  function seen(key) { try { if (localStorage.getItem(key)) return true; localStorage.setItem(key, "1"); } catch (_) { return true; } return false; }
+  function update() {
+    if (!region) return;
+    var notice = region.querySelector("[data-next-set]");
+    var key = notice ? notice.dataset.nextSet : null;
+    if (notice && key !== shown && shown !== undefined && !seen("next-set:" + key) && !document.hidden) {
+      notice.classList.add("next-set-arrived");
+      enter(notice.querySelector(".next-set-text"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.12 });
+      enter(notice.querySelector(".next-set-go"), { opacity: [0, 1] }, "fade", { delay: 0.18 });
+      var news = document.getElementById("arrival-news");
+      if (news) { news.textContent = ""; requestAnimationFrame(function () { news.textContent = notice.querySelector(".next-set-title").textContent + "."; }); }
+    } else if (notice && shown === undefined) {
+      seen("next-set:" + key); // first sight: it is simply there, now and later
+    }
+    shown = key;
+  }
+  document.addEventListener("live:updated", update);
+  window.pokerPage.register(function () {
+    region = document.getElementById("live");
+    if (!region) return;
+    shown = undefined;
+    update();
+    return function () { region = null; };
+  });
+})();
