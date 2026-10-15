@@ -1,6 +1,6 @@
 # The next set, for players: plan
 
-Status: built 2026-10-15 on `feat/next-set-for-players`, not released. Approved 2026-10-15 ("approved", with the recommended answers: the notice and the button change on the previous set's page; shown to every member there, worded for whether they are at the new table). Date: 2026-10-15, Asia/Manila. Study: [The next set, for players](../study/1792073299_next_set_for_players.md).
+Status: built 2026-10-15 on `feat/next-set-for-players`; released 2026-10-15 as `2b69354` on the human's word "release" (previous production commit `525495f`). Four minutes after the push the live stylesheet carried the notice's styles and `/healthz` answered 200. Approved 2026-10-15 ("approved", with the recommended answers: the notice and the button change on the previous set's page; shown to every member there, worded for whether they are at the new table). Date: 2026-10-15, Asia/Manila. Study: [The next set, for players](../study/1792073299_next_set_for_players.md).
 
 ## Outcome
 
@@ -84,7 +84,7 @@ Built and checked locally, then held for your word. After a release, one request
 
 - [x] Approve the plan and answer the two decisions. Approved 2026-10-15.
 - [x] Build, test, browser check. Built 2026-10-15 on `feat/next-set-for-players`.
-- [ ] Say when to release.
+- [x] Say when to release. Released 2026-10-15.
 - [ ] Phone check above.
 
 ## Verification record (2026-10-15)
