@@ -4,6 +4,12 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The next set, for players ([plan](doc/plan/1792073300_next_set_for_players.md), [study](doc/study/1792073299_next_set_for_players.md)): approved and built on `feat/next-set-for-players` on 2026-10-15, not released. One migration (`notify.0002`, a new choice only). 1,172 tests pass on SQLite and PostgreSQL 17; `arrivals.mjs` 56 of 56. `NEXT_SET_NOTICE=False` turns the notice off. When a host starts the next set, players on the previous set's page see "Set 2 has started" with **Go to set 2**, and carried players get the table alert (today they get none: a gap in the table alerts release).
+
+- [x] Approve the plan and answer its two decisions. Approved 2026-10-15 with the recommended answers.
+- [ ] Say when to merge and release it.
+- [ ] After release: with a player looking at set 1's results (or counting up), tap **Start next set**. Their screen shows "Set 2 has started" within a few seconds and **Go to set 2** takes them there. A player with alerts on and the app closed gets "… set 2 is open".
+
 Table alerts ([plan](doc/plan/1792069342_table_alerts.md), [study](doc/study/1792069341_table_alerts.md)): approved and built on `feat/table-alerts` on 2026-10-15. Released 2026-10-15 as `525495f` (previous production commit `db5fa73`); four minutes after the push the live service worker carried the push handler. Migration `notify.0001` (two new tables). 1,162 tests pass on SQLite and PostgreSQL 17; `arrivals.mjs` 41 of 41. Switches: `PUSH_ALERTS`, `TABLE_NOTICES`, `ARRIVAL_MARKS`. A phone notification and an in-app mark for each added player when a host opens a set, and for later adds; on the set page, other phones see an added player plainly (brass mark, "Joined", a toast when out of view).
 
 - [x] Approve the plan and answer its three decisions. Approved 2026-10-15: `pywebpush`, a new `notify` app, the site's address as the VAPID contact.

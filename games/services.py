@@ -555,14 +555,17 @@ def start_next_set(night_id, actor: Member) -> GameSession:
         session=new, number=1, created_by=actor.user, **current_settings(previous).stakes(),
         **current_settings(previous).rake()
     )
-    carried = previous.participants.filter(status=Participant.Status.JOINED).order_by("join_order")
-    for order, old in enumerate(carried, start=1):
-        Participant.objects.create(session=new, member_id=old.member_id, join_order=order, added_by=actor.user)
+    carried = previous.participants.filter(status=Participant.Status.JOINED).select_related("member").order_by("join_order")
+    seated = [
+        Participant.objects.create(session=new, member=old.member, join_order=order, added_by=actor.user)
+        for order, old in enumerate(carried, start=1)
+    ]
     audit.record(
         "session.created", actor=actor.user, group_id=night.group_id, session_id=new.pk, target=new,
         summary=f"Started set {new.set_number} with {len(carried)} player{'' if len(carried) == 1 else 's'} "
         f"from set {previous.set_number}",
     )
+    _tell_added(new, actor, seated, started=True)
     touch(new)
     return new
 
@@ -648,23 +651,26 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
     return participant
 
 
-def _tell_added(session, actor: Member, participants, *, opened=False) -> None:
+def _tell_added(session, actor: Member, participants, *, opened=False, started=False) -> None:
     """Each player put in the set who has a login, other than the one acting, hears about it:
-    everyone already added when the set opens, and anyone added later while it is open or in play.
-    A draft set tells nobody yet; opening it does."""
+    everyone already added when the set opens, everyone carried into the next set when it starts
+    (it starts open), and anyone added later while it is open or in play. A draft tells nobody yet."""
     if session.state not in JOINABLE_STATES:
         return
     users = [p.member.user_id for p in participants if p.member.user_id and p.member.user_id != actor.user_id]
     if not users:
         return
     where = f"{session.table.name} · "
-    if opened or session.state == State.OPEN:
+    if started:
+        title = where + f"set {session.set_number} is open"
+        body = f"{actor.display_name} started set {session.set_number}. You\u2019re at the table."
+    elif opened or session.state == State.OPEN:
         title = where + (f"set {session.set_number} is open" if opened else f"you’re in set {session.set_number}")
         body = f"{actor.display_name} added you. Tap to see the table."
     else:
         title, body = where + f"you’re in set {session.set_number}", f"{actor.display_name} added you. Play has started."
     notify.tell(
-        users, group_id=session.group_id, session_id=session.pk, kind="open" if opened else "added",
+        users, group_id=session.group_id, session_id=session.pk, kind="next" if started else "open" if opened else "added",
         title=title, body=body, url=reverse("session", args=[session.pk]), actor_name=actor.display_name,
     )
 

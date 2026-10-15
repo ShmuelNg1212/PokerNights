@@ -1,0 +1,8 @@
+{% load table_tags %}{# An ended set points to the session's next set (web.views.later_set). data-next-set keys its one-time arrival (arrivals.js). #}
+<section class="next-set" data-next-set="{{ later_set.pk }}" aria-labelledby="next-set-title">
+  <div class="next-set-text">
+    <h2 id="next-set-title" class="next-set-title">Set {{ later_set.set_number }} has started</h2>
+    <p class="next-set-line">{% if at_later_table %}You’re at the table.{% elif me.is_host %}It is {{ later_set.state|state_word|lower }}.{% else %}Join from the set.{% endif %}</p>
+  </div>
+  <a class="btn btn-primary btn-block next-set-go" href="{% url 'session' later_set.pk %}">Go to set {{ later_set.set_number }}</a>
+</section>
