@@ -83,6 +83,7 @@ MIDDLEWARE = [
     "config.prefetch.PrefetchLeavesOneTimeState",
     "config.inplace.AnswerInPlace",
     "config.door.DoorCookie",
+    "config.chat_browser.ChatBrowserVary",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -100,6 +101,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.pwa.flags",
                 "config.door.door",
+                "config.chat_browser.chat_browser",
             ],
         },
     },
@@ -196,6 +198,8 @@ CLAIM_LINKS = env.bool("CLAIM_LINKS", default=True)
 ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 # Turn off to stop suggesting the home screen after a login and to hide Join with a link (see static/js/install.js).
 INSTALL_PROMPT = env.bool("INSTALL_PROMPT", default=True)
+# Turn off to stop asking people in a chat app's browser to open the front door in Safari or Chrome (see config/chat_browser.py).
+CHAT_BROWSER_CARD = env.bool("CHAT_BROWSER_CARD", default=True)
 # Turn off to remove Share results from closed sessions (see web/share.py).
 SHARE_RESULTS = env.bool("SHARE_RESULTS", default=True)
 # Turn off to hide Reopen set and Reopen session and refuse both (see settlement/services.py).

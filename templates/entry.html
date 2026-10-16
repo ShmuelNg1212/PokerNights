@@ -8,6 +8,8 @@
 {% block content %}
 {% block hero %}{% endblock %}
 <section class="door-sheet">
+{# A dead link, or the page that says sign-up needs an invite, has nothing to carry to another browser. #}
+{% block chat_browser %}{% if not error %}{% include "partials/chat_browser.html" %}{% endif %}{% endblock %}
 {% block sheet %}{% endblock %}
 </section>
 {% endblock %}

@@ -11,7 +11,9 @@
   function standalone() { return navigator.standalone === true || matchMedia("(display-mode: standalone)").matches; }
   function apple() { return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); }
   function phone() { return apple() || /Android/.test(ua) || !!(navigator.userAgentData && navigator.userAgentData.mobile); }
-  function inChat() { return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|MicroMessenger|Messenger/.test(ua); }
+  // The server names a chat app's browser from its user agent (config/chat_browser.py). A page the service
+  // worker fetched was asked for with the worker's user agent, so the page's own is read as well.
+  function inChat() { return !!document.documentElement.dataset.chatBrowser || /FBAN|FBAV|FB_IAB|Instagram|Line\/|Viber|MicroMessenger/.test(ua); }
   function read(store, key) { try { return store.getItem(key); } catch (_) { return null; } }
   function write(store, key, value) { try { if (value === null) store.removeItem(key); else store.setItem(key, value); return true; } catch (_) { return false; } }
   function part() { return inChat() ? "inapp" : offer ? "install" : apple() ? "ios" : "menu"; }
@@ -84,7 +86,7 @@
       }
       var copy = event.target.closest("[data-install-copy]");
       if (copy) {
-        var address = location.origin + "/", done;
+        var address = location.href, done;
         try { done = navigator.clipboard.writeText(address); } catch (_) { say("Copy this address: " + address); return; }
         done.then(function () {
           if (signal.aborted) return;
