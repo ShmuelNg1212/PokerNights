@@ -920,6 +920,17 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Your groups** ends with a quiet "Add to home screen" in a phone's browser. Inside the installed app the same place holds "Join with a link", a disclosure in the New group style with one labelled field, a refusal line, Paste and a primary Open link.
 - **Measured.** `install_prompt.mjs`, 38 checks: each phone's part, timing after the arrival, focus and its return, Escape, 48px targets and no overflow at 320 and 390px, every login asking again, Done and the browser's install ending it, deferral behind a join page and a recap, desktop, reduced motion, and the link field's refusal, paste and opening.
 
+### Invite links shown again (2026-10-16)
+
+[Plan](doc/plan/1792115570_invite_links_shown_again.md). Group settings → Invite players. No new colour, font, token or asset.
+
+- **A row** is a stack between Rule lines: the creator and date in the title weight; use and expiry in Bone Dim with tabular figures, tucked under it; the shared copy field; then the actions. Revoke is a quiet action in the Down colour at the left, its word aligned with the field's text, with the Danger surface on hover; Share (the drawn share glyph, as on the iPhone install steps) is a neutral button at the right. Destructive and useful never sit side by side.
+- **New** is a pill: 16% Brass, a 45% Brass edge, Brass text at .75rem 650.
+- **Create another link** is a neutral full-width button under the list; with no active link, the primary **Create invite link** sits alone, as before.
+- **Past invites** is a disclosure in the Players section's style: the drawn chevron, Bone Dim lines, no addresses.
+- **Motion.** On the answer to Create the new row drops in with the `drop` spring, from 12px above and 96% size, and a 2.5rem Brass rule draws under its first line with `mark-draw` (320ms, from 180ms); the New tag stays until the page is left. Copy flashes the address and the field's edge Brass for 600ms. After a revoke, Past invites' summary takes the accepted-change mark and the `pulse` scale for 3 seconds, as Removed players does (the planned exit of the row would have run before the server answered). The disclosure eases open with `fade`. Reduced motion: every state at once.
+- **Measured.** `invites.mjs`, 17 checks at 390 × 844, 320 × 568 and 1280 × 900.
+
 ### Leaving a chat app's browser (2026-10-16)
 
 [Plan](doc/plan/1792112551_leave_chat_browser.md). A card on the front door, inside a chat app's browser only. No new colour, font, token or asset.

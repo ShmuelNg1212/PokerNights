@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from groups import services
 from groups.tests.helpers import make_group, add_player
@@ -48,6 +48,8 @@ class RemainingFormsTests(TestCase):
         self.assertNotIn('add_form', page.context)
         self.assertEqual(self.client.get(reverse('group', args=[other.pk])).status_code, 404)
         self.assertEqual(self.client.post(reverse('member_add', args=[self.group.pk]), {'name': 'Cannot'}).status_code, 403)
+
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
     def test_group_title_contains_no_form_and_invite_shown_once(self):
         self.client.post(reverse('invite_create', args=[self.group.pk]))

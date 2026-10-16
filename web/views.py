@@ -6,6 +6,7 @@ from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.urls import reverse
 
 from groups.access import member_for
 from groups.forms import GroupForm, MemberForm, NameForm, NamesForm
@@ -109,6 +110,38 @@ def activity_label(found, today) -> str:
     return f"{sessions} session{'' if sessions == 1 else 's'} · last played {when}"
 
 
+PAST_INVITES = 10
+
+
+def invite_rows(request, me) -> dict:
+    """Active invites with their links where they can be made again, the new one marked; the last few that stopped working."""
+    now = timezone.now()
+    made = list(Invite.objects.filter(group=me.group).select_related("created_by").order_by("-created_at", "-id"))
+    # The name the group knows the host by; an account that has left keeps its username.
+    names = dict(Member.objects.filter(group=me.group, user_id__in={i.created_by_id for i in made}).values_list("user_id", "display_name"))
+    for invite in made:
+        invite.by = names.get(invite.created_by_id) or invite.created_by.username
+    new = request.session.pop("new_invite", None)
+    active, past = [], []
+    for invite in made:
+        if invite.ending(now) is None:
+            token = groups.invite_link_token(invite) if settings.INVITE_LINKS_SHOWN else None
+            invite.url = request.build_absolute_uri(reverse("invite_accept", args=[token])) if token else None
+            invite.arrived = invite.pk == new
+            invite.field_id = f"invite-link-{invite.pk}"
+            active.append(invite)
+        elif len(past) < PAST_INVITES:
+            invite.ended = invite.ending(now)
+            past.append(invite)
+    return {
+        "invites": active,
+        "past_invites": past,
+        "invite_left": request.session.pop("invite_left", False),
+        "new_invite_url": request.session.pop("new_invite_url", None),
+        "invite_links_shown": settings.INVITE_LINKS_SHOWN,
+    }
+
+
 def group_settings_context(request, me) -> dict:
     """Roster, invites, tables, presets and the rake account. Kept forms are taken only here, so they are not lost on another tab."""
     group_id = me.group_id
@@ -144,10 +177,7 @@ def group_settings_context(request, me) -> dict:
         for member in members:
             member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", MemberForm if tools else NameForm,
                 initial={"name": member.display_name, "contact": member.contact}, auto_id=f"rename_{member.pk}_%s")
-        context["invites"] = Invite.objects.filter(
-            group=me.group, revoked_at__isnull=True, expires_at__gt=timezone.now()
-        )
-        context["new_invite_url"] = request.session.pop("new_invite_url", None)
+        context.update(invite_rows(request, me))
         live = accounts.live_reset_links([m.user_id for m in members if m.user_id])
         for member in members:
             member.reset_link = live.get(member.user_id)

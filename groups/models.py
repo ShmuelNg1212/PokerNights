@@ -82,10 +82,16 @@ class Member(models.Model):
 
 
 class Invite(models.Model):
-    """A link that lets a signed-in user enter the group. Only the token's hash is stored."""
+    """A link that lets a signed-in user enter the group. Only the token's hash is stored.
+
+    Since 2026-10-16 the token is computed from ``salt`` and SECRET_KEY, so a host can be shown the
+    link again (groups.services.invite_link_token). The salt alone opens nothing. An invite made
+    before then has no salt and cannot be shown.
+    """
 
     group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="invites")
     token_hash = models.CharField(max_length=64, unique=True)
+    salt = models.CharField(max_length=32, null=True, blank=True)
     expires_at = models.DateTimeField()
     max_uses = models.PositiveIntegerField(default=20)
     use_count = models.PositiveIntegerField(default=0)
@@ -101,6 +107,16 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"Invite to {self.group} (expires {self.expires_at:%Y-%m-%d})"
+
+    def ending(self, now):
+        """How the invite stopped working: "revoked", "used up" or "expired"; None while it works."""
+        if self.revoked_at is not None:
+            return "revoked"
+        if self.use_count >= self.max_uses:
+            return "used up"
+        if self.expires_at <= now:
+            return "expired"
+        return None
 
 
 class ClaimLink(models.Model):

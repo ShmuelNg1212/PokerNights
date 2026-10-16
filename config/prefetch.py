@@ -9,7 +9,7 @@ as they were, and the prefetched page is rendered without the messages.
 import copy
 
 # Session values that a view shows once and then removes.
-ONE_TIME_KEYS = ("inline_forms", "new_invite_url", "new_reset_link", "count_drafts")
+ONE_TIME_KEYS = ("inline_forms", "new_invite_url", "new_invite", "invite_left", "new_reset_link", "count_drafts")
 
 
 def is_prefetch(request) -> bool:

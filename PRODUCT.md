@@ -142,3 +142,7 @@ On Add players a host ticks roster players and types new names, one per line, an
 ## 2026-10-16 addendum — Leave the chat app's browser
 
 A link tapped in Messenger, Facebook, Instagram, Viber, LINE or WeChat opens in that app's own browser, which cannot put PokerNights on the home screen. The front door says so first and shows how to open the same page in Safari or Chrome, with the invite kept; on Android one tap tries Chrome. Nobody is sent anywhere without a tap, and Continue here always works. WhatsApp and Telegram cannot be told apart from the browser and get no card. [Plan](doc/plan/1792112551_leave_chat_browser.md).
+
+## 2026-10-16 addendum — Invite links shown again
+
+A host finds every active invite link in Group settings, with Copy and Share, for as long as it works, instead of seeing it only once. The link is not stored; the server can make it again from a stored value and its own secret, so the database alone opens nothing. Links made before this change still work but cannot be shown. Past invites are listed without their addresses. Claim and reset links are still shown once. [Plan](doc/plan/1792115570_invite_links_shown_again.md).

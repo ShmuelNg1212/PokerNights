@@ -200,6 +200,8 @@ ROSTER_TOOLS = env.bool("ROSTER_TOOLS", default=True)
 INSTALL_PROMPT = env.bool("INSTALL_PROMPT", default=True)
 # Turn off to stop asking people in a chat app's browser to open the front door in Safari or Chrome (see config/chat_browser.py).
 CHAT_BROWSER_CARD = env.bool("CHAT_BROWSER_CARD", default=True)
+# Turn off to show an invite link only once, after it is created, as before 2026-10-16 (see groups/services.py).
+INVITE_LINKS_SHOWN = env.bool("INVITE_LINKS_SHOWN", default=True)
 # Turn off to remove Share results from closed sessions (see web/share.py).
 SHARE_RESULTS = env.bool("SHARE_RESULTS", default=True)
 # Turn off to hide Reopen set and Reopen session and refuse both (see settlement/services.py).
