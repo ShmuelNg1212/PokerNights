@@ -7,8 +7,8 @@ Short active items. The detail is in the linked documents.
 Table alerts in the header ([plan](doc/plan/1792163903_alerts_bell.md), [study](doc/study/1792163902_alerts_bell.md)): a bell in the header replaces the panel at the foot of Your groups, and its panel opens by itself once per app session for a phone whose alerts are off.
 
 - [x] Approve the plan and its five decisions. Approved 2026-10-16.
-- [x] Build it on `feat/alerts-bell`. Built 2026-10-16, not released. 1,216 tests pass on SQLite and PostgreSQL; `alerts_bell.mjs` 45 of 45, `arrivals.mjs` 45 of 45.
-- [ ] Say when to merge and release it.
+- [x] Build it on `feat/alerts-bell`. Built 2026-10-16. 1,217 tests pass on SQLite and PostgreSQL with the VAPID keys set; `alerts_bell.mjs` 45 of 45, `arrivals.mjs` 45 of 45.
+- [x] Say when to merge and release it. Released 2026-10-16 as `5df52e8` (previous production commit `c5f6e49`). The first push, `7b42ec7`, failed the Vercel build and deployed nothing; the fix followed. Live check: deploy success, `/healthz` 200, pages load the new `alerts.js` (`c3df0602b7`). No migration.
 - [ ] After release, in the installed app on your phone: open it. On Your groups the bell's panel opens by itself after a moment. Tap Not now and move around; it does not come back. Close the app and open it again; it comes back once. Tap Turn on; the bell fills. In Safari on an iPhone, the bell's panel offers Add to Home Screen.
 
 Show invite links again ([plan](doc/plan/1792115570_invite_links_shown_again.md), [study](doc/study/1792115569_invite_links_shown_again.md)): approved 2026-10-16 and built on `feat/invite-links-shown-again`. Released 2026-10-16 as `46557ae` (previous production commit `376b06f`). Live check: health 200 and pages load `invites.js`. One migration (`groups.0006`, a nullable field). 1,212 tests pass on SQLite and PostgreSQL; `invites.mjs` 17 of 17. `INVITE_LINKS_SHOWN=False` returns the shown-once link.
