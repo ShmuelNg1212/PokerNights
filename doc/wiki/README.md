@@ -28,6 +28,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 
 | Page | Summary |
 |---|---|
+| [build_tests_see_production_settings.md](footguns/build_tests_see_production_settings.md) | The Vercel build tests with production's variables; run the suite with them before a release |
 | [sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md) | A missing row lock passes on SQLite and races on PostgreSQL |
 | [partial_unique_constraints_are_not_deferrable.md](footguns/partial_unique_constraints_are_not_deferrable.md) | Deactivate the old row before activating the new one |
 | [motion_starts_a_frame_late.md](footguns/motion_starts_a_frame_late.md) | Write the first keyframe inline and restore sideways scroll before animating a swapped screen |
