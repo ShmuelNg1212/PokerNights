@@ -4,10 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Show invite links again ([plan](doc/plan/1792115570_invite_links_shown_again.md), [study](doc/study/1792115569_invite_links_shown_again.md)): approved 2026-10-16 and built on `feat/invite-links-shown-again`, not merged or released. One migration (`groups.0006`, a nullable field). 1,212 tests pass on SQLite and PostgreSQL; `invites.mjs` 17 of 17. `INVITE_LINKS_SHOWN=False` returns the shown-once link.
+Show invite links again ([plan](doc/plan/1792115570_invite_links_shown_again.md), [study](doc/study/1792115569_invite_links_shown_again.md)): approved 2026-10-16 and built on `feat/invite-links-shown-again`. Released 2026-10-16 as `46557ae` (previous production commit `376b06f`). Live check: health 200 and pages load `invites.js`. One migration (`groups.0006`, a nullable field). 1,212 tests pass on SQLite and PostgreSQL; `invites.mjs` 17 of 17. `INVITE_LINKS_SHOWN=False` returns the shown-once link.
 
 - [x] Approve the plan and its two remaining details. Approved 2026-10-16.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-16.
 - [ ] After release: in Group settings → Invite players, create a link. It is the top row, marked New. Leave and come back; the link is still there, and Copy and Share work. Revoke it; it moves to Past invites. A link you made before the release says it cannot be shown, and still works.
 
 Leave the chat app's browser before signing up ([plan](doc/plan/1792112551_leave_chat_browser.md), [study](doc/study/1792112550_leave_chat_browser.md)): approved 2026-10-16 and built on `feat/leave-chat-browser`. Released 2026-10-16 as `376b06f` (previous production commit `2b69354`). No migration. Live check: Log in with Messenger's user agent shows the card; `/sw.js` skips the front door. 1,193 tests pass on SQLite and PostgreSQL; `chat_browser.mjs` 21 of 21. `CHAT_BROWSER_CARD=False` turns the card off.

@@ -67,7 +67,7 @@ On your phone, in Group settings → Invite players: create a link. It is the to
 
 ## Rendezvous (2026-10-16)
 
-Built on `feat/invite-links-shown-again` with the design (impeccable) and motion skills. Not merged or released. One migration, `groups.0006_invite_salt` (a nullable field).
+Built on `feat/invite-links-shown-again` with the design (impeccable) and motion skills. Released 2026-10-16 as `46557ae`. One migration, `groups.0006_invite_salt` (a nullable field).
 
 - **As planned:** the salt and `salted_hmac` token, rows with Copy and Share, links from before marked, New on the top row after Create, Create another link, Past invites (10, no addresses, how each ended), no audit for viewing, hosts only, the switch.
 - **Changed while building:**
