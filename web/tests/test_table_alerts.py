@@ -77,6 +77,11 @@ class AlertsBellTests(TestCase):
         self.assertIn(self.BELL, self.header(reverse("session", args=[self.table.session.pk])))
 
     @override_settings(**KEYS)
+    def test_the_bell_puts_no_alert_on_the_page(self):
+        # A page's own alert (an unbalanced count, a refusal) must stay the only one.
+        self.assertNotIn('role="alert"', self.header(reverse("session", args=[self.table.session.pk])))
+
+    @override_settings(**KEYS)
     def test_the_foot_of_your_groups_has_no_panel(self):
         page = self.client.get(reverse("home")).content.decode()
         self.assertEqual(page.count('id="alerts"'), 1)

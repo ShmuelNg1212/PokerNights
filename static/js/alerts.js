@@ -134,7 +134,8 @@
 
   function failed(box, words) {
     var error = box.querySelector("[data-alerts-error]");
-    error.textContent = words; error.hidden = false;
+    // The bell is on every page, so the alert role comes only with a message: an empty alert would sit in each header.
+    error.setAttribute("role", "alert"); error.textContent = words; error.hidden = false;
     var M = window.pokerMotion;
     if (M) M.settle(error, M.run(error, { transform: ["translateX(0px)", "translateX(-6px)", "translateX(6px)", "translateX(-3px)", "translateX(0px)"] }, "nudge"), ["transform"]);
   }
