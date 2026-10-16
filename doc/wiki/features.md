@@ -6,7 +6,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 
 - Sign up, log in, log out.
 - Create a group. The creator is a host.
-- A host creates an invite link (valid 7 days, 20 uses, revocable). A signed-in person who opens it becomes a player.
+- A host creates an invite link (valid 7 days, 20 uses, revocable). A signed-in person who opens it becomes a player. Since 2026-10-16 every active link can be copied or shared again from Group settings (see "Invite links shown again").
 - A host adds a player to the roster by name, without a login. The host acts for that player.
 - A host renames or removes a member, and makes a member with a login a host. A group always keeps one host.
 - A person outside the group gets "not found" for everything in it.
@@ -362,7 +362,7 @@ On count confirmation, a visible typed field keeps its position when the accepte
 
 ## Copy button on a new link (2026-10-06)
 
-- A new invite link and a new password reset link each have a **Copy** button inside the right edge of their read-only field. A tap copies the whole address; the button reads **Copied** for two seconds once the browser has confirmed it.
+- A new invite link (and since 2026-10-16 every active one) and a new password reset link each have a **Copy** button inside the right edge of their read-only field. A tap copies the whole address; the button reads **Copied** for two seconds once the browser has confirmed it.
 - If the browser refuses, or has no clipboard (an http address), nothing says Copied: the address is selected in the field and a line under it says "Could not copy. The link is selected: copy it from the menu."
 - Without JavaScript the button is hidden and the field is selected by hand, as before.
 - Code: `static/js/copy.js` (a button with `data-copy="<field id>"` and a status line with `data-copy-status`), `templates/web/_copy_field.html`. Check: `web/tests/browser/copy.mjs`. [Plan](../plan/1791265490_copy_link_button.md).
@@ -543,6 +543,19 @@ After every sign-up or login in a phone's browser, a sheet suggests putting Poke
 - **Join with a link.** Inside the installed app, Your groups has a field to paste an invite, claim or reset link copied from a chat, because an iPhone opens tapped links in the browser. A link to another site, or to another kind of page, is refused in words. Paste appears where the phone allows reading the clipboard.
 - The page cannot tell that the app is installed when it is opened in the browser, so a person who installed it and logs in from the browser again is asked again unless they said Done there.
 - Switch: `INSTALL_PROMPT=False` removes the sheet, the button and the link field. Check: `web/tests/browser/install_prompt.mjs` with `seed_install.py`.
+
+## Invite links shown again (2026-10-16)
+
+Group settings → Invite players lists every active invite with its link, for as long as it works. [Plan](../plan/1792115570_invite_links_shown_again.md).
+
+- **How.** The token is not stored. `Invite.salt` (random, 22 characters) is stored, and the token is `salted_hmac("groups.invite", salt)` under `SECRET_KEY`, base64url (`groups.services.invite_token`). `invite_link_token(invite)` makes it again and returns it only when its hash matches `token_hash`. A database copy alone rebuilds no link.
+- **An active row** (not revoked, not expired, not used up): "Created by {name} · {date}", "Used 3 of 20 · expires {date, time}", the address in a read-only field with **Copy** (`copy.js`), **Share** where the phone has a share sheet (text "Join {group} on PokerNights" and the address), and **Revoke** as a quiet action on the left.
+- **Cannot be shown:** an invite made before 2026-10-16 (no salt), or one made before `SECRET_KEY` changed. The row says "This link was made before links could be shown again." with Revoke. The link still works.
+- **After Create** the page returns with the new link as the top row, marked **New** once (session key `new_invite`, kept through a prefetch). With at least one active link the button is **Create another link** under the list; with none, the primary **Create invite link**.
+- **Past invites**, collapsed: the 10 most recent invites that stopped working, without addresses, each "Made {date} by {name} · N joined · revoked {date} / expired {date} / used up". After a revoke its summary takes the accepted-change mark once (`invite_left`).
+- Hosts only, as before. Viewing and copying are not audited; creating and revoking are.
+- Claim and reset links are unchanged: shown once.
+- Switch: `INVITE_LINKS_SHOWN=False` stores no salt, shows no address, and returns the shown-once box after Create. Links made while it was on keep working. Checks: `groups/tests/test_invite_links.py`, `web/tests/test_invite_rows.py`; `web/tests/browser/invites.mjs` with `seed_invites.py`.
 
 ## Leave the chat app's browser (2026-10-16)
 
