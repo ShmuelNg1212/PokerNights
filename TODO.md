@@ -4,10 +4,10 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
-Leave the chat app's browser before signing up ([plan](doc/plan/1792112551_leave_chat_browser.md), [study](doc/study/1792112550_leave_chat_browser.md)): approved 2026-10-16 and built on `feat/leave-chat-browser`, not merged or released. No migration. 1,193 tests pass on SQLite and PostgreSQL; `chat_browser.mjs` 21 of 21. `CHAT_BROWSER_CARD=False` turns the card off.
+Leave the chat app's browser before signing up ([plan](doc/plan/1792112551_leave_chat_browser.md), [study](doc/study/1792112550_leave_chat_browser.md)): approved 2026-10-16 and built on `feat/leave-chat-browser`. Released 2026-10-16 as `376b06f` (previous production commit `2b69354`). No migration. Live check: Log in with Messenger's user agent shows the card; `/sw.js` skips the front door. 1,193 tests pass on SQLite and PostgreSQL; `chat_browser.mjs` 21 of 21. `CHAT_BROWSER_CARD=False` turns the card off.
 
 - [x] Approve the plan and answer its three decisions. Approved 2026-10-16 with the recommended answers.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-16.
 - [ ] After release, iPhone: send yourself an invite in Messenger and tap it. The card "Open this in Safari" is above Sign up. The three dots, then Open in Safari, open the same invite in Safari. Sign up there; the home-screen sheet follows.
 - [ ] After release, Android: the same in Messenger. **Open in Chrome** opens Chrome on the same invite. If it does not, a line under it says to use the three dots, and they work.
 - [ ] Tap **Continue here**: the card folds away and does not come back on Log in.

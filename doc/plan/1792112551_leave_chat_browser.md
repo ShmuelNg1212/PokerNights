@@ -54,7 +54,7 @@ On your phone: send yourself an invite in Messenger and tap it. The card shows a
 
 ## Rendezvous (2026-10-16)
 
-Built on `feat/leave-chat-browser` with the design (impeccable) and motion skills. Not merged or released.
+Built on `feat/leave-chat-browser` with the design (impeccable) and motion skills. Released 2026-10-16 as `376b06f`.
 
 - **As planned:** the card on every front-door page, per phone, Copy link, Continue here with and without JavaScript, the switch `CHAT_BROWSER_CARD`, `Vary: User-Agent`, `install.js` reading the server's mark and copying the current page.
 - **Changed while building:**
