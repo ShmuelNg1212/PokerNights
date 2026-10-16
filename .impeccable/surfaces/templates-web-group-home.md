@@ -48,3 +48,7 @@ The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside t
 ## 2026-10-04 addendum — Your groups home
 
 The approved `doc/plan/1791102439_your_groups_home.md` rebuilds `templates/web/home.html` inside the Rack. Mode: Operate. THESIS: one block per group, and the block says what is true right now; the page is loud only when a set is in play. Built with `web/home.py` (batched read-only queries) and `templates/web/_group_card.html`. The felt band is used only for a set in play. No money still in play, no other member's balance, no added JavaScript.
+
+## 2026-10-16 addendum — Table alerts in the header
+
+The approved `doc/plan/1792163903_alerts_bell.md` removes the table alerts panel from the foot of Your groups. Its control is now a bell in the shared header (`templates/web/_alerts.html`, included from `base.html`), with an anchored panel. Mode: Operate, inside the Rack. Your groups keeps only one part of it: `main[data-alerts-remind]` (with a group). That marks the one page where the panel opens by itself once per window. Nothing else on the page changes. Shipped record: DESIGN.md "Table alerts in the header (2026-10-16)".
