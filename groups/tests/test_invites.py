@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -68,6 +68,8 @@ class InviteTests(TestCase):
 class InviteViewTests(TestCase):
     def setUp(self):
         self.group, self.host = make_group()
+
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
     def test_host_sees_the_link_once(self):
         self.client.force_login(self.host.user)

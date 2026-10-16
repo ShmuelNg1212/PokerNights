@@ -1,6 +1,6 @@
 """A page fetched ahead of a tap must not use up anything meant to be shown once."""
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from games.tests.helpers import make_table
@@ -37,12 +37,16 @@ class PrefetchGuardTests(TestCase):
         self.assertContains(real, "already exists")          # the refused name and its error are still there
         self.assertContains(real, 'value="Friday table"')
 
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
+
     def test_a_new_invite_link_waits_for_the_real_page(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
         self.client.get(self.settings_url, **PREFETCH)
         real = self.client.get(self.settings_url)
         self.assertContains(real, "/join/")
         self.assertIsNotNone(real.context["new_invite_url"])
+
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
     def test_an_ordinary_request_is_untouched(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
@@ -57,6 +61,8 @@ class PrefetchGuardTests(TestCase):
         page = self.client.get(reverse("night", args=[night.session.night_id]), **PREFETCH)
         self.assertContains(page, "Who pays whom")
         self.assertEqual(page["Cache-Control"], "no-store")
+
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
     def test_a_post_is_never_treated_as_a_prefetch(self):
         response = self.client.post(reverse("invite_create", args=[self.group.pk]), **PREFETCH)

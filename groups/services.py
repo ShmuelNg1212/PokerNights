@@ -1,5 +1,6 @@
 """The only code allowed to change groups, members and invites."""
 
+import base64
 import hashlib
 import secrets
 from datetime import timedelta
@@ -12,6 +13,7 @@ from django.db.models.deletion import Collector, ProtectedError
 from django.db.models import F
 from django.db.models.functions import Lower
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 
 from accounts import services as accounts
 from audit import services as audit
@@ -224,15 +226,30 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def invite_token(salt: str) -> str:
+    """The invite's token, made again from its salt under SECRET_KEY: 43 characters, as token_urlsafe(32)."""
+    return base64.urlsafe_b64encode(salted_hmac("groups.invite", salt, algorithm="sha256").digest()).rstrip(b"=").decode()
+
+
+def invite_link_token(invite: Invite) -> str | None:
+    """The token of an invite that can be shown again, or None: made before 2026-10-16, or SECRET_KEY changed since."""
+    if not invite.salt:
+        return None
+    token = invite_token(invite.salt)
+    return token if hash_token(token) == invite.token_hash else None
+
+
 @transaction.atomic
 def create_invite(actor: Member) -> tuple[Invite, str]:
-    """Create an invite. The token is returned once and is not stored."""
+    """Create an invite. The token is not stored; with INVITE_LINKS_SHOWN it can be made again from the salt."""
     require_host(actor)
     lock_group(actor.group_id)
-    token = secrets.token_urlsafe(32)
+    salt = secrets.token_urlsafe(16) if settings.INVITE_LINKS_SHOWN else None
+    token = invite_token(salt) if salt else secrets.token_urlsafe(32)
     invite = Invite.objects.create(
         group=actor.group,
         token_hash=hash_token(token),
+        salt=salt,
         expires_at=timezone.now() + timedelta(days=INVITE_DAYS),
         max_uses=INVITE_MAX_USES,
         created_by=actor.user,

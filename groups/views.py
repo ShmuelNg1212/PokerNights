@@ -65,15 +65,19 @@ def create_invite(request, group_id):
     actor = member_for(request.user, group_id)
     created = attempt(request, services.create_invite, actor)
     if created is not None:
-        # Shown once on the next page; only the hash is stored.
-        request.session["new_invite_url"] = request.build_absolute_uri(reverse("invite_accept", args=[created[1]]))
+        if services.invite_link_token(created[0]):
+            request.session["new_invite"] = created[0].pk  # the row marked New on the next page
+        else:
+            # Shown once on the next page; only the hash is stored.
+            request.session["new_invite_url"] = request.build_absolute_uri(reverse("invite_accept", args=[created[1]]))
     return group_settings(group_id, "invites")
 
 
 @require_POST
 def revoke_invite(request, group_id, invite_id):
     actor = member_for(request.user, group_id)
-    attempt(request, services.revoke_invite, actor, invite_id, success="Invite revoked.")
+    if attempt(request, services.revoke_invite, actor, invite_id, success="Invite revoked.") is not None:
+        request.session["invite_left"] = True  # Past invites is marked on the next page
     return group_settings(group_id, "invites")
 
 

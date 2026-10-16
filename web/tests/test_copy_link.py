@@ -1,6 +1,6 @@
 """The Copy button beside a link that is shown once. What the button does is checked in copy.mjs."""
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from groups.tests.helpers import add_player, make_group
@@ -24,6 +24,8 @@ class CopyLinkMarkupTests(TestCase):
         self.assertNotContains(page, "data-copy")
         self.assertContains(page, "js/copy.js")
 
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
+
     def test_new_invite_link_has_a_copy_button(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
         page = self.client.get(self.settings_url)
@@ -33,6 +35,8 @@ class CopyLinkMarkupTests(TestCase):
         self.client.post(reverse("member_reset_link", args=[self.group.pk, self.maria.pk]))
         page = self.client.get(self.settings_url)
         self.assertCopyField(page, "new-reset-link", page.context["new_reset_link"]["url"], "Password reset link for maria")
+
+    @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
     def test_both_links_at_once_keep_separate_fields(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
