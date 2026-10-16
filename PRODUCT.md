@@ -138,3 +138,7 @@ Choosing a preset on New session fills the game and the stakes at once and keeps
 ## 2026-10-14 addendum — Several new names at once
 
 On Add players a host ticks roster players and types new names, one per line, and adds everyone with one button. Each new name joins the roster without a login and takes a seat in the same action; if anything is wrong nobody is added, every problem is named, and what was ticked and typed is kept. A typed name that is already on the roster is refused, and the page offers to tick that player instead: two people can share a name, and joining the wrong one would mix their histories. The seats are counted for the ticks and the names together. Back on the set, the players who just arrived are marked. No buy-in is recorded. `ROSTER_TOOLS=False` takes the box back to one name. [Plan](doc/plan/1791948616_new_names_at_once.md).
+
+## 2026-10-16 addendum — Leave the chat app's browser
+
+A link tapped in Messenger, Facebook, Instagram, Viber, LINE or WeChat opens in that app's own browser, which cannot put PokerNights on the home screen. The front door says so first and shows how to open the same page in Safari or Chrome, with the invite kept; on Android one tap tries Chrome. Nobody is sent anywhere without a tap, and Continue here always works. WhatsApp and Telegram cannot be told apart from the browser and get no card. [Plan](doc/plan/1792112551_leave_chat_browser.md).

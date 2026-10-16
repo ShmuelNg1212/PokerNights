@@ -106,3 +106,14 @@ def own_count(line):
     words = ["Step 1 of 3: send your count.", "Step 2 of 3: counted, waiting for the host to confirm.",
              "Step 3 of 3: confirmed, waiting for the host to cash you out.", "All 3 steps done: cashed out."][reached]
     return {"stage": stage, "amount": amount, "steps": steps, "words": words}
+
+
+@register.filter
+def focus_unless(field, card):
+    """The field's input, without its autofocus while the chat-browser card leads the page.
+
+    Focus scrolls a short phone past the card. A refused form keeps the focus on the refused field.
+    """
+    if card and not field.form.errors:
+        return field.as_widget(attrs={"autofocus": False})
+    return field.as_widget()

@@ -1,7 +1,7 @@
 """What lets a phone install the site: the service worker and its offline page.
 
 The worker has two jobs. When a page navigation fails for lack of a connection it shows
-the offline page. It stores that page and nothing else, so no ledger page is ever shown
+the offline page; the front door is left to the browser, so the server sees a chat app's user agent. It stores that page and nothing else, so no ledger page is ever shown
 from a cache. And it shows a table alert that the server pushed (notify/push.py), and opens
 the set when the alert is tapped. Setting SERVICE_WORKER=False serves a worker that removes
 itself, and with it the alerts.
@@ -27,8 +27,11 @@ self.addEventListener("activate", (event) => {
       .then(() => self.clients.claim())
   );
 });
+// The front door is left to the browser: a request the worker makes carries the worker's user agent,
+// not a chat app's, and the page needs the chat app's to ask the person to leave it (config/chat_browser.py).
+const FRONT_DOOR = /^\/(accounts|join|claim)\//;
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode !== "navigate") return;
+  if (event.request.mode !== "navigate" || FRONT_DOOR.test(new URL(event.request.url).pathname)) return;
   event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE)));
 });
 // A table alert: the title, the line under it and the set to open. One per set (the tag).
