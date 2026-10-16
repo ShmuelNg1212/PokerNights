@@ -97,6 +97,8 @@
     }, { signal: signal });
     document.addEventListener("install:offered", function () { if (dialog.open) choose(); if (again && phone()) again.hidden = false; }, { signal: signal });
     document.addEventListener("install:done", function () { if (again) again.hidden = true; close(); }, { signal: signal });
+    // The table alerts panel in an iPhone's browser asks for this sheet (alerts.js).
+    document.addEventListener("install:open", function (event) { open(event.detail && event.detail.from); }, { signal: signal });
 
     var installed = read(localStorage, DONE) === "done";
     if (again && phone() && !installed) {

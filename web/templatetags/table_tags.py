@@ -58,7 +58,7 @@ ICONS = {'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l
 
 @register.simple_tag
 def icon(name):
-    return format_html('<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{}</svg>', mark_safe(ICONS.get(name, '')))
+    return format_html('<svg class="icon icon-{}" viewBox="0 0 24 24" aria-hidden="true">{}</svg>', name, mark_safe(ICONS.get(name, '')))
 
 @register.filter
 def display_amount(value, unit):
@@ -73,6 +73,10 @@ def display_amount(value, unit):
 ICONS.update({
     'arrow-up': '<path d="m5 12 7-7 7 7" />\n  <path d="M12 19V5" />',
     'arrow-down': '<path d="M12 5v14" />\n  <path d="m19 12-7 7-7-7" />',
+    # Table alerts in the header (2026-10-16): off, on (the same bell, filled) and blocked.
+    'bell': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
+    'bell-filled': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path fill="currentColor" d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
+    'bell-off': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742" />\n  <path d="m2 2 20 20" />\n  <path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05" />',
 })
 
 
