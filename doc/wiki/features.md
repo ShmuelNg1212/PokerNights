@@ -536,13 +536,28 @@ After every sign-up or login in a phone's browser, a sheet suggests putting Poke
 - **When.** On the first ordinary page after a login, about a second in, after the arrival has played. A join or claim page and a session whose recap opens by itself keep the screen; the sheet then shows on the next page. Not on a desktop browser, and never inside the installed app.
 - **Android** where the browser offers it: one **Install** button that opens the browser's own install dialog. Accepting ends the suggestion for that browser; declining leaves the menu steps.
 - **iPhone:** two steps, Share and then Add to Home Screen, and the line "You log in once more inside the app."
-- **A chat app's own browser** (Messenger, Instagram, Viber, Line): says it cannot add apps, to open the page in the real browser, and has **Copy link**.
+- **A chat app's own browser** (Messenger, Instagram, Viber, Line): says it cannot add apps, to open the page in the real browser, and has **Copy link**, which copies the page it is on. Since 2026-10-16 the front door asks first (below), so this is the back-up for a person who chose Continue here.
 - **Any other phone browser:** open the menu, then Install app or Add to Home screen.
 - **Closing.** Not now, Close, Escape or a tap outside. It shows again at the next login. **Done, it's on my home screen** ends it for that browser, as does the browser reporting the install.
 - **Later.** Your groups ends with **Add to home screen**, which opens the same sheet, until it is marked done.
 - **Join with a link.** Inside the installed app, Your groups has a field to paste an invite, claim or reset link copied from a chat, because an iPhone opens tapped links in the browser. A link to another site, or to another kind of page, is refused in words. Paste appears where the phone allows reading the clipboard.
 - The page cannot tell that the app is installed when it is opened in the browser, so a person who installed it and logs in from the browser again is asked again unless they said Done there.
 - Switch: `INSTALL_PROMPT=False` removes the sheet, the button and the link field. Check: `web/tests/browser/install_prompt.mjs` with `seed_install.py`.
+
+## Leave the chat app's browser (2026-10-16)
+
+An invite, claim or reset link tapped in a chat opens in that app's own browser, which cannot put PokerNights on the home screen. The front door now asks the person to open the page in Safari or Chrome before they make an account. [Plan](../plan/1792112551_leave_chat_browser.md).
+
+- **Where.** Join, Sign up, Log in, Claim and Reset, at the top of the sheet. Not on a dead link or on "Sign-up needs an invite". Only in a known chat app's browser on a phone: Messenger, Facebook, Instagram, Viber, LINE and WeChat (`config/chat_browser.py`, from the user agent).
+- **iPhone:** "Open this in Safari", the app's name ("Messenger's browser can't keep PokerNights on your home screen."), "Your invite comes with you." when there is one, then two steps: the three dots at the top, then Open in Safari. No page can open Safari from these apps.
+- **Android:** "Open this in Chrome" with a primary **Open in Chrome** (an `intent://` link to this exact address, `package=com.android.chrome`), and the same two menu steps under "Or from the menu". If the page is still on screen 1.5 seconds after the tap, a line says to use the three dots and the dots light again.
+- **LINE:** **Open in browser**, the same address with `openExternalBrowser=1`, which LINE documents.
+- **Copy link** copies the page's full address, token included. **Continue here** folds the card away and remembers it for the browser session (cookie `chat_here`); without JavaScript it is a link to the same page with `here=1`.
+- While the card shows, the first field does not take focus, because focus scrolled a short phone past the card. A refused form still focuses the refused field.
+- The server decides, so the card is in the first paint and works without JavaScript; front-door answers carry `Vary: User-Agent`. Signed-in pages carry `data-chat-browser` on `<html>` for the home-screen sheet.
+- The service worker leaves front-door navigations to the browser ([footgun](footguns/service_worker_user_agent.md)). Offline, those pages show the browser's own error instead of the offline page.
+- Not detected: WhatsApp and Telegram, whose link views send the plain browser's user agent. They have their own "Open in browser" control, and the home-screen sheet still follows the login.
+- Switch: `CHAT_BROWSER_CARD=False` removes the card. Checks: `web/tests/test_chat_browser.py`; `web/tests/browser/chat_browser.mjs` with `seed_chat_browser.py`.
 
 ## The session page updates by itself (2026-10-11)
 

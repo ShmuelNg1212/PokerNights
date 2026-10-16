@@ -40,6 +40,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [count_status_moves_the_field.md](footguns/count_status_moves_the_field.md) | A wrapped saved-count status moves its field even when document scroll stays fixed |
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 | [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
+| [service_worker_user_agent.md](footguns/service_worker_user_agent.md) | A page the service worker fetched was asked for with the worker's user agent, not a chat app's |
 
 | [ios_keyboard_covers_fixed.md](footguns/ios_keyboard_covers_fixed.md) | Fixed elements at the bottom sit under the iPhone keyboard |
 | [opening_buy_ins_lock_rake.md](footguns/opening_buy_ins_lock_rake.md) | Configure rake before default opening buy-ins lock the rule |

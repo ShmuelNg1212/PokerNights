@@ -920,6 +920,16 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 - **Your groups** ends with a quiet "Add to home screen" in a phone's browser. Inside the installed app the same place holds "Join with a link", a disclosure in the New group style with one labelled field, a refusal line, Paste and a primary Open link.
 - **Measured.** `install_prompt.mjs`, 38 checks: each phone's part, timing after the arrival, focus and its return, Escape, 48px targets and no overflow at 320 and 390px, every login asking again, Done and the browser's install ending it, deferral behind a join page and a recap, desktop, reduced motion, and the link field's refusal, paste and opening.
 
+### Leaving a chat app's browser (2026-10-16)
+
+[Plan](doc/plan/1792112551_leave_chat_browser.md). A card on the front door, inside a chat app's browser only. No new colour, font, token or asset.
+
+- **The card** is a tray let into the door sheet above the task: Ground with an inset Rule edge and a soft inner shadow, the surface radius, 16px padding. At its head a 44px tile in Brass (14% Brass on Ground, a 40% Brass edge) holds a drawn compass (iPhone, LINE) or the open-outside glyph (Android). Beside it the title at 1.0625rem 650, and one Bone Dim line naming the app and saying the invite comes along.
+- **Steps** reuse the home-screen sheet's numbered rows; the menu tile's dots are drawn at a heavier stroke so they read at a glance. Android and LINE put one primary button above them, under "Or from the menu" in Bone Dim.
+- **Actions.** Copy link (neutral) and Continue here (quiet) side by side; under about 330px they stack. Without JavaScript only Continue here shows, full width.
+- **Motion.** One moment: 900ms in, after the door's arrival, the menu's three dots light Brass and grow 1.5× in turn (560ms each, 120ms apart), then rest; it is CSS, so it plays from the first paint. A failed Open in Chrome plays it again with a status line. Continue here: the card leaves with `leave` (fade, 97%), and what was under it rises into the space with `shift`; focus goes to the heading, with no ring. Reduced motion: no dots, the card goes at once.
+- **Measured.** `chat_browser.mjs`, 21 checks at 390 × 844 and 320 × 568: the card above the form, words per phone, the dots' timing, Copy, Continue here's motion, focus and memory, Open in Chrome's address and its fallback, 48px targets, no overflow, the page opening at the top with nothing focused, reduced motion, no JavaScript and Safari.
+
 ### "Your count" card (2026-10-11)
 
 [Plan](doc/plan/1791710364_your_count_gap.md). This adds to "A player's own row" and to "Count-up in one line". No new colour, font or asset; one new keyframe.
