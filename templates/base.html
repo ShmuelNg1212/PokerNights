@@ -80,11 +80,14 @@
   {% block header %}<header class="site-header">
     <a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>
     {% if user.is_authenticated %}
-    <form method="post" action="{% url 'logout' %}" class="inline">
-      {% csrf_token %}
-      <span class="who">{{ user.username }}</span>
-      <button type="submit" class="btn btn-quiet btn-small">Log out</button>
-    </form>
+    <div class="header-end">
+      {% if push_alerts %}{% include "web/_alerts.html" %}{% endif %}
+      <form method="post" action="{% url 'logout' %}" class="inline">
+        {% csrf_token %}
+        <span class="who">{{ user.username }}</span>
+        <button type="submit" class="btn btn-quiet btn-small">Log out</button>
+      </form>
+    </div>
     {% endif %}
   </header>{% endblock %}
   <div id="route-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true" data-turbo-permanent></div>

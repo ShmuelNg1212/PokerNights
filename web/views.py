@@ -28,7 +28,6 @@ from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
-from notify import push
 from notify import services as notify
 from settlement import queries as settlement_queries
 
@@ -42,8 +41,6 @@ def home(request):
     return render(request, "web/home.html", {
         "cards": home_cards(request.user), "archived_groups": archived_groups(request.user),
         "form": take_form(request, "home:create", GroupForm, auto_id="group_%s"),
-        # Table alerts need the worker that shows them and both keys (notify/push.py).
-        "push_alerts": settings.SERVICE_WORKER and push.enabled(), "vapid_public_key": settings.VAPID_PUBLIC_KEY,
     })
 
 

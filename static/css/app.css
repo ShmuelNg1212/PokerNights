@@ -1883,22 +1883,40 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 }
 
 /* Table alerts (2026-10-15). On a card: the viewer was put in this set and has not opened it yet,
-   a brass dot and the words, above the facts (alerts.js brings it in on a refresh). At the foot of
-   Your groups: the panel that turns alerts on for this phone, quiet as New group's form. */
+   a brass dot and the words, above the facts (alerts.js brings it in on a refresh). */
 .band-added { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-2) 0 0; color: var(--text); font-size: 1rem; font-weight: 650; }
 .home-band.felt .band-added { color: var(--bone); }
 .band-added + .band-facts { margin-top: var(--s-1); }
 .added-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--brass); }
-.alerts-panel { margin-top: var(--s-4); padding: var(--s-4); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
-.alerts-panel:has(.alerts-line:not([hidden])) { padding: var(--s-1) var(--s-4); }
-.alerts-title { margin: 0 0 var(--s-1); font-size: 1.125rem; font-weight: 750; }
+/* Table alerts in the header (2026-10-16): a bell whose shape says the state (outline off, filled
+   on, slashed blocked) and a small panel under it. alerts.js shows the bell, opens the panel and,
+   once per window on Your groups, opens it by itself with a swing of the bell. */
+.header-end { display: flex; align-items: center; gap: var(--s-1); min-width: 0; }
+/* The panel hangs from the header's right edge (the header is sticky, so it is the anchor); its caret
+   points at the bell, wherever Log out leaves it (alerts.js sets --alerts-caret). */
+.alerts { position: static; }
+.alerts-bell { display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap); padding: 0; border: 0; border-radius: var(--r-pill); background: none; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.alerts-bell[aria-expanded=true] { background: var(--rail-2); }
+@media (hover: hover) and (pointer: fine) { .alerts-bell:hover { background: var(--rail-2); } }
+.alerts-glyphs { display: grid; transform-origin: 50% 2px; }
+.alerts-glyphs .icon { grid-area: 1 / 1; width: 22px; height: 22px; opacity: 0; transform: scale(0.9); transition: opacity var(--t-fast) var(--ease-out), transform 240ms var(--ease-out); }
+.alerts:is([data-state=ask], [data-state=install]) .icon-bell, .alerts[data-state=on] .icon-bell-filled, .alerts[data-state=blocked] .icon-bell-off { opacity: 1; transform: none; }
+.alerts[data-state=blocked] .alerts-bell { color: var(--muted); }
+.alerts-panel { --alerts-caret: 24px; position: absolute; top: calc(100% + 4px); right: 16px; z-index: 8; width: min(300px, calc(100vw - 32px)); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--rail); box-shadow: 0 16px 40px oklch(0 0 0 / .5); transform-origin: calc(100% - var(--alerts-caret)) 0; }
+.alerts-panel::before { content: ""; position: absolute; top: -6px; right: calc(var(--alerts-caret) - 6px); width: 10px; height: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--rail); transform: rotate(45deg); }
+.alerts-title { margin: 0 0 var(--s-1); font-size: 1rem; font-weight: 750; }
 .alerts-text { margin: 0 0 var(--s-3); color: var(--muted); text-wrap: pretty; }
+p.alerts-text:last-child { margin-bottom: 0; }
 .alerts-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.alerts-actions .grow { min-width: 200px; }
+.alerts-actions .grow { min-width: 120px; }
+.alerts-actions .sheet-error, .alerts-panel .sheet-error { margin: var(--s-2) 0 0; }
 .alerts-line { display: flex; align-items: center; gap: var(--s-2); margin: 0; min-height: var(--tap); }
 .alerts-tick { display: inline-flex; color: var(--good); }
 .alerts-line .link-button { flex: none; white-space: nowrap; }
-:is([data-welcome], [data-launch]) .alerts-panel { animation: welcome-fade 300ms var(--ease-out) 420ms backwards; }
+@keyframes alerts-swing { 0% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-6deg); } 100% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: no-preference) { .alerts-glyphs.is-swinging { animation: alerts-swing 600ms var(--ease-out); } }
+/* Below 360px the name gives way, so the brand, the bell and Log out keep one line. */
+@media (max-width: 359px) { .header-end .who { display: none; } }
 
 /* The next set has started (2026-10-15): on an ended set's page, a Rail panel with a brass top edge,
    the news and Go to set N. From 900px the button sits beside the words. arrivals.js marks its arrival. */

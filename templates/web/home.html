@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block screen %} data-depth="0"{% endblock %}
+{% block screen %} data-depth="0"{% if cards %} data-alerts-remind{% endif %}{% endblock %}
 {% load static table_tags %}
 {% block page_class %}hub-page home-page{% if cards|length > 1 %} home-many{% endif %}{% endblock %}
 {# Redrawn in place when something on it changes for someone else (nightlive.js asks home_state). #}
@@ -21,7 +21,6 @@
   <p class="muted small">Joining a friend's game instead? Open the invite link a host sent you.</p>
 </section>
 {% endif %}
-{% if push_alerts and cards %}{% include "web/_alerts.html" %}{% endif %}
 {% if install_prompt %}{% include "web/_home_app.html" %}{% endif %}
 {% if archived_groups %}
 <details class="home-create home-archived" id="archived"><summary>Archived groups ({{ archived_groups|length }})</summary>

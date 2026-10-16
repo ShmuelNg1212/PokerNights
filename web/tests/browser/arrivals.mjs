@@ -1,5 +1,5 @@
 // Table alerts (2026-10-15): a player who arrives on another phone's set page (arrivals.js), the
-// "added you" line on Your groups and the table alerts panel (alerts.js). On a fresh temporary
+// "added you" line on Your groups (alerts.js); the bell is checked in alerts_bell.mjs. On a fresh temporary
 // database seeded with seed_arrivals.py, serve it on 127.0.0.1:8765 with VAPID_PUBLIC_KEY and
 // VAPID_PRIVATE_KEY set, then run. PN_DB names the SQLite file: the other host writes to it
 // through the real services, and the pages learn of it by polling. A phone's push service is
@@ -130,30 +130,6 @@ const inView=n=>`(()=>{const b=${row(n)}.getBoundingClientRect();return b.top>=0
  await P.shot('added-you-390');
  await P.go(`/s/${S.set}/`);await P.go('/');
  check(`${W}: gone once the set was opened`,await P.js(`!document.querySelector('[data-added]')`));
-
- // --- The alerts panel, with the push service stubbed -----------------------------------------------
- const shown=async()=>{for(let i=0;i<40;i++){const v=await P.js(`(()=>{const p=document.getElementById('alerts');if(!p||p.hidden)return null;const s=p.querySelector('[data-alerts-state]:not([hidden])');return s?s.dataset.alertsState:null})()`);if(v)return v;await sleep(100)}return null};
- const W2='Alerts panel';
- check(`${W2}: asks, with two 48px buttons`,await shown()==='ask'&&await P.js(`[...document.querySelectorAll('#alerts .alerts-ask button')].every(b=>b.getBoundingClientRect().height>=48)`));
- await P.js(`document.getElementById('alerts').scrollIntoView({block:'center'})`);await sleep(150);await P.shot('alerts-ask-390');
- await P.js(`document.querySelector('[data-alerts-later]').click()`);await sleep(600);
- check(`${W2}: Not now hides it`,await P.js(`document.getElementById('alerts').hidden`));
- await P.go('/');await sleep(800);
- check(`${W2}: and it stays hidden on the next visit`,await P.js(`document.getElementById('alerts').hidden`));
- await P.js(`localStorage.removeItem('pn-alerts-later')`);await P.go('/');
- check(`${W2}: asks again when Not now is forgotten`,await shown()==='ask');
- await P.js(`document.querySelector('[data-alerts-on]').click()`);await sleep(900);
- check(`${W2}: Turn on shows the on line with focus on Turn off`,await shown()==='on'&&await P.js(`document.activeElement.matches('[data-alerts-off]')`));
- check(`${W2}: the server holds the phone`,py(`print(PushSubscription.objects.filter(user__username='cal').count())`)==='1');
- check(`${W2}: the tick sprang`,await P.js(`__runs.some(r=>r.el.includes('alerts-tick'))`));
- await P.js(`document.getElementById('alerts').scrollIntoView({block:'center'})`);await sleep(150);await P.shot('alerts-on-390');
- await P.js(`document.querySelector('[data-alerts-off]').click()`);await sleep(900);
- check(`${W2}: Turn off asks again and the server forgets the phone`,await shown()==='ask'&&py(`print(PushSubscription.objects.count())`)==='0');
- await P.js(`localStorage.setItem('__fake_perm','denied')`);await P.go('/');
- check(`${W2}: blocked in the phone's settings says so`,await shown()==='blocked');
- await P.js(`document.getElementById('alerts').scrollIntoView({block:'center'})`);await sleep(150);await P.shot('alerts-blocked-390');
- check(`${W2}: no script error`,(await P.js('__errors')).length===0);
- check(`${W2}: Motion animates only transform and opacity`,await P.js(only));
 }
 
 // --- The next set has started: an ended set's page points to it ------------------------------------------

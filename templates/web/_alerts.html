@@ -1,12 +1,19 @@
-{% load table_tags %}{# Table alerts for this phone: shown by alerts.js only where a phone can take them. It keeps its state across redraws (permanent). #}
-<section id="alerts" class="alerts-panel" hidden data-turbo-permanent data-alerts data-key="{{ vapid_public_key }}" data-subscribe="{% url 'alerts_subscribe' %}" data-unsubscribe="{% url 'alerts_unsubscribe' %}" aria-labelledby="alerts-title">
+{% load table_tags %}{# Table alerts for this phone, in the header: a bell and its panel. alerts.js shows the bell only where a phone can take them, or (an iPhone's browser) where installing the app would let it. It keeps its state across screen changes (permanent). #}
+<div id="alerts" class="alerts" hidden data-turbo-permanent data-alerts data-key="{{ vapid_public_key }}" data-subscribe="{% url 'alerts_subscribe' %}" data-unsubscribe="{% url 'alerts_unsubscribe' %}">
   {% csrf_token %}
-  <div class="alerts-ask" data-alerts-state="ask" hidden>
+  <button type="button" class="alerts-bell" aria-label="Table alerts" aria-expanded="false" aria-controls="alerts-panel" data-alerts-bell><span class="alerts-glyphs">{% icon 'bell' %}{% icon 'bell-filled' %}{% icon 'bell-off' %}</span></button>
+  <div class="alerts-panel" id="alerts-panel" role="dialog" aria-labelledby="alerts-title" hidden>
     <h2 id="alerts-title" class="alerts-title">Table alerts</h2>
-    <p class="alerts-text">Get a notification when a host adds you to a set.</p>
-    <div class="alerts-actions"><button type="button" class="btn grow" data-alerts-on>Turn on table alerts</button><button type="button" class="btn btn-quiet" data-alerts-later>Not now</button></div>
-    <p class="sheet-error" role="alert" data-alerts-error hidden></p>
+    <div data-alerts-state="ask" hidden>
+      <p class="alerts-text">Get a notification when a host adds you to a set.</p>
+      <div class="alerts-actions"><button type="button" class="btn grow" data-alerts-on>Turn on</button><button type="button" class="btn btn-quiet" data-alerts-later hidden>Not now</button></div>
+      <p class="sheet-error" role="alert" data-alerts-error hidden></p>
+    </div>
+    <p class="alerts-line" data-alerts-state="on" hidden><span class="alerts-tick">{% icon 'check' %}</span><span class="grow">On for this phone.</span><button type="button" class="link-button" data-alerts-off>Turn off</button></p>
+    <p class="alerts-text" data-alerts-state="blocked" hidden>Alerts are blocked for PokerNights in this phone’s settings.</p>
+    <div data-alerts-state="install" hidden>
+      <p class="alerts-text">On an iPhone, alerts work from the Home Screen app.</p>
+      <button type="button" class="btn btn-block" data-alerts-install>Add to Home Screen</button>
+    </div>
   </div>
-  <p class="alerts-line" data-alerts-state="on" hidden><span class="alerts-tick">{% icon 'check' %}</span><span class="grow">Table alerts are on for this phone.</span><button type="button" class="link-button" data-alerts-off>Turn off</button></p>
-  <p class="alerts-line muted" data-alerts-state="blocked" hidden>Alerts are blocked for PokerNights in this phone’s settings.</p>
-</section>
+</div>

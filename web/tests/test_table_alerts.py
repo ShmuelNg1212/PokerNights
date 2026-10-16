@@ -1,4 +1,4 @@
-"""Table alerts on the pages: the "added you" line on Your groups, the alerts panel, the worker's
+"""Table alerts on the pages: the "added you" line on Your groups, the bell in the header, the worker's
 push handlers and the set page's marks for a player who arrives on another phone."""
 
 from django.test import TestCase, override_settings
@@ -45,28 +45,67 @@ class AddedYouTests(TestCase):
         self.assertNotContains(self.client.get(reverse("home")), "added you")
 
 
-class AlertsPanelTests(TestCase):
+class AlertsBellTests(TestCase):
+    """The bell in the header (2026-10-16): on every signed-in page with a header, never on the
+    foot of Your groups, and the reminder only on Your groups with a group."""
+
+    BELL = '<div id="alerts" class="alerts" hidden data-turbo-permanent data-alerts data-key="BPublicKey" data-subscribe="/alerts/subscribe/" data-unsubscribe="/alerts/unsubscribe/">'
+
     def setUp(self):
         self.table = Table()
         self.client.force_login(self.table.host.user)
 
+    def header(self, url):
+        page = self.client.get(url).content.decode()
+        return page.split('<header class="site-header">')[1].split("</header>")[0] if '<header class="site-header">' in page else ""
+
     @override_settings(**KEYS)
-    def test_the_panel_carries_the_public_key_and_both_addresses_and_starts_hidden(self):
+    def test_the_bell_is_in_the_header_with_the_public_key_and_both_addresses_and_starts_hidden(self):
+        header = self.header(reverse("home"))
+        self.assertIn(self.BELL, header)
+        self.assertIn('aria-label="Table alerts" aria-expanded="false" aria-controls="alerts-panel"', header)
+        for glyph in ("icon-bell", "icon-bell-filled", "icon-bell-off"):
+            self.assertIn(f'class="icon {glyph}"', header)
+        self.assertIn("Turn on", header)
+        self.assertNotIn("private", header)
+        # Before Log out, so the name and Log out stay together.
+        self.assertLess(header.index('id="alerts"'), header.index("Log out"))
+
+    @override_settings(**KEYS)
+    def test_the_bell_is_on_the_group_and_set_pages_too(self):
+        self.assertIn(self.BELL, self.header(reverse("group", args=[self.table.group.pk])))
+        self.assertIn(self.BELL, self.header(reverse("session", args=[self.table.session.pk])))
+
+    @override_settings(**KEYS)
+    def test_the_foot_of_your_groups_has_no_panel(self):
         page = self.client.get(reverse("home")).content.decode()
-        self.assertIn('<section id="alerts" class="alerts-panel" hidden data-turbo-permanent data-alerts data-key="BPublicKey" data-subscribe="/alerts/subscribe/" data-unsubscribe="/alerts/unsubscribe/"', page)
-        self.assertIn("Turn on table alerts", page)
-        self.assertNotIn("private", page.split('id="alerts"')[1].split("</section>")[0])
+        self.assertEqual(page.count('id="alerts"'), 1)
+        self.assertNotIn("Turn on table alerts", page)
+
+    @override_settings(**KEYS)
+    def test_only_your_groups_with_a_group_asks_for_the_reminder(self):
+        self.assertContains(self.client.get(reverse("home")), 'data-depth="0" data-alerts-remind')
+        self.assertNotContains(self.client.get(reverse("group", args=[self.table.group.pk])), "data-alerts-remind")
+        self.assertNotContains(self.client.get(reverse("session", args=[self.table.session.pk])), "data-alerts-remind")
+        from accounts.models import User
+        self.client.force_login(User.objects.create_user("newcomer", password="tablestakes-91"))
+        self.assertNotContains(self.client.get(reverse("home")), "data-alerts-remind")
+
+    @override_settings(**KEYS)
+    def test_signed_out_pages_have_no_bell(self):
+        self.client.logout()
+        self.assertNotContains(self.client.get(reverse("login")), 'id="alerts"')
 
     @override_settings(PUSH_ALERTS=True, VAPID_PUBLIC_KEY="BPublicKey", VAPID_PRIVATE_KEY="")
-    def test_without_both_keys_there_is_no_panel(self):
+    def test_without_both_keys_there_is_no_bell(self):
         self.assertNotContains(self.client.get(reverse("home")), 'id="alerts"')
 
     @override_settings(SERVICE_WORKER=False, **KEYS)
-    def test_without_the_worker_there_is_no_panel(self):
+    def test_without_the_worker_there_is_no_bell(self):
         self.assertNotContains(self.client.get(reverse("home")), 'id="alerts"')
 
     @override_settings(**{**KEYS, "PUSH_ALERTS": False})
-    def test_the_switch_removes_the_panel(self):
+    def test_the_switch_removes_the_bell(self):
         self.assertNotContains(self.client.get(reverse("home")), 'id="alerts"')
 
 
