@@ -4,8 +4,8 @@
 {% block title %}Session · {{ night }}{% endblock %}
 {% block page_class %}table-page night-page{% endblock %}
 {% block head %}<meta name="turbo-refresh-method" content="morph"><meta name="turbo-refresh-scroll" content="preserve">{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %}<span class="back-words">{{ night.group.name }}</span></a></nav>{% endblock %}
 {% block content %}
-<nav class="table-bar"><a href="{% url 'group' night.group_id %}">{% icon 'arrow-left' %} {{ night.group.name }}</a>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% else %}<span class="badge">Session {{ night.get_status_display|lower }}</span>{% endif %}</nav>
 {% if night.is_archived %}
 <div class="notice notice-info archived-notice">
   <p><strong>This session is archived.</strong> Archived {{ night.archived_at|date:"M j, Y" }}{% if night.archived_by %} by {{ night.archived_by.username }}{% endif %}. It is off the lists and out of the totals, and nothing in it can change.</p>
@@ -16,7 +16,7 @@
 <div class="night-layout{% if night.is_closed and outcome.plan %} night-settle{% endif %}"{% if stamp %} data-state-url="{% url 'night_state' night.pk %}" data-stamp="{{ stamp }}"{% endif %}>
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
-      <h1 data-carry="title">{{ night.table.name }}</h1>
+      <div class="row"><h1 class="grow" data-carry="title">{{ night.table.name }}</h1>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% else %}<span class="badge">Session {{ night.get_status_display|lower }}</span>{% endif %}</div>
       <p class="where">{{ night.game_date|date:"l, F j, Y" }}{% if night.location %} · {{ night.location }}{% endif %} · {{ night.get_game_type_display }}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
       {% include "web/_night_lead.html" %}

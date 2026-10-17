@@ -68,8 +68,8 @@ class AlertsBellTests(TestCase):
             self.assertIn(f'class="icon {glyph}"', header)
         self.assertIn("Turn on", header)
         self.assertNotIn("private", header)
-        # Before Log out, so the name and Log out stay together.
-        self.assertLess(header.index('id="alerts"'), header.index("Log out"))
+        # Before the account token, which ends the header.
+        self.assertLess(header.index('id="alerts"'), header.index('id="account"'))
 
     @override_settings(**KEYS)
     def test_the_bell_is_on_the_group_and_set_pages_too(self):

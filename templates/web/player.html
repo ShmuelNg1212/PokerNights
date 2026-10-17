@@ -3,8 +3,8 @@
 {% block title %}{{ member.display_name }} · {{ group.name }}{% endblock %}
 {% block page_class %}hub-page player-page{% endblock %}
 {% block screen %} data-depth="2" data-stats="player"{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %}<span class="back-words">{{ group.name }} stats</span></a></nav>{% endblock %}
 {% block content %}
-<p class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %} {{ group.name }} stats</a></p>
 <header class="player-head">
   {% member_token member members_one %}
   <div>

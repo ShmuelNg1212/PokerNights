@@ -72,7 +72,7 @@ const focusIs=sel=>`document.activeElement&&document.activeElement.matches(${JSO
  check(`${W}: 48px targets`,await P.js(targets));
  check(`${W}: inside the screen`,await P.js(inside));
  check(`${W}: no horizontal scroll`,await P.js(noOverflow));
- check(`${W}: the caret points at the bell`,await P.js(`(()=>{const p=document.querySelector('#alerts .alerts-panel'),b=document.querySelector('[data-alerts-bell]').getBoundingClientRect(),c=p.getBoundingClientRect().right-parseFloat(p.style.getPropertyValue('--alerts-caret'));return Math.abs(c-(b.left+b.width/2))<2})()`));
+ check(`${W}: the caret points at the bell`,await P.js(`(()=>{const p=document.querySelector('#alerts .alerts-panel'),b=document.querySelector('[data-alerts-bell]').getBoundingClientRect(),c=p.getBoundingClientRect().right-parseFloat(p.style.getPropertyValue('--caret'));return Math.abs(c-(b.left+b.width/2))<2})()`));
  await sleep(700);await P.shot('reminder-390');
  await P.js(`document.querySelector('[data-alerts-later]').click()`);await sleep(400);
  b=await P.js(bell);
@@ -165,7 +165,7 @@ const focusIs=sel=>`document.activeElement&&document.activeElement.matches(${JSO
 
 // --- 320 and 1280: the header keeps one line; the panel fits ---------------------------------------------
 {const P=await user('ari',320);await until(P,v=>v.open,4000);await sleep(500);
- check(`320: the brand, the bell and Log out share one line; the name gives way`,await P.js(`(()=>{const h=document.querySelector('.site-header'),t=[h.querySelector('.brand'),h.querySelector('[data-alerts-bell]'),h.querySelector('[type=submit]')].map(e=>e.getBoundingClientRect());return t.every(r=>Math.abs((r.top+r.bottom)/2-(t[0].top+t[0].bottom)/2)<4)&&getComputedStyle(h.querySelector('.who')).display==='none'})()`));
+ check(`320: the brand, the bell and the account token share one line`,await P.js(`(()=>{const h=document.querySelector('.site-header'),t=[h.querySelector('.brand'),h.querySelector('[data-alerts-bell]'),h.querySelector('.account-button')].map(e=>e.getBoundingClientRect());return t.every(r=>Math.abs((r.top+r.bottom)/2-(t[0].top+t[0].bottom)/2)<4)})()`));
  check(`320: the panel is inside the screen with 48px targets, no horizontal scroll`,await P.js(inside)&&await P.js(targets)&&await P.js(noOverflow));
  await sleep(500);await P.shot('reminder-320');
  const Q=await user('cal',1280);await until(Q,v=>v.open,4000);await sleep(500);

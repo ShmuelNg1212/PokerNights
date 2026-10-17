@@ -75,10 +75,10 @@ await H.js(`document.querySelector('#transfers-title').scrollIntoView()`);await 
 const turned=await B.until(`${row(ids.ana_ben)}.dataset.paid==='c'`,9000);
 check('the earlier session turns to Carried on the player\'s open page by itself',turned>0&&await B.js(`__loads===1`),turned);
 check('the row says where it went, with a link, and moved once',await B.js(`/Carried to Kitchen table/.test(${row(ids.ana_ben)}.querySelector('.transfer-state').textContent)&&${row(ids.ana_ben)}.querySelector('.transfer-state a').getAttribute('href')==='${tonight}'&&__seen.filter(x=>x==='${ids.ana_ben}').length===1`),await B.js(`__seen`));
-check('it counts as settled there',await B.js(`document.querySelector('.table-bar .badge').textContent.trim()==='Settled'&&/1 carried to a later session/.test(document.querySelector('.settle-table').textContent)`));
+check('it counts as settled there',await B.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()==='Settled'&&/1 carried to a later session/.test(document.querySelector('.settle-table').textContent)`));
 await B.js(`${row(ids.ana_ben)}.scrollIntoView({block:'center'})`);await B.shot('carried-earlier-390');
 await H.go(second);await dismiss(H);
-check('the session with one carried and one unpaid is partly settled; only the unpaid one can be marked paid',await H.js(`document.querySelector('.table-bar .badge').textContent.trim()==='Partly settled'&&${row(ids.second['Ben>Ana'])}.dataset.paid==='c'&&!${row(ids.second['Ben>Ana'])}.querySelector('form')&&${row(ids.second['Carlo>Dee'])}.dataset.paid==='0'&&!!${row(ids.second['Carlo>Dee'])}.querySelector('form[action$="/paid/"]')`));
+check('the session with one carried and one unpaid is partly settled; only the unpaid one can be marked paid',await H.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()==='Partly settled'&&${row(ids.second['Ben>Ana'])}.dataset.paid==='c'&&!${row(ids.second['Ben>Ana'])}.querySelector('form')&&${row(ids.second['Carlo>Dee'])}.dataset.paid==='0'&&!!${row(ids.second['Carlo>Dee'])}.querySelector('form[action$="/paid/"]')`));
 check('the host is told the order of reopening there',await H.js(`/Reopen that session first\\./.test(document.body.textContent)&&!document.querySelector('[data-sheet-open="reopen-night"]')`));
 
 // --- The player's own figure.
@@ -113,7 +113,7 @@ await B.go(first);await dismiss(B);await B.js(WATCH);
 py(`from settlement import services as settlement
 settlement.reopen_night(${M.tonight}, host, 'wrong count')`);
 const back=await B.until(`${row(ids.ana_ben)}.dataset.paid==='0'`,9000);
-check('reopening the later session makes the earlier transfer unpaid again on the open page',back>0&&/Not paid/.test(await B.js(`${row(ids.ana_ben)}.textContent`))&&await B.js(`document.querySelector('.table-bar .badge').textContent.trim()==='Unsettled'`),back);
+check('reopening the later session makes the earlier transfer unpaid again on the open page',back>0&&/Not paid/.test(await B.js(`${row(ids.ana_ben)}.textContent`))&&await B.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()==='Unsettled'`),back);
 await B.go('/');check('Your groups shows the earlier debts again',/₱500/.test(await B.js(`document.querySelector('main').textContent`)));
 
 // --- Reduced motion, then without scripts.

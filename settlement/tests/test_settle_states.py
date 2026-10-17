@@ -118,8 +118,9 @@ class SettledIndicatorPagesTests(TestCase):
         self.assertContains(page, "Unsettled")
         self.assertContains(page, "still to pay")
 
-    def test_session_page_top_bar_names_the_status(self):
-        bar = lambda: self.client.get(self.night_url).content.decode().split("</nav>")[0]
+    def test_session_page_heading_names_the_status(self):
+        # Beside the heading since 2026-10-17; the header holds only the way back.
+        bar = lambda: self.client.get(self.night_url).content.decode().split('data-carry="title"')[1].split("</div>")[0]
         self.assertIn("Unsettled", bar())
         self.assertNotIn("Session closed", bar())
         services.mark_paid(self.night_id, self.host, self.first.pk, uuid.uuid4())
@@ -135,7 +136,7 @@ class SettledIndicatorPagesTests(TestCase):
         live = Night("A", state="running")
         self.client.force_login(live.host.user)
         page = self.client.get(reverse("night", args=[live.session.night_id]))
-        self.assertIn("Session open", page.content.decode().split("</nav>")[0])
+        self.assertIn("Session open", page.content.decode().split('data-carry="title"')[1].split("</div>")[0])
         self.assertNotContains(self.client.get(reverse("group", args=[live.group.pk])), "settled")
 
     def test_query_count_does_not_grow_with_past_sessions(self):

@@ -44,6 +44,13 @@ def member_token(member, members):
 
 
 @register.simple_tag
+def account_token(user):
+    """The signed-in person's chip in the header: the username's first letter, a colour that stays with the account."""
+    initial = user.get_username().strip()[:1].upper() or "?"
+    return format_html('<span class="chip account-chip k{}" aria-hidden="true">{}</span>', (user.pk - 1) % 10 + 1, initial)
+
+
+@register.simple_tag
 def buy_in_stack(count):
     edges = '<i></i>' * min(count, 5)
     extra = f'<span>+{count - 5}</span>' if count > 5 else ''
