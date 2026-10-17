@@ -251,3 +251,9 @@ For the header (2026-10-17), seed a fresh temporary database with `seed.py`, `se
 Seed a fresh temporary database with `seed_sessions_tab.py` alone, serve it on 127.0.0.1:8765, then run `node web/tests/browser/sessions_tab.mjs`. The seed writes `/private/tmp/pn-sessions-tab-manifest.json`. The script logs in as `ben` (seated at two tables) and `hana` (host) at 320, 390 and 1280 px. It checks the card order, "You're playing" only on the viewer's cards, felt only on cards in play, two columns from 700 px of content, 48 px targets, contrast, no overflow with a 60-character table name and ₱1,999,999.98, the year disclosure, the pressed card, one main action, each card's link name, a live redraw that keeps the scroll (with `PN_DB`), reduced motion and no JavaScript. Expected: 130 checks.
 
 Since this redesign, an open session's card leads to its set. `navigate.mjs` has two failures that also fail on `main` before this change: "after 22 screen changes" and "no poll after leaving the set page".
+
+Since the front door second pass (2026-10-17, [plan](../../../doc/plan/1792250537_front_door_second_pass.md)):
+
+- `door.mjs` has 149 checks (141 without `PN_OFF_URL`). It adds the invited head order, the description under the Sign up heading, one password field, the forgot line on Log in, contrast of the new lines, the rule ticks (typing, deleting, Show, the live region) and the plain rule list without JavaScript. Five of its chip-and-key timing checks fail in about one run of five, on `main` as well.
+- `entry.mjs` (91 checks), `reset.mjs` (44 checks) and `claim.mjs` (30 checks) fill one password field. `reset.mjs` checks the ticks in place of the old mismatch. `claim.mjs` defaults to port 8771; set `PN_BROWSER_URL` for another.
+- When a check database is reset by copying a file, delete its `-wal` and `-shm` files first ([footgun](../../../doc/wiki/footguns/sqlite_copy_misses_the_wal.md)).

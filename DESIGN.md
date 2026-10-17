@@ -1153,3 +1153,14 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 - **Don't** add casino imagery or shipping raster decorations.
 - **Don't** animate money through intermediate values or show success before server acceptance. The pot's roll shows only the digit that leaves and the digit that arrives.
 - **Don't** use colour alone to identify a player or communicate wins, losses or updates.
+
+## 2026-10-17 addendum — Front door, second pass
+
+This addendum replaces the description placement and the invited Sign up head in “Front door (2026-10-09)” and the description and Sign up help items of the entry-flow sections above. [Plan](doc/plan/1792250537_front_door_second_pass.md).
+
+- **Log in.** The hero has the mark and the name only; no description. Under the button, centred, in the hint style: “Forgot your password? Ask a host of your group for a reset link.” (`.entry-forgot`, 16px above).
+- **Sign up head.** Heading, then “Keeps the books for your home poker game. It never moves money.” (`.door-line`: muted, .9375rem, centred, 40ch, 8px above). The sheet has no foot. On an invited Sign up: “Join {group}”, then “{inviter} invited you · N players” (`.door-invited`: Bone, weight 600, centred), then the description, then “Already have an account? Log in”.
+- **Password rules.** Under the one new-password field, inside its help: two rules in a wrapping row (`.door-rules`, 16px apart). Each has a 14px mark: a 1.5px Line ring before the rule is met, a filled Up circle with an Ink check after it; a met rule's text turns Bone. The mark scales from .6 and fades in over 120ms (`--ease-out`); reduced motion turns this off. Nothing turns red before sending. Then the note “When you send, we also check that it is not a common password and not like your username.”
+- **Errors.** A refused field's message sits directly under the field, before its help, on every entry field.
+- **Contrast measured.** `.door-line`, `.door-rules li`, `.entry-forgot` and `.hint` 7.58:1 on the sheet; `.door-invited` 14.31:1.
+- **Height.** The invited Sign up fits 390 × 844; its button ends at 672px. At 320 × 568 it scrolls.

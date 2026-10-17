@@ -84,6 +84,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - The way in is an invite link from a host. A new person signs up from it and is in the group at once.
 - A host gives a roster player their own login with a claim link. The player keeps their history.
 - A person who forgot their password asks a host for a reset link. It works once and lasts 24 hours. The app sends no email or message.
+- Sign up asks for a username and one password. Two of the four password rules tick while the person types; the server checks all four on sending. An invited Sign up names the group, who sent the link and how many play.
 - A logged-in person changes their password on their profile, giving the current one. Their other logins end, and live reset links stop working. Five wrong current passwords in 15 minutes stop further tries for a while.
 - The app can be added to a phone's home screen and suggests it after a login.
 
@@ -94,7 +95,6 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Dealer tips
 - Notes per session (house rules, disputes)
 - Export results as CSV
-- A "change my password" screen for a logged-in person
 - Joining two records of the same person
 
 ## Data model

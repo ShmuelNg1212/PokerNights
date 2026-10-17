@@ -67,7 +67,7 @@ Hosts can clear away a session or a group. Archiving hides it and takes a sessio
 
 ## 2026-10-05 addendum — Entry flow
 
-An invite link is the way in. A signed-out visitor who opens one creates an account and is in the group at once; a person who already has an account logs in and confirms. Sign up says that friends see the username and that there is no password reset yet; only the site administrator can set a new password. The entry pages state that PokerNights records the game and never moves money.
+An invite link is the way in. A signed-out visitor who opens one creates an account and is in the group at once; a person who already has an account logs in and confirms. Sign up says that friends see the username. Since 2026-10-06 a host can send a reset link. The entry pages state that PokerNights records the game and never moves money.
 
 ## 2026-10-05 addendum — Numpad and the end of a set
 
@@ -146,3 +146,7 @@ A link tapped in Messenger, Facebook, Instagram, Viber, LINE or WeChat opens in 
 ## 2026-10-16 addendum — Invite links shown again
 
 A host finds every active invite link in Group settings, with Copy and Share, for as long as it works, instead of seeing it only once. The link is not stored; the server can make it again from a stored value and its own secret, so the database alone opens nothing. Links made before this change still work but cannot be shown. Past invites are listed without their addresses. Claim and reset links are still shown once. [Plan](doc/plan/1792115570_invite_links_shown_again.md).
+
+## 2026-10-17 addendum — Front door, second pass
+
+Log in shows the form and an always-visible line on how to recover a password; the description moved to Sign up, under the heading, where a newcomer reads it first. An invited Sign up names who sent the link and how many people play, from the group's active members; anyone holding a usable link sees this. Sign up and Set a new password ask for the password once. Two rules, at least 8 characters and not only digits, tick while the person types; the server still checks all four. A refused field's reason sits directly under it. [Plan](doc/plan/1792250537_front_door_second_pass.md).
