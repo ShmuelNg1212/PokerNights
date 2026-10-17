@@ -1967,3 +1967,26 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-set-line { margin: var(--s-1) 0 0; color: var(--muted); }
 .next-set-arrived::before { animation: mark-draw var(--t-sheet) var(--ease-out); }
 @media (min-width: 900px) { .next-set { grid-template-columns: 1fr minmax(220px, auto); align-items: center; } }
+
+/* Books off: the panel (2026-10-17) */
+/* The gap in words leads, one sentence follows; causes and the fix wait behind "Where to look". */
+.discrepancy { padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3); }
+.discrepancy:has(> .discrepancy-where) { padding-bottom: var(--s-1); }
+.discrepancy-statement > p:first-child { margin-top: 0; }
+.discrepancy-amount { text-wrap: balance; }
+.discrepancy-mine { color: var(--muted); font-variant-numeric: tabular-nums; }
+.discrepancy-where { margin-top: var(--s-1); }
+.discrepancy-causes { margin: 0; padding-left: 1.25em; }
+.discrepancy-causes li + li { margin-top: 2px; }
+.discrepancy-where > p { margin-bottom: var(--s-3); }
+/* An override closes the books without balancing them: a brass rule and plain words, never the green double rule. */
+.books-covered { position: relative; padding: var(--s-4) 0 var(--s-3); color: var(--text); font-size: .875rem; }
+.books-covered::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--brass); }
+/* Both disclosures carry the drawn chevron of the roster's details. */
+:is(.discrepancy-where, [data-key=override]) > summary { gap: var(--s-2); list-style: none; }
+:is(.discrepancy-where, [data-key=override]) > summary::-webkit-details-marker { display: none; }
+:is(.discrepancy-where, [data-key=override]) > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+:is(.discrepancy-where, [data-key=override])[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+.discrepancy-where > summary { font-size: .875rem; }
+[data-key=override] > summary { min-height: var(--tap); color: var(--muted); font-size: .875rem; font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { :is(.discrepancy-where, [data-key=override]) > summary::after { transition: none; } }

@@ -230,6 +230,55 @@ class Balance:
         return self._show(self.raw_difference)
 
     @property
+    def _flow(self) -> str:
+        """What is compared with buy-ins: rake joins the cash-outs only when some was collected."""
+        return "cash-outs plus rake" if self.summary.rake else "cash-outs"
+
+    @property
+    def headline(self) -> str:
+        """The gap in words, amount first: "₱100 missing" or "₱100 too much". Empty when there is none."""
+        if self.difference > 0:
+            return f"{self.difference_text} too much"
+        return f"{self.difference_text} missing" if self.difference < 0 else ""
+
+    @property
+    def gap_sentence(self) -> str:
+        """One plain sentence on which side is short, after every player is cashed out."""
+        if not self.difference:
+            return ""
+        side = "above" if self.difference > 0 else "below"
+        return f"{self._flow.capitalize()} are {self.difference_text} {side} buy-ins."
+
+    @property
+    def causes(self) -> list:
+        """The usual mistakes behind the gap, most likely first."""
+        if self.difference > 0:
+            return ["A buy-in that was not recorded", "A cash-out that is too high"]
+        if self.difference < 0:
+            return ["A player who was not cashed out in full", "A buy-in recorded twice", "A cash-out that is too low"]
+        return []
+
+    @property
+    def absorbers(self) -> list:
+        """Names of the players whose results carry an active override."""
+        return [line.participant.member.display_name for line in self.summary.lines if line.adjustments]
+
+    @property
+    def covered_text(self) -> str:
+        """An override closes the books without them balancing; say so plainly, and who took it."""
+        if not self.overridden:
+            return ""
+        names = self.absorbers
+        money_lines = self.summary.money_lines
+        if len(names) > 2 and len(names) == len(money_lines):
+            who = " from all players, in equal shares"
+        elif names and len(names) <= 3:
+            who = " from " + (names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1])
+        else:
+            who = ""
+        return f"Off by {self.raw_difference_text}, covered by an override{who}."
+
+    @property
     def explanation(self) -> str:
         """What is wrong and where to look. Empty when the books balance."""
         if not self.summary.money_lines:
@@ -245,12 +294,12 @@ class Balance:
             )
         if self.difference > 0:
             return (
-                f"{self.difference_text} too much: cash-outs plus rake exceed buy-ins. "
+                f"{self.difference_text} too much: {self._flow} exceed buy-ins. "
                 "Look for a buy-in that was not recorded, or a cash-out that is too high."
             )
         if self.difference < 0:
             return (
-                f"{self.difference_text} is missing: cash-outs plus rake are below buy-ins. "
+                f"{self.difference_text} is missing: {self._flow} are below buy-ins. "
                 "Look for a player who was not cashed out in full, a buy-in recorded twice, or a cash-out that is too low."
             )
         return ""
@@ -318,6 +367,11 @@ class CountTotal:
             suffix = "extra" if self.difference > 0 else "still to account for" if self.missing else "missing"
             return f"{amount} {suffix}."
         return "Total matches so far; finish counting."
+
+    @property
+    def coverage_text(self) -> str:
+        """How many players are still to count; nothing at all once none are."""
+        return f"{self.missing} still to count." if self.missing else ""
 
     @property
     def tone(self) -> str:
