@@ -31,6 +31,7 @@ from ledger.models import BalanceAdjustment, BuyIn, CashOut
 from notify import services as notify
 from settlement import queries as settlement_queries
 
+from . import profile as profile_page
 from . import stats as stats_pages
 from . import prep
 from . import share
@@ -42,6 +43,11 @@ def home(request):
         "cards": home_cards(request.user), "archived_groups": archived_groups(request.user),
         "form": take_form(request, "home:create", GroupForm, auto_id="group_%s"),
     })
+
+
+def profile(request):
+    """The person's own record across their groups, and their name and password."""
+    return render(request, "web/profile.html", profile_page.profile_context(request, request.user))
 
 
 def visible_nights(me, archived=False):

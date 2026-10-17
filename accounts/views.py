@@ -1,14 +1,16 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
 from . import services
 from . import signup as signup_gate
-from .forms import LoginForm, NewPasswordForm, SignupForm
+from .forms import ChangePasswordForm, LoginForm, NewPasswordForm, SignupForm
 
 
 def safe_next(request, default="home"):
@@ -80,3 +82,23 @@ def _password_reset(request, token):
     except services.ResetLinkError as error:
         return render(request, "accounts/reset.html", {"error": str(error)}, status=404)
     return render(request, "accounts/reset.html", {"form": form, "username": link.user.get_username()})
+
+
+PASSWORD_ERRORS = "profile_password_errors"  # the session key, read by web.profile
+
+
+@require_POST
+def change_password(request):
+    """A logged-in person sets a new password from their profile. A refusal keeps its errors, never the passwords."""
+    form = ChangePasswordForm(request.user, request.POST)
+    if form.is_valid():
+        try:
+            user = services.change_password(request.user, form.cleaned_data["current_password"], form.cleaned_data["new_password1"])
+        except services.PasswordChangeError as error:
+            form.add_error("current_password", str(error))
+        else:
+            update_session_auth_hash(request, user)
+            messages.success(request, "Password changed. Other phones and browsers are logged out.")
+            return redirect("profile")
+    request.session[PASSWORD_ERRORS] = {name: list(errors) for name, errors in form.errors.items()}
+    return redirect(reverse("profile") + "#password")

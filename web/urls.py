@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("", views.home, name="home"),
     path("state/", views.home_state, name="home_state"),
+    path("me/", views.profile, name="profile"),
     path("g/<int:group_id>/", views.group, name="group"),
     path("g/<int:group_id>/state/", views.group_state, name="group_state"),
     path("g/<int:group_id>/players/<int:member_id>/", views.player, name="player"),

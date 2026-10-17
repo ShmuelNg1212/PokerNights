@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("g/new/", views.create_group, name="group_create"),
+    path("me/name/", views.rename_everywhere, name="profile_name"),
     path("g/<int:group_id>/members/<int:member_id>/role/", views.set_role, name="member_role"),
     path("g/<int:group_id>/members/<int:member_id>/restore/", views.restore_member, name="member_restore"),
     path("g/<int:group_id>/me/name/", views.rename_self, name="member_rename_self"),

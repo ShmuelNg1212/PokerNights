@@ -1,7 +1,7 @@
 {% load l10n %}{% localize off %}
 <section class="panel chart" aria-labelledby="chart-heading" data-chart tabindex="0" role="group" aria-describedby="chart-help">
   <h2 id="chart-heading" class="chart-head">Running profit</h2>
-  <p id="chart-help" class="visually-hidden">The running total after each of {{ chart.points|length }} sessions, and each session's result beneath. Every figure is also in the Sessions list. With the chart in focus, the left and right arrow keys step through the sessions.</p>
+  <p id="chart-help" class="visually-hidden">The running total after each of {{ chart.points|length }} sessions, and each session's result beneath.{% if not chart_no_list %} Every figure is also in the Sessions list.{% endif %} With the chart in focus, the left and right arrow keys step through the sessions.</p>
   <div class="chart-plot" data-chart-plot>
     <div class="chart-line">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">

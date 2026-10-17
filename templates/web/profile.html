@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load table_tags %}
+{% block title %}Your profile{% endblock %}
+{% block page_class %}hub-page player-page profile-page{% endblock %}
+{% block screen %} data-depth="1" data-stats="profile"{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'home' %}">{% icon 'arrow-left' %}<span class="back-words">Your groups</span></a></nav>{% endblock %}
+{% block content %}
+<header class="player-head">
+  {% account_token user %}
+  <div>
+    <h1>{{ own_name|default:user.get_username }}</h1>
+    <p class="muted small">Logged in as {{ user.get_username }}</p>
+  </div>
+</header>
+{% if has_any %}
+<div class="stat-periods" data-stat-nav data-stat-pills="period">
+<nav class="pills" aria-label="Period">
+  {% for p in stat_periods %}<a data-turbo-action="replace" href="?period={{ p.slug }}" {% if p.slug == stat_period.slug %}aria-current="true"{% endif %}>{% if p.slug == stat_period.slug %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ p.label }}</a>{% endfor %}
+</nav>
+</div>
+{% endif %}
+<div data-stat-body>
+{% if not has_any %}
+<div class="panel empty-state"><p class="muted">Your stats appear after your first closed session.</p></div>
+{% else %}
+{% if record.sessions %}
+<section class="panel player-lead" aria-labelledby="lead-heading">
+  <h2 id="lead-heading" class="stat-label">Profit or loss in pesos · {{ stat_period.label }}</h2>
+  <p class="player-net">{% include "web/_stat_figure.html" with figure=net class="player-net-figure" %}</p>
+  <p class="player-rank">{{ pesos_groups|length }} group{{ pesos_groups|length|pluralize }}</p>
+</section>
+{% if chart %}{% include "web/_running_chart.html" with chart_no_list=True %}{% else %}<p class="muted small chart-none">The chart appears after three sessions.</p>{% endif %}
+<section aria-labelledby="tiles-heading">
+  <h2 id="tiles-heading">In numbers</h2>
+  {% include "web/_stat_tiles.html" %}
+</section>
+<section aria-labelledby="pesos-heading">
+  <h2 id="pesos-heading">By group</h2>
+  {% include "web/_profile_groups.html" with lines=pesos_groups %}
+</section>
+{% endif %}
+{% if chips_groups %}
+<section aria-labelledby="chips-heading">
+  <h2 id="chips-heading">Chips games</h2>
+  <p class="muted small">Chips are worth something different in each group, so they are not added together.</p>
+  {% include "web/_profile_groups.html" with lines=chips_groups %}
+</section>
+{% endif %}
+{% if not record.sessions and not chips_groups %}
+<div class="panel empty-state"><p class="muted">You have no closed session {{ stat_where }}.</p></div>
+{% endif %}
+{% endif %}
+</div>
+<section class="profile-settings" aria-labelledby="settings-heading">
+  <h2 id="settings-heading">Settings</h2>
+  {% if in_a_group %}
+  <details class="panel profile-setting" id="name"{% if name_form.errors %} open{% endif %}>
+    <summary><span class="grow">Your name</span><span class="muted">{{ own_name|default:"Differs by group" }}</span></summary>
+    <form method="post" action="{% url 'profile_name' %}" class="stack" data-once>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" with form=name_form %}
+      {% if not own_name %}<ul class="list profile-names">{% for group_name, member_name in names_by_group %}<li><span class="grow">{{ group_name }}</span><span>{{ member_name }}</span></li>{% endfor %}</ul>{% endif %}
+      <p class="hint">Your name in every group you are in. You still log in as <strong>{{ user.get_username }}</strong>.</p>
+      <button type="submit" class="btn btn-block">Save</button>
+    </form>
+  </details>
+  {% endif %}
+  <details class="panel profile-setting" id="password"{% if password_form.errors %} open{% endif %}>
+    <summary><span class="grow">Password</span><span class="muted">Change</span></summary>
+    <form method="post" action="{% url 'password_change' %}" class="stack" data-once>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" with form=password_form %}
+      <p class="hint">Your other phones and browsers are logged out after the change.</p>
+      <button type="submit" class="btn btn-block">Change password</button>
+    </form>
+  </details>
+</section>
+{% endblock %}

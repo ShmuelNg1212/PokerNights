@@ -29,7 +29,7 @@ Acceptance: a person in two pesos groups with nets +500 and −200 gets one reco
 
 - [x] Add `services.rename_everywhere(user, name) -> (renamed, skipped)`. One `transaction.atomic()`. Lock each group of the user's active memberships in unarchived groups, in id order. Apply `_rename`. A taken name puts that group in `skipped` and writes nothing there. `ROSTER_TOOLS=False` raises `RuleError`.
 - [x] Each rename records `member.renamed` (existing `_rename`).
-- [ ] (Moved to task 4, because it redirects to the profile URL.) Add view `rename_everywhere` (POST, `NameForm`) at `me/name/`. It redirects to the profile with a message: "Your name is now Ana." plus "Not changed in Friday Club: another Ana is in that group." when groups were skipped. A refused form is kept with `keep_form` for one redirect.
+- [x] (Moved to task 4, done there, because it redirects to the profile URL.) Add view `rename_everywhere` (POST, `NameForm`) at `me/name/`. It redirects to the profile with a message: "Your name is now Ana." plus "Not changed in Friday Club: another Ana is in that group." when groups were skipped. A refused form is kept with `keep_form` for one redirect.
 - [x] Tests (service; the view tests are in task 4): all groups renamed; one skipped; same name writes nothing and records nothing; removed and archived memberships untouched; a blank name is refused; a signed-out POST goes to login.
 
 Acceptance: a name taken in one group renames the others and names the skipped group. Completion: tests pass; commit `feat: change your name in all your groups`.
@@ -38,7 +38,7 @@ Acceptance: a name taken in one group renames the others and names the skipped g
 
 - [x] Add `ChangePasswordForm` in `accounts/forms.py`: `NewPasswordForm` plus a current-password field. The service checks the current password, so each wrong one is counted.
 - [x] Add `services.change_password(user, current, new)`: set the password, `revoke_reset_links(user)`, `audit.record("account.password_changed", actor=user, ...)` with no group and no password text.
-- [ ] (Moved to task 4, because it redirects to the profile URL.) Add view at `account/password/` (POST). On success: `update_session_auth_hash`, redirect to the profile, message "Password changed. Other phones and browsers are logged out." On failure: keep only the errors for one redirect, with **no password values**. `keep_form` saves every field's data, so do not pass this form to it; save the errors alone.
+- [x] (Moved to task 4, done there, because it redirects to the profile URL.) Add view at `account/password/` (POST). On success: `update_session_auth_hash`, redirect to the profile, message "Password changed. Other phones and browsers are logged out." On failure: keep only the errors for one redirect, with **no password values**. `keep_form` saves every field's data, so do not pass this form to it; save the errors alone.
 - [x] The attempt limit (5 wrong current passwords per 15 minutes per user), with tests. Each refusal is a `password.change_refused` audit event, and the count reads them. Reason: no shared cache exists, and on Vercel a memory count resets for each instance.
 - [x] Tests (service and form; the view tests are in task 4): right current password changes it and keeps this session logged in; wrong current password is refused and the password is unchanged; a weak new password is refused; reset links are revoked; the audit event has no secret; the redirect page has no password value.
 
@@ -46,11 +46,11 @@ Acceptance: after a change, the old password fails at login and the new one work
 
 ### 4. Profile page (`web`)
 
-- [ ] Add `web/profile.py` `profile_context(request, user)`: period from `?period=` (All time, This year only), pesos `PlayerRecord` over `fetch_for_user`, the running chart, tiles (Sessions, Win rate, Average, Best night, Worst night with group names), pesos group rows, chips group rows (each its own `PlayerRecord`), the current name or the list of differing names.
-- [ ] Add view `profile` at `me/` and `templates/web/profile.html`, following the shape brief: token, name, username; period pills; pesos lead, chart, tiles, group rows; chips section; Settings with two native disclosures (Your name, Password).
-- [ ] Each group row links to the person's player page in that group (`player` URL with their member id there and the same period).
-- [ ] Empty states as in the study: no closed session; no pesos; fewer than three sessions; empty period.
-- [ ] Tests: the page needs login; it shows only the requester's data; pesos sum across groups; chips are never summed; the archived group is absent; links point to the right member ids; empty states; fixed query count.
+- [x] Add `web/profile.py` `profile_context(request, user)`: period from `?period=` (All time, This year only), pesos `PlayerRecord` over `fetch_for_user`, the running chart, tiles (Sessions, Win rate, Average, Best night, Worst night with group names), pesos group rows, chips group rows (each its own `PlayerRecord`), the current name or the list of differing names.
+- [x] Add view `profile` at `me/` and `templates/web/profile.html`, following the shape brief: token, name, username; period pills; pesos lead, chart, tiles, group rows; chips section; Settings with two native disclosures (Your name, Password).
+- [x] Each group row links to the person's player page in that group (`player` URL with their member id there and the same period).
+- [x] Empty states as in the study: no closed session; no pesos; fewer than three sessions; empty period.
+- [x] Tests: the page needs login; it shows only the requester's data; pesos sum across groups; chips are never summed; the archived group is absent; links point to the right member ids; empty states; fixed query count.
 
 Acceptance: the page loads in a fixed number of queries and shows the figures in the examples above. Completion: tests pass; commit `feat: add the profile page with stats across your groups`.
 

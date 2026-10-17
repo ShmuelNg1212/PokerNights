@@ -60,6 +60,27 @@ def rename_self(request, group_id):
     return group_settings(group_id, "players")
 
 
+PROFILE_NAME = "profile:name"  # the draft key, read by web.profile
+
+
+@require_POST
+def rename_everywhere(request):
+    """The person's one name in every group they are in, from their profile."""
+    form = NameForm(request.POST)
+    done = attempt_bound(request, form, services.rename_everywhere, request.user, form.cleaned_data["name"]) if form.is_valid() else None
+    if done is None:
+        keep_form(request, PROFILE_NAME, form)
+        return redirect("profile")
+    renamed, skipped = done
+    name = " ".join(form.cleaned_data["name"].split())
+    if renamed or not skipped:
+        messages.success(request, f"Your name is now {name}." if renamed else f"Your name is already {name}.")
+    if skipped:
+        where = ", ".join(group.name for group in skipped)
+        messages.info(request, f"Not changed in {where}: another {name} is in {'that group' if len(skipped) == 1 else 'those groups'}.")
+    return redirect("profile")
+
+
 @require_POST
 def create_invite(request, group_id):
     actor = member_for(request.user, group_id)
