@@ -31,7 +31,7 @@ class GroupViewTests(TestCase):
 
     def test_empty_sessions_offer_one_next_action_for_the_role(self):
         page = self.client.get(self.url)
-        self.assertContains(page, "No session in progress")
+        self.assertContains(page, "Nobody is playing")
         self.assertContains(page, f'{self.url}?view=settings#tables">Add a table</a>')
         self.assertNotContains(page, "New session")
         make_table(self.host)

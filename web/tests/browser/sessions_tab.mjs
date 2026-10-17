@@ -48,6 +48,8 @@ for(const width of [320,390,1280]){
   check(`${tag} felt only on cards in play`,f.cards.every(c=>c.felt===c.live),f.cards);
   check(`${tag} "You're …" only on the viewer's cards`,f.cards.every(c=>c.you===c.mine),f.cards);
   check(`${tag} a card title takes two lines at most`,f.titleLines<=2,f.titleLines);
+  check(`${tag} one main action at most on the tab`,await A.js(`document.querySelectorAll('.table-card .btn-primary').length<=1`));
+  check(`${tag} each card's link is named by its title, state and "You're …" line only`,await A.js(`[...document.querySelectorAll('.table-card')].every(a=>{const ids=a.getAttribute('aria-labelledby').split(' ');return ids.every(id=>a.querySelector('#'+id))&&ids.length===(a.classList.contains('is-mine')?3:2)})`));
   check(`${tag} this year is open and last year is closed`,JSON.stringify(f.years)==='[false]'&&f.months[0].endsWith(String(new Date().getFullYear())),[f.years,f.months]);
   if(name==='ben'){
    check(`${tag} Ben's table in play is first, then the other in play, then his open set`,JSON.stringify(f.cards.map(c=>c.href))===JSON.stringify([`/s/${M.mine_live}/`,`/s/${M.other_live}/`,`/s/${M.mine_open}/`]),f.cards.map(c=>c.href));

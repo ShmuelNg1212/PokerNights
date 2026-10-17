@@ -69,7 +69,12 @@ def current_cards(me, nights) -> list:
         card.is_today = card.game_date == today
         card.chips, card.more_seated = card.seated[:CHIPS], max(card.at_table - CHIPS, 0)
         card.url, card.action_label = destination(card, card.latest_set)
-    return sorted(cards, key=lambda c: (_band(c), c.game_date, c.pk))
+    cards.sort(key=lambda c: (_band(c), c.game_date, c.pk))
+    # One main action on the tab: the first table that is the viewer's.
+    first_mine = next((c for c in cards if c.mine), None)
+    for card in cards:
+        card.primary = card is first_mine
+    return cards
 
 
 @dataclass

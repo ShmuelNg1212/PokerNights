@@ -62,6 +62,10 @@ class CardOrderTests(TestCase):
         self.assertTrue(cards[today.pk].is_today)
         self.assertFalse(cards[self.open_other.pk].is_today)
 
+    def test_only_the_first_table_that_is_yours_carries_the_main_action(self):
+        cards = sessions_context(self.ben)["cards"]
+        self.assertEqual([(c.mine, c.primary) for c in cards], [(True, True), (False, False), (True, False), (False, False)])
+
     def test_a_host_who_does_not_sit_gets_the_draft_last_and_nothing_marked_theirs(self):
         # Nothing is the host's, so each band is oldest first.
         expected = [self.live_other, self.live_mine, self.open_other, self.open_mine, self.draft]

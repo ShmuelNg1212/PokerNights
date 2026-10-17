@@ -7,7 +7,7 @@
   {% if me.is_host and tables %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
 {% else %}
   <div class="panel empty-state">
-    <h3>No session in progress</h3>
+    <h3>Nobody is playing</h3>
     {% if not me.is_host %}<p class="muted">A host starts the next session. It appears here when it opens.</p>
     {% elif tables %}<p class="muted">Start one when the players arrive.</p>
     <p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>
