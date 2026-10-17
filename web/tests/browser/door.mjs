@@ -171,7 +171,7 @@ try {
  const N=await page({plain:true});await send('Emulation.setScriptExecutionDisabled',{value:true},N.s);await N.go('/accounts/login/',1400);
  check('no JavaScript: the frame is whole',await N.js(`getComputedStyle(document.querySelector('.door-mark')).opacity==='1'&&getComputedStyle(document.querySelector('.field')).opacity==='1'&&document.getAnimations().length===0`));
  await N.go('/accounts/signup/',1400);
- check('no JavaScript: sign up lists the rules, plain',await N.js(`document.querySelectorAll('.door-rules li').length===2&&![...document.querySelectorAll('.door-rules li')].some(li=>'met' in li.dataset)&&document.querySelector('.door-rules').getClientRects().length>0&&${text('When you send, we also check')}`));
+ check('no JavaScript: sign up lists the rules, plain',await N.js(`document.querySelectorAll('.door-rules li').length===2&&![...document.querySelectorAll('.door-rules li')].some(li=>'met' in li.dataset)&&document.querySelector('.door-rules').getClientRects().length>0&&${text('Checked when you send:')}`));
  await N.go('/accounts/login/',1400);await login(N);check('no JavaScript: log in works',await N.js(`location.pathname==='/'&&!!document.querySelector('.site-header')`));
  const X=await page();await send('Network.enable',{},X.s);await send('Network.setBlockedURLs',{urls:['*vendor/motion-*']},X.s);const before=errors.length;await X.go('/accounts/login/');
  await X.js(`document.querySelector('[name=username]').focus()`);await X.type('hana');await X.click(`document.querySelector('[data-password-toggle]')`,200);

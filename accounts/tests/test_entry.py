@@ -101,8 +101,8 @@ class EntryPagesTests(TestCase):
         # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
         self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
         self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
-        self.assertContains(page, "When you send, we also check that it is not a common password and not like your username.")
-        self.assertContains(page, "Forgot it later? A host of your group can send you a reset link.")
+        self.assertContains(page, "Checked when you send: not a common password, not like your username.")
+        self.assertNotContains(page, "Forgot it later?")  # Log in says it; Sign up keeps less help under the field
         self.assertNotContains(page, "There is no password reset yet.")
         self.assertNotContains(page, "Repeat password")  # Show and the password manager cover a typo
         self.assertNotContains(page, 'name="password2"')

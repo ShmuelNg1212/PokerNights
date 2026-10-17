@@ -116,7 +116,7 @@ class ResetPageTests(TestCase):
         # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
         self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
         self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
-        self.assertContains(page, "When you send, we also check that it is not a common password and not like your username.")
+        self.assertContains(page, "Checked when you send: not a common password, not like your username.")
         self.assertNotContains(page, "Repeat password")  # one field, as on Sign up
         self.assertContains(page, 'data-busy="Saving…"')
         self.assertContains(page, "<title>Reset password · PokerNights</title>")

@@ -70,7 +70,7 @@ try {
  // A newcomer: invite link -> sign up -> group, in two screens.
  const B=await page();await B.go(M.invite);
  check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("Join "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
- check('sign up says who sees the name and where a reset comes from',await B.js(`${text('Your friends see this name.')}&&${text('A host of your group can send you a reset link.')}`));
+ check('sign up says who sees the name and leaves reset help to Log in',await B.js(`${text('Your friends see this name.')}&&!${text('Forgot it later?')}`));
  check('contrast reset note',await B.js(contrast('.hint-note'))>=4.5);
  await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91'`);
  await B.js(`document.querySelector('form.form-section').addEventListener('submit',()=>setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},5))`);
