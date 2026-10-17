@@ -7,7 +7,7 @@ Short active items. The detail is in the linked documents.
 When the books do not balance ([plan](doc/plan/1792225143_books_off.md)): the gap in words, each player's in/out and net, the hand-typed cash-out that differs from its count marked, the host bar's button taking the host there, and an override that no longer looks like success.
 
 - [x] Build it on `feat/books-off`. Built 2026-10-17 by four parallel agents and merged. 1,253 tests pass; `books_gap.mjs` 34/34, `books_motion.mjs` 28/28, `count_flow.mjs` 91/91.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-17 as `e5ac4e5` (previous production commit `a673477`). Live check four minutes after the push: `/healthz` 200 and pages load the new `gap.js` (`9ffea8be6e`). No migration.
 - [ ] After release, on your phone, on a set where the books are off: the gap reads "₱100 missing"; each cashed-out player shows in, out and net; tap **See the ₱100 difference** and the page goes to the player that looks wrong (or the books) with a brief brass ring. Record an override: the line is brass and names who took it.
 
 The header: the way back and the account token ([plan](doc/plan/1792222305_header_redesign.md)): one bar instead of two on every deeper page, and the username and Log out behind the person's own chip.
