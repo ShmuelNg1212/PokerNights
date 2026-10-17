@@ -1990,3 +1990,10 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .discrepancy-where > summary { font-size: .875rem; }
 [data-key=override] > summary { min-height: var(--tap); color: var(--muted); font-size: .875rem; font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { :is(.discrepancy-where, [data-key=override]) > summary::after { transition: none; } }
+/* Books off: the host bar (2026-10-17) */
+/* Every player is cashed out and the books differ: the bar says it once, in Down, with no mark. */
+.dock-gap { color: var(--down); font-weight: 600; }
+/* gap.js draws this over the record the button leads to and fades it out; only its opacity moves. */
+.gap-ring { position: absolute; z-index: 4; box-sizing: border-box; border: 2px solid var(--brass); pointer-events: none; }
+/* The target takes focus so a screen reader lands there; the ring above is the visible answer. */
+[data-gap-focus]:focus { outline: none; }

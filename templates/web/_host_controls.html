@@ -1,7 +1,7 @@
 {% load money_tags table_tags %}
 <div class="host-controls stack">
   {% if balance.overridden %}{% firstof "Off by "|add:balance.raw_difference_text|add:", covered by an override." as covered %}{% endif %}
-  <button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}<span class="verdict" data-dock-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% elif session.state == 'setup' %}Next: {% if prep.next == 'players' %}Add players{% else %}Open for players{% endif %}{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
+  <button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}{% if balance.counted and not balance.ok %}<span class="dock-gap" data-dock-gap>{{ balance.difference_text }} {{ balance.direction }}</span>{% else %}<span class="verdict" data-dock-status data-tone="{% if not covered %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.missing }} still to count.</span>{% endif %}{% elif session.state == 'setup' %}Next: {% if prep.next == 'players' %}Add players{% else %}Open for players{% endif %}{% elif session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>
   <h2 class="host-controls-heading">Host controls</h2>
   {# On the new page the checklist's "Stakes and rake" step leads there. #}
   {% if can_configure_rake and not prep %}
@@ -53,7 +53,8 @@
     </div>
   </details>
   {% elif balance.counted %}
-  <a class="btn btn-danger btn-block next-action" href="#balance" data-turbo="false" data-next-server>See the {{ balance.difference_text }} difference</a>
+  {# gap.js turns the tap into a scroll to the record that looks wrong; without it the anchor leads to the books. #}
+  <a class="btn btn-danger btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>See the {{ balance.difference_text }} difference</a>
   {% elif summary.ready_lines %}
   <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>Cash out counted players ({{ summary.ready_lines|length }})</a>
   {% endif %}
