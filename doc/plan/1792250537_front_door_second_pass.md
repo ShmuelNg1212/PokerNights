@@ -1,6 +1,6 @@
 # Front door, second pass: plan
 
-Status: waiting for approval. Date: 2026-10-17, Asia/Manila. Study: [Front door, second pass](../study/1792250537_front_door_second_pass.md).
+Status: approved 2026-10-17 ("approve the plan"); the three open questions as recommended. Date: 2026-10-17, Asia/Manila. Study: [Front door, second pass](../study/1792250537_front_door_second_pass.md).
 
 Mode: design, with a small technical part. Visual authority: the built Rack and the 2026-10-09 front-door frame. No new colour, font, asset, token or motion world. No migration.
 
