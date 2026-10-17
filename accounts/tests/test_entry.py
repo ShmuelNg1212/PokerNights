@@ -56,7 +56,13 @@ class EntryPagesTests(TestCase):
         self.assertNotContains(page, "invited you")
 
     def test_a_plain_signup_names_nobody(self):
-        self.assertNotContains(self.client.get(self.signup), "door-invited")
+        page = self.client.get(self.signup)
+        self.assertNotContains(page, "door-invited")
+        self.assertContains(page, ">Create account</button>")
+
+    def test_invited_signup_says_the_account_joins_the_group(self):
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '>Create account and join</button>')
 
     def test_login_link_to_signup_keeps_the_invite(self):
         page = self.client.get(self.login, {"next": self.invite_url})
