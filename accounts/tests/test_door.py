@@ -56,8 +56,9 @@ class DoorFrameTests(TestCase):
         for part in ('name="username"', 'autocomplete="username"', 'name="password"', 'autocomplete="current-password"', '<form method="post"'):
             self.assertContains(page, part)
         page = self.client.get(self.signup)
-        for part in ('name="username"', 'name="password1"', 'name="password2"', 'autocomplete="new-password"', '<form method="post"'):
+        for part in ('name="username"', 'name="password1"', 'autocomplete="new-password"', '<form method="post"'):
             self.assertContains(page, part)
+        self.assertNotContains(page, 'name="password2"')  # one new password; the manager offers to save it
         self.assertNotContains(page, 'data-turbo="true"')
 
     def test_the_phone_keyboard_says_next_then_go(self):
@@ -65,8 +66,8 @@ class DoorFrameTests(TestCase):
         self.assertEqual(page.count('enterkeyhint="next"'), 1)
         self.assertEqual(page.count('enterkeyhint="go"'), 1)
         page = self.client.get(self.signup).content.decode()
-        self.assertEqual(page.count('enterkeyhint="next"'), 2)
-        self.assertEqual(page.count('enterkeyhint="go"'), 1)
+        self.assertEqual(page.count('enterkeyhint="next"'), 1)  # username; the one password field sends
+        self.assertRegex(page, r'<input[^>]*name="password1"[^>]*enterkeyhint="go"')
 
     def test_every_front_door_screen_uses_the_frame(self):
         for url, status in ((self.login, 200), (self.signup, 200), (reverse("invite_accept", args=["nope"]), 404),

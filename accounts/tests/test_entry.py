@@ -101,11 +101,12 @@ class EntryPagesTests(TestCase):
         self.assertContains(page, "At least 8 characters, not a common password, not only digits, and not like your username.")
         self.assertContains(page, "Forgot it later? A host of your group can send you a reset link.")
         self.assertNotContains(page, "There is no password reset yet.")
-        self.assertContains(page, "Repeat password")
+        self.assertNotContains(page, "Repeat password")  # Show and the password manager cover a typo
+        self.assertNotContains(page, 'name="password2"')
         self.assertNotContains(page, "Password confirmation")
         self.assertNotContains(page, "<ul>")  # the stock four-bullet rule list is gone
         self.assertNotContains(page, "for verification")
-        self.assertContains(page, 'autocomplete="new-password"', count=2)
+        self.assertContains(page, 'autocomplete="new-password"', count=1)
         self.assertContains(page, "data-password-toggle", count=1)
         # A newcomer reads what the app does before the form, not under the button.
         self.assertContains(page, '<h1>Create your account</h1>\n<p class="door-line">Keeps the books for your home poker game. It never moves money.</p>', html=False)
@@ -113,21 +114,18 @@ class EntryPagesTests(TestCase):
         self.assertNotContains(page, "site-header")
 
     def test_refused_signup_names_the_broken_rule_and_keeps_the_username(self):
-        page = self.client.post(self.signup, {"username": "newbie", "password1": "12345678", "password2": "12345678"})
+        page = self.client.post(self.signup, {"username": "newbie", "password1": "12345678"})
         self.assertContains(page, "Use more than digits.")
         self.assertEqual(list(page.context["form"].errors), ["password1"])  # reported where the rule is stated
         self.assertContains(page, 'value="newbie"')
         self.assertNotContains(page, 'value="12345678"')
-        page = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91", "password2": "other"})
-        self.assertContains(page, "The two passwords don&#x27;t match.")
-        self.assertEqual(list(page.context["form"].errors), ["password2"])
 
     def test_password_rules_are_unchanged(self):
         from django.contrib.auth import get_user_model
         for bad in ("short1", "password", "12345678", "newbie-1"):
-            self.client.post(self.signup, {"username": "newbie", "password1": bad, "password2": bad})
+            self.client.post(self.signup, {"username": "newbie", "password1": bad})
         self.assertFalse(get_user_model().objects.filter(username="newbie").exists())
-        response = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91", "password2": "tablestakes-91"})
+        response = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91"})
         self.assertRedirects(response, reverse("home"))
 
     @override_settings(SIGNUP_REQUIRES_INVITE=True)
