@@ -2,6 +2,11 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
+## Phone checks (unreleased: `feat/sessions-tab`)
+
+- [ ] Sessions tab ([plan](doc/plan/1792243014_sessions_tab_redesign.md)): open a group during a game. Your table in play is the first card, on felt, with "You're playing" and **Open the table**; a tap anywhere on the card opens the set, once. Other tables follow; a draft is last, for hosts only.
+- [ ] Past sessions: months, newest first, last year folded. Each row shows your result and "You pay …" or "… pays you …". Pay one transfer: within 5 seconds the line goes.
+
 ## Phone checks (released 2026-10-17)
 
 - [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place.
@@ -14,7 +19,8 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 
 - [ ] Front door, from the 2026-10-09 critique: one line about the app under Sign up; shorter description on Log in (reverses a front door decision, so yours); name the inviter and player count on an invited Sign up; a live tick for password rules.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
-- [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`); see the [browser checks README](web/tests/browser/README.md).
+- [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`), and the checks that fail on `main` too: `navigate.mjs` (22 screen changes; a poll after leaving the set) and `home.mjs` (48 px targets in a card); see the [browser checks README](web/tests/browser/README.md).
+- [ ] Chip k6: dark initials on the orange fill measure 3.8:1 (found by the Sessions tab critique).
 - [ ] Stats board rows: the rounded `.stat-row` curls its hairline at both ends (found in the profile critique; fixed on the profile only).
 - [ ] Stage 2, what remains: optional banker, payments before a session closes, filters on past sessions. See the [roadmap](doc/roadmap/README.md).
 - [ ] Stage 3, what remains: seasons.

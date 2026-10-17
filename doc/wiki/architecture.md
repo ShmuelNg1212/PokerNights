@@ -355,6 +355,14 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 - With the morph setting, a tap on a link to the very page one is on (the brand mark on Your groups) is also a redraw in place.
 - A hub page that starts showing something new must add it to `hub_stamp`.
 
+## Sessions tab
+
+- `web/sessions_tab.py` builds the tab: `visible_nights(me)` (drafts for hosts only), `current_cards(me, nights)` and `past_years(me, nights)`. The group view calls `sessions_context(me)`.
+- The intent: the tab answers "where is my table?" first. So the card order is by band (in play and mine, in play, open and mine, open, drafts), not by date.
+- Reads are batched: the seated players of every card in one query, the clocks in one, and the viewer's nets (`session_nets`) and unpaid transfers (`unpaid_transfers`) in one each. The query count does not grow with the number of sessions (a test holds it).
+- `destination(night, latest_set)` is the one rule for where an open session leads and what its button says. The Sessions tab and the group card on Your groups (`web/home.py`) both use it.
+- The tab redraws by the hub stamp (below). The stamp counts the seats of each unfinished set, not who sits, so a swap of one player for another between two polls does not redraw the chips. See [footguns/hub_stamp_counts_seats.md](footguns/hub_stamp_counts_seats.md).
+
 ## Seat draw
 
 - **Records** (`games/models.py`): `SeatDraw` (one current per set by constraint; `stale`; the dealer's seat, empty until chosen) and `SeatPlace` (a participant's `rank`, rising clockwise from the dealer at 0). Drawn ranks are 1024 apart, so a late player takes the midpoint between two and no row is rewritten. Drawing again turns `is_current` off on the earlier draw. One migration, `games/0013_seat_draw`, adds the two tables.

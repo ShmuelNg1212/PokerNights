@@ -135,7 +135,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 ## Settle status of a session
 
 - A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
-- Group → Sessions → Past sessions shows the status badge on each row and the amount still to pay; the heading counts the sessions not settled. `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
+- Group → Sessions → Past sessions states the status in words on each row: "Settled" with a check, "₱500 still to pay", or "Partly paid, ₱200 still to pay". The heading counts the sessions not settled. `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
 - The session page shows the same status in its top bar and in its overview.
 - Hosts and players see the same settlement facts. Hosts have Mark paid and Undo actions; player and archived views have no action column.
 - Who pays whom cards adapt to their available width. Below 440px, payer and payee each have a full-width row; wider cards show them side by side. Chips align with the first name line. Amount, payment state and action have explicit grid positions, so a paid timestamp grows below the badge. Complete amounts and units stay on one line.
@@ -243,7 +243,6 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 ## Remaining screen design (slice 4)
 
 - Home shows group navigation and roles, then group creation. Empty home explains how to create or join a group.
-- Group shows current sessions first, with New session above the list for hosts. Past sessions follow. Tables, presets, roster and invitations form a management rail from 900 px and follow sessions on phones.
 - Roster names stay alphabetic. Initial tokens use member ID and the existing palette; colour is not a cross-view identity guarantee. Host tools use native disclosures.
 - Failed group creation, table creation, roster add and rename keep editable values, show a local error and open the failed disclosure. Success uses the existing redirect. Passwords stay blank on refused account submissions.
 - Account, invitation, session, preset, settings and picker pages share a narrow form frame. The picker still supports search and native all-or-nothing submission.
@@ -265,7 +264,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 ## Group page, stats and branding (UI evolution)
 
 - The group page has tabs on the one group address: **Sessions** (default), **Stats** and **Group settings** (`?view=stats`, `?view=settings`). An unknown `view` shows Sessions.
-- Sessions lists current and past sessions. With none in progress, a neutral card gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
+- Sessions shows the sessions in progress as table cards, then the past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
 - Group settings holds players, invite links, tables, presets and the group rake account. Each management action returns to its own section. Players read the same lists without host forms.
 - Stats appears once the group has a closed session. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately.
   - Only closed sessions count, using the current frozen results of their finalized sets. Canceled sets and open sessions are excluded.
@@ -668,4 +667,16 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 - **Your name.** One field renames you in every group you are in. A group where someone else has the name is skipped, and the message names it. Your login username does not change. When your names differ between groups, the row says "Differs by group" and lists them.
 - **Password.** Give the current password and a new one (the sign-up rules). This phone stays logged in; other phones and browsers are logged out; live reset links stop working. After five wrong current passwords in 15 minutes the form refuses and says how long to wait. The same change sent twice succeeds once and counts no wrong try.
 - **Checks:** `web/tests/test_profile.py`, `accounts/tests/test_change_password.py`; browser `web/tests/browser/profile.mjs` with `seed_profile.py`.
+
+## Sessions tab
+
+The group's Sessions tab leads with the viewer's own table, then lists their past nights. [Plan](../plan/1792243014_sessions_tab_redesign.md).
+
+- **Now playing.** One card for each session in progress. A card shows the table, the location and the date ("Today" for today in Manila), the latest set and its state, up to six seated players' chips with "+N", "N at the table", and the clock while the set is in play. A set in play is felt; every other state is a neutral panel.
+- **Order.** Sets in play where the viewer sits, other sets in play, the viewer's open or ended sets, other open or ended sets, then drafts (hosts only). Inside each band: the earliest date, then the oldest session.
+- **Your table.** A card where the viewer sits says "You're playing" (or "You're at this table" before play). The first such card has the one bone action: **Open the table**, **Open set N** or **Go to the session**. Another card of the viewer's has the same label in the secondary style.
+- **Where a card leads.** The latest set while it is unfinished, else the session. The group card on Your groups uses the same rule (`web.sessions_tab.destination`).
+- **New session** (hosts with a table) comes after the cards, as a secondary button.
+- **Past sessions.** Grouped by month, newest first. This year's months are open; each earlier year is one closed disclosure ("2025 · 48 sessions"). With nothing this year, the newest year is open. Each row: the table, "date · N sets · status", the viewer's net in the session's unit ("Even" for zero, "Did not play" if absent), and one line for each transfer the viewer still pays or receives ("You pay Carlo ₱500", "Dina pays you ₱200").
+- From 700 px of content width the cards are in two columns. A single card takes the full width.
 

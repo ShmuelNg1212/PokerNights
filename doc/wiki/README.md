@@ -43,9 +43,10 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [one_form_per_row_loses_typing.md](footguns/one_form_per_row_loses_typing.md) | A form per row, or a live refresh, loses unsaved typing |
 | [rake_results_and_settlement.md](footguns/rake_results_and_settlement.md) | After-rake player results are not remaining settlement balances |
 | [service_worker_user_agent.md](footguns/service_worker_user_agent.md) | A page the service worker fetched was asked for with the worker's user agent, not a chat app's |
-
 | [ios_keyboard_covers_fixed.md](footguns/ios_keyboard_covers_fixed.md) | Fixed elements at the bottom sit under the iPhone keyboard |
 | [opening_buy_ins_lock_rake.md](footguns/opening_buy_ins_lock_rake.md) | Configure rake before default opening buy-ins lock the rule |
+| [stretched_link_prefetches_twice.md](footguns/stretched_link_prefetches_twice.md) | A link stretched over a card by `::after` makes Turbo fetch the page twice per tap; make the card one link |
+| [hub_stamp_counts_seats.md](footguns/hub_stamp_counts_seats.md) | The hub stamp counts seats, not who sits; a swap does not redraw the chips |
 
 ## Agent workflow
 

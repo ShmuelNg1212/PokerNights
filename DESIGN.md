@@ -197,7 +197,7 @@ Count-up, review and final pages inherit the 1180px table container and the 400p
 
 The session page inherits the 1180px table container and remains one column on phones. From 900px it uses a 400px overview/action column and flexible detail column with a 28px gap. Its document order is task summary, closed-session transfers, aggregate results, sets and payment records. Actions stay in document flow with 48px bottom clearance; detail sections have 32px separation. Transfer cards query their list’s available width. Below 440px, or without container-query support, each identity occupies a full-width row joined by a downward arrow and “pays.” From 440px, two flexible identity columns surround a rightward arrow and “pays.” The 32px tokens and direction start at the first name line. The financial grid places amount above state; narrow host cards give the amount a full row, then state left and action right. Wide host cards reserve a right action column spanning both financial rows. Player and archived cards have no action column. Full names and result rows can wrap while the primary Still to pay value remains intact.
 
-Home navigation uses a 760px container and 76px-minimum group links with role labels; creation follows the list. Group pages lead with sessions on phones, with the host’s New session above the current-session list. Past sessions precede tables, presets, roster and invites. From 900px, the group container expands to 1180px and uses flexible session/management columns in a 1.25:1 ratio, a 48px gap and a management rail with 28px left inset. These actions stay in document flow.
+Home navigation uses a 760px container and 76px-minimum group links with role labels; creation follows the list. The group page has Sessions, Stats and Group settings tabs. The Sessions tab is table cards, then past sessions by month (see "Sessions tab", 2026-10-17); the cards take two columns from 700px of content width. Group settings uses two CSS columns with a 48px gap from 900px, in a 1180px container.
 
 Account, invitation and supporting forms use a 600px container with 28px top inset; explanatory prose is bounded at 65ch. The log uses an 850px container, wrapping section links with 48px targets, 16px vertical record padding and 96px heading scroll clearance. Names and explanations wrap while record amounts retain their full formatted value.
 
@@ -289,7 +289,7 @@ The browser key includes session and signed-in viewer. Automatic opening happens
 
 ### Group and home navigation
 
-Home shows one block per group that reports its state (see the home addendum below). A newcomer gets a focused first-group screen with the mark, the create form and a line about invite links. The group’s current sessions are neutral rows; the host’s bone New session action precedes the list. Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
+Home shows one block per group that reports its state (see the home addendum below). A newcomer gets a focused first-group screen with the mark, the create form and a line about invite links. The group's sessions in progress are table cards, and the host's New session follows them (see "Sessions tab", 2026-10-17). Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
 
 The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Roster chip colour derives from member primary key within the ten-colour palette; collision handling uses roster peers. Set join order and session standing order retain their own token rules, so colour does not promise identity across those views. The one-time invite URL remains a labelled read-only field.
 
@@ -401,7 +401,7 @@ Log in, Sign up, “Sign-up needs an invite” and Join group share one front-do
 A closed session states its settle status wherever it is listed. [Plan](doc/plan/1791120060_session_settled_indicator.md).
 
 - **Badge.** One pill in words: “Settled” in Up with a 14px check, or “Partly settled” / “Unsettled” in Brass. It never relies on colour alone. One partial renders it for the list and the session top bar.
-- **Past sessions row.** Table name, then a muted line “date · N sets”, with “· ₱2,650 still to pay” added while money is owed. The status badge sits at the right in place of the former set-count badge.
+- **Past sessions row.** Table name, then a muted line “date · N sets”, with “· ₱2,650 still to pay” added while money is owed. The status badge sits at the right in place of the former set-count badge. Superseded on the Sessions tab on 2026-10-17: the status is muted words on the date line, with no badge.
 - **Heading.** “Past sessions” gains a muted, non-wrapping “N not settled” while any are outstanding.
 - **Session top bar.** A closed session shows the status badge in place of “Session closed”. Open sessions read “Session open”; archived ones “Archived”.
 - No token, colour or asset is added.
@@ -1123,6 +1123,20 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 - **Settings** is one neutral panel with two disclosure rows, 56px: a label, the current value in Bone Dim ("Ben", "Differs by group", "Change") and a chevron that turns when open. Forms use the shared field box. A refused form opens again with its local error; passwords are never shown again.
 - **Motion:** the stats screen rules (pill marker, figures in from the side, chart reveal). Reduced motion: none.
 - **Measured.** `profile.mjs`, 62 checks at 320, 390 and 1280: the panel row, no overflow, 48px targets, the long name, units never added, contrast, the jump link, the period change in place, the password error round trip, reduced motion and no JavaScript.
+
+### Sessions tab (2026-10-17)
+
+[Plan](doc/plan/1792243014_sessions_tab_redesign.md). Mode: Operate, inside the Rack. Thesis: a rail of live tables, then a ledger of your nights. No new colour, font, token or icon.
+
+- **"Now playing"** heads the tab. Each session in progress is one card, and the whole card is one link (no link stretched by a pseudo-element; see the footgun on prefetching twice). Card: the table name at 1.375rem, weight 800, width 88%, two lines at most; the set and state badge at the right; the location and date (Bone Dim, Felt Ink on felt); up to six 36px chips in the token stack with "+N", then "N at the table" and the ticking clock.
+- **Surface.** A set in play is felt with its diamond grain: the only felt on the tab. Every other state is Rail with a Rule border and the sheet radius (26px). A card of the viewer's that is not in play has a Line border.
+- **Your table.** "You're playing" (or "You're at this table") with a 10px bone dot, then a button label inside the link. Only the first card of the viewer's is bone; another of theirs is secondary. The link's spoken name is the title, the state and that line (`aria-labelledby`); the button label is hidden from speech.
+- **Pressed.** The whole card darkens (an inset `--pressed` shadow) while held and while its screen is on the way. Hover turns the title brass only for a fine pointer.
+- **Grid.** One column on a phone. From 700px of content width (a container query on the section), two columns; a single card takes the full width.
+- **New session** follows the cards as a full-width secondary button with a plus icon. The empty state says "Nobody is playing".
+- **Past sessions** use the full width. Month headings at 0.9375rem, weight 700, Bone Dim. Row: the table in bold, then "date · N sets · status" at 0.875rem in Bone Dim. The status is words: "Settled" with a 14px Up check, "₱500 still to pay", "Partly paid, ₱200 still to pay". At the right, the viewer's net at 1.25rem in the money width with its direction icon, "Even", or "Did not play" in Bone Dim. Under it, one line per unpaid transfer of the viewer's in Up or Down with words: "You pay Carlo ₱500", "Dina pays you ₱200".
+- **Years.** This year's months are open. Each earlier year is a closed disclosure, "2025 · N sessions", 48px, with a chevron that turns (no turn with reduced motion).
+- **Measured.** `sessions_tab.mjs`, 130 checks at 320, 390 and 1280: order, felt only in play, one bone action, link names, 48px targets, contrast (felt ink on felt 7.79:1), no overflow with a 60-character name and ₱1,999,999.98, the pressed card, a tap anywhere opening the set, the year disclosure, a live redraw keeping the scroll, reduced motion and no JavaScript.
 
 ## Do's and Don'ts
 

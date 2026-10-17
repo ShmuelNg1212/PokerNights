@@ -38,6 +38,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ### 1. Sessions, sets, buy-ins and rebuys
 - Create a session: date, table, location, stakes (e.g. 1/2), game type (Hold'em, PLO, etc.), min, max and usual buy-in, unit, and an optional rake rule.
+- A group can have several sessions open at the same time, for example at two tables. The group's Sessions tab shows each one, with the viewer's own table first.
 - Add players to a set from the roster, or type new names. Players can join late.
 - Log each buy-in and rebuy per player with a timestamp and amount. Every player has a running total. Starting a set can record the usual buy-in for everyone at the table.
 - The host records any buy-in. A player with a login records their own rebuy from their phone; the host can reverse it. One rebuy sent from two phones is recorded once.

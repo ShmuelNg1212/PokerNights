@@ -52,3 +52,7 @@ The approved `doc/plan/1791102439_your_groups_home.md` rebuilds `templates/web/h
 ## 2026-10-16 addendum — Table alerts in the header
 
 The approved `doc/plan/1792163903_alerts_bell.md` removes the table alerts panel from the foot of Your groups. Its control is now a bell in the shared header (`templates/web/_alerts.html`, included from `base.html`), with an anchored panel. Mode: Operate, inside the Rack. Your groups keeps only one part of it: `main[data-alerts-remind]` (with a group). That marks the one page where the panel opens by itself once per window. Nothing else on the page changes. Shipped record: DESIGN.md "Table alerts in the header (2026-10-16)".
+
+## 2026-10-17 addendum — Sessions tab
+
+The approved `doc/plan/1792243014_sessions_tab_redesign.md` rebuilds the Sessions view of `group.html` inside the Rack. Mode: Operate. THESIS: a rail of live tables, then a ledger of your nights. Sources: `templates/web/_group_sessions.html`, `templates/web/_session_card.html`, `templates/web/_past_month.html`, `web/sessions_tab.py`. Sessions in progress are table cards, the viewer's own table first and the only bone action; felt only for a set in play; two columns from 700px of content. Past sessions group by month with the viewer's net and unpaid transfers; earlier years fold away. The 1.25:1 session/management columns above are superseded: management is the Group settings tab. Critique 32/40 (single context), three P2 fixes applied, snapshot closed. Shipped record: DESIGN.md "Sessions tab (2026-10-17)".
