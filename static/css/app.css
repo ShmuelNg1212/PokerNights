@@ -849,7 +849,7 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 .entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
 .door-invited { margin: var(--s-2) 0 0; color: var(--text); font-weight: 600; text-align: center; text-wrap: balance; }
 /* Password rules: a ring until the rule is met, then a filled check. Shape changes as well as colour. */
-.door-rules { display: flex; flex-wrap: wrap; gap: 2px var(--s-4); margin: 0; padding: 0; list-style: none; }
+.hint .door-rules { display: flex; flex-wrap: wrap; gap: 2px var(--s-4); margin: 0; padding: 0; list-style: none; }
 .door-rules li { display: inline-flex; align-items: center; gap: 6px; }
 .door-rules li::before { content: ""; flex: none; width: 14px; height: 14px; box-sizing: border-box; border: 1.5px solid var(--line); border-radius: 50%; }
 .door-rules li[data-met] { color: var(--text); }

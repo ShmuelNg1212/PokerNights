@@ -123,6 +123,12 @@ class EntryPagesTests(TestCase):
         self.assertContains(page, 'value="newbie"')
         self.assertNotContains(page, 'value="12345678"')
 
+    def test_a_refused_field_says_why_directly_under_it(self):
+        html = self.client.post(self.signup, {"username": "newbie", "password1": "12345678"}).content.decode()
+        field, error, rules = html.index('name="password1"'), html.index("Use more than digits."), html.index("data-password-rules")
+        self.assertLess(field, error)
+        self.assertLess(error, rules)  # the cause before the help, close to the field
+
     def test_password_rules_are_unchanged(self):
         from django.contrib.auth import get_user_model
         for bad in ("short1", "password", "12345678", "newbie-1"):
