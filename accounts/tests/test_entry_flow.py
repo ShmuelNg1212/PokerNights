@@ -119,7 +119,7 @@ class PlainWordsTests(TestCase):
         cases = [
             ({"username": "hana"}, "username", "That name is taken. Try another."),
             ({"username": "HANA"}, "username", "That name is taken. Try another."),
-            ({"username": "Juan dela Cruz"}, "username", "Use letters and numbers, with no spaces."),
+            ({"username": "Juan dela Cruz"}, "username", "Use only letters, numbers and @ . + - _, with no spaces."),
             ({"password1": "short1", "password2": "short1"}, "password1", "Too short. Use at least 8 characters."),
             ({"password1": "password", "password2": "password"}, "password1", "That password is too common. Pick a less usual one."),
             ({"password1": "83920174", "password2": "83920174"}, "password1", "Use more than digits."),

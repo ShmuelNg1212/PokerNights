@@ -97,7 +97,7 @@ class EntryPagesTests(TestCase):
     def test_signup_has_short_help_and_plain_labels(self):
         page = self.client.get(self.signup)
         self.assertContains(page, "<h1>Create your account</h1>")
-        self.assertContains(page, "Your friends see this name. Letters and numbers, no spaces.")
+        self.assertContains(page, "Your friends see this name. Letters, numbers and @ . + - _, no spaces.")
         # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
         self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
         self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
