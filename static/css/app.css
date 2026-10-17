@@ -1997,3 +1997,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .gap-ring { position: absolute; z-index: 4; box-sizing: border-box; border: 2px solid var(--brass); pointer-events: none; }
 /* The target takes focus so a screen reader lands there; the ring above is the visible answer. */
 [data-gap-focus]:focus { outline: none; }
+/* Books off: motion (2026-10-17) */
+/* The gap panel leaving when the books balance: a copy at its old place (changes.js) that never takes a tap. */
+.books-ghost { position: fixed; z-index: 1; margin: 0; box-sizing: border-box; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .books-ghost { display: none; } }
