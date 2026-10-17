@@ -1,13 +1,15 @@
 # AI coding master workflow: merge plan
 
-Status: waiting for human approval. Written by `/ai-coding-master-workflow` on 2026-10-17.
+Status: answers folded in; waiting for approval to execute. Written by `/ai-coding-master-workflow` on 2026-10-17.
 
-## OPEN QUESTIONS
+## Decisions (answered 2026-10-17)
 
-1. **features.md and spec.md.** `doc/wiki/features.md` is 658 lines of dated build notes. It overlaps the living spec. Recommended: this plan moves SPEC.md to `doc/wiki/spec.md` and leaves features.md unchanged. A separate plan in `doc/roadmap/plan_queue/` folds features.md into spec.md as current behaviour without dates, then deletes features.md. Yes?
-2. **Open phone checks in TODO.md.** 26 items are open. Most are phone checks for releases on or before 2026-10-17. Recommended: keep the three checks for the 2026-10-17 releases (override button, books off, header) and the open "Next" items. Drop older open phone checks; you reported all phone checks done on 2026-10-12, and later ones are covered by use. Yes?
-3. **Rendezvous in this project.** The batching rule says: build each feature on a stacked local branch and do not merge to main until you say so. The template's rendezvous merges to main locally. Recommended: in this project, rendezvous ends on a verified feature branch; the merge to main happens when you say "ship", then the push. Yes?
-4. **Old design decisions.** `doc/roadmap/README.md` has a "Decisions that changed the design" list. Recommended: keep it as it is now. Write new decisions as ADRs in `doc/adr/`. Do not convert old entries. Yes?
+The human answered "yes to all" to the four open questions.
+
+1. **features.md and spec.md.** This plan moves SPEC.md to `doc/wiki/spec.md` and leaves features.md unchanged. A queued plan in `doc/roadmap/plan_queue/` folds features.md into spec.md as current behaviour, then deletes features.md.
+2. **Open phone checks in TODO.md.** Keep the three checks for the 2026-10-17 releases (override button, books off, header) and the open "Next" items. Drop the older open phone checks.
+3. **Rendezvous in this project.** Rendezvous ends on a verified feature branch. On "ship", merge the stack to main, then push.
+4. **Old design decisions.** Keep the roadmap list as it is. Write new decisions as ADRs in `doc/adr/`.
 
 ## Goal
 
@@ -52,19 +54,19 @@ Source decisions: the grilling session of 2026-10-17 and the setup answers (clau
 
 Branch: `chore/ai-coding-master-workflow`. One commit: `chore: set up ai coding master workflow`.
 
-- [ ] Fold the answers to OPEN QUESTIONS into this plan.
+- [x] Fold the answers to OPEN QUESTIONS into this plan.
 - [ ] Write AGENTS.md from the draft below. Completion: `grep '{{' AGENTS.md` finds nothing.
 - [ ] Write the local CLAUDE.md as `@AGENTS.md` only. Keep it in `.git/info/exclude`.
 - [ ] `git mv SPEC.md doc/wiki/spec.md`. Update links in AGENTS.md, `doc/wiki/README.md`, `doc/roadmap/README.md`, and any other file that `grep -rn "SPEC.md"` finds outside `doc/study/` and `doc/plan/`. Frozen records keep their old links.
 - [ ] Delete `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. Trim `docs/agents/domain.md` to its domain paragraphs.
 - [ ] Wiki README: delete the Journal section. Replace "Agent workflow" with one line that points to AGENTS.md. Change the SPEC.md links.
-- [ ] TODO.md: for each completed item, check that its plan records the build and the release. Add the missing lines to the plan. Then delete the item from TODO.md. Apply the answer to open question 2. Completion: `wc -l TODO.md` is 40 or less.
-- [ ] If open question 1 is yes, write the features.md plan to `doc/roadmap/plan_queue/`.
+- [ ] TODO.md: for each completed item, check that its plan records the build and the release. Add the missing lines to the plan. Then delete the item from TODO.md. Apply decision 2. Completion: `wc -l TODO.md` is 40 or less.
+- [ ] Write the features.md plan to `doc/roadmap/plan_queue/` (decision 1).
 - [ ] Auto-memory: confirm each rule is in AGENTS.md. Delete the four note files and empty `MEMORY.md`. Turn off auto-memory for this project in `.claude/settings.local.json` (use the `update-config` skill to find the correct key).
 - [ ] Global guardrails: copy the skill's `scripts/block-destructive-git.sh` to `~/.claude/hooks/`. Merge the hook and `Bash(git push:*)` into `~/.claude/settings.json`. Keep all existing keys. Run both test commands from the skill's `reference/guardrails.md`.
 - [ ] Remove `Bash(git push origin main)` from `.claude/settings.local.json`.
 - [ ] Verify: all AGENTS.md links resolve; `DEBUG=True .venv/bin/python manage.py test` passes; the diff has only doc and config changes. Record the results here.
-- [ ] Rendezvous: as decided in open question 3. Do not push.
+- [ ] Rendezvous: leave the verified branch (decision 3). Merge to main and push only on "ship".
 - [ ] `graphify update .`
 
 ## Draft: AGENTS.md
