@@ -54,22 +54,42 @@ try {
  const screens=[['login','/accounts/login/'],['login-invited','/accounts/login/?next='+encodeURIComponent(M.invite)],['signup','/accounts/signup/'],['signup-invited','/accounts/signup/?next='+encodeURIComponent(M.invite)],['signup-long','/accounts/signup/?next='+encodeURIComponent(M.long)],['invite-dead',M.expired],['reset-dead','/accounts/reset/not-a-link/'],['claim-dead','/claim/not-a-link/']];
  for(const [width,height] of [[320,568],[390,844],[1280,800]])for(const [name,path] of screens){await A.size(width,height);await A.go(path,500);
   check(`${name} fits ${width}`,await A.js(`document.documentElement.scrollWidth<=${width}`));
-  check(`${name} 48px targets ${width}`,await A.js(targets));
+  check(`${name} 48px targets ${width}`,await A.js(targets),await A.js(`JSON.stringify([...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length&&el.getBoundingClientRect().height<48).map(el=>[el.name||el.textContent.trim().slice(0,16),el.getBoundingClientRect().height]))`));
   check(`${name} frame ${width}`,await A.js(`!!document.querySelector('.door-hero .door-mark')&&!!document.querySelector('.door-sheet h1')&&!document.querySelector('.site-header')`));
   await A.shot(`door-${name}-${width}`);}
  await A.size(390);await A.go('/accounts/login/',500);
  check('phone: the sheet runs edge to edge and to the bottom of the screen',await A.js(`(()=>{const r=document.querySelector('.door-sheet').getBoundingClientRect();return r.left===0&&r.width===390&&Math.round(r.bottom)===844&&document.documentElement.scrollHeight===844})()`));
  for(const [name,path] of [['sign up','/accounts/signup/'],['invited sign up','/accounts/signup/?next='+encodeURIComponent(M.invite)]]){await A.go(path,500);const bottom=await A.js(`Math.round(document.querySelector('form [type=submit]').getBoundingClientRect().bottom)`);check(`${name}: the whole button shows without a scroll at 390x844`,bottom<=844,`button ends at ${bottom}, page is ${await A.js('document.documentElement.scrollHeight')}`);}
- check('invited sign up leads with the group',await A.js(`document.querySelector('h1').textContent==='Join '+${JSON.stringify(M.group)}&&${text('Create your account to get in.')}&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top&&!document.querySelector('.entry-alt')`));
- check('sign up keeps the description, at the foot',await A.js(`document.querySelector('.door-foot').textContent.includes('It never moves money.')&&document.querySelector('.door-foot').getBoundingClientRect().top>document.querySelector('form [type=submit]').getBoundingClientRect().bottom`));
- for(const sel of ['h1','.hint','.door-foot','.entry-invite','.password-toggle'])check('contrast on the sheet '+sel,await A.js(contrast(sel,'.door-sheet'))>=4.5);
+ const top=sel=>`document.querySelector('${sel}').getBoundingClientRect().top`;
+ check('invited sign up: the group, who invited you and how many play, then what the app does, then the form',await A.js(`document.querySelector('h1').textContent==='Join '+${JSON.stringify(M.group)}&&/invited you · \\d+ players?$/.test(document.querySelector('.door-invited').textContent)&&${top('h1')}<${top('.door-invited')}&&${top('.door-invited')}<${top('.door-line')}&&${top('.door-line')}<${top('.entry-invite a')}&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<${top('[name=username]')}&&!document.querySelector('.entry-alt')`),await A.js(`document.querySelector('.door-invited')?.textContent`));
+ for(const sel of ['h1','.hint','.door-line','.door-invited','.entry-invite','.door-rules li','.password-toggle'])check('contrast on the sheet '+sel,await A.js(contrast(sel,'.door-sheet'))>=4.5);
+ await A.go('/accounts/signup/',500);
+ check('sign up: the description sits under the heading, none at the foot',await A.js(`document.querySelector('.door-line').textContent.includes('It never moves money.')&&${top('.door-line')}<${top('form')}&&!document.querySelector('.door-foot')`));
+ check('sign up: one password field',await A.js(`document.querySelectorAll('.door-sheet input[type=password]').length===1`));
  await A.go('/accounts/login/',500);for(const sel of ['.entry-alt','.entry-alt a','label'])check('contrast on the sheet '+sel,await A.js(contrast(sel,'.door-sheet'))>=4.5);
- for(const sel of ['.entry-name','.entry-line'])check('contrast on the ground '+sel,await A.js(contrast(sel,'body'))>=4.5);
+ check('log in: no description, and the forgot line before any failure',await A.js(`!document.querySelector('.entry-line')&&document.querySelectorAll('.entry-forgot').length===1&&${top('.entry-forgot')}>document.querySelector('form [type=submit]').getBoundingClientRect().bottom`));
+ for(const sel of ['.entry-forgot'])check('contrast on the sheet '+sel,await A.js(contrast(sel,'.door-sheet'))>=4.5);
+ for(const sel of ['.entry-name'])check('contrast on the ground '+sel,await A.js(contrast(sel,'body'))>=4.5);
  await A.size(1280,800);await A.go('/accounts/login/',500);
  check('desktop: the sheet is a centred 440px card',await A.js(`(()=>{const r=document.querySelector('.door-sheet').getBoundingClientRect();return r.width===440&&Math.abs(r.left+r.width/2-640)<1&&getComputedStyle(document.querySelector('.door-sheet')).borderBottomLeftRadius==='26px'})()`));
  await A.js(`document.querySelector('[name=username]').focus()`);
  check('the focus ring shows on the sheet',await A.js(`getComputedStyle(document.activeElement).outlineWidth==='3px'`));
  await A.size(390);
+
+ // --- Password rules: two tick as the person types; the server judges all four on sending.
+ const met=`[...document.querySelectorAll('.door-rules li')].map(li=>'met' in li.dataset?1:0).join('')`;
+ for(const [name,path,field] of [['sign up','/accounts/signup/','password1'],['reset','/accounts/reset/not-a-link/','']]){if(!field)continue;
+  await A.go(path,700);await A.js(`document.querySelector('[name=${field}]').focus()`);
+  check(`${name}: before typing no rule is met and none is red`,await A.js(`${met}==='00'&&[...document.querySelectorAll('.door-rules li')].every(li=>getComputedStyle(li).color===getComputedStyle(document.querySelector('.door-rules').closest('.hint')).color)`));
+  await A.type('1234567');await sleep(200);check(`${name}: seven digits meet neither rule`,await A.js(met)==='00');
+  await A.type('8');await sleep(200);check(`${name}: eight digits meet the length rule only`,await A.js(met)==='10');
+  check(`${name}: the change is said once, politely`,await A.js(`document.querySelector('[data-rules-status]').textContent==='At least 8 characters: done.'&&document.querySelector('[data-rules-status]').getAttribute('aria-live')==='polite'`),await A.js(`document.querySelector('[data-rules-status]').textContent`));
+  await A.type('a');await sleep(200);check(`${name}: a letter meets both`,await A.js(met)==='11');
+  for(let i=0;i<9;i++)await A.back();await sleep(200);check(`${name}: deleting unticks`,await A.js(met)==='00');
+  await A.type('abc');await A.click(`document.querySelector('[data-password-toggle]')`,200);await A.type('defgh');await sleep(200);
+  check(`${name}: ticks follow the field while it is shown`,await A.js(met)==='11'&&await A.js(`document.querySelector('[name=${field}]').type==='text'`));
+  await A.shot(`door-rules-${name.replace(' ','-')}-390`);
+  check(`${name}: at rest nothing runs on the rules`,await A.js(`document.querySelector('.door-rules').getAnimations({subtree:true}).filter(a=>a.playState==='running').length===0`));}
 
  // --- Arrival.
  const B=await page();await B.go('/accounts/login/');let f=await B.js('window.__first');
@@ -150,7 +170,9 @@ try {
  await R.go('/accounts/login/');await login(R);check('reduced motion: log in works, with no carry',await R.js(`location.pathname==='/'&&!window.__carry`));
  const N=await page({plain:true});await send('Emulation.setScriptExecutionDisabled',{value:true},N.s);await N.go('/accounts/login/',1400);
  check('no JavaScript: the frame is whole',await N.js(`getComputedStyle(document.querySelector('.door-mark')).opacity==='1'&&getComputedStyle(document.querySelector('.field')).opacity==='1'&&document.getAnimations().length===0`));
- await login(N);check('no JavaScript: log in works',await N.js(`location.pathname==='/'&&!!document.querySelector('.site-header')`));
+ await N.go('/accounts/signup/',1400);
+ check('no JavaScript: sign up lists the rules, plain',await N.js(`document.querySelectorAll('.door-rules li').length===2&&![...document.querySelectorAll('.door-rules li')].some(li=>'met' in li.dataset)&&document.querySelector('.door-rules').getClientRects().length>0&&${text('Checked when you send:')}`));
+ await N.go('/accounts/login/',1400);await login(N);check('no JavaScript: log in works',await N.js(`location.pathname==='/'&&!!document.querySelector('.site-header')`));
  const X=await page();await send('Network.enable',{},X.s);await send('Network.setBlockedURLs',{urls:['*vendor/motion-*']},X.s);const before=errors.length;await X.go('/accounts/login/');
  await X.js(`document.querySelector('[name=username]').focus()`);await X.type('hana');await X.click(`document.querySelector('[data-password-toggle]')`,200);
  check('Motion blocked: the arrival still plays, the chip is still, no script error',(await X.js('window.__first')).arrival==='full'&&await X.js(`!window.Motion`)&&await X.js(angle('.door-ring'))===0&&errors.length===before,errors.slice(before).join('; '));

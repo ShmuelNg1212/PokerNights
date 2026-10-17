@@ -66,3 +66,7 @@ DESIGN.md and surface frontmatter, PRODUCT.md's schema marker and `.impeccable/d
 ## 2026-10-13 addendum — session setup polish
 
 The approved `doc/plan/1791872139_session_setup_polish.md` refines New session, Set settings and Add players without changing the direction contract. Group titles share one weight and rhythm, the preset row is a group that fills the stakes in place, only the chosen rake rule's amount field is drawn, form pages end 48px under their last button, and Add players lists the roster first with one main button. DESIGN.md's addendum of the same date holds the values.
+
+## 2026-10-17 addendum — front door, second pass
+
+The approved `doc/plan/1792250537_front_door_second_pass.md` changes Log in, Sign up and Set a new password inside the incumbent direction. Log in drops the description and always shows the forgot line; Sign up leads with the description, and an invited Sign up names the inviter and the player count. Sign up and Set a new password have one password field with two live rule ticks. A refused field's error sits directly under it. DESIGN.md's addendum of the same date holds the values. Critique: 33 of 40, `.impeccable/critique/2026-10-17T16-12-06Z__templates-registration-login-html.md`; the fix batch moved errors and removed a stray list indent.

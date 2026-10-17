@@ -36,9 +36,9 @@ class PlainWords:
         "password_too_common": "That password is too common. Pick a less usual one.",
         "password_entirely_numeric": "Use more than digits.",
         "password_too_similar": "Too close to your username. Pick something different.",
-        "password_mismatch": "The two passwords don't match.",
+        "password_mismatch": "The two passwords don't match.",  # the profile's change form still has two
     }
-    USERNAME_WORDS = {"invalid": "Use letters and numbers, with no spaces."}
+    USERNAME_WORDS = {"invalid": "Use only letters, numbers and @ . + - _, with no spaces."}
     PASSWORD_HELP = "At least 8 characters, not a common password, not only digits, and not like your username."
 
     def full_clean(self):
@@ -71,19 +71,20 @@ class SignupForm(PlainWords, UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["username"].help_text = "Your friends see this name. Letters and numbers, no spaces."
+        self.fields["username"].help_text = "Your friends see this name. Letters, numbers and @ . + - _, no spaces."
         self.fields["password1"].help_text = self.PASSWORD_HELP
-        self.fields["password2"].label = "Repeat password"
-        self.fields["password2"].help_text = ""
+        # One password field: Show and the phone's password manager catch a typo. Without the
+        # second field Django's mismatch check has nothing to compare and is skipped.
+        del self.fields["password2"]
         keyboard_hints(self)
 
     def validate_password_for_user(self, user, password_field_name="password1"):
-        # A broken rule is reported under Password, where the rule is stated. A mismatch stays under Repeat password.
+        # A broken rule is reported under Password, where the rule is stated.
         super().validate_password_for_user(user, "password1")
 
 
-class NewPasswordForm(PlainWords, SetPasswordForm):
-    """Django's set-password rules, worded and laid out as on Sign up."""
+class PasswordPairForm(PlainWords, SetPasswordForm):
+    """Django's set-password rules with a Repeat password field, worded as on Sign up."""
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
@@ -97,7 +98,16 @@ class NewPasswordForm(PlainWords, SetPasswordForm):
         super().validate_password_for_user(user, "new_password1")
 
 
-class ChangePasswordForm(NewPasswordForm):
+class NewPasswordForm(PasswordPairForm):
+    """The reset link's form: one password field, as on Sign up."""
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+        del self.fields["new_password2"]
+        keyboard_hints(self)  # again: new_password1 is now the last field, so its key says Go
+
+
+class ChangePasswordForm(PasswordPairForm):
     """The new-password rules plus the current password. The service checks the current one, so a
     wrong one is counted; a form refused for its new password never tests the current one."""
 

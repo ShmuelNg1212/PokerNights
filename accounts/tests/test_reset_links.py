@@ -111,10 +111,13 @@ class ResetPageTests(TestCase):
         self.assertContains(page, "Your username is <strong>maria</strong>.")
         self.assertContains(page, 'class="page entry-page"')
         self.assertNotContains(page, "site-header")
-        self.assertContains(page, 'autocomplete="new-password"', count=2)
+        self.assertContains(page, 'autocomplete="new-password"', count=1)
         self.assertContains(page, "data-password-toggle", count=1)
-        self.assertContains(page, "At least 8 characters, not a common password, not only digits, and not like your username.")
-        self.assertContains(page, "Repeat password")
+        # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
+        self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
+        self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
+        self.assertContains(page, "Checked when you send: not a common password, not like your username.")
+        self.assertNotContains(page, "Repeat password")  # one field, as on Sign up
         self.assertContains(page, 'data-busy="Saving…"')
         self.assertContains(page, "<title>Reset password · PokerNights</title>")
         self.assertNotIn("maria", page.content.decode().split("</title>")[0])
@@ -172,7 +175,6 @@ class ResetPageTests(TestCase):
             (("password123",), "That password is too common. Pick a less usual one."),
             (("8675309421",), "Use more than digits."),
             (("maria-ma",), "Too close to your username. Pick something different."),
-            ((NEW, NEW + "x"), "The two passwords don&#x27;t match."),
         ]
         for passwords, message in cases:
             page = self.save(*passwords)
@@ -180,7 +182,6 @@ class ResetPageTests(TestCase):
             self.assertContains(page, 'class="notice notice-bad" role="alert"', count=1)
             self.assertNotContains(page, f'value="{passwords[0]}"')
         self.assertEqual(list(self.save("12345678").context["form"].errors), ["new_password1"])
-        self.assertEqual(list(self.save(NEW, "other").context["form"].errors), ["new_password2"])
         self.link.refresh_from_db()
         self.assertIsNone(self.link.used_at)
         self.assertRedirects(self.save(), reverse("home"), fetch_redirect_response=False)

@@ -126,8 +126,13 @@ Group settings shows the group's lifetime collected rake across all sessions and
 ## Entry pages
 
 - Log in, Sign up, “Sign-up needs an invite” and Join group share a centred frame led by the mark and the name. Signed-out pages have no site header.
-- A person who arrives from a usable invite link sees “You’re invited to {group}” on Log in and Sign up. An invalid, expired, used-up or revoked link shows nothing. `accounts.signup.INVITERS` is filled by `groups.access.invite_group_name`, so `accounts` does not import `groups`.
-- Sign up asks for a username, a password and the password again. The help is one short line each; the password rules are Django's four validators, unchanged. A broken rule is reported under Password.
+- A person who arrives from a usable invite link sees “You’re invited to {group}” on Log in. Sign up is headed “Join {group}”, with “{inviter} invited you · N players” under it. The inviter is named only while still an active member of the group; N counts the group's active members, with or without a login. An invalid, expired, used-up or revoked link shows nothing. `accounts.signup.INVITERS` is filled by `groups.access.invite_group_name` (an `accounts.signup.Invitation`) and `claim_group_name` (a group name only), so `accounts` does not import `groups`.
+- Log in shows no description. “Forgot your password? Ask a host of your group for a reset link.” is always under the button.
+- Sign up has “Keeps the books for your home poker game. It never moves money.” under the heading. It asks for a username and one password; Set a new password also asks once. The profile's change-password form keeps Repeat password (`accounts.forms.PasswordPairForm`). The password rules are Django's four validators, unchanged. A broken rule is reported under Password.
+- Under the new password, “At least 8 characters” and “Not only digits” tick while the person types; a note says the other two rules are checked on sending. Sign up has no reset note under the password while reset links are on; Log in says where a reset comes from.
+- The username hint and its error name the characters Django accepts: letters, numbers and `@ . + - _`, with no spaces.
+- An invited (or claim-link) Sign up's button reads “Create account and join”. `static/js/password.js` does the ticks and announces each change in a polite live region. Without JavaScript the two lines and the note show, unticked. The server decides; a tick never lets through what it refuses.
+- A refused field's error is directly under the field, before its help.
 - Password fields have a Show / Hide button when JavaScript runs (`static/js/password.js`).
 - Join group shows the group name and the number of active players.
 - Log in is `accounts.views.Login`, Django's `LoginView` with the invite name added to the context.
@@ -455,7 +460,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - Every entry screen extends `templates/entry.html`: a `hero` block (the mark from `partials/mark.html`, through `partials/entry_head.html`) and a `sheet` block. Each screen still says itself whether the site header shows.
 - `config/door.py` chooses the arrival. The context processor `door` gives templates `door.on` and `door.arrival` (`full`, `short` or empty); reading `arrival` on a first visit marks the request, and the middleware `DoorCookie` then sets the session-lifetime cookie `door`. Nothing is stored on the server. A POST answer has no arrival.
 - The arrival is CSS at the end of `static/css/app.css`. `static/js/door.js` ends it on the first key or tap and moves the chip: a turn per key, the crescent on Show, a spin while a form is sent, a shake on a refused page. It also sets `data-door-done` on `<html>` inside the app and removes it when a log-out form is sent, so the top bar's mark carries the chip only into and out of the front door.
-- An invited Sign up is headed "Join {group}". Log in still says "You're invited to {group}".
+- An invited Sign up is headed "Join {group}" and names the inviter and the player count (see Entry pages). Log in still says "You're invited to {group}".
 - Switch: `DOOR_MOTION=False` removes the movement and the carried names. Check: `web/tests/browser/door.mjs`. [Plan](../plan/1791542366_front_door_revamp.md).
 
 ## Arrival after login (2026-10-09)

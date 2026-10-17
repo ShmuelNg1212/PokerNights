@@ -5,6 +5,8 @@ import them. A check takes the request and the path the person came from, and
 returns True to allow sign-up.
 """
 
+from dataclasses import dataclass
+
 from django.conf import settings
 
 CHECKS = []
@@ -16,17 +18,29 @@ def allowed(request, next_path: str) -> bool:
     return any(check(request, next_path) for check in CHECKS)
 
 
+@dataclass(frozen=True)
+class Invitation:
+    """What the entry pages may say about the link that led here. It reads as the group's name."""
+
+    group: str
+    inviter: str | None = None
+    players: int | None = None
+
+    def __str__(self):
+        return self.group
+
+
 # Functions that name who invited a newcomer, registered like CHECKS. Each takes the
-# request and the path the person came from, and returns a name or None.
+# request and the path the person came from, and returns an Invitation, a group name or None.
 INVITERS = []
 
 
 def invited_to(request, next_path: str):
-    """The name of the group whose usable invite led here, or None."""
+    """The Invitation whose usable link led here, or None."""
     for name_of in INVITERS:
-        name = name_of(request, next_path)
-        if name:
-            return name
+        found = name_of(request, next_path)
+        if found:
+            return found if isinstance(found, Invitation) else Invitation(group=found)
     return None
 
 

@@ -21,8 +21,9 @@ class EntryPagesTests(TestCase):
         page = self.client.get(self.login)
         self.assertContains(page, 'class="page entry-page"')
         self.assertContains(page, "branding/logo-mark.svg")
-        self.assertContains(page, LINE)
+        self.assertNotContains(page, LINE)  # a returning player needs only the form
         self.assertContains(page, "<h1>Log in</h1>")
+        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.", count=1)
         self.assertContains(page, 'class="btn btn-primary btn-block"')
         self.assertNotContains(page, "site-header")
         self.assertNotContains(page, "You're invited")
@@ -38,6 +39,30 @@ class EntryPagesTests(TestCase):
             self.assertContains(page, words)
             self.assertNotContains(page, "<Card>")
             self.assertContains(page, f'name="next" value="{self.invite_url}"')
+
+    def test_invited_signup_names_the_inviter_and_counts_the_players(self):
+        self.host.display_name = "Hana <B>"
+        self.host.save()
+        add_player(self.group, "ben")
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '<p class="door-invited">Hana &lt;B&gt; invited you · 2 players</p>', html=False)
+
+    def test_invited_signup_counts_the_players_when_the_inviter_has_left(self):
+        add_player(self.group, "ben")
+        self.host.status = self.host.Status.REMOVED
+        self.host.save()
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '<p class="door-invited">1 player</p>', html=False)
+        self.assertNotContains(page, "invited you")
+
+    def test_a_plain_signup_names_nobody(self):
+        page = self.client.get(self.signup)
+        self.assertNotContains(page, "door-invited")
+        self.assertContains(page, ">Create account</button>")
+
+    def test_invited_signup_says_the_account_joins_the_group(self):
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '>Create account and join</button>')
 
     def test_login_link_to_signup_keeps_the_invite(self):
         page = self.client.get(self.login, {"next": self.invite_url})
@@ -65,7 +90,7 @@ class EntryPagesTests(TestCase):
         page = self.client.post(self.login, {"username": "hana2", "password": "wrong"})
         self.assertContains(page, 'class="notice notice-bad" role="alert"', count=1)
         self.assertContains(page, "That username and password don&#x27;t match. Check capital letters.")
-        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.")
+        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.", count=1)
         self.assertContains(page, 'value="hana2"')
         self.assertNotContains(page, 'value="wrong"')
 
@@ -78,36 +103,44 @@ class EntryPagesTests(TestCase):
     def test_signup_has_short_help_and_plain_labels(self):
         page = self.client.get(self.signup)
         self.assertContains(page, "<h1>Create your account</h1>")
-        self.assertContains(page, "Your friends see this name. Letters and numbers, no spaces.")
-        self.assertContains(page, "At least 8 characters, not a common password, not only digits, and not like your username.")
-        self.assertContains(page, "Forgot it later? A host of your group can send you a reset link.")
+        self.assertContains(page, "Your friends see this name. Letters, numbers and @ . + - _, no spaces.")
+        # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
+        self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
+        self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
+        self.assertContains(page, "Checked when you send: not a common password, not like your username.")
+        self.assertNotContains(page, "Forgot it later?")  # Log in says it; Sign up keeps less help under the field
         self.assertNotContains(page, "There is no password reset yet.")
-        self.assertContains(page, "Repeat password")
+        self.assertNotContains(page, "Repeat password")  # Show and the password manager cover a typo
+        self.assertNotContains(page, 'name="password2"')
         self.assertNotContains(page, "Password confirmation")
         self.assertNotContains(page, "<ul>")  # the stock four-bullet rule list is gone
         self.assertNotContains(page, "for verification")
-        self.assertContains(page, 'autocomplete="new-password"', count=2)
+        self.assertContains(page, 'autocomplete="new-password"', count=1)
         self.assertContains(page, "data-password-toggle", count=1)
-        self.assertContains(page, LINE)  # an invited newcomer lands here first
-        self.assertContains(page, "It never moves money.")
+        # A newcomer reads what the app does before the form, not under the button.
+        self.assertContains(page, '<h1>Create your account</h1>\n<p class="door-line">Keeps the books for your home poker game. It never moves money.</p>', html=False)
+        self.assertNotContains(page, "door-foot")
         self.assertNotContains(page, "site-header")
 
     def test_refused_signup_names_the_broken_rule_and_keeps_the_username(self):
-        page = self.client.post(self.signup, {"username": "newbie", "password1": "12345678", "password2": "12345678"})
+        page = self.client.post(self.signup, {"username": "newbie", "password1": "12345678"})
         self.assertContains(page, "Use more than digits.")
         self.assertEqual(list(page.context["form"].errors), ["password1"])  # reported where the rule is stated
         self.assertContains(page, 'value="newbie"')
         self.assertNotContains(page, 'value="12345678"')
-        page = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91", "password2": "other"})
-        self.assertContains(page, "The two passwords don&#x27;t match.")
-        self.assertEqual(list(page.context["form"].errors), ["password2"])
+
+    def test_a_refused_field_says_why_directly_under_it(self):
+        html = self.client.post(self.signup, {"username": "newbie", "password1": "12345678"}).content.decode()
+        field, error, rules = html.index('name="password1"'), html.index("Use more than digits."), html.index("data-password-rules")
+        self.assertLess(field, error)
+        self.assertLess(error, rules)  # the cause before the help, close to the field
 
     def test_password_rules_are_unchanged(self):
         from django.contrib.auth import get_user_model
         for bad in ("short1", "password", "12345678", "newbie-1"):
-            self.client.post(self.signup, {"username": "newbie", "password1": bad, "password2": bad})
+            self.client.post(self.signup, {"username": "newbie", "password1": bad})
         self.assertFalse(get_user_model().objects.filter(username="newbie").exists())
-        response = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91", "password2": "tablestakes-91"})
+        response = self.client.post(self.signup, {"username": "newbie", "password1": "tablestakes-91"})
         self.assertRedirects(response, reverse("home"))
 
     @override_settings(SIGNUP_REQUIRES_INVITE=True)

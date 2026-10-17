@@ -6,18 +6,18 @@
 {% include "partials/entry_head.html" with row=True %}
 {% endblock %}
 {% block sheet %}
-<h1>{% if invited_to %}Join {{ invited_to }}{% else %}Create your account{% endif %}</h1>
-{% if invited_to %}<p class="entry-invite">Create your account to get in.<br>Already have an account? <a class="inline-target" href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a></p>{% endif %}
+<h1>{% if invited_to %}Join {{ invited_to }}{% else %}Create your account{% endif %}</h1>{% if invited_to.players is not None %}
+<p class="door-invited">{% if invited_to.inviter %}{{ invited_to.inviter }} invited you · {% endif %}{{ invited_to.players }} player{{ invited_to.players|pluralize }}</p>{% endif %}
+<p class="door-line">Keeps the books for your home poker game. It never moves money.</p>
+{% if invited_to %}<p class="entry-invite">Already have an account? <a class="inline-target" href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a></p>{% endif %}
 <form method="post" class="form-section stack">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
   {% if form.errors %}<div class="notice notice-bad" role="alert">Check the highlighted field{{ form.errors|length|pluralize }}.{% for error in form.non_field_errors %} {{ error }}{% endfor %}</div>{% endif %}
   {% include "partials/entry_field.html" with field=form.username %}
-  {% if reset_links %}{% include "partials/entry_field.html" with field=form.password1 toggle=True note="Forgot it later? A host of your group can send you a reset link." %}
-  {% else %}{% include "partials/entry_field.html" with field=form.password1 toggle=True note_strong="There is no password reset yet." note="Save it in your phone's password manager." %}{% endif %}
-  {% include "partials/entry_field.html" with field=form.password2 %}
-  <button type="submit" class="btn btn-primary btn-block" data-busy="Creating account…">Create account</button>
+  {% if reset_links %}{% include "partials/entry_field.html" with field=form.password1 toggle=True rules=True %}
+  {% else %}{% include "partials/entry_field.html" with field=form.password1 toggle=True rules=True note_strong="There is no password reset yet." note="Save it in your phone's password manager." %}{% endif %}
+  <button type="submit" class="btn btn-primary btn-block" data-busy="Creating account…">Create account{% if invited_to %} and join{% endif %}</button>
 </form>
 {% if not invited_to %}<p class="entry-alt">Already have an account? <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a></p>{% endif %}
-<p class="door-foot">Keeps the books for your home poker game: buy&#8209;ins, cash&#8209;outs and who pays whom. It records the game. It never moves money.</p>
 {% endblock %}
