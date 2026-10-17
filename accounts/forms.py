@@ -95,3 +95,22 @@ class NewPasswordForm(PlainWords, SetPasswordForm):
 
     def validate_password_for_user(self, user, password_field_name="new_password1"):
         super().validate_password_for_user(user, "new_password1")
+
+
+class ChangePasswordForm(NewPasswordForm):
+    """The new-password rules plus the current password. The service checks the current one, so a
+    wrong one is counted; a form refused for its new password never tests the current one."""
+
+    current_password = forms.CharField(
+        label="Current password", strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+
+    field_order = ["current_password", "new_password1", "new_password2"]
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+        self.order_fields(self.field_order)
+        self.fields["new_password1"].label = "New password"
+        self.fields["new_password1"].widget.attrs.pop("autofocus", None)  # it sits in a closed disclosure on the profile
+        keyboard_hints(self)

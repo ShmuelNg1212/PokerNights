@@ -90,3 +90,52 @@ def redeem_reset_link(token: str, password: str) -> User:
         summary=f"{user.get_username()} set a new password from a reset link",
     )
     return user
+
+
+CHANGE_TRIES = 5
+CHANGE_MINUTES = 15
+
+
+class PasswordChangeError(Exception):
+    pass
+
+
+def _refused_since(user, since):
+    from audit.models import AuditEvent
+
+    return AuditEvent.objects.filter(action="password.change_refused", actor=user, created_at__gt=since)
+
+
+@transaction.atomic
+def _change(user, current: str, new: str) -> str:
+    """The change itself, or the reason it was refused. A refusal is still written, so it is counted."""
+    user = User.objects.select_for_update().get(pk=user.pk)
+    since = timezone.now() - timedelta(minutes=CHANGE_MINUTES)
+    refused = _refused_since(user, since)
+    if refused.count() >= CHANGE_TRIES:
+        oldest = refused.order_by("created_at").values_list("created_at", flat=True)[0]
+        wait = max(1, -(-int((oldest - since).total_seconds()) // 60))
+        return f"Too many wrong passwords. Try again in {wait} minute{'' if wait == 1 else 's'}."
+    if not user.check_password(current):
+        audit.record("password.change_refused", actor=user, target=user,
+                     summary=f"{user.get_username()} gave a wrong current password")
+        return "That is not your current password."
+    user.set_password(new)
+    user.save(update_fields=["password"])
+    revoke_reset_links(user)
+    audit.record("password.changed", actor=user, target=user, summary=f"{user.get_username()} changed their password")
+    return ""
+
+
+def change_password(user, current: str, new: str) -> User:
+    """A person sets a new password, giving the current one. Live reset links stop working.
+
+    After ``CHANGE_TRIES`` wrong current passwords in ``CHANGE_MINUTES`` minutes, every try is refused
+    until the oldest of them is that old. The caller keeps the login with ``update_session_auth_hash``;
+    the account's other logins end.
+    """
+    refused = _change(user, current, new)
+    if refused:
+        raise PasswordChangeError(refused)
+    user.refresh_from_db(fields=["password"])
+    return user

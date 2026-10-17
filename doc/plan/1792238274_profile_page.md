@@ -36,11 +36,11 @@ Acceptance: a name taken in one group renames the others and names the skipped g
 
 ### 3. Change password (`accounts`)
 
-- [ ] Add `ChangePasswordForm(PlainWords, PasswordChangeForm)` in `accounts/forms.py`.
-- [ ] Add `services.change_password(user, new_password)`: set the password, `revoke_reset_links(user)`, `audit.record("account.password_changed", actor=user, ...)` with no group and no password text.
-- [ ] Add view at `account/password/` (POST). On success: `update_session_auth_hash`, redirect to the profile, message "Password changed. Other phones and browsers are logged out." On failure: keep only the errors for one redirect, with **no password values**. `keep_form` saves every field's data, so do not pass this form to it; save the errors alone.
-- [ ] The attempt limit (5 wrong current passwords per 15 minutes per user), with tests.
-- [ ] Tests: right current password changes it and keeps this session logged in; wrong current password is refused and the password is unchanged; a weak new password is refused; reset links are revoked; the audit event has no secret; the redirect page has no password value.
+- [x] Add `ChangePasswordForm` in `accounts/forms.py`: `NewPasswordForm` plus a current-password field. The service checks the current password, so each wrong one is counted.
+- [x] Add `services.change_password(user, current, new)`: set the password, `revoke_reset_links(user)`, `audit.record("account.password_changed", actor=user, ...)` with no group and no password text.
+- [ ] (Moved to task 4, because it redirects to the profile URL.) Add view at `account/password/` (POST). On success: `update_session_auth_hash`, redirect to the profile, message "Password changed. Other phones and browsers are logged out." On failure: keep only the errors for one redirect, with **no password values**. `keep_form` saves every field's data, so do not pass this form to it; save the errors alone.
+- [x] The attempt limit (5 wrong current passwords per 15 minutes per user), with tests. Each refusal is a `password.change_refused` audit event, and the count reads them. Reason: no shared cache exists, and on Vercel a memory count resets for each instance.
+- [x] Tests (service and form; the view tests are in task 4): right current password changes it and keeps this session logged in; wrong current password is refused and the password is unchanged; a weak new password is refused; reset links are revoked; the audit event has no secret; the redirect page has no password value.
 
 Acceptance: after a change, the old password fails at login and the new one works. Completion: tests pass; commit `feat: change your password from your profile`.
 
