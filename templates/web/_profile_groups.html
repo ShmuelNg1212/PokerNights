@@ -1,11 +1,11 @@
-{# One row per group on the profile. A group the person has left has no link: its pages are for members. #}
+{% load table_tags %}{# One row per group on the profile. A group the person has left has no link: its pages are for members. #}
 <ul class="stat-list profile-groups">
   {% for line in lines %}
   <li class="stat-row">
     {% if line.url %}<a class="stat-link" href="{{ line.url }}">{% else %}<div class="stat-link">{% endif %}
-      <span class="grow"><strong class="profile-group-name">{{ line.name }}</strong>
+      <span class="grow"><strong class="profile-group-name" title="{{ line.name }}">{{ line.name }}</strong>
         <span class="stat-facts">{{ line.record.sessions }} session{{ line.record.sessions|pluralize }} · won {{ line.record.win_percent }}%{% if line.left %} · You left this group{% endif %}</span></span>
-      <span class="stat-figure">{% include "web/_stat_figure.html" with figure=line.figure class="stat-net" %}</span>
+      <span class="stat-figure">{% include "web/_stat_figure.html" with figure=line.figure class="stat-net" %}</span>{% if line.url %}{% icon 'chevron-right' %}{% endif %}
     {% if line.url %}</a>{% else %}</div>{% endif %}
   </li>
   {% endfor %}

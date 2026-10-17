@@ -2037,5 +2037,11 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-names li { display: flex; gap: var(--s-3); padding: var(--s-2) 0; border-top: 1px solid var(--rule); min-width: 0; }
 .profile-names li:first-child { border-top: 0; }
 .profile-names .grow { flex: 1 1 0; min-width: 0; color: var(--muted); overflow-wrap: anywhere; }
-.profile-group-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-group-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.profile-groups .stat-row { border-radius: 0; }  /* the board's rounded row curls its hairline; these rows have none to round */
+.profile-groups .stat-link > .icon { flex: none; width: 18px; height: 18px; margin-left: calc(var(--s-1) * -1); color: var(--muted); }
+.profile-jump { display: inline-flex; align-items: center; gap: var(--s-1); min-height: var(--tap); color: var(--muted); font-size: .875rem; font-weight: 600; text-decoration: none; }
+.profile-jump .icon { width: 16px; height: 16px; }
+.profile-jump:hover { color: var(--text); }
+.profile-settings h2 { scroll-margin-top: calc(69px + var(--s-4)); }
 @media (prefers-reduced-motion: reduce) { .profile-setting > summary .icon { transition: none; } }

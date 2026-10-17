@@ -9,7 +9,8 @@
   {% account_token user %}
   <div>
     <h1>{{ own_name|default:user.get_username }}</h1>
-    <p class="muted small">Logged in as {{ user.get_username }}</p>
+    {% if own_name|lower != user.get_username|lower %}<p class="muted small">Logged in as {{ user.get_username }}</p>{% endif %}
+    <a class="profile-jump" href="#settings-heading">Name and password{% icon 'chevron-down' %}</a>
   </div>
 </header>
 {% if has_any %}

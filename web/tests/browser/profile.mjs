@@ -39,7 +39,7 @@ const results=[];const check=(name,ok,detail)=>{results.push({name,ok:!!ok});con
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgba=v=>{c.clearRect(0,0,1,1);c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data]};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});let bg=el;while(bg.parentElement&&rgba(getComputedStyle(bg).backgroundColor)[3]===0)bg=bg.parentElement;const a=lum(rgba(getComputedStyle(el).color)),b=lum(rgba(getComputedStyle(bg).backgroundColor));return Math.round((Math.max(a,b)+.05)/(Math.min(a,b)+.05)*100)/100})()`;
 const layout=`(()=>{const small=[...document.querySelectorAll('main a, main button, main summary, main input')].filter(e=>e.getClientRects().length&&!e.closest('.chart')).map(e=>[e.className||e.tagName,Math.round(e.getBoundingClientRect().height)]).filter(([,h])=>h<48);
  const name=[...document.querySelectorAll('.profile-group-name')].find(n=>n.textContent.startsWith('The Thursday'));
- return {overflow:document.documentElement.scrollWidth>innerWidth,small,ellipsis:name?getComputedStyle(name).textOverflow==='ellipsis'&&getComputedStyle(name).whiteSpace==='nowrap'&&name.getBoundingClientRect().right<=name.closest('.stat-link').getBoundingClientRect().right:null,cut:name?name.scrollWidth>name.clientWidth:null,errors:__errors}})()`;
+ return {overflow:document.documentElement.scrollWidth>innerWidth,small,ellipsis:name?getComputedStyle(name).webkitLineClamp==='2'&&name.getBoundingClientRect().height<=2*parseFloat(getComputedStyle(name).lineHeight)+1&&name.getBoundingClientRect().right<=name.closest('.stat-link').getBoundingClientRect().right&&name.title===name.textContent:null,errors:__errors}})()`;
 
 for(const width of [320,390,1280]){
  const A=await user('ben',width);await A.go('/');
@@ -53,13 +53,18 @@ for(const width of [320,390,1280]){
  const f=await A.js(layout);
  check(`${width} no horizontal overflow`,!f.overflow,f);
  check(`${width} every target is at least 48px`,f.small.length===0,f.small);
- check(`${width} a long group name fits or ends in an ellipsis`,f.ellipsis===true,f);
+ check(`${width} a long group name takes two lines at most and keeps its full name`,f.ellipsis===true,f);
  check(`${width} no script error`,f.errors.length===0,f.errors);
  check(`${width} two pesos groups, then each chips group, never a chips total`,await A.js(`(()=>{const lists=document.querySelectorAll('.profile-groups');return lists.length===2&&lists[0].children.length===2&&lists[1].children.length===2&&!document.querySelector('.player-lead').textContent.includes('chips')})()`),await A.js(`[...document.querySelectorAll('.profile-groups')].map(l=>l.children.length)`));
- for(const sel of ['.stat-label','.player-rank','.stat-tile dt','.stat-tile-note','.stat-facts','.profile-setting-value','.chart-say'])check(`${width} contrast ${sel}`,await A.js(contrast(sel))>=4.5,await A.js(contrast(sel)));
+ for(const sel of ['.profile-jump','.stat-label','.player-rank','.stat-tile dt','.stat-tile-note','.stat-facts','.profile-setting-value','.chart-say'])check(`${width} contrast ${sel}`,await A.js(contrast(sel))>=4.5,await A.js(contrast(sel)));
  await A.shot(`profile-${width}`);
  await A.js(`document.getElementById('pesos-heading').scrollIntoView()`);await sleep(300);await A.shot(`profile-groups-${width}`);
  await A.js(`scrollTo(0,document.body.scrollHeight)`);await sleep(300);await A.shot(`profile-end-${width}`);await A.js(`scrollTo(0,0)`);await sleep(200);
+ // Name and password jumps to the settings, under the header.
+ await A.tap('.profile-jump');await sleep(900);
+ check(`${width} Name and password brings the settings into view under the header`,await A.js(`(()=>{const t=document.getElementById('settings-heading').getBoundingClientRect().top,b=document.querySelector('.profile-settings-list').getBoundingClientRect().bottom;return t>=69&&b<=innerHeight})()`),await A.js(`document.getElementById('settings-heading').getBoundingClientRect().top`));
+ check(`${width} linked group rows carry a chevron`,await A.js(`[...document.querySelectorAll('.profile-groups a.stat-link')].every(a=>a.querySelector('.icon-chevron-right'))`));
+ await A.js(`scrollTo(0,0)`);await sleep(200);
  // This year keeps the screen where it was and replaces the history entry.
  await A.js(`scrollTo(0,120)`);await sleep(200);const before=await A.js('history.length');
  await A.tap('.pills a:not([aria-current])');await sleep(1200);

@@ -174,3 +174,20 @@ class ProfileNameWithoutGroupTests(TestCase):
         self.client.force_login(user)
         response = self.client.post(reverse("profile_name"), {"name": "Solo"}, follow=True)
         self.assertContains(response, "You are not in a group, so there is no name to change.")
+
+
+class ProfileWordsTests(TestCase):
+    def test_a_group_at_zero_reads_even_and_a_this_year_night_has_no_year(self):
+        user = make_user("ana")
+        club = Club()
+        club.members["Ana"] = Member.objects.create(group=club.group, user=user, display_name="Ana")
+        club.session(OCT_1, {"Ana": (500, 500), "B": (500, 500)}, unit="chips")
+        club.session(OCT_1, {"Ana": (1000, 1500), "B": (1000, 500)})
+        self.client.force_login(user)
+        from unittest import mock
+        import datetime
+
+        with mock.patch("django.utils.timezone.localdate", return_value=datetime.date(2026, 10, 17)):
+            response = self.client.get(reverse("profile"))
+        self.assertEqual(response.context["chips_groups"][0].figure.text, "Even")
+        self.assertEqual(response.context["tiles"][2].note, "Friday Game · Oct 1")
