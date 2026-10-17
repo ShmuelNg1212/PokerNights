@@ -33,20 +33,24 @@ class SessionResult:
     rebuys: int  # buy-ins beyond the first in each set
     rake: int
     seconds: int | None  # time at the table; None when a set was played before time was recorded
+    group_id: int | None = None  # filled for a person's results across groups
+    group: str = ""
 
 
-def fetch(group, unit) -> list:
-    """Every counted result of the group in one unit, as one row per player and session, oldest first."""
-    rows = counted_results().filter(group=group, unit=unit).values_list(
-        "member_id", "finalization__session__night_id", "finalization__session__night__game_date",
-        "finalization__session__night__table__name", "net", "buy_in_total", "buy_in_count", "rake_total", "play_seconds",
-    )
+FIELDS = (
+    "member_id", "finalization__session__night_id", "finalization__session__night__game_date",
+    "finalization__session__night__table__name", "net", "buy_in_total", "buy_in_count", "rake_total", "play_seconds",
+)
+
+
+def _fold(rows) -> list:
+    """One ``SessionResult`` per player and session from per-set rows, oldest first."""
     found = {}
-    for member_id, night_id, date, table, net, bought_in, count, rake, seconds in rows:
+    for member_id, night_id, date, table, net, bought_in, count, rake, seconds, *where in rows:
         key = (member_id, night_id)
         rebuys = max(count - 1, 0)
         if key not in found:
-            found[key] = [member_id, night_id, date, table, net, bought_in, rebuys, rake, seconds]
+            found[key] = [member_id, night_id, date, table, net, bought_in, rebuys, rake, seconds, *where]
             continue
         row = found[key]
         row[4] += net
@@ -55,6 +59,29 @@ def fetch(group, unit) -> list:
         row[7] += rake
         row[8] = None if row[8] is None or seconds is None else row[8] + seconds
     return sorted((SessionResult(*row) for row in found.values()), key=lambda r: (r.date, r.night_id, r.member_id))
+
+
+def fetch(group, unit) -> list:
+    """Every counted result of the group in one unit, as one row per player and session, oldest first."""
+    return _fold(counted_results().filter(group=group, unit=unit).values_list(*FIELDS))
+
+
+def _for_user(user):
+    return counted_results().filter(member__user=user, group__archived_at__isnull=True)
+
+
+def fetch_for_user(user, unit) -> list:
+    """Every counted result of one person in one unit, across their groups, oldest first.
+
+    A group they were removed from counts; an archived group does not. Each row names its group.
+    Pesos rows of several groups may be added together; chips rows may not.
+    """
+    return _fold(_for_user(user).filter(unit=unit).values_list(*FIELDS, "group_id", "group__name"))
+
+
+def units_for_user(user) -> set:
+    """The units in which the person has a counted result."""
+    return set(_for_user(user).values_list("unit", flat=True).distinct())
 
 
 def members_of(rows) -> dict:

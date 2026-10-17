@@ -18,10 +18,10 @@ Branch: `feat/profile-page` from `main`. One Conventional Commit per task. Run t
 
 ### 1. Personal stats query (`settlement`)
 
-- [ ] Add `group_id: int | None = None` and `group: str = ""` to `SessionResult` with defaults, so `fetch` stays unchanged.
-- [ ] Add `stats.fetch_for_user(user, unit)`: counted results where `member__user=user` and `group__archived_at__isnull=True`, folded per session as `fetch` does, with group id and name.
-- [ ] Add `stats.units_for_user(user)`: the units in which the person has counted results.
-- [ ] Tests (`tdd`): two groups in pesos add up; chips rows keep their group; an archived group is left out; a removed membership counts; an archived session is left out; another user's rows never appear; query count is fixed.
+- [x] Add `group_id: int | None = None` and `group: str = ""` to `SessionResult` with defaults, so `fetch` stays unchanged.
+- [x] Add `stats.fetch_for_user(user, unit)`: counted results where `member__user=user` and `group__archived_at__isnull=True`, folded per session as `fetch` does, with group id and name.
+- [x] Add `stats.units_for_user(user)`: the units in which the person has counted results.
+- [x] Tests (`tdd`): two groups in pesos add up; chips rows keep their group; an archived group is left out; a removed membership counts; an archived session is left out; another user's rows never appear; query count is fixed.
 
 Acceptance: a person in two pesos groups with nets +500 and −200 gets one record with net +300 and two groups. Completion: tests pass; commit `feat: read a person's results across groups`.
 

@@ -5,7 +5,10 @@ from types import SimpleNamespace
 
 from django.test import SimpleTestCase, TestCase
 
+from games import services as games
 from groups import services as groups
+from groups.models import Member
+from groups.tests import helpers as groups_helpers
 from ledger.models import PlayerResult
 from settlement import queries, services, stats
 from settlement.stats import Period, PlayerRecord, SessionResult
@@ -194,3 +197,53 @@ class FetchTests(TestCase):
 
 def club_name(club, member_id):
     return next(name for name, member in club.members.items() if member.pk == member_id)
+
+
+class ForUserTests(TestCase):
+    """A person's results across every group they joined: pesos add up, chips keep their group."""
+
+    def setUp(self):
+        self.user = groups_helpers.make_user("ana")
+        self.friday, self.sunday = Club(), Club()
+        self.sunday.group.name = "Sunday Game"
+        self.sunday.group.save()
+        for club in (self.friday, self.sunday):
+            club.members["Ana"] = Member.objects.create(group=club.group, user=self.user, display_name="Ana")
+
+    def test_pesos_from_two_groups_make_one_list_with_their_groups(self):
+        self.friday.session(SEP_30, {"Ana": (1000, 1500), "B": (1000, 500)})
+        self.sunday.session(OCT_1, {"Ana": (1000, 800), "C": (1000, 1200)})
+        rows = stats.fetch_for_user(self.user, "php")
+        self.assertEqual([(r.group, r.group_id, r.net) for r in rows],
+                         [("Friday Game", self.friday.group.pk, 50000), ("Sunday Game", self.sunday.group.pk, -20000)])
+        self.assertEqual(PlayerRecord(None, rows).net, 30000)
+
+    def test_chips_rows_keep_their_group_and_units_are_listed(self):
+        self.friday.session(OCT_1, {"Ana": (1000, 1500), "B": (1000, 500)})
+        self.sunday.session(OCT_1, {"Ana": (500, 600), "B": (500, 400)}, unit="chips")
+        self.assertEqual([(r.group, r.net) for r in stats.fetch_for_user(self.user, "chips")], [("Sunday Game", 100)])
+        self.assertEqual(stats.units_for_user(self.user), {"php", "chips"})
+
+    def test_a_removed_membership_counts_and_an_archived_group_or_session_does_not(self):
+        self.friday.session(SEP_30, {"Ana": (1000, 1500), "B": (1000, 500)})
+        gone = self.sunday.session(OCT_1, {"Ana": (1000, 800), "B": (1000, 1200)})
+        groups.remove_member(self.friday.host, self.friday.member("Ana").pk)
+        self.assertEqual([r.net for r in stats.fetch_for_user(self.user, "php")], [50000, -20000])
+        games.archive_night(gone.night_id, self.sunday.host)
+        self.assertEqual([r.net for r in stats.fetch_for_user(self.user, "php")], [50000])
+        self.sunday.session(OCT_1, {"Ana": (1000, 900), "B": (1000, 1100)})
+        groups.archive_group(self.sunday.host)
+        self.assertEqual([r.net for r in stats.fetch_for_user(self.user, "php")], [50000])
+        self.assertEqual(stats.units_for_user(self.user), {"php"})
+
+    def test_another_persons_results_never_appear(self):
+        self.friday.session(SEP_30, {"B": (1000, 1500), "C": (1000, 500)})
+        self.assertEqual(stats.fetch_for_user(self.user, "php"), [])
+        self.assertEqual(stats.units_for_user(self.user), set())
+
+    def test_one_query_however_many_groups_and_sessions(self):
+        for club in (self.friday, self.sunday):
+            for day in (SEP_30, OCT_1):
+                club.session(day, {"Ana": (1000, 1100), "B": (1000, 900)})
+        with self.assertNumQueries(1):
+            self.assertEqual(len(stats.fetch_for_user(self.user, "php")), 4)
