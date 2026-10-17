@@ -104,7 +104,7 @@ class NewPasswordForm(PasswordPairForm):
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
         del self.fields["new_password2"]
-        keyboard_hints(self)
+        keyboard_hints(self)  # again: new_password1 is now the last field, so its key says Go
 
 
 class ChangePasswordForm(PasswordPairForm):
