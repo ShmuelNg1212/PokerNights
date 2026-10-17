@@ -8,13 +8,19 @@
   {% if summary.lines %}
   <ul class="player-list">
     {% for line in summary.lines %}{% with p=line.participant %}
-    {% with figure=line.buy_in_total|amount:unit %}<li class="count-row is-{{ line.status }}{% if not line.has_money %} is-idle{% endif %}{% if figure|length > 11 %} count-wide{% endif %}" style="--row:{{ forloop.counter0 }}" data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
+    {% with figure=line.buy_in_total|amount:unit %}<li class="count-row is-{{ line.status }}{% if not line.has_money %} is-idle{% endif %}{% if figure|length > 11 %} count-wide{% endif %}" style="--row:{{ forloop.counter0 }}" id="count-row-{{ p.pk }}"{% if books_off and line.count_gap %} data-suspect="{% if line.count_gap_full %}full{% else %}part{% endif %}"{% endif %} data-watch="count-{{ p.pk }}" data-value="{{ line.status }}:{{ line.count.amount }}:{{ line.cashed_out }}:{{ line.entered.amount }}">
       <div class="count-main">
         {% player_token p participants %}
         <div class="count-who">
           <span class="count-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
           <button hidden type="button" class="count-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span></button>
+          {% if books_off and line.status == 'cashed_out' %}
+          {# The books are off with everyone cashed out: each row shows its own in, out and net, so the mistake can be found from the list. #}
+          <span class="count-sub count-books"><span>{{ line.buy_in_total|amount:unit }} in</span> · <span>{{ line.cashed_out|amount:unit }} out</span> <span class="count-net {{ line.cash_net|sign_class }}">{% include "web/_result_icon.html" with net=line.cash_net %}<span class="visually-hidden">net </span>{% if line.cash_net == 0 %}Even{% else %}{{ line.cash_net|signed_amount:unit }}{% endif %}</span>{% if p.status == 'left' %} · left{% endif %}</span>
+          {% if line.count_gap %}<span class="count-gap"><span>Counted {{ line.count_gap.0|amount:unit }}</span> · <span>cashed out {{ line.count_gap.1|amount:unit }}</span> · <span>{% if line.count_gap_full %}explains the gap{% else %}{{ line.count_gap_moved|amount:unit }} {{ line.count_gap_word }} than counted{% endif %}</span></span>{% endif %}
+          {% else %}
           <span class="count-sub">{% if line.has_money %}{{ line.buy_in_total|amount:unit }} in{% else %}No buy-in{% endif %}{% if p.status == 'left' %} · left{% endif %}{% if line.has_cash_out and line.status != 'cashed_out' %} · {{ line.cashed_out|amount:unit }} cashed out{% endif %}{% if line.entered %} · <span class="count-from">entered {{ line.entered.amount|amount:unit }}</span>{% endif %}</span>
+          {% endif %}
           {% if line.has_money %}<span class="visually-hidden" data-status="{% if line.entered %}entered{% else %}{{ line.status }}{% endif %}">{{ line.status_label }}{% if line.status == 'ready' %}. Counted {{ line.count.amount|amount:unit }}{% endif %}</span>{% endif %}
         </div>
         {% if me.is_host and line.has_money and line.status != 'cashed_out' %}

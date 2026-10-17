@@ -98,4 +98,4 @@ class CountTotalTests(TestCase):
         count(n, 'B', 0)
         total = queries.count_total(queries.summary(n.session))
         self.assertEqual(total.accounted, 2001)
-        self.assertEqual(total.status_text, '1 chip extra.')
+        self.assertEqual(total.status_text, '1 chip too much.')

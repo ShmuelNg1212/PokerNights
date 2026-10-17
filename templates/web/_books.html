@@ -3,12 +3,23 @@
 <h2>The books</h2>
 <section class="balance-panel books stack">
   {% if balance.counted and not balance.ok %}
-  {# Every player is cashed out and the books still differ: the exact signed amount comes before the figures. #}
-  <div class="discrepancy" role="alert">
-    <p class="discrepancy-label">The books are off by</p>
-    <p class="discrepancy-amount">{{ balance.difference|signed_amount:unit }}</p>
-    <p>{{ balance.explanation }}</p>
-    <p class="small">Next: reverse and re-enter the wrong buy-in or cash-out in a player's records{% if me.is_host %}, or record an override below if the error cannot be found{% endif %}.</p>
+  {# Every player is cashed out and the books still differ: the gap in words comes before the figures. #}
+  <div class="discrepancy" id="books-gap" data-gap="{{ balance.difference }}">
+    <div class="discrepancy-statement" role="alert">
+      <p class="discrepancy-amount">{{ balance.headline }}</p>
+      {% if me.is_host %}<p class="gap-sentence">{{ balance.gap_sentence }}</p>
+      {% else %}<p>The host is checking the records. Results are final once the books balance.</p>{% endif %}
+    </div>
+    {% if not me.is_host %}{% for line in summary.money_lines %}{% if line.participant.member_id == me.pk %}
+    <p class="discrepancy-mine small">You: {{ line.buy_in_total|amount:unit }} in · {{ line.cashed_out|amount:unit }} out</p>
+    {% endif %}{% endfor %}{% endif %}
+    {% if me.is_host %}
+    <details class="discrepancy-where" data-key="books-where">
+      <summary>Where to look</summary>
+      <ul class="discrepancy-causes small">{% for cause in balance.causes %}<li>{{ cause }}</li>{% endfor %}</ul>
+      <p class="small">Reverse and re-enter the wrong buy-in or cash-out in a player's records, or record an override below if the error cannot be found.</p>
+    </details>
+    {% endif %}
   </div>
   {% endif %}
   <dl class="set-totals books-lines">
@@ -18,11 +29,16 @@
     {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
     <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
   </dl>
-  {% if not me.is_host %}{% include "web/_count_total.html" %}{% endif %}
-  {% if balance.ok %}
+  {# Once every player is cashed out the statement above or below is the one word on the books. #}
+  {% if not me.is_host and not balance.counted %}{% include "web/_count_total.html" %}{% endif %}
+  {% if balance.overridden %}
+  {# An override closes the books without them balancing: neutral, never the balanced moment. #}
+  <div class="books-covered">
+    <span class="books-message">{{ balance.covered_text }}</span>
+  </div>
+  {% elif balance.ok %}
   <div class="books-balanced" data-balance="{{ session.pk }}">
-    <span class="books-message">{% if balance.overridden %}The books were off by {{ balance.raw_difference_text }}. A host override covers the difference.
-    {% else %}The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}{% endif %}</span>
+    <span class="books-message">The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}</span>
   </div>
   {% elif balance.counted %}
   {% elif balance.stray_cash_outs %}
@@ -46,7 +62,7 @@
     <details data-key="override">
       <summary class="small">Cannot find the error? Finalize with an override</summary>
       <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
-        <p class="small muted">Cash-outs plus rake must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
+        <p class="small muted">{% if summary.rake %}Cash-outs plus rake{% else %}Cash-outs{% endif %} must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
         <div class="field">
           <label for="absorber">Who absorbs the difference?</label>
           <select id="absorber" name="absorber">

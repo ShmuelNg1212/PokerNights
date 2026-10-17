@@ -59,14 +59,16 @@
     else if (box.dataset.players === "0") status = "No buy-ins recorded.";
     else if (box.dataset.stray === "1") status = "Cash-out without a buy-in. Check the records.";
     else if (complete && difference === 0n) status = "All counts match buy-ins.";
-    else if (difference !== 0n) status = format(difference < 0n ? -difference : difference, chips) + (difference > 0n ? " extra." : missing ? " still to account for." : " missing.");
+    else if (difference !== 0n) status = format(difference < 0n ? -difference : difference, chips) + (difference > 0n ? " too much." : missing ? " still to account for." : " missing.");
     else status = "Total matches so far; finish counting.";
     // Severity is in the colour and mark too: every count in and matching, or every count in and not.
     var tone = invalid || box.dataset.stray === "1" ? "warn" : complete ? (difference === 0n ? "good" : "warn") : "";
     if (box.dataset.players === "0") tone = "";
     // A recorded override covers the difference; typed counts put the stack check back.
     var pending = drafts + entered;
-    if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = ""; }
+    if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = "warn"; }
+    // Every player cashed out and the books still off: the panel's coral, not the preview's brass.
+    else if (!pending && "gap" in box.dataset && difference !== 0n) tone = "down";
     var shown = invalid ? "Unavailable" : format(total, chips);
     function put(key, text) { box.querySelector("[data-count-" + key + "]").textContent = text; }
     put("label", drafts ? "Preview · unsaved counts" : entered ? "Preview · players' counts" : "Confirmed counts");
@@ -74,7 +76,7 @@
     put("accounted", shown);
     put("status", status);
     box.querySelector("[data-count-status]").dataset.tone = tone;
-    var coverage = missing + " still to count." + (invalid ? " " + invalid + " invalid." : "");
+    var coverage = (missing ? missing + " still to count." : "") + (invalid ? (missing ? " " : "") + invalid + " invalid." : "");
     put("coverage", coverage);
     // The collapsed dock bar repeats the running total and the verdict, so both stay readable while typing.
     var bar = document.querySelector("[data-dock-status]");

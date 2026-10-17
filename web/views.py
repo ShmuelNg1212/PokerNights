@@ -278,6 +278,19 @@ def session_context(session, me, *, later=UNSET) -> dict:
             context["can_cash_out"] and session.state == GameSession.State.RUNNING
             and line.has_money and not line.is_cashed_out
         )
+    # Every player is cashed out and the books differ: the rows show each player's in, out and net,
+    # and mark a hand-typed cash-out that differs from the count it replaced.
+    books = context["balance"]
+    context["books_off"] = bool(books and books.counted and not books.ok)
+    if context["books_off"]:
+        # Only a record that moves the books the way they are off can explain the gap: a cash-out typed
+        # higher than its count when there is too much, lower when money is missing.
+        for pk, gap in ledger_queries.count_gaps(summary).items():
+            moved = gap[1] - gap[0]
+            if (moved > 0) == (books.difference > 0):
+                line = summary.line_for(pk)
+                line.count_gap, line.count_gap_full, line.count_gap_moved = gap, moved == books.difference, abs(moved)
+                line.count_gap_word = "more" if moved > 0 else "less"
     context["set_seconds"], context["set_running"] = clock.timers([session.pk]).get(session.pk, (None, False))
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
