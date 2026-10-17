@@ -20,7 +20,6 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 
 ## Waiting for the human
 
-- [ ] Say whether the 69 merged local branches should be deleted.
 - [ ] Create your superuser against production (command in [deployment](doc/wiki/deployment.md)), add the first host in `/admin/` → Users, and play a game on the live site.
 - [ ] Decide on the logo: `static/branding/` has the chip-and-crescent mark, horizontal, app icon and one-colour versions.
 - [ ] Clear the leftover check data from the dev database: group "Kamuning Card Club" (13 sessions), accounts `hana` and `ben`. Asked 2026-10-12; the agent's delete was refused by the permission check.
