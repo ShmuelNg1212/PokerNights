@@ -2,6 +2,11 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
+## Phone checks (not released: branch `feat/profile-page`)
+
+- [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place.
+- [ ] Change your name there: every group shows the new name. Change your password: this phone stays in, another browser is logged out.
+
 ## Phone checks (released 2026-10-17)
 
 - [ ] Override button: on a set where the books are off, under the books' figures, "Cannot find the error?" then an outlined **Finalize with an override** button. Tap it: it darkens, the chevron turns, the form opens. Tap again: it closes.
@@ -11,9 +16,9 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 ## Next (each needs its own study and plan)
 
 - [ ] Front door, from the 2026-10-09 critique: one line about the app under Sign up; shorter description on Log in (reverses a front door decision, so yours); name the inviter and player count on an invited Sign up; a live tick for password rules.
-- [ ] A "change my password" screen for a logged-in person.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`); see the [browser checks README](web/tests/browser/README.md).
+- [ ] Stats board rows: the rounded `.stat-row` curls its hairline at both ends (found in the profile critique; fixed on the profile only).
 - [ ] Stage 2, what remains: optional banker, payments before a session closes, filters on past sessions. See the [roadmap](doc/roadmap/README.md).
 - [ ] Stage 3, what remains: seasons.
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).

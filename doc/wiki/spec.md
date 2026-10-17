@@ -65,7 +65,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ### 4. Roster and history
 - Saved player roster for fast session setup. A roster player needs no login.
-- Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group.
+- Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group, or in all their groups at once from their profile; a group where the name is taken is skipped.
 - Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session.
 - Hosts archive and restore sessions and groups. An archived session is left out of the stats and the totals. Deleting is allowed only where no money was ever recorded.
 - Optional banker role: one player designated to handle cash for that night. Not built yet.
@@ -75,6 +75,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - A page per player with a running profit chart, best and worst nights, and their sessions.
 - Leaderboard ordered by profit, average, return, per hour or sessions, over all time, this year, the last three months or one month. A player needs a few sessions to hold a place.
 - Stats count closed sessions only. Pesos and chips are never mixed.
+- A profile per person, opened from their chip at the top right, shows their record across all their groups except archived ones, for all time or this year. It adds pesos across their groups. Chips are shown per group and never added across groups ([ADR 0001](../adr/0001-chips-never-add-across-groups.md)).
 - Later: seasons.
 
 ### 6. Accounts and access
@@ -82,6 +83,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - The way in is an invite link from a host. A new person signs up from it and is in the group at once.
 - A host gives a roster player their own login with a claim link. The player keeps their history.
 - A person who forgot their password asks a host for a reset link. It works once and lasts 24 hours. The app sends no email or message.
+- A logged-in person changes their password on their profile, giving the current one. Their other logins end, and live reset links stop working. Five wrong current passwords in 15 minutes stop further tries for a while.
 - The app can be added to a phone's home screen and suggests it after a login.
 
 ## Later (not built)

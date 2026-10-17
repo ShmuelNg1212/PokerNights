@@ -1090,7 +1090,7 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 | The live status | On a set, after the way back, pushed to the end of the start: the dot and "Live · 15:06"; below 360px the dot alone (the words stay for screen readers). Empty, it shows nothing |
 | A session's status | Beside the session's heading on the felt (Open, Partly settled, Settled, Archived), no longer in the bar |
 | The account token | The username's first letter on a 32px chip (`account_token`, colour `(user − 1) mod 10 + 1`) in a 48px round target at the end of the header, after the bell. Rail 2 behind it while open and on hover with a fine pointer. A native `<details>` (`#account`, permanent): without JavaScript it opens and Log out is two taps |
-| The account panel | The bell's panel: hangs from the header's right edge, 16px in, 4px below, Rail, Line edge, surface radius, soft shadow, caret at the token. A 40px chip, "Logged in as" in Bone Dim, the username at 1.0625rem/700, then a neutral full-width **Log out** with its icon, 48px. Not modal; Escape (focus back to the token), a tap outside, the token or another screen closes it; a refresh of the same page does not. The bell and the token each close the other's panel |
+| The account panel | The bell's panel: hangs from the header's right edge, 16px in, 4px below, Rail, Line edge, surface radius, soft shadow, caret at the token. A 40px chip, "Logged in as" in Bone Dim, the username at 1.0625rem/700, then a neutral full-width **Your profile** with the `user` icon and a neutral full-width **Log out** with its icon, each 48px, 8px apart (since 2026-10-17). The panel is permanent, so it carries no current-page mark. Not modal; Escape (focus back to the token), a tap outside, the token or another screen closes it; a refresh of the same page does not. The bell and the token each close the other's panel |
 | Motion | The panel opens with `shift` from the caret and closes with `leave`; a tap during the close turns it back from where it is. On a deeper or back screen change the way back's words leave 8px (140ms) towards the old screen's side and arrive 8px from the other (220ms), ease-out, as `header-back`; the header itself stays still. Getting in on a page without the brand: the token lands (`welcome-land`) as the brand's mark does. Reduced motion: none of it |
 | Height | 69px at every width, as before: the front door's sheet height (`100dvh − 69px`) and the offline notice's offset stand |
 
@@ -1111,6 +1111,18 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 | Motion | The panel rises 8px with `shift` once per set and amount, when an update brings it (not on a load or a reload, not on later polls). When an update balances the books, or an override covers them, a copy of the old panel leaves with `leave` (fixed, no taps) and the balanced reveal plays for true balance only. A fix made in two steps (reverse, then re-enter) passes through "not counted yet" and has no leave. Reduced motion: none of it |
 
 **Measured.** `books_gap.mjs` 34 checks, `books_motion.mjs` 28, `count_flow.mjs` 91, `end_set.mjs` (its slate contrast check is stale since 2026-10-04).
+
+### Profile (2026-10-17)
+
+[Plan](doc/plan/1792238274_profile_page.md). The player page's grammar for one person across groups. No new colour or font; one new icon (Lucide `user`).
+
+- **Head:** the account chip at 56px, the name as h1, "Logged in as …" only when the name and the username differ, then **Name and password** with a chevron: a Bone Dim 48px link that scrolls to the settings.
+- **Order:** period pills (All time, This year), the pesos lead panel ("Profit or loss in pesos", the figure, "N sessions in N groups"), the running chart, four tiles (Win rate, Average per session, Best night, Worst night; the notes name the group and leave out this year's year), **By group**, **Chips games**, then **Settings**.
+- **Group rows** are board rows without place or token: the name in two lines at most (full name in `title`), a muted line of sessions and share won, the signed figure, and a Bone Dim chevron on rows that link. A group the person left has no link and no chevron and says "You left this group". Zero reads "Even". The rows' separators are straight hairlines (`border-radius: 0` on these rows).
+- **Chips games** carry one sentence: "Chips are worth something different in each group, so they are not added together." There is never a chips total.
+- **Settings** is one neutral panel with two disclosure rows, 56px: a label, the current value in Bone Dim ("Ben", "Differs by group", "Change") and a chevron that turns when open. Forms use the shared field box. A refused form opens again with its local error; passwords are never shown again.
+- **Motion:** the stats screen rules (pill marker, figures in from the side, chart reveal). Reduced motion: none.
+- **Measured.** `profile.mjs`, 62 checks at 320, 390 and 1280: the panel row, no overflow, 48px targets, the long name, units never added, contrast, the jump link, the period change in place, the password error round trip, reduced motion and no JavaScript.
 
 ## Do's and Don'ts
 

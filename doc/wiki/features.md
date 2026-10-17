@@ -5,6 +5,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 ## Accounts and groups
 
 - Sign up, log in, log out.
+- Your profile (since 2026-10-17): see "Profile" below.
 - Create a group. The creator is a host.
 - A host creates an invite link (valid 7 days, 20 uses, revocable). A signed-in person who opens it becomes a player. Since 2026-10-16 every active link can be copied or shared again from Group settings (see "Invite links shown again").
 - A host adds a player to the roster by name, without a login. The host acts for that player.
@@ -656,3 +657,15 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 - **Endpoints.** `POST /alerts/subscribe/` (the browser's `PushSubscription` as JSON; an upsert by its unique endpoint) and `POST /alerts/unsubscribe/`, login and CSRF as everywhere.
 - **Switches.** `PUSH_ALERTS=False` (or a missing VAPID key) sends nothing and hides the bell and the reminder. `TABLE_NOTICES=False` hides "added you". `ARRIVAL_MARKS=False` returns the set page to the 12px rise alone. `SERVICE_WORKER=False` removes the worker and the alerts with it.
 - **Checks.** `notify/tests/` and `web/tests/test_table_alerts.py`; in a browser, `web/tests/browser/arrivals.mjs` and `alerts_bell.mjs`, each on its own fresh `seed_arrivals.py` (the phone's push service stubbed). Real delivery is checked on a phone.
+
+## Profile (2026-10-17)
+
+[Plan](../plan/1792238274_profile_page.md).
+
+- **The way in.** Tap your chip at the top right, then **Your profile**. The address is `/me/`. **Name and password** under your name goes straight to the settings.
+- **Your record across groups.** All time or This year. Pesos from all your groups add up to one figure, with a running-profit chart and four tiles (win rate, average, best night, worst night; the best and worst name their group). **By group** lists each group with its share; a group at zero reads "Even". **Chips games** lists each chips group with its own figure; chips are never added up across groups.
+- **Which groups count.** Every group you joined, except archived groups. A group you were removed from still counts, but its row is not a link, because its pages are for members.
+- **Your name.** One field renames you in every group you are in. A group where someone else has the name is skipped, and the message names it. Your login username does not change. When your names differ between groups, the row says "Differs by group" and lists them.
+- **Password.** Give the current password and a new one (the sign-up rules). This phone stays logged in; other phones and browsers are logged out; live reset links stop working. After five wrong current passwords in 15 minutes the form refuses and says how long to wait. The same change sent twice succeeds once and counts no wrong try.
+- **Checks:** `web/tests/test_profile.py`, `accounts/tests/test_change_password.py`; browser `web/tests/browser/profile.mjs` with `seed_profile.py`.
+
