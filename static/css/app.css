@@ -2024,7 +2024,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 /* Profile (2026-10-17): the account panel's way to it, and its settings rows. */
 .account-profile { gap: var(--s-2); margin: 0 0 var(--s-2); }
 .account-profile .icon { width: 18px; height: 18px; }
-.account-profile[aria-current] { background: var(--surface-2); }
 .profile-settings { margin-top: var(--s-6); }
 .profile-settings-list { padding: 0 var(--s-4); }
 .profile-setting + .profile-setting { border-top: 1px solid var(--rule); }

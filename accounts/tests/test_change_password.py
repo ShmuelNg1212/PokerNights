@@ -77,3 +77,12 @@ class ChangePasswordFormTests(TestCase):
         self.assertEqual(list(form.fields), ["current_password", "new_password1", "new_password2"])
         self.assertEqual(form.fields["current_password"].widget.attrs["autocomplete"], "current-password")
         self.assertNotIn("autofocus", form.fields["new_password1"].widget.attrs)
+
+
+class SentTwiceTests(TestCase):
+    def test_the_same_change_sent_twice_succeeds_and_counts_no_wrong_try(self):
+        user = make_user("ana")
+        services.change_password(user, OLD, NEW)
+        services.change_password(user, OLD, NEW)
+        self.assertFalse(AuditEvent.objects.filter(action="password.change_refused").exists())
+        self.assertEqual(AuditEvent.objects.filter(action="password.changed").count(), 1)

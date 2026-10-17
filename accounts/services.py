@@ -1,6 +1,7 @@
 """The only code allowed to change accounts and password reset links."""
 
 import hashlib
+import math
 import secrets
 from datetime import timedelta
 
@@ -114,9 +115,11 @@ def _change(user, current: str, new: str) -> str:
     refused = _refused_since(user, since)
     if refused.count() >= CHANGE_TRIES:
         oldest = refused.order_by("created_at").values_list("created_at", flat=True)[0]
-        wait = max(1, -(-int((oldest - since).total_seconds()) // 60))
+        wait = max(1, math.ceil((oldest - since).total_seconds() / 60))
         return f"Too many wrong passwords. Try again in {wait} minute{'' if wait == 1 else 's'}."
     if not user.check_password(current):
+        if user.check_password(new):
+            return ""  # the same change sent twice: the first one already made it
         audit.record("password.change_refused", actor=user, target=user,
                      summary=f"{user.get_username()} gave a wrong current password")
         return "That is not your current password."

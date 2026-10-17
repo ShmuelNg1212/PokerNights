@@ -5,7 +5,7 @@
   <summary class="account-button" aria-controls="account-panel">{% account_token user %}<span class="visually-hidden">Account: {{ user.username }}</span></summary>
   <div class="header-panel account-panel" id="account-panel">
     <p class="account-who">{% account_token user %}<span class="account-words"><span class="account-label">Logged in as</span><strong class="account-name">{{ user.username }}</strong></span></p>
-    <a class="btn btn-block account-profile" href="{% url 'profile' %}"{% if request.resolver_match.url_name == 'profile' %} aria-current="page"{% endif %}>{% icon 'user' %}Your profile</a>
+    <a class="btn btn-block account-profile" href="{% url 'profile' %}">{% icon 'user' %}Your profile</a>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
       <button type="submit" class="btn btn-block account-out">{% icon 'log-out' %}Log out</button>

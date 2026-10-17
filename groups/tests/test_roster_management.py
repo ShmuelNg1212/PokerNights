@@ -240,3 +240,23 @@ class RenameEverywhereTests(TestCase):
     def test_switch_off(self):
         with self.assertRaisesMessage(RuleError, "turned off"):
             services.rename_everywhere(self.user, "Benjamin")
+
+
+class RenameEverywhereRaceTests(TestCase):
+    def test_a_group_archived_after_the_ids_are_read_is_left_alone(self):
+        from unittest import mock
+
+        friday, friday_host = make_group(group_name="Friday Game")
+        sunday, sunday_host = make_group(group_name="Sunday Game")
+        ben = add_player(friday, "Ben")
+        Member.objects.create(group=sunday, user=ben.user, display_name="Ben")
+        real = services.lock_group
+
+        def archive_sunday_first(group_id, **kwargs):
+            if group_id == sunday.pk:
+                services.archive_group(sunday_host)
+            return real(group_id, **kwargs)
+
+        with mock.patch.object(services, "_lock_group", archive_sunday_first):
+            self.assertEqual(services.rename_everywhere(ben.user, "Benjamin"), ([friday], []))
+        self.assertEqual(Member.objects.get(group=sunday, user=ben.user).display_name, "Ben")

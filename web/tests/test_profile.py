@@ -166,3 +166,11 @@ class ProfilePasswordTests(TestCase):
     def test_the_errors_show_once(self):
         self.post("guess-one-91")
         self.assertNotContains(self.client.get(reverse("profile")), "not your current password")
+
+
+class ProfileNameWithoutGroupTests(TestCase):
+    def test_no_group_says_so(self):
+        user = make_user("solo")
+        self.client.force_login(user)
+        response = self.client.post(reverse("profile_name"), {"name": "Solo"}, follow=True)
+        self.assertContains(response, "You are not in a group, so there is no name to change.")

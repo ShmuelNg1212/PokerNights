@@ -72,9 +72,12 @@ def rename_everywhere(request):
         keep_form(request, PROFILE_NAME, form)
         return redirect("profile")
     renamed, skipped = done
-    name = " ".join(form.cleaned_data["name"].split())
-    if renamed or not skipped:
-        messages.success(request, f"Your name is now {name}." if renamed else f"Your name is already {name}.")
+    name = services.clean_name(form.cleaned_data["name"])
+    if renamed:
+        messages.success(request, f"Your name is now {name}.")
+    elif not skipped:
+        in_a_group = Member.objects.filter(user=request.user, status=Member.Status.ACTIVE, group__archived_at__isnull=True).exists()
+        messages.info(request, f"Your name is already {name}." if in_a_group else "You are not in a group, so there is no name to change.")
     if skipped:
         where = ", ".join(group.name for group in skipped)
         messages.info(request, f"Not changed in {where}: another {name} is in {'that group' if len(skipped) == 1 else 'those groups'}.")

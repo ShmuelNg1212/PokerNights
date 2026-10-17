@@ -110,7 +110,6 @@ class ChangePasswordForm(NewPasswordForm):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
-        self.order_fields(self.field_order)
         self.fields["new_password1"].label = "New password"
         self.fields["new_password1"].widget.attrs.pop("autofocus", None)  # it sits in a closed disclosure on the profile
         keyboard_hints(self)

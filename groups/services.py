@@ -535,9 +535,9 @@ def rename_everywhere(user, name: str) -> tuple[list, list]:
     ).order_by("group_id").values_list("group_id", flat=True)
     renamed, skipped = [], []
     for group_id in list(group_ids):
-        group = _lock_group(group_id)
+        group = _lock_group(group_id, allow_archived=True)
         member = Member.objects.filter(group=group, user=user, status=Member.Status.ACTIVE).first()
-        if member is None:
+        if member is None or group.is_archived:  # removed or archived since the ids were read
             continue
         try:
             if _rename(member, group, member, name):
