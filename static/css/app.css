@@ -2001,3 +2001,5 @@ p.alerts-text:last-child { margin-bottom: 0; }
 /* The gap panel leaving when the books balance: a copy at its old place (changes.js) that never takes a tap. */
 .books-ghost { position: fixed; z-index: 1; margin: 0; box-sizing: border-box; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .books-ghost { display: none; } }
+/* The gap after every cash-out, in the running total: the books panel's coral, words only (2026-10-17). */
+.verdict[data-tone="down"] { color: var(--down); font-weight: 600; }

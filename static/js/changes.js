@@ -18,12 +18,9 @@
     el.style.setProperty("--balance-ease", rule.easing);
     move(el.querySelector(".books-message"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.24 });
   }
-  // An override covering the difference is not the books balancing, so it gets no reveal.
-  function overridden(el) { return el.hasAttribute("data-overridden") || /override/i.test(el.textContent); }
   function update() {
     if (!region) return;
     region.querySelectorAll("[data-balance]").forEach(function (el) {
-      if (overridden(el)) return;
       var key = "balanced:" + el.dataset.balance;
       try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); } } catch (_) {}
     });
@@ -131,7 +128,8 @@
         el.style.opacity = "0"; el.style.transform = "translateY(8px)";
         move(el, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift");
       }
-    } else if (was.copy && region.querySelector("[data-balance]") && !still()) {
+    } else if (was.copy && region.querySelector("[data-balance], .books-covered") && !still()) {
+      // Balanced, or covered by an override (.books-covered, which gets no reveal): the gap leaves either way.
       leave(was.copy, was.box);
     }
   }

@@ -34,10 +34,10 @@ class BooksOffBarTests(TestCase):
         self.assertNotIn("data-dock-status", bar)
         self.assertNotIn("data-dock-coverage", bar)
 
-    def test_extra_money_says_extra(self):
+    def test_extra_money_says_too_much_as_the_panel_does(self):
         self.off(b=1200)
         _, bar = self.bar()
-        self.assertIn(">₱100 extra</span>", bar)
+        self.assertIn(">₱100 too much</span>", bar)
 
     def test_the_button_names_the_difference_and_falls_back_to_the_books(self):
         self.off()
@@ -59,7 +59,8 @@ class BooksOffBarTests(TestCase):
         self.off()
         services.record_override(self.night.session.pk, self.night.host, "Synthetic recount", "player", self.night.players["A"].pk, uuid.uuid4())
         html, bar = self.bar()
-        self.assertIn("Off by ₱100, covered by an override.", bar)
+        self.assertIn("Off by ₱100, covered by an override from", bar)
+        self.assertIn('data-tone="warn">Off by ₱100', bar)
         self.assertNotIn("data-dock-gap", bar)
         self.assertNotIn("data-books-gap", html)
 

@@ -66,7 +66,9 @@
     if (box.dataset.players === "0") tone = "";
     // A recorded override covers the difference; typed counts put the stack check back.
     var pending = drafts + entered;
-    if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = ""; }
+    if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = "warn"; }
+    // Every player cashed out and the books still off: the panel's coral, not the preview's brass.
+    else if (!pending && "gap" in box.dataset && difference !== 0n) tone = "down";
     var shown = invalid ? "Unavailable" : format(total, chips);
     function put(key, text) { box.querySelector("[data-count-" + key + "]").textContent = text; }
     put("label", drafts ? "Preview · unsaved counts" : entered ? "Preview · players' counts" : "Confirmed counts");
@@ -74,7 +76,7 @@
     put("accounted", shown);
     put("status", status);
     box.querySelector("[data-count-status]").dataset.tone = tone;
-    var coverage = missing + " still to count." + (invalid ? " " + invalid + " invalid." : "");
+    var coverage = (missing ? missing + " still to count." : "") + (invalid ? (missing ? " " : "") + invalid + " invalid." : "");
     put("coverage", coverage);
     // The collapsed dock bar repeats the running total and the verdict, so both stay readable while typing.
     var bar = document.querySelector("[data-dock-status]");

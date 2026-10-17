@@ -68,7 +68,7 @@ class CountUpStructureTests(TestCase):
         self.assertIn("See the ₱100 difference", html)
         self.assertIn('id="balance"', html)
         self.assertIn("books-known", html)
-        self.assertIn('data-tone="warn">₱100 missing.', html)
+        self.assertIn('data-tone="down">₱100 missing.', html)  # every player cashed out: the panel's coral
         self.assertNotIn("Finalize results", html)
         self.assertNotIn("disabled", html[html.index('class="host-controls'):html.index('class="host-more"')])
 
@@ -77,7 +77,7 @@ class CountUpStructureTests(TestCase):
         self.night.cash("B", 1000)
         services.record_override(self.night.session.pk, self.night.host, "Synthetic recount", "player", self.night.players["A"].pk, uuid.uuid4())
         html = self.page()
-        self.assertIn("Off by ₱100, covered by an override.", html)
+        self.assertIn("Off by ₱100, covered by an override from", html)
         self.assertNotIn("₱100 missing.", html)
         self.assertIn("Finalize results", html)
 
