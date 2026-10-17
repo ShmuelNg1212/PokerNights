@@ -34,6 +34,7 @@ from settlement import queries as settlement_queries
 from . import profile as profile_page
 from . import stats as stats_pages
 from . import prep
+from . import sessions_tab
 from . import share
 from .home import archived_groups, home_cards
 
@@ -82,13 +83,10 @@ def group(request, group_id):
     elif context["view"] == "stats":
         context.update(stats_pages.board_context(request, me, periods))
     else:
-        nights = [n for n in visible_nights(me) if n.shown_sets]
-        context["open_nights"] = [n for n in nights if not n.is_closed]
-        context["closed_nights"] = [n for n in nights if n.is_closed]
-        states = settlement_queries.settle_states([n.pk for n in context["closed_nights"]])
-        for night in context["closed_nights"]:
-            night.settle = states[night.pk]
-        context["not_settled"] = sum(1 for state in states.values() if state.status != "settled")
+        context.update(sessions_tab.sessions_context(me))
+        # The names the template used before the table cards; removed with it.
+        context["open_nights"] = context["cards"]
+        context["closed_nights"] = [n for y in context["past_years"] for m in y.months for n in m.nights]
         context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
 

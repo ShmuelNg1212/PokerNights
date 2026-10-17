@@ -18,11 +18,11 @@ Branch: `feat/sessions-tab` from `main`. One Conventional Commit per task. Run t
 
 ### 1. Sessions tab data (`web`)
 
-- [ ] Add `web/sessions_tab.py` with `sessions_context(me)`. Move the Sessions branch of `web.views.group` into it. Keep `visible_nights`.
-- [ ] Current cards. For each open session with shown sets, use the latest shown set. Add: seated members of that set (joined `Participant` rows, in join order), `at_table`, `seconds` from `clock.seconds_by_set`, `mine` (the viewer is seated), and `when` (location if set, else "Today" or the date in Asia/Manila).
-- [ ] Order the cards by band: in play and mine; in play; open, ended or finalized and mine; the rest; drafts last. Inside a band: `game_date`, then `pk`, both ascending.
-- [ ] Past rows. Use `session_nets(night_ids, [me.pk])` for the viewer's net, or `None` for "Did not play". Use `unpaid_transfers([me.pk])`, grouped by session, for the debt lines. Keep `settle_states` for the table status. Group the rows by month, newest first. Apply the year rule from OPEN QUESTION 2.
-- [ ] Tests (`tdd`): card order across all five bands; `mine` for a seated player, not for a host who is not seated; a player never gets a draft; two sessions at one table on one date both appear; viewer net and "Did not play"; two debts on one row, in each direction; a chips session keeps its unit; month groups and the year rule; the query count does not grow with 3 or 30 sessions.
+- [x] Add `web/sessions_tab.py` with `sessions_context(me)`. Move the Sessions branch of `web.views.group` into it. Keep `visible_nights`.
+- [x] Current cards. For each open session with shown sets, use the latest shown set. Add: seated members of that set (joined `Participant` rows, in join order), `at_table`, `seconds` from `clock.seconds_by_set`, `mine` (the viewer is seated), and `when` (location if set, else "Today" or the date in Asia/Manila).
+- [x] Order the cards by band: in play and mine; in play; open, ended or finalized and mine; the rest; drafts last. Inside a band: `game_date`, then `pk`, both ascending.
+- [x] Past rows. Use `session_nets(night_ids, [me.pk])` for the viewer's net, or `None` for "Did not play". Use `unpaid_transfers([me.pk])`, grouped by session, for the debt lines. Keep `settle_states` for the table status. Group the rows by month, newest first. Apply the year rule from OPEN QUESTION 2.
+- [x] Tests (`tdd`): card order across all five bands; `mine` for a seated player, not for a host who is not seated; a player never gets a draft; two sessions at one table on one date both appear; viewer net and "Did not play"; two debts on one row, in each direction; a chips session keeps its unit; month groups and the year rule; the query count does not grow with 3 or 30 sessions.
 
 Acceptance: for the study's seed, Ben gets Garage set 2 first, then Upstairs in play, then Upstairs open; Hana also gets the draft last. Completion: tests pass; commit `feat: order the sessions tab around your table`.
 
