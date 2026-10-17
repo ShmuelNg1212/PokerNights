@@ -2,7 +2,7 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (unreleased: `feat/front-door-2`)
+## Phone checks (released 2026-10-18)
 
 - [ ] Front door ([plan](doc/plan/1792250537_front_door_second_pass.md)): Log in shows the chip, the form and "Forgot your password?…" with no description. Open an invite link in a private tab: "Join {group}", "{you} invited you · N players", then the description, then the form.
 - [ ] Sign up: one password field. Type: the two rings fill as you pass 8 characters and add a letter. With the keyboard up, can you see them? Your password manager offers to save.
