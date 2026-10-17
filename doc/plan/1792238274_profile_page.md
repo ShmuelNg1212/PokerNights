@@ -6,11 +6,11 @@ Goal: a tap on the account token opens a panel with a **Profile** link. The prof
 
 ## OPEN QUESTIONS
 
-1. **Password guessing.** Login has no limit on wrong passwords today. The new "current password" field is a second place to guess.
-   - **Recommended:** limit wrong current-password attempts to 5 per 15 minutes for each user. After that, the form refuses and says when to try again. Store the count in the database cache table or on the session (no new server).
-   - Alternative: no limit, the same as login now. Add a limit for both later.
-2. **Spec change.** The rule "chips never add across groups" is new. Approve this sentence for spec.md section 5: "A person's profile adds pesos across their groups. Chips are shown per group and never added across groups." An ADR records it.
-3. **Design brief.** Confirm the shape brief in the study (section "Design shape brief"): stats first, settings below, Profile row above Log out in the account panel.
+Answered by the human on 2026-10-17 ("approve" = the recommended answers).
+
+1. **Password guessing.** Approved: limit wrong current-password attempts to 5 per 15 minutes for each user. After that, the form refuses and says when to try again.
+2. **Spec change.** Approved: spec.md section 5 gets "A person's profile adds pesos across their groups. Chips are shown per group and never added across groups." An ADR records it.
+3. **Design brief.** Approved as written in the study.
 
 ## Tasks
 
@@ -39,7 +39,7 @@ Acceptance: a name taken in one group renames the others and names the skipped g
 - [ ] Add `ChangePasswordForm(PlainWords, PasswordChangeForm)` in `accounts/forms.py`.
 - [ ] Add `services.change_password(user, new_password)`: set the password, `revoke_reset_links(user)`, `audit.record("account.password_changed", actor=user, ...)` with no group and no password text.
 - [ ] Add view at `account/password/` (POST). On success: `update_session_auth_hash`, redirect to the profile, message "Password changed. Other phones and browsers are logged out." On failure: keep only the errors for one redirect, with **no password values**. `keep_form` saves every field's data, so do not pass this form to it; save the errors alone.
-- [ ] If OPEN QUESTION 1 is approved: the attempt limit, with tests.
+- [ ] The attempt limit (5 wrong current passwords per 15 minutes per user), with tests.
 - [ ] Tests: right current password changes it and keeps this session logged in; wrong current password is refused and the password is unchanged; a weak new password is refused; reset links are revoked; the audit event has no secret; the redirect page has no password value.
 
 Acceptance: after a change, the old password fails at login and the new one works. Completion: tests pass; commit `feat: change your password from your profile`.
