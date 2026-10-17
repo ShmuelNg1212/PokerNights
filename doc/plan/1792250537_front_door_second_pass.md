@@ -47,21 +47,21 @@ A newcomer reads who invited them, how many play, and what the app does, before 
 
 ## Tasks
 
-- [ ] **1. Branch.** Create `feat/front-door-2` from `main`.
+- [x] **1. Branch.** Create `feat/front-door-2` from `main`.
   - Done when: the branch exists and the suite passes on it.
-- [ ] **2. Tests first.** In `accounts/tests/test_entry.py` and the groups invite tests:
+- [x] **2. Tests first.** In `accounts/tests/test_entry.py` and the groups invite tests:
   - Log in has no description, and has the forgot line before any failure, once after a failure.
   - Sign up has the description directly after the heading, and no `door-foot`.
   - Sign up and reset render one password field. `password1` / `new_password1` keep their names and `autocomplete="new-password"`.
   - A valid invite shows the inviter's display name and the active-member count. Inviter gone: count only. Revoked, expired or used-up invite: no line.
   - A sign-up with one password creates the account; all four server rules still refuse.
   - Done when: these tests exist and fail for the right reason.
-- [ ] **3. Server.**
+- [x] **3. Server.**
   - `accounts/signup.py`: `invited_to` returns a small value with `group`, `inviter` (or None) and `players` (or None). The claim hook returns the group only.
   - `groups/apps.py` invite hook: fill `inviter` from `Invite.created_by`'s active membership in the group, and `players` from active members. One query each.
   - `accounts/forms.py`: `SignupForm` and `NewPasswordForm` drop the second password field. Keep `PlainWords`; remove the mismatch wording only if no form uses it.
   - Done when: task 2's server tests pass.
-- [ ] **4. Templates and copy.**
+- [x] **4. Templates and copy.**
   - `partials/entry_head.html`: remove the `line` use on Log in.
   - `registration/login.html`: the forgot line moves out of the error block to under the form.
   - `accounts/signup.html`: invite line, description under the heading, foot removed.
@@ -69,19 +69,19 @@ A newcomer reads who invited them, how many play, and what the app does, before 
   - `partials/entry_field.html`: a `rules` variant that renders the two rule lines and the note.
   - Copy for the description on Sign up: "Keeps the books for your home poker game. It never moves money." The link-preview sentence stays as it is.
   - Done when: all template tests pass.
-- [ ] **5. JavaScript.** Add the rule ticks to `static/js/door.js` (no new module). Listen to `input` on the password field; update `data-met` on each rule line. Clean up on leaving the page, as `door.js` already does.
+- [x] **5. JavaScript.** Add the rule ticks to `static/js/door.js` (no new module). Listen to `input` on the password field; update `data-met` on each rule line. Clean up on leaving the page, as `door.js` already does.
   - Done when: the browser check in task 7 passes; the page works with JavaScript off.
-- [ ] **6. CSS.** In the entry section of `app.css`: the rule lines and their two states, with existing tokens only. The ticked state uses the existing positive colour and an icon. A tick change is a 120ms opacity and scale on the icon only; reduced motion turns it off.
+- [x] **6. CSS.** In the entry section of `app.css`: the rule lines and their two states, with existing tokens only. The ticked state uses the existing positive colour and an icon. A tick change is a 120ms opacity and scale on the icon only; reduced motion turns it off.
   - Done when: the detector reports no new finding; text contrast is 4.5:1 or more.
-- [ ] **7. Browser checks.** Update `entry.mjs` and `reset.mjs`; add cases to `door.mjs`. At 320 × 568, 390 × 844 and 1280 × 800:
+- [x] **7. Browser checks.** Update `entry.mjs` and `reset.mjs`; add cases to `door.mjs`. At 320 × 568, 390 × 844 and 1280 × 800:
   - no overflow; every control at least 48 px;
   - the empty invited Sign up shows its whole button without a scroll at 390 × 844;
   - typing "1234567" ticks nothing, "12345678" ticks length only, "abcd1234" ticks both; deleting unticks;
   - JavaScript off: the plain rule list shows and sign-up works.
   - Done when: these checks pass on a fresh seed.
-- [ ] **8. Regression.** Both suites (SQLite and PostgreSQL). `entry.mjs`, `reset.mjs`, `claim.mjs`, `door.mjs`, `motion.mjs`.
+- [x] **8. Regression.** Both suites (SQLite and PostgreSQL). `entry.mjs`, `reset.mjs`, `claim.mjs`, `door.mjs`, `motion.mjs`.
   - Done when: all pass, or a failure is shown to fail on `main` too and is recorded.
-- [ ] **9. Review.** `/impeccable critique` of Log in and Sign up, scored beside 29 of 40, then `audit` and `polish`; one fix batch. `security-review`, because the sign-up form changes.
+- [x] **9. Review.** `/impeccable critique` of Log in and Sign up, scored beside 29 of 40, then `audit` and `polish`; one fix batch. `security-review`, because the sign-up form changes.
   - Done when: the critique scores above 29 and the security review has no open finding.
 - [ ] **10. Sync docs.** `doc/wiki/features.md`; `spec.md` section 6 behaviour; a DESIGN.md addendum for the rule lines; PRODUCT.md (remove the stale "no password reset yet" from the entry-flow addendum and record this change); the surface brief addendum; TODO.md phone checks; remove the front-door item from Next.
   - Done when: no page describes the old form.
@@ -116,3 +116,27 @@ A physical iPhone, a real password manager's save prompt on the one-field form, 
 ## Progress and blockers
 
 2026-10-17: Study and plan written after three questions to the human, all answered as recommended. Waiting for approval.
+
+2026-10-17: approved ("approve the plan"). Built on `feat/front-door-2`.
+
+Changes from the plan:
+
+- **Task 5.** The ticks are in `static/js/password.js`, not `door.js`. `door.js` does nothing when `DOOR_MOTION` is off, and the ticks are function, not motion.
+- **No JavaScript.** The page shows the two rule lines and the note, not the old four-rule sentence. The note names the other two rules, so all four are on the page.
+- **Copy.** The note reads "When you send, we also check that it is not a common password and not like your username." The meaning is the plan's.
+- **Description copy.** As planned: "Keeps the books for your home poker game. It never moves money." It has its own class, `door-line`, so it does not take the hero's arrival delay.
+- **Forms.** `PasswordPairForm` keeps the repeat field for the profile's change form (open question 1). `NewPasswordForm` and `SignupForm` remove the second field.
+- **From the critique (task 9), one fix batch:** a refused field's error now sits directly under the field, before its help, on every entry field. A generic `.hint ul` rule indented the rule list; the list now has its own selector.
+- **Not fixed, recorded in TODO:** the username hint says "Letters and numbers, no spaces", but the server also accepts `_ . @ + -` and one character; five lines of help under the password field; the invited head's four centred lines; no line says that the account joins the group at once.
+- **Accepted review smells:** two forms remove a field they inherit; the tick SVG has a literal ink colour, as other data-URI SVGs in `app.css` do; Python's `isdigit` accepts a few characters the browser's digit test does not, so a rare tick can disagree with the server, which decides.
+
+Verification:
+
+- SQLite: 1,309 tests, 15 skips. PostgreSQL: 1,308 tests before the fix batch, no failures.
+- Browser, each on a fresh database: `door.mjs` 141 of 141 (8 more skipped without `PN_OFF_URL`), `entry.mjs` 91 of 91, `reset.mjs` 44 of 44, `claim.mjs` 30 of 30, `motion.mjs` 34 of 34.
+- `door.mjs` fails five chip-and-key timing checks in about one run of five. `main` fails the same five checks at the same rate (one of five runs), so the flake is older than this branch.
+- Critique: 33 of 40, up from 29 (two isolated assessments). Snapshot `.impeccable/critique/2026-10-17T16-12-06Z__templates-registration-login-html.md`. Detector: six `design-system-color` advisories, all false positives; the injected scan found only the accepted arrival spring.
+- Security review: no findings. All four password rules still run with one field; the inviter and the count show only for a usable invite; every value is escaped; `password.js` reads the password and stores or sends nothing.
+- Code review (standards and spec): findings handled above.
+
+Acceptance: AC1 to AC8 are met. A phone, a real password manager and a screen reader are not verified; they are on the phone checklist.
