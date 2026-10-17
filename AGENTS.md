@@ -67,7 +67,7 @@ Each kind of knowledge has one home. Look there first; write there only.
 
 ## Git
 
-- One Conventional Commit per change (`feat:`, `fix:`, `docs:`, `chore:`, `build:`, `refactor:`, `test:`). State how you scoped the work. Run the tests before each commit.
+- One Conventional Commit per change (`feat:`, `fix:`, `docs:`, `chore:`, `build:`, `refactor:`, `test:`). State how you scoped the work. Run the tests before each commit that changes code, templates, static files, settings or migrations.
 - Push only when the human says "ship" or "push"; then run the push yourself. Never force-push.
 
 ## Release
