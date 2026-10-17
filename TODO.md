@@ -2,13 +2,10 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (not released: branch `feat/profile-page`)
+## Phone checks (released 2026-10-17)
 
 - [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place.
 - [ ] Change your name there: every group shows the new name. Change your password: this phone stays in, another browser is logged out.
-
-## Phone checks (released 2026-10-17)
-
 - [ ] Override button: on a set where the books are off, under the books' figures, "Cannot find the error?" then an outlined **Finalize with an override** button. Tap it: it darkens, the chevron turns, the form opens. Tap again: it closes.
 - [ ] Books off ([plan](doc/plan/1792225143_books_off.md)): the gap reads "₱100 missing"; each cashed-out player shows in, out and net; **See the ₱100 difference** goes to the suspect player (or the books) with a brass ring. An override line is brass and names who took it.
 - [ ] Header ([plan](doc/plan/1792222305_header_redesign.md)): the way back is in the top bar with nothing under it; on a set the green dot is beside it. Your chip at top right opens username and Log out; tap outside closes it; on a set it stays open for ten seconds. A seat draw's mark is on the felt.
