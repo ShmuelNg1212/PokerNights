@@ -6,9 +6,11 @@ Goal: the group page's Sessions tab leads with live table cards, with the viewer
 
 ## OPEN QUESTIONS
 
-1. **Shape brief.** Confirm the brief in the study (section "Shape brief"), or correct it. Key points: felt cards only for sets in play; "You're playing" plus one bone **Open the table** button on your own table; New session moves to after the cards; the past rows show your result, your debts, and the table's status in muted words.
-2. **Long past list.** Recommended: this year's months stay open. Each earlier year becomes one closed disclosure ("2025 · 48 sessions"). Alternative: show every month, with no limit, as now.
-3. **Card heading.** Recommended: "Now playing" over the cards, because the cards show tables in use. Alternative: keep "Current sessions".
+Answered by the human on 2026-10-17 ("approve" = the recommended answers).
+
+1. **Shape brief.** Approved as written in the study.
+2. **Long past list.** Approved: this year's months stay open. Each earlier year becomes one closed disclosure ("2025 · 48 sessions").
+3. **Card heading.** Approved: "Now playing".
 
 ## Tasks
 
