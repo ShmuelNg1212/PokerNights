@@ -65,11 +65,15 @@ Acceptance: Profile is one tap after the token, and the header checks still pass
 
 ## Rendezvous checks
 
-- [ ] SQLite and PostgreSQL suites pass.
-- [ ] `code-review`, `verification-before-completion`.
-- [ ] `security-review` (password and user data change): no password in session drafts, logs or audit; no data from another user; CSRF on both POSTs.
-- [ ] `/impeccable critique` and `audit`, then `polish`; `break-ui` with long group names, 12 groups, huge amounts, one session.
-- [ ] Record the results here.
+Recorded 2026-10-17. The plan is frozen after this section.
+
+- [x] SQLite suite: 1291 tests pass (15 skipped, PostgreSQL-only). PostgreSQL suite: 1287 tests pass before the polish commit; the polish changed only the profile page and its tests.
+- [x] `code-review` (medium): 10 findings. Fixed 7 in `fix: harden the profile's name and password changes`: a group archived during a rename; a password change sent twice (now idempotent by state, so no `request_id`); the lockout wait rounds up; the name rule from the service; the message with no group; a stale current mark on the permanent panel; a redundant field order. Not changed: three queries instead of one (the count is fixed); the private `_errors` use (the same as `take_form`); a small period duplication.
+- [x] `verification-before-completion`: every claim above comes from a test or browser run in this session.
+- [x] `security-review`: no findings at confidence 8 or more. Checked: another user's data, login and CSRF, the sent-twice path as a password oracle, sessions after a change, passwords in the session and the audit log, XSS in group and display names.
+- [x] `/impeccable critique` (dual assessment): 29/40. Detector: clean; overlay findings were sampling errors or the body texture that the branch did not touch. Polish in `fix: polish the profile after the design critique`: a Name and password link to the settings; chevrons and straight separators on group rows; "Even" for zero; a two-line group name with its full title; best and worst nights without this year's year. Not changed: the order (stats first, approved); "Touch the chart" (shared player-page copy).
+- [x] `break-ui` cases covered by the browser seed: a 56-character group name, a group in two units, a zero result, a group left. Not covered: amounts above ₱1,000,000 on this page.
+- [x] Browser: `profile.mjs` 62/62 and `header.mjs` 106/106 at 320, 390 and 1280 px.
 
 ## Sync docs
 
