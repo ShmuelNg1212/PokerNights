@@ -28,7 +28,7 @@ Dark theme. Plain, short words that are exact about money. Pesos display as ₱1
 
 ## Evidence on Hand
 
-SPEC.md, the wiki, and the approved visual-redesign study and plan. Mockups contain synthetic demonstration data.
+doc/wiki/spec.md, the wiki, and the approved visual-redesign study and plan. Mockups contain synthetic demonstration data.
 
 ## Product Principles
 
@@ -121,7 +121,7 @@ A host can reopen a finalized set to correct a count, a cash-out or a buy-in, an
 
 ## 2026-10-11 addendum — Share results
 
-After a session is closed, any member can send it to the group chat: one picture with every player's result and who pays whom, and the same figures as text. The picture is drawn on the member's phone and leaves only through the app they choose; PokerNights sends nothing and offers no public link. SPEC.md's CSV export is not built. [Plan](doc/plan/1791701751_share_results.md).
+After a session is closed, any member can send it to the group chat: one picture with every player's result and who pays whom, and the same figures as text. The picture is drawn on the member's phone and leaves only through the app they choose; PokerNights sends nothing and offers no public link. spec.md's CSV export is not built. [Plan](doc/plan/1791701751_share_results.md).
 
 ## 2026-10-11 addendum — Home screen
 

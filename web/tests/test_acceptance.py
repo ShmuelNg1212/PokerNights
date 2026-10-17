@@ -1,4 +1,4 @@
-"""The worked example from SPEC.md and the study, driven through the pages like a user.
+"""The worked example from doc/wiki/spec.md and the study, driven through the pages like a user.
 
 A buys in for ₱1,000 and finishes with ₱1,600. B buys in for ₱1,000 and
 finishes with ₱700. C buys in for ₱500 and finishes with ₱200. With no prior

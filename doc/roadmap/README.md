@@ -1,8 +1,8 @@
 # Roadmap
 
-Each stage needs its own study, plan and approval. The design for all stages is in the [architecture study](../study/1791037419_poker_home_game_architecture.md) and its review addendum. Product intent is in [SPEC.md](../../SPEC.md).
+Each stage needs its own study, plan and approval. The design for all stages is in the [architecture study](../study/1791037419_poker_home_game_architecture.md) and its review addendum. Product intent is in [spec.md](../wiki/spec.md).
 
-| Stage | Outcome | `SPEC.md` step | Status |
+| Stage | Outcome | `spec.md` step | Status |
 |---|---|---|---|
 | 1. Game night | Buy-ins and rebuys, cash-outs with balance check, settle-up with paid marks | 1, 2, 3 | Done, 2026-10-03 |
 | 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). Reopening a set or a session built 2026-10-11. Past sessions are listed on the group page with their settled state, without filters. The banker, payments before a session closes and history filters remain |
@@ -22,7 +22,7 @@ The Rack slices 1–4 are built: shared foundation, active set and action sheets
 
 ## Decisions that changed the design
 
-- **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `SPEC.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `SPEC.md` was updated to say this on 2026-10-12, at its owner's request.
+- **2026-10-03, cash amounts and units.** Chip counts and the chip-to-peso rate were removed. A game counts in pesos or in chips, and a chips game has no peso value. This replaces `spec.md` step 2 ("final chip count", "convert chips to cash") and the "chips per buy-in" item of the first request. `spec.md` was updated to say this on 2026-10-12, at its owner's request.
 - **2026-10-04, sessions with sets.** A session holds several sets. Settle-up is once per session. Results and playing time are stored per set.
 - **2026-10-04, stats.** A "session played" is a closed session, not a set; the win rate is profitable sessions over sessions played; profit is after rake; no minimum-session threshold yet.
 - **2026-10-09, stats.** A player needs 3 sessions to be ranked in All time and This year, 2 in Last 3 months, 1 in a month. Divisions round toward zero. Per hour uses only sessions with recorded time. A chart places sessions by their order, not by the calendar. Every member can open every player's page.
@@ -63,6 +63,6 @@ These used the plan's defaults in Stage 1. They can still change.
 - **Left behind by that cleanup.** `settlement.queries.group_stats` has no page calling it; the tests use it as a second sum. Styles written for the earlier set page may remain in `static/css/app.css` where they share a class name with the new one.
 - **Stale browser scripts.** Six check scripts no longer match their screens; see the [browser checks README](../../web/tests/browser/README.md).
 
-## Later (from `SPEC.md`, not planned)
+## Later (from `spec.md`, not planned)
 
 RSVP with a waitlist, recurring games, reminders, tips, session notes, CSV export, chip denominations. (Rake, the session timer, the bankroll graph, unpaid transfers carried across sessions and sharing results as an image are built.)

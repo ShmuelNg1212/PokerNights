@@ -1,6 +1,6 @@
 # AI coding master workflow: merge plan
 
-Status: answers folded in; waiting for approval to execute. Written by `/ai-coding-master-workflow` on 2026-10-17.
+Status: executed 2026-10-17 on `chore/ai-coding-master-workflow`. Waiting for "ship". Written by `/ai-coding-master-workflow` on 2026-10-17.
 
 ## Decisions (answered 2026-10-17)
 
@@ -55,19 +55,19 @@ Source decisions: the grilling session of 2026-10-17 and the setup answers (clau
 Branch: `chore/ai-coding-master-workflow`. One commit: `chore: set up ai coding master workflow`.
 
 - [x] Fold the answers to OPEN QUESTIONS into this plan.
-- [ ] Write AGENTS.md from the draft below. Completion: `grep '{{' AGENTS.md` finds nothing.
-- [ ] Write the local CLAUDE.md as `@AGENTS.md` only. Keep it in `.git/info/exclude`.
-- [ ] `git mv SPEC.md doc/wiki/spec.md`. Update links in AGENTS.md, `doc/wiki/README.md`, `doc/roadmap/README.md`, and any other file that `grep -rn "SPEC.md"` finds outside `doc/study/` and `doc/plan/`. Frozen records keep their old links.
-- [ ] Delete `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. Trim `docs/agents/domain.md` to its domain paragraphs.
-- [ ] Wiki README: delete the Journal section. Replace "Agent workflow" with one line that points to AGENTS.md. Change the SPEC.md links.
-- [ ] TODO.md: for each completed item, check that its plan records the build and the release. Add the missing lines to the plan. Then delete the item from TODO.md. Apply decision 2. Completion: `wc -l TODO.md` is 40 or less.
-- [ ] Write the features.md plan to `doc/roadmap/plan_queue/` (decision 1).
-- [ ] Auto-memory: confirm each rule is in AGENTS.md. Delete the four note files and empty `MEMORY.md`. Turn off auto-memory for this project in `.claude/settings.local.json` (use the `update-config` skill to find the correct key).
-- [ ] Global guardrails: copy the skill's `scripts/block-destructive-git.sh` to `~/.claude/hooks/`. Merge the hook and `Bash(git push:*)` into `~/.claude/settings.json`. Keep all existing keys. Run both test commands from the skill's `reference/guardrails.md`.
-- [ ] Remove `Bash(git push origin main)` from `.claude/settings.local.json`.
-- [ ] Verify: all AGENTS.md links resolve; `DEBUG=True .venv/bin/python manage.py test` passes; the diff has only doc and config changes. Record the results here.
+- [x] Write AGENTS.md from the draft below. Completion: `grep '{{' AGENTS.md` finds nothing.
+- [x] Write the local CLAUDE.md as `@AGENTS.md` only. Keep it in `.git/info/exclude`.
+- [x] `git mv SPEC.md doc/wiki/spec.md`. Update links in AGENTS.md, `doc/wiki/README.md`, `doc/roadmap/README.md`, and any other file that `grep -rn "SPEC.md"` finds outside `doc/study/` and `doc/plan/`. Frozen records keep their old links.
+- [x] Delete `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. Trim `docs/agents/domain.md` to its domain paragraphs.
+- [x] Wiki README: delete the Journal section. Replace "Agent workflow" with one line that points to AGENTS.md. Change the SPEC.md links.
+- [x] TODO.md: for each completed item, check that its plan records the build and the release. Add the missing lines to the plan. Then delete the item from TODO.md. Apply decision 2. Completion: `wc -l TODO.md` is 40 or less.
+- [x] Write the features.md plan to `doc/roadmap/plan_queue/` (decision 1).
+- [x] Auto-memory: confirm each rule is in AGENTS.md. Delete the four note files and empty `MEMORY.md`. Turn off auto-memory for this project in `.claude/settings.local.json` (use the `update-config` skill to find the correct key).
+- [x] Global guardrails: copy the skill's `scripts/block-destructive-git.sh` to `~/.claude/hooks/`. Merge the hook and `Bash(git push:*)` into `~/.claude/settings.json`. Keep all existing keys. Run both test commands from the skill's `reference/guardrails.md`.
+- [x] Remove `Bash(git push origin main)` from `.claude/settings.local.json`.
+- [x] Verify: all AGENTS.md links resolve; `DEBUG=True .venv/bin/python manage.py test` passes; the diff has only doc and config changes. Record the results here.
 - [ ] Rendezvous: leave the verified branch (decision 3). Merge to main and push only on "ship".
-- [ ] `graphify update .`
+- [x] `graphify update .`
 
 ## Draft: AGENTS.md
 
@@ -197,3 +197,8 @@ Flag contradictions with existing decisions and with doc/wiki/spec.md. Record ne
 ## Verification and progress
 
 - 2026-10-17: read AGENTS.md, CLAUDE.md, TODO.md, the wiki, the roadmap, `docs/agents/`, the auto-memory notes, and the local settings. No files changed yet.
+- 2026-10-17 execution: AGENTS.md written from the draft; no placeholders. Local CLAUDE.md is `@AGENTS.md`. SPEC.md moved to `doc/wiki/spec.md`; live links updated in the wiki README, the roadmap, PRODUCT.md and one test docstring; frozen studies and plans keep old links. `issue-tracker.md` and `triage-labels.md` deleted; `domain.md` trimmed. Wiki README 123 to 52 lines. TODO.md 442 to 27 lines.
+- Release logs: every release hash in the old TODO.md is already in a plan or study, except `905dcc6` (override button). That change had no plan; its record is the merge commit and claude-mem.
+- Auto-memory: the four notes are in AGENTS.md (Release, Knowledge homes); files deleted; `autoMemoryEnabled: false` in `.claude/settings.local.json`. The narrow push permission was removed there.
+- Global guardrails: hook and `Bash(git push:*)` merged into `~/.claude/settings.json` (backup in the session scratchpad). The first hook matched words anywhere, so it blocked a heredoc that only mentioned a blocked command. Fixed: patterns now match only at a command start. 14 cases pass: plain push allowed; force push, hard reset, clean, forced branch delete and checkout-dot blocked; the same words inside strings and heredocs allowed.
+- Checks: all links in AGENTS.md, the wiki README, the roadmap, TODO.md and domain.md resolve. `DEBUG=True .venv/bin/python manage.py test --parallel 1`: 1,254 tests, 15 skipped, OK.
