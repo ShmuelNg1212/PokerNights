@@ -1967,3 +1967,8 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-set-line { margin: var(--s-1) 0 0; color: var(--muted); }
 .next-set-arrived::before { animation: mark-draw var(--t-sheet) var(--ease-out); }
 @media (min-width: 900px) { .next-set { grid-template-columns: 1fr minmax(220px, auto); align-items: center; } }
+
+/* Books off: motion (2026-10-17) */
+/* The gap panel leaving when the books balance: a copy at its old place (changes.js) that never takes a tap. */
+.books-ghost { position: fixed; z-index: 1; margin: 0; box-sizing: border-box; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .books-ghost { display: none; } }
