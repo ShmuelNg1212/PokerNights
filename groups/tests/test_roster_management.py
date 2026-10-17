@@ -185,3 +185,58 @@ class AddSeveralTests(TestCase):
         with self.assertRaisesMessage(RuleError, "turned off"):
             services.add_roster_players(self.host, ["Ana", "Dani"])
         self.assertEqual(len(services.add_roster_players(self.host, ["Ana"])), 1)
+
+
+class RenameEverywhereTests(TestCase):
+    """One name for every group the person is in; a group where the name is taken is skipped."""
+
+    def setUp(self):
+        self.friday, self.friday_host = make_group(group_name="Friday Game")
+        self.sunday, self.sunday_host = make_group(group_name="Sunday Game")
+        self.ben = add_player(self.friday, "Ben")
+        self.user = self.ben.user
+        self.sunday_ben = Member.objects.create(group=self.sunday, user=self.user, display_name="Benny")
+
+    def names(self):
+        return list(Member.objects.filter(user=self.user).order_by("group_id").values_list("display_name", flat=True))
+
+    def renamed(self):
+        return AuditEvent.objects.filter(action="member.renamed")
+
+    def test_every_group_takes_the_name_and_each_rename_is_audited(self):
+        renamed, skipped = services.rename_everywhere(self.user, "  Benjamin  ")
+        self.assertEqual((renamed, skipped), ([self.friday, self.sunday], []))
+        self.assertEqual(self.names(), ["Benjamin", "Benjamin"])
+        self.assertEqual(sorted(self.renamed().values_list("group_id", flat=True)), [self.friday.pk, self.sunday.pk])
+
+    def test_a_group_where_the_name_is_taken_is_skipped_and_the_others_change(self):
+        services.add_roster_player(self.sunday_host, "benjamin")
+        renamed, skipped = services.rename_everywhere(self.user, "Benjamin")
+        self.assertEqual((renamed, skipped), ([self.friday], [self.sunday]))
+        self.assertEqual(self.names(), ["Benjamin", "Benny"])
+
+    def test_the_same_name_writes_nothing(self):
+        services.rename_everywhere(self.user, "Ben")
+        services.rename_self(self.sunday_ben, "Ben")
+        before = self.renamed().count()
+        self.assertEqual(services.rename_everywhere(self.user, "Ben"), ([], []))
+        self.assertEqual(self.renamed().count(), before)
+
+    def test_removed_and_archived_memberships_are_left_alone(self):
+        services.remove_member(self.friday_host, self.ben.pk)
+        self.assertEqual(services.rename_everywhere(self.user, "Benjamin"), ([self.sunday], []))
+        self.assertEqual(self.names(), ["Ben", "Benjamin"])
+        services.archive_group(self.sunday_host)
+        self.assertEqual(services.rename_everywhere(self.user, "Benji"), ([], []))
+        self.assertEqual(self.names(), ["Ben", "Benjamin"])
+
+    def test_the_name_rule_applies(self):
+        for bad, words in (("   ", "required"), ("x" * 61, "60")):
+            with self.assertRaisesMessage(RuleError, words):
+                services.rename_everywhere(self.user, bad)
+        self.assertEqual(self.names(), ["Ben", "Benny"])
+
+    @override_settings(ROSTER_TOOLS=False)
+    def test_switch_off(self):
+        with self.assertRaisesMessage(RuleError, "turned off"):
+            services.rename_everywhere(self.user, "Benjamin")

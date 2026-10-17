@@ -27,10 +27,10 @@ Acceptance: a person in two pesos groups with nets +500 and −200 gets one reco
 
 ### 2. Rename in all groups (`groups`)
 
-- [ ] Add `services.rename_everywhere(user, name) -> (renamed, skipped)`. One `transaction.atomic()`. Lock each group of the user's active memberships in unarchived groups, in id order. Apply `_rename`. A taken name puts that group in `skipped` and writes nothing there. `ROSTER_TOOLS=False` raises `RuleError`.
-- [ ] Each rename records `member.renamed` (existing `_rename`).
-- [ ] Add view `rename_everywhere` (POST, `NameForm`) at `me/name/`. It redirects to the profile with a message: "Your name is now Ana." plus "Not changed in Friday Club: another Ana is in that group." when groups were skipped. A refused form is kept with `keep_form` for one redirect.
-- [ ] Tests: all groups renamed; one skipped; same name writes nothing and records nothing; removed and archived memberships untouched; a blank name is refused; a signed-out POST goes to login.
+- [x] Add `services.rename_everywhere(user, name) -> (renamed, skipped)`. One `transaction.atomic()`. Lock each group of the user's active memberships in unarchived groups, in id order. Apply `_rename`. A taken name puts that group in `skipped` and writes nothing there. `ROSTER_TOOLS=False` raises `RuleError`.
+- [x] Each rename records `member.renamed` (existing `_rename`).
+- [ ] (Moved to task 4, because it redirects to the profile URL.) Add view `rename_everywhere` (POST, `NameForm`) at `me/name/`. It redirects to the profile with a message: "Your name is now Ana." plus "Not changed in Friday Club: another Ana is in that group." when groups were skipped. A refused form is kept with `keep_form` for one redirect.
+- [x] Tests (service; the view tests are in task 4): all groups renamed; one skipped; same name writes nothing and records nothing; removed and archived memberships untouched; a blank name is refused; a signed-out POST goes to login.
 
 Acceptance: a name taken in one group renames the others and names the skipped group. Completion: tests pass; commit `feat: change your name in all your groups`.
 

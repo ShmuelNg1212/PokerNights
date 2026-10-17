@@ -519,6 +519,34 @@ def rename_self(actor: Member, name: str) -> Member:
     return member
 
 
+@transaction.atomic
+def rename_everywhere(user, name: str) -> tuple[list, list]:
+    """A person takes one name in every group they are in. Returns ``(renamed, skipped)`` groups.
+
+    A group where another active member has the name is skipped and written nothing. A group
+    where the name is already theirs is in neither list. Removed memberships and archived groups
+    are left alone. The groups are locked in id order, so two of these never wait on each other.
+    """
+    if not settings.ROSTER_TOOLS:
+        raise RuleError(TURNED_OFF)
+    name = clean_name(name)
+    group_ids = Member.objects.filter(
+        user=user, status=Member.Status.ACTIVE, group__archived_at__isnull=True
+    ).order_by("group_id").values_list("group_id", flat=True)
+    renamed, skipped = [], []
+    for group_id in list(group_ids):
+        group = _lock_group(group_id)
+        member = Member.objects.filter(group=group, user=user, status=Member.Status.ACTIVE).first()
+        if member is None:
+            continue
+        try:
+            if _rename(member, group, member, name):
+                renamed.append(group)
+        except RuleError:
+            skipped.append(group)
+    return renamed, skipped
+
+
 # --- Claim links ---------------------------------------------------------------
 
 CLAIM_DAYS = 7
