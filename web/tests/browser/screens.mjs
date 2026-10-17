@@ -47,7 +47,7 @@ async function walk(width){
  let r=await step('.group-home h2 a',`screens-deeper-${width}`);
  check(`${W} Your groups → group: deeper, the group's name is carried`,deeper(r)&&has(r,'group(title)')&&r.path==='/g/1/',r);
  check(`${W} the list has several sessions and one name holder`,await A.js(`document.querySelectorAll('a.session-link').length>1`)&&r.ok);
- r=await step('a.session-link');const night=r.path;
+ r=await step('.ledger a.session-link');const night=r.path;
  check(`${W} group → session: deeper, the table name is carried from the row`,deeper(r)&&has(r,'group(title)')&&/^\/n\/\d+\/$/.test(night),r);
  r=await step('.night-page a[href^="/s/"]');
  check(`${W} session → set: deeper, the name stays in the heading`,deeper(r)&&has(r,'group(title)')&&/^\/s\/\d+\/$/.test(r.path),r);
@@ -99,7 +99,7 @@ try {
 
  // Reduced motion: screens change, nothing is directed or carried.
  const R=await user('hana',390,s=>send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},s));await R.go('/');
- r=await R.hop('.group-home h2 a');const r2=await R.hop('a.session-link');
+ r=await R.hop('.group-home h2 a');const r2=await R.hop('.ledger a.session-link');
  check('reduced motion: screens change with no direction, no carried name and no movement',r.path==='/g/1/'&&/^\/n\//.test(r2.path)&&[r,r2].every(x=>x.go===''&&!x.anims.some(a=>a.n.startsWith('screen-'))&&!has(x,'group(title)')&&clean(x)),[r,r2]);
  writeFileSync(`${OUT}/screens.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}

@@ -5,6 +5,7 @@ Read-only and batched: the number of queries does not grow with the number of se
 import datetime
 from dataclasses import dataclass, field
 
+from django.urls import reverse
 from django.utils import timezone
 
 from games import clock
@@ -12,6 +13,17 @@ from games.models import GameSession, Participant
 from settlement import queries as settlement_queries
 
 State = GameSession.State
+CHIPS = 6  # seated players shown as chips on a card; the rest are "+N"
+
+
+def _destination(card) -> tuple[str, str]:
+    """Where a card leads and what its button says: the set while it is unfinished, else the session."""
+    s = card.latest_set
+    if s.state == State.RUNNING:
+        return reverse("session", args=[s.pk]), "Open the table"
+    if s.state in (State.SETUP, State.OPEN, State.RECONCILIATION):
+        return reverse("session", args=[s.pk]), f"Open set {s.set_number}"
+    return reverse("night", args=[card.pk]), "Go to the session"
 
 
 def _band(card) -> int:
@@ -42,6 +54,8 @@ def current_cards(me, nights) -> list:
         card.mine = any(p.member_id == me.pk for p in card.seated)
         card.seconds = seconds.get(card.latest_set.pk)
         card.is_today = card.game_date == today
+        card.chips, card.more_seated = card.seated[:CHIPS], max(card.at_table - CHIPS, 0)
+        card.url, card.action_label = _destination(card)
     return sorted(cards, key=lambda c: (_band(c), c.game_date, c.pk))
 
 

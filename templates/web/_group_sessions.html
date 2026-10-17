@@ -1,15 +1,10 @@
 {% load money_tags table_tags %}<section class="group-sessions" aria-labelledby="current-sessions">
-<h2 id="current-sessions">Current sessions</h2>
-{% if open_nights %}
-  {% if me.is_host and tables %}<p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>{% endif %}
-  <ul class="session-list">
-    {% for n in open_nights %}
-    <li><a class="session-link" href="{% url 'night' n.pk %}">
-      <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"D, M j" }}</span></span>
-      <span class="badge {% if n.latest_set.state == 'running' %}badge-live{% endif %}">Set {{ n.latest_set.set_number }} · {{ n.latest_set.state|state_word }}</span>
-    </a></li>
-    {% endfor %}
+<h2 id="current-sessions">Now playing</h2>
+{% if cards %}
+  <ul class="table-cards">
+    {% for card in cards %}{% include "web/_session_card.html" %}{% endfor %}
   </ul>
+  {% if me.is_host and tables %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
 {% else %}
   <div class="panel empty-state">
     <h3>No session in progress</h3>
@@ -21,17 +16,19 @@
   </div>
 {% endif %}
 </section>
-{% if closed_nights %}
-<section class="group-sessions" aria-labelledby="past-sessions">
+{% if past_years %}
+<section class="group-sessions ledger" aria-labelledby="past-sessions">
 <h2 id="past-sessions">Past sessions{% if not_settled %} <span class="muted small heading-count">{{ not_settled }} not settled</span>{% endif %}</h2>
-<ul class="session-list">
-  {% for n in closed_nights %}
-  <li><a class="session-link" href="{% url 'night' n.pk %}">
-    <span class="grow"><strong>{{ n.table.name }}</strong><span class="muted small">{{ n.game_date|date:"M j, Y" }} · {{ n.shown_sets|length }} set{{ n.shown_sets|length|pluralize }}{% if n.settle.still_to_pay %} · {{ n.settle.still_to_pay|amount:n.unit }} still to pay{% endif %}</span></span>
-    {% include "web/_settle_badge.html" with status=n.settle.status label=n.settle.label %}
-  </a></li>
-  {% endfor %}
-</ul>
+{% for year in past_years %}
+  {% if year.open %}
+    {% for month in year.months %}{% include "web/_past_month.html" %}{% endfor %}
+  {% else %}
+  <details class="ledger-year">
+    <summary>{{ year.year }} <span class="muted">· {{ year.count }} session{{ year.count|pluralize }}</span>{% icon 'chevron-down' %}</summary>
+    {% for month in year.months %}{% include "web/_past_month.html" %}{% endfor %}
+  </details>
+  {% endif %}
+{% endfor %}
 </section>
 {% endif %}
 {% if archived_nights %}

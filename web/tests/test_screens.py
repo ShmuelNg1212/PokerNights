@@ -53,7 +53,7 @@ class ScreenDepthTests(TestCase):
         home = self.main(reverse("home"))[0]
         self.assertRegex(home, r'<article class="group-home"[^>]*>\s*<header class="group-home-head">\s*<h2 id="group-\d+"><a href="/g/\d+/">')
         sessions = self.main(reverse("group", args=[self.group.pk]))[0]
-        self.assertRegex(sessions, rf'<a class="session-link" href="/n/{self.session.night_id}/">\s*<span class="grow"><strong>')
+        self.assertRegex(sessions, rf'<a class="session-link table-card[^"]*" href="/s/{self.session.pk}/">\s*<div class="table-card-head">\s*<h3 class="table-card-title"><strong>')
 
     def test_a_chip_names_its_player(self):
         html = self.main(reverse("session", args=[self.session.pk]))[0]

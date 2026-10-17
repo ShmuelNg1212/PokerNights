@@ -79,7 +79,7 @@ class Played:
         self.dina = groups.add_roster_player(self.host, "Dina")
         self.table = make_table(self.host, name="Garage")
 
-    def played(self, day, nets, unit="php"):
+    def played(self, day, nets, unit="php", close=True):
         """A closed session on ``day`` where each member in ``nets`` ends with that net, in whole pesos or chips."""
         scale, stakes = (1, {**CHIP_STAKES, "unit": "chips"}) if unit == "chips" else (100, {})
         s = make_session(self.host, table=self.table, state="open", game_date=day, **stakes)
@@ -92,8 +92,25 @@ class Played:
         for seat, net in zip(seats, nets.values()):
             ledger.record_cash_out(s.pk, self.host, seat.pk, bought + net * scale, uuid.uuid4())
         settlement.finalize(s.pk, self.host)
-        settlement.close_night(s.night_id, self.host)
+        if close:
+            settlement.close_night(s.night_id, self.host)
         return s.night
+
+
+class CardLinkTests(Played, TestCase):
+    """A card opens its set while the set is unfinished, and the session once the set is done."""
+
+    def test_links_labels_and_chips_beyond_six(self):
+        finished = self.played(datetime.date(2026, 10, 3), {self.ben: 100, self.carlo: -100}, close=False)
+        live = make_session(self.host, table=self.table, state="running", game_date=datetime.date(2026, 10, 3))
+        crowd = [self.ben, self.carlo, self.dina] + [groups.add_roster_player(self.host, n) for n in "EFGHI"]
+        games.add_participants(live.pk, self.host, [m.pk for m in crowd], uuid.uuid4())
+        cards = {card.pk: card for card in sessions_context(self.ben)["cards"]}
+        mine = cards[live.night_id]
+        self.assertEqual((mine.url, mine.action_label), (reverse("session", args=[live.pk]), "Open the table"))
+        self.assertEqual((len(mine.chips), mine.more_seated), (6, 2))
+        self.assertEqual(cards[finished.pk].url, reverse("night", args=[finished.pk]))
+        self.assertEqual(cards[finished.pk].action_label, "Go to the session")
 
 
 class PastRowsTests(Played, TestCase):

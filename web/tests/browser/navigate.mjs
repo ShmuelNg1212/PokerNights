@@ -29,7 +29,10 @@ const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
 const docs=(A,since)=>A.reqs(since,'Document').length;
 const pollCount=(A,since)=>events.slice(since).filter(e=>e.sessionId===A.s&&e.method==='Network.requestWillBeSent'&&e.params.request.url.includes('/state/')).length;
 const friday=`[...document.querySelectorAll('a.session-link')].find(a=>a.textContent.includes('Friday table'))`;
-const toSet=`document.querySelector('.night-overview a.btn-primary[href^="/s/"], .night-sets a.set-link')`;
+// A past session's row: it leads to the session page (the cards of open sessions lead to their sets).
+const pastRow=`document.querySelector('.ledger a.session-link')`;
+// From a session page to its set. The Friday card already leads to set 3 (2026-10-17), so on the set page this does nothing.
+const toSet=`(document.querySelector('.night-overview a.btn-primary[href^="/s/"], .night-sets a.set-link')||{click(){}})`;
 const back=`document.querySelector('.table-bar a')`;
 const total=`Number(document.querySelector('[data-watch=in-play]').dataset.value)`;
 const opener=`[...document.querySelectorAll('[data-sheet-open^=buy]')].at(-1)`;
@@ -42,7 +45,9 @@ try {
  await A.click(`document.querySelector('a[href$="?view=stats"]')`);await A.click(`document.querySelector('a[href$="?view=settings"]')`);
  check('group tabs by tap',await A.js(`location.search==='?view=settings'&&!!document.querySelector('#manage')&&window.__mark===1`));
  await A.click(`document.querySelector('a[href$="?view=sessions"], .pills a, nav a[href="/g/1/"]')`);await A.go('/g/1/');mark=events.length;
- await A.click(friday);check('group -> session by tap',await A.js(`location.pathname.startsWith('/n/')&&!!document.querySelector('.night-layout')&&window.__mark===1`));
+ // An open session's card leads to its set (2026-10-17); its way back leads to the session.
+ await A.click(friday);check('group -> set by tap on the card',await A.js(`location.pathname==='/s/3/'&&window.__mark===1`));
+ await A.click(back);check('set -> session by the way back',await A.js(`location.pathname.startsWith('/n/')&&!!document.querySelector('.night-layout')&&window.__mark===1`));
  await A.click(toSet);check('session -> set by tap',await A.js(`location.pathname==='/s/3/'&&!!document.getElementById('live')&&window.__mark===1`));
  await A.click(`document.querySelector('a[href="/s/3/log/"]')`);check('set -> log by tap',await A.js(`location.pathname==='/s/3/log/'&&window.__mark===1`));
  await A.click(`document.querySelector('.table-bar a, p.small a')`);await A.click(back);await A.click(back);await A.click(`document.querySelector('.table-bar a, a.brand')`);
@@ -52,15 +57,15 @@ try {
  // 1b. A tapped link answers at once and keeps the look while its screen is on the way.
  await A.go('/g/1/');
  const lit=el=>`(()=>{const el=${el};return getComputedStyle(el).backgroundColor!=='rgba(0, 0, 0, 0)'})()`;
- check('a session row at rest has no pressed look',!(await A.js(lit(friday))));
- const at=JSON.parse(await A.js(`(()=>{${friday}.scrollIntoView({block:'center'});const b=${friday}.getBoundingClientRect();return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2})})()`));
+ check('a session row at rest has no pressed look',!(await A.js(lit(pastRow))));
+ const at=JSON.parse(await A.js(`(()=>{${pastRow}.scrollIntoView({block:'center'});const b=${pastRow}.getBoundingClientRect();return JSON.stringify({x:b.left+b.width/2,y:b.top+b.height/2})})()`));
  await send('Input.dispatchMouseEvent',{type:'mousePressed',x:at.x,y:at.y,button:'left',clickCount:1},A.s);
- check('held down: the row looks pressed on the first frame',await A.js(`${friday}.matches(':active')`)&&await A.js(lit(friday)));
+ check('held down: the row looks pressed on the first frame',await A.js(`${pastRow}.matches(':active')`)&&await A.js(lit(pastRow)));
  await send('Input.dispatchMouseEvent',{type:'mouseMoved',x:5,y:5,button:'left',buttons:1},A.s);await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:5,y:5,button:'left',clickCount:1},A.s);await sleep(200);
- check('let go elsewhere: nothing pressed, same screen',await A.js(`location.pathname==='/g/1/'`)&&!(await A.js(lit(friday))));
+ check('let go elsewhere: nothing pressed, same screen',await A.js(`location.pathname==='/g/1/'`)&&!(await A.js(lit(pastRow))));
  await send('Network.emulateNetworkConditions',{offline:false,latency:700,downloadThroughput:-1,uploadThroughput:-1},A.s);
- await A.js(`${friday}.click()`);await sleep(250);
- check('tapped, screen on its way: the row stays pressed',await A.js(`location.pathname==='/g/1/'&&${friday}.classList.contains('is-going')`)&&await A.js(lit(friday)));
+ await A.js(`${pastRow}.click()`);await sleep(250);
+ check('tapped, screen on its way: the row stays pressed',await A.js(`location.pathname==='/g/1/'&&${pastRow}.classList.contains('is-going')`)&&await A.js(lit(pastRow)));
  await sleep(2200);
  check('arrived: nothing is marked',await A.js(`location.pathname.startsWith('/n/')&&!document.querySelector('.is-going,[aria-busy=true]')`));
  await A.js(`${toSet}.click()`);await sleep(250);
@@ -157,16 +162,16 @@ try {
  await A.go('/g/1/');await send('Network.clearBrowserCookies',{},A.s);await A.click(friday,1500);
  check('a tap with an expired login leads to Log in',await A.js(`location.pathname==='/accounts/login/'&&!!document.querySelector('[name=password]')`));
  await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91'`);await A.click(`document.querySelector('form.form-section [type=submit]')`,1500);
- check('and logging in returns to where the tap was going',await A.js(`location.pathname.startsWith('/n/')`));
+ check('and logging in returns to where the tap was going',await A.js(`location.pathname==='/s/3/'`));
  // 7. A screen change with the server unreachable shows the offline page.
  await A.go('/g/1/');await A.js(`navigator.serviceWorker.ready.then(()=>true)`);await A.go('/g/1/');stopServer();await sleep(900);
  await A.click(friday,2200);
  check('offline: a tap shows the offline page',await A.js(`document.title.startsWith("You're offline")&&!!document.getElementById('retry')`));
  await startServer();await A.click(`document.getElementById('retry')`,1500);
- check('offline: Try again reaches the screen',await A.js(`location.pathname.startsWith('/n/')&&!!document.querySelector('.night-layout')`));
+ check('offline: Try again reaches the screen',await A.js(`location.pathname==='/s/3/'&&!!document.getElementById('live')`));
  // 12. Without JavaScript a link is a link.
  await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);await A.go('/g/1/');mark=events.length;await A.click(friday,1200);
- check('no JavaScript: the link loads a page',await A.js(`location.pathname.startsWith('/n/')`)&&docs(A,mark)>=1);
+ check('no JavaScript: the link loads a page',await A.js(`location.pathname==='/s/3/'`)&&docs(A,mark)>=1);
  await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
  writeFileSync(`${OUT}/navigate.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close').catch(()=>{});ws.close();chrome.kill();stopServer()}

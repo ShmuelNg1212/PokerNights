@@ -1,0 +1,20 @@
+{% load clock_tags table_tags %}
+{# One session in progress on the Sessions tab: the whole card is one link. Felt only while its set is in play. #}
+{# Not a link stretched by a pseudo-element: that gives Turbo two mouseenters per tap and a second prefetch. #}
+{% with s=card.latest_set %}
+<li><a class="session-link table-card{% if s.state == 'running' %} felt{% endif %}{% if card.mine %} is-mine{% endif %}" href="{{ card.url }}">
+  <div class="table-card-head">
+    <h3 class="table-card-title"><strong>{{ card.table.name }}</strong></h3>
+    <span class="badge{% if s.state == 'running' %} badge-live{% endif %}">Set {{ s.set_number }} · {{ s.state|state_word }}</span>
+  </div>
+  <span class="table-card-when">{% if card.location %}{{ card.location }} · {% endif %}{% if card.is_today %}Today{% else %}{{ card.game_date|date:"D, M j" }}{% endif %}</span>
+  <span class="table-card-seats">
+    {% if card.chips %}<span class="token-stack">{% for p in card.chips %}{% player_token p card.seated %}{% endfor %}{% if card.more_seated %}<span class="chip-more" aria-hidden="true">+{{ card.more_seated }}</span>{% endif %}</span>{% endif %}
+    <span class="table-card-facts">{% if card.at_table %}{{ card.at_table }} at the table{% else %}Nobody seated yet{% endif %}{% if card.seconds is not None %} · {% clock_value card.seconds True %}{% endif %}</span>
+  </span>
+  {% if card.mine %}
+  <span class="table-card-you"><span class="you-dot" aria-hidden="true"></span>{% if s.state == 'running' %}You're playing{% else %}You're at this table{% endif %}</span>
+  <span class="btn btn-primary btn-block">{{ card.action_label }}</span>
+  {% endif %}
+</a></li>
+{% endwith %}

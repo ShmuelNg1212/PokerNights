@@ -95,27 +95,25 @@ class SettledIndicatorPagesTests(TestCase):
         self.client.force_login(self.host.user)
 
     def test_past_sessions_row_and_heading_follow_the_paid_marks(self):
+        # The status is quiet words on the row's date line; colour belongs to the viewer's own debts (2026-10-17).
         page = self.client.get(self.group_url)
-        self.assertContains(page, '<span class="badge badge-warn">Unsettled</span>')
-        self.assertContains(page, f"1 set · {format_amount(self.first.amount + self.second.amount, 'php')} still to pay")
+        self.assertContains(page, f'1 set · <span class="ledger-status">{format_amount(self.first.amount + self.second.amount, 'php')} still to pay</span>')
         self.assertContains(page, "1 not settled")
         services.mark_paid(self.night_id, self.host, self.first.pk, uuid.uuid4())
         page = self.client.get(self.group_url)
-        self.assertContains(page, '<span class="badge badge-warn">Partly settled</span>')
-        self.assertContains(page, f"1 set · {format_amount(self.second.amount, 'php')} still to pay")
+        self.assertContains(page, f'<span class="ledger-status">Partly paid, {format_amount(self.second.amount, 'php')} still to pay</span>')
         services.mark_paid(self.night_id, self.host, self.second.pk, uuid.uuid4())
         page = self.client.get(self.group_url)
-        self.assertContains(page, 'class="badge badge-good"')
+        self.assertContains(page, "icon-check")
         self.assertContains(page, "Settled</span>")
         self.assertNotContains(page, "still to pay")
         self.assertNotContains(page, "not settled")
         services.mark_unpaid(self.night_id, self.host, self.second.pk, "wrong tap")
-        self.assertContains(self.client.get(self.group_url), "Partly settled")
+        self.assertContains(self.client.get(self.group_url), "Partly paid")
 
     def test_player_sees_the_same_status(self):
         self.client.force_login(add_player(self.group, "reader").user)
         page = self.client.get(self.group_url)
-        self.assertContains(page, "Unsettled")
         self.assertContains(page, "still to pay")
 
     def test_session_page_heading_names_the_status(self):

@@ -84,9 +84,6 @@ def group(request, group_id):
         context.update(stats_pages.board_context(request, me, periods))
     else:
         context.update(sessions_tab.sessions_context(me))
-        # The names the template used before the table cards; removed with it.
-        context["open_nights"] = context["cards"]
-        context["closed_nights"] = [n for y in context["past_years"] for m in y.months for n in m.nights]
         context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
 

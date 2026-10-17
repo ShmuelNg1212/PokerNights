@@ -19,33 +19,35 @@ const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${
 const size=(A,width)=>send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.body).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
 const rows=`[...document.querySelectorAll('[aria-labelledby=past-sessions] .session-link')]`;
+// The row's words, as the session's top bar names the same status (the row's pill became quiet words on 2026-10-17).
+const word=a=>`(t=>t==='Settled'?'Settled':t.startsWith('Partly paid')?'Partly settled':'Unsettled')(${a}.querySelector('.ledger-status').textContent.trim())`;
 try {
  const A=await user('hana'),P=await user('ben');
  for(const width of [320,390,1280]){await size(A,width);await A.go('/g/1/');
   check('list fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));
   check('rows are 48px targets '+width,await A.js(`${rows}.length>0&&${rows}.every(a=>a.getBoundingClientRect().height>=48)`));
-  check('every row has one status badge '+width,await A.js(`${rows}.every(a=>a.querySelectorAll('.badge').length===1&&/^(Settled|Partly settled|Unsettled)$/.test(a.querySelector('.badge').textContent.trim()))`));
-  check('badge stays inside its row '+width,await A.js(`${rows}.every(a=>a.querySelector('.badge').getBoundingClientRect().right<=a.getBoundingClientRect().right+1)`));
+  check('every row states its status in words, with no pill '+width,await A.js(`${rows}.every(a=>!!a.querySelector('.ledger-status')&&!a.querySelector('.badge'))`));
+  check('the status stays inside its row '+width,await A.js(`${rows}.every(a=>a.querySelector('.ledger-status').getBoundingClientRect().right<=a.getBoundingClientRect().right+1)`));
   await A.shot('settled-list-'+width);}
  await size(A,390);
- const seen=await A.js(`${rows}.map(a=>a.querySelector('.badge').textContent.trim())`);console.log('  statuses',JSON.stringify(seen));
+ const seen=await A.js(`${rows}.map(a=>${word('a')})`);console.log('  statuses',JSON.stringify(seen));
  check('all three statuses appear in the fixture',['Settled','Partly settled','Unsettled'].every(s=>seen.includes(s)));
- check('settled rows carry a check and no amount',await A.js(`${rows}.filter(a=>a.querySelector('.badge').textContent.trim()==='Settled').every(a=>!!a.querySelector('.badge .icon')&&!a.textContent.includes('still to pay'))`));
- check('other rows carry the amount and no check',await A.js(`${rows}.filter(a=>a.querySelector('.badge').textContent.trim()!=='Settled').every(a=>!a.querySelector('.badge .icon')&&/still to pay/.test(a.textContent))`));
- check('heading counts the sessions not settled',await A.js(`(()=>{const n=${rows}.filter(a=>a.querySelector('.badge').textContent.trim()!=='Settled').length;return document.querySelector('#past-sessions').textContent.includes(n+' not settled')})()`));
- check('contrast settled badge',await A.js(contrast('.session-link .badge-good'))>=4.5);check('contrast warn badge',await A.js(contrast('.session-link .badge-warn'))>=4.5);check('contrast heading count',await A.js(contrast('.heading-count'))>=4.5);
+ check('settled rows carry a check and no amount',await A.js(`${rows}.filter(a=>${word('a')}==='Settled').every(a=>!!a.querySelector('.ledger-status .icon')&&!a.querySelector('.ledger-status').textContent.includes('still to pay'))`));
+ check('other rows carry the amount and no check',await A.js(`${rows}.filter(a=>${word('a')}!=='Settled').every(a=>!a.querySelector('.ledger-status .icon')&&/still to pay/.test(a.querySelector('.ledger-status').textContent))`));
+ check('heading counts the sessions not settled',await A.js(`(()=>{const n=${rows}.filter(a=>${word('a')}!=='Settled').length;return document.querySelector('#past-sessions').textContent.includes(n+' not settled')})()`));
+ check('contrast status words',await A.js(contrast('.ledger-status'))>=4.5);check('contrast heading count',await A.js(contrast('.heading-count'))>=4.5);
  // The list and each session page agree.
- const list=await A.js(`${rows}.map(a=>[a.getAttribute('href'),a.querySelector('.badge').textContent.trim()])`);let agree=true;
+ const list=await A.js(`${rows}.map(a=>[a.getAttribute('href'),${word('a')}])`);let agree=true;
  for(const [href,status] of list){await A.go(href);const bar=await A.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()`);if(bar!==status){agree=false;console.log('  mismatch',href,status,bar)}}
  check('top bar of every session matches its row',agree);
  // Marking the last transfer paid turns the row to Settled; undo turns it back.
  const partly=list.find(([,s])=>s==='Partly settled')[0];await A.go(partly);
  for(let i=0;i<12&&await A.js(`!!document.querySelector('form[action$="/paid/"] button')`);i++)await A.click(`document.querySelector('form[action$="/paid/"] button')`);
  check('the heading says Settled after the last paid mark',await A.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()==='Settled'&&!!document.querySelector('.night-overview .felt .row > .badge .icon')`));await A.shot('settled-night-390');
- await A.go('/g/1/');check('row turns Settled',await A.js(`document.querySelector('a.session-link[href="${partly}"] .badge').textContent.trim()==='Settled'`));
+ await A.go('/g/1/');check('row turns Settled',await A.js(`${word(`document.querySelector('a.session-link[href="${partly}"]')`)}==='Settled'`));
  await A.go(partly);await A.click(`document.querySelector('form[action$="/unpaid/"] button')`);await A.go('/g/1/');
- check('row returns to Partly settled after undo',await A.js(`document.querySelector('a.session-link[href="${partly}"] .badge').textContent.trim()==='Partly settled'`));
- await P.go('/g/1/');check('player sees the statuses',await P.js(`${rows}.length>0&&${rows}.every(a=>a.querySelectorAll('.badge').length===1)`));
+ check('row returns to Partly settled after undo',await A.js(`${word(`document.querySelector('a.session-link[href="${partly}"]')`)}==='Partly settled'`));
+ await P.go('/g/1/');check('player sees the statuses',await P.js(`${rows}.length>0&&${rows}.every(a=>!!a.querySelector('.ledger-status'))`));
  await size(A,1280);await A.go(partly);await A.shot('settled-night-1280');
  writeFileSync(`${OUT}/settled.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}

@@ -604,6 +604,51 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .session-link strong, .session-link .small { display:block; }
 .session-link:hover strong { color:var(--brass); }
 .session-link .badge { white-space:normal; }
+
+/* Sessions tab (2026-10-17): a card per table in use, then the viewer's past nights by month.
+   The whole card is one link; its "button" is a label inside it. Felt only for a set in play. */
+.group-sessions:has(.table-cards) { container:sessions / inline-size; }
+.table-cards { list-style:none; margin:0; padding:0; display:grid; gap:var(--s-3); }
+.table-cards > li { display:flex; min-width:0; }
+@container sessions (min-width:700px) {
+  .table-cards { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .table-cards > li:only-child { grid-column:1 / -1; }
+}
+.table-cards .table-card { flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; flex-wrap:nowrap; gap:var(--s-2); min-width:0; min-height:0; padding:var(--s-4); border:1px solid var(--rule); border-radius:var(--r-sheet); background-color:var(--surface); color:var(--text); -webkit-tap-highlight-color:transparent; }
+.table-cards .table-card.felt { margin:0; border-color:transparent; background-color:var(--felt); }
+.table-cards .table-card.is-mine:not(.felt) { border-color:var(--line); }
+.table-cards .table-card:is(:active, .is-going) { border-radius:var(--r-sheet); background-color:var(--surface); box-shadow:inset 0 0 0 100vmax var(--pressed); }
+.table-cards .table-card.felt:is(:active, .is-going) { background-color:var(--felt); }
+@media (hover: hover) and (pointer: fine) { .table-cards .table-card:hover .table-card-title strong { color:var(--brass); } }
+.table-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--s-3); }
+.table-card-title { margin:0; min-width:0; font-size:1.375rem; line-height:1.2; font-weight:800; font-stretch:88%; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.table-card-head .badge { flex:none; margin-top:3px; }
+.table-card-when { color:var(--muted); overflow-wrap:anywhere; }
+.table-card-seats { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-2) var(--s-3); margin-top:var(--s-1); }
+.table-card-facts { color:var(--muted); font-variant-numeric:tabular-nums; }
+.table-card.felt :is(.table-card-when, .table-card-facts) { color:var(--felt-ink); }
+.table-card.felt :is(.token-stack .chip, .chip-more) { box-shadow:0 0 0 3px var(--felt); }
+.table-card-you { display:flex; align-items:center; gap:var(--s-2); margin-top:var(--s-1); font-weight:700; }
+.you-dot { flex:none; width:10px; height:10px; border-radius:50%; background:var(--bone); box-shadow:0 0 0 3px color-mix(in oklch, var(--bone) 25%, transparent); }
+.table-card > .btn { margin-top:var(--s-1); }
+.new-session { margin:var(--s-4) 0 0; }
+
+.ledger-month { margin:var(--s-5) 0 0; font-size:.9375rem; font-weight:700; color:var(--muted); }
+.ledger > h2 + .ledger-month { margin-top:var(--s-3); }
+.ledger .session-link { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--s-1) var(--s-3); }
+.ledger-meta { display:block; color:var(--muted); font-size:.875rem; }
+.ledger-status .icon { width:14px; height:14px; margin-right:2px; vertical-align:-2px; color:var(--up); }
+.ledger-net { display:inline-flex; align-items:center; gap:var(--s-1); justify-self:end; font-size:1.25rem; font-weight:750; font-stretch:var(--w-money); white-space:nowrap; }
+.ledger-net .icon { width:1rem; height:1rem; }
+.ledger-absent { color:var(--muted); font-size:.9375rem; font-weight:600; font-stretch:100%; }
+.ledger-debts { grid-column:1 / -1; display:flex; flex-direction:column; gap:2px; }
+.ledger-debt { font-size:.9375rem; font-weight:600; }
+.ledger-debt b { font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.ledger-year { margin-top:var(--s-4); border-top:1px solid var(--rule); }
+.ledger-year > summary { display:flex; align-items:center; gap:var(--s-2); min-height:var(--tap); font-weight:700; cursor:pointer; list-style:none; }
+.ledger-year > summary::-webkit-details-marker { display:none; }
+.ledger-year > summary .icon { margin-left:auto; color:var(--muted); transition:rotate var(--t-fast) var(--ease-out); }
+.ledger-year[open] > summary .icon { rotate:180deg; }
 .group-page .grow { flex-basis:160px; overflow-wrap:anywhere; }
 .group-page input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }

@@ -1,0 +1,13 @@
+{% load money_tags table_tags %}
+{# One month of past sessions: the viewer's net on each row, and what they still pay or receive. #}
+<h3 class="ledger-month">{{ month.first_day|date:"F Y" }}</h3>
+<ul class="session-list">
+  {% for n in month.nights %}
+  <li><a class="session-link" href="{% url 'night' n.pk %}">
+    <span class="grow"><strong>{{ n.table.name }}</strong><span class="ledger-meta">{{ n.game_date|date:"D, M j" }} · {{ n.shown_sets|length }} set{{ n.shown_sets|length|pluralize }} · <span class="ledger-status">{% if n.settle.status == 'settled' %}{% icon 'check' %}Settled{% else %}{% if n.settle.status == 'partly' %}Partly paid, {% endif %}{{ n.settle.still_to_pay|amount:n.unit }} still to pay{% endif %}</span></span></span>
+    {% if n.my_net is None %}<span class="ledger-net ledger-absent">Did not play</span>
+    {% else %}<span class="ledger-net amount {{ n.my_net|sign_class }}">{% if n.my_net > 0 %}{% icon 'arrow-up-right' %}{% elif n.my_net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %}{% if n.my_net %}{{ n.my_net|signed_amount:n.unit }}{% else %}Even{% endif %}</span>{% endif %}
+    {% if n.debts %}<span class="ledger-debts">{% for d in n.debts %}<span class="ledger-debt {% if d.i_pay %}minus{% else %}plus{% endif %}">{% if d.i_pay %}You pay {{ d.other.display_name }}{% else %}{{ d.other.display_name }} pays you{% endif %} <b>{{ d.amount|amount:n.unit }}</b></span>{% endfor %}</span>{% endif %}
+  </a></li>
+  {% endfor %}
+</ul>

@@ -100,7 +100,7 @@ for(const width of (process.env.PN_BELL?[]:(process.env.PN_WIDTHS||'320,390,1280
  check(`${width} the way back closes it`,!(await A.js(facts)).open&&await A.js(`location.pathname==='/n/1/'||location.pathname.startsWith('/n/')`));
  // The header stays still between screens; the way back's words move 8px with a fade.
  await A.go(pages.group);
- await A.js(`__vt.length=0;document.querySelector('a.session-link').click()`);await sleep(900);
+ await A.js(`__vt.length=0;document.querySelector('.ledger a.session-link').click()`);await sleep(900);
  let r=await A.js('__vt.at(-1)');
  check(`${width} deeper: the words come from the right; the header stays`,r&&r.go==='deeper'&&r.anims.some(a=>a.p==='new(header-back)'&&a.n==='back-in-right')&&r.anims.some(a=>a.p==='old(header-back)'&&a.n==='back-out-left')&&!r.anims.some(a=>/^(old|new)\(site-header\)/.test(a.p)&&a.n),r);
  await A.js(`__vt.length=0;document.querySelector('.table-bar > a').click()`);await sleep(900);

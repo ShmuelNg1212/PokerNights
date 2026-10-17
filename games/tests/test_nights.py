@@ -85,9 +85,11 @@ class NightPageTests(TestCase):
     def test_draft_session_is_hidden_from_players_and_strangers(self):
         self.client.force_login(self.ben.user)
         self.assertEqual(self.client.get(self.url).status_code, 404)
-        self.assertNotContains(self.client.get(reverse("group", args=[self.group.pk])), self.url)
+        # The Sessions tab's card for an unfinished set leads to the set (2026-10-17).
+        draft_url = reverse("session", args=[self.first.pk])
+        self.assertNotContains(self.client.get(reverse("group", args=[self.group.pk])), draft_url)
         self.client.force_login(self.host.user)
-        self.assertContains(self.client.get(reverse("group", args=[self.group.pk])), self.url)
+        self.assertContains(self.client.get(reverse("group", args=[self.group.pk])), draft_url)
         self.assertEqual(self.client.get(self.url).status_code, 200)
         services.transition(self.first.pk, self.host, "open")
         self.client.force_login(self.ben.user)
