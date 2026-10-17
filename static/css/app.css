@@ -1967,3 +1967,14 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-set-line { margin: var(--s-1) 0 0; color: var(--muted); }
 .next-set-arrived::before { animation: mark-draw var(--t-sheet) var(--ease-out); }
 @media (min-width: 900px) { .next-set { grid-template-columns: 1fr minmax(220px, auto); align-items: center; } }
+
+/* Books off: the rows (2026-10-17) */
+/* A cash-out is not a win: during count-up its amount is Bone. Only the signed net, with its arrow, takes Up or Down. */
+.count-row.is-cashed_out .count-outcome .num { color: var(--bone); }
+.count-books > span, .count-gap > span { white-space: nowrap; }
+.count-books .count-net { font-weight: 700; }
+.count-books .count-net .icon { width: 14px; height: 14px; margin-right: 2px; stroke-width: 2.5; vertical-align: -2px; }
+.count-gap { color: var(--brass); font-size: .8125rem; font-weight: 600; line-height: 1.3; font-variant-numeric: tabular-nums; }
+/* The changed-row vocabulary: a short Brass mark under the name, never a coloured side border. */
+.count-row[data-suspect] .count-who { padding-bottom: 6px; }
+.count-row[data-suspect] .count-who::after { content: ""; position: absolute; left: 0; bottom: 0; width: 2.5rem; height: 2px; border-radius: var(--r-bar); background: var(--brass); pointer-events: none; }

@@ -94,6 +94,11 @@ class PlayerLine:
         """What this player's result is based on: cash-outs plus any host override."""
         return self.cashed_out + self.adjustment
 
+    @property
+    def cash_net(self) -> int:
+        """Cashed out minus bought in, before any host override: the figure a cashed-out row shows while the books are off."""
+        return self.cashed_out - self.buy_in_total
+
 
 @dataclass
 class Summary:
@@ -365,3 +370,31 @@ def night_has_records(night) -> bool:
         model.objects.filter(session__night=night).exists()
         for model in (BuyIn, FinalCount, CashOut, CashOutBatch, BalanceAdjustment, Finalization)
     )
+
+
+def count_gaps(found: Summary) -> dict:
+    """Cashed-out players whose final cash-out differs from the count it replaced: ``{participant id: (counted, cashed out)}``.
+
+    A batch cash-out records its count's amount and keeps the count (``CashOut.final_count``), so it never
+    differs. A final cash-out typed by hand voids the count in force (``ledger.services.record_cash_out``):
+    that count stays stored, voided at or after the cash-out was recorded, with no cash-out of its own.
+    A count cleared or voided before the cash-out was not in force and is not compared.
+    """
+    typed = {}
+    for line in found.cashed_out_lines:
+        final = next((c for c in reversed(line.cash_outs) if c.kind == CashOut.Kind.FINAL), None)
+        if final is not None and final.final_count_id is None:
+            typed[line.participant.pk] = final
+    if not typed:
+        return {}
+    replaced = {}
+    counts = FinalCount.objects.filter(
+        session=found.session, participant_id__in=typed, voided_at__isnull=False, cash_out__isnull=True
+    ).order_by("version")
+    for count in counts:
+        if count.voided_at >= typed[count.participant_id].created_at:
+            replaced[count.participant_id] = count
+    return {
+        pk: (count.amount, typed[pk].amount)
+        for pk, count in replaced.items() if count.amount != typed[pk].amount
+    }
