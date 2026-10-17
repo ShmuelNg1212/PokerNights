@@ -49,3 +49,9 @@ Run the tests before each commit. Use Conventional Commits. Do not push or deplo
 9. Screens are dark by default, single-column on phones, with 48 px action targets. The active set uses two columns from 900 px. Follow DESIGN.md. Money figures appear at their accepted value; reduced motion disables movement.
 10. A session is `GameNight`; a set is `GameSession`. Money, counts, timers and results belong to a set. Settle-up, transfers, payments and the unit belong to a session.
 11. App dependencies point one way: `accounts → groups → games → ledger → settlement → web`. `audit` and `notify` are leaves.
+
+## Agent skills
+
+Before using Matt Pocock's engineering workflow, read `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, and `docs/agents/domain.md`.
+
+Follow this repository's two-phase workflow. A ready ticket is input to a plan; execution requires human approval of that completed plan.

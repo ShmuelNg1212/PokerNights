@@ -117,3 +117,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | Several new names at once on Add players | [study](../study/1791948615_new_names_at_once.md) | [plan](../plan/1791948616_new_names_at_once.md) | Done, released 2026-10-14 as `f51f4ac` |
 | A splash screen for the installed app | [study](../study/1791953082_launch_splash.md) | [plan](../plan/1791953083_launch_splash.md) | Done, released 2026-10-14 as `c222173`; accepted 2026-10-14 |
 | The arrival on every app open | [study](../study/1791956780_arrival_on_launch.md) | [plan](../plan/1791956781_arrival_on_launch.md) | Done, released 2026-10-14 as `e254122`; accepted 2026-10-14 |
+
+## Agent workflow
+
+Matt Pocock’s engineering skills use [GitHub Issues](../../docs/agents/issue-tracker.md), the [triage label mapping](../../docs/agents/triage-labels.md), and [domain documentation rules](../../docs/agents/domain.md). The two-phase approval workflow in [AGENTS.md](../../AGENTS.md) applies to every change.

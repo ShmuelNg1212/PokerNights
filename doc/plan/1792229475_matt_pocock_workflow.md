@@ -1,6 +1,6 @@
 # Matt Pocock workflow setup: plan
 
-Status: awaiting-approval.
+Status: done. Human approval: user instructed “execute” on 2026-10-17 after reviewing this plan.
 
 ## Goal and sources
 
@@ -19,12 +19,12 @@ The user selected GitHub Issues and default labels on 2026-10-17. These choices 
 
 Use branch `chore/matt-pocock-workflow`. One implementation commit: `chore: configure Matt Pocock engineering workflow`. No plugin reinstall, app changes, issue creation, migration, push, or deployment. Add only missing GitHub labels. Leave existing labels unchanged. Revert the configuration commit to undo local setup; do not automatically delete remote labels that may have been used.
 
-- [ ] Record explicit approval of this completed plan.
-- [ ] Verify GitHub access and a supported route for reading and creating repository labels. `gh` is currently absent; use available tools or an authenticated CLI route. Report any remaining access limitation accurately.
-- [ ] Write the three configuration files and entry points using the exact drafts below. Preserve surrounding instructions. Completion: both entry points resolve to tracked configuration.
-- [ ] Read existing GitHub labels and create missing configured labels. Completion: all five names are verified on the repository.
-- [ ] Verify links, inspect the intended diff, and run the project test suite before committing. No new tests are needed for prose configuration.
-- [ ] Rendezvous: merge the verified branch locally to main, preserve unrelated files, and sync the wiki index with a short link to the workflow configuration. Record checks, commit, and any limitations here. Do not push.
+- [x] Record explicit approval of this completed plan.
+- [x] Verify GitHub access and a supported route for reading and creating repository labels. `gh` is currently absent; use available tools or an authenticated CLI route. Report any remaining access limitation accurately.
+- [x] Write the three configuration files and entry points using the exact drafts below. Preserve surrounding instructions. Completion: both entry points resolve to tracked configuration.
+- [x] Read existing GitHub labels and create missing configured labels. Completion: all five names are verified on the repository.
+- [x] Verify links, inspect the intended diff, and run the project test suite before committing. No new tests are needed for prose configuration.
+- [x] Rendezvous: merge the verified branch locally to main, preserve unrelated files, and sync the wiki index with a short link to the workflow configuration. Record checks, commit, and any limitations here. Do not push.
 
 ## Draft: entry points
 
@@ -96,4 +96,8 @@ Run domain-modeling during terminology discussions or architectural decisions. U
 
 - 2026-10-17: inspected the installed setup skill, templates, writing-for-agents guidance, working agreement, local entry points, and repository state.
 - Initial default test command stopped because SECRET_KEY was unset. `DEBUG=True .venv/bin/python manage.py test` passed: 1,254 tests, 15 skipped, no system-check issues.
-- No configuration or remote changes have been made. Existing Obsidian and critique changes are outside scope.
+- Before execution: no configuration or remote changes had been made. Existing Obsidian and critique changes remain outside scope.
+
+- 2026-10-17 execution: authenticated Chrome session provided repository-label access. Created needs-triage, needs-info, ready-for-agent, and ready-for-human; preserved the existing wontfix label and all other labels. GitHub now shows 14 labels. No gh installation was needed.
+- Wrote the three files exactly as drafted, added both entry points, and linked the wiki. Verified draft equality, entry-point uniqueness, link resolution, and diff whitespace. Local CLAUDE.md remains ignored. Screenshot evidence: /private/tmp/pokernights-workflow-labels.png.
+- Final verification: `DEBUG=True .venv/bin/python manage.py test` passed again: 1,254 tests, 15 skipped; no system-check issues. Documentation review found no application changes or changes to existing workflow rules. Rendezvous uses a local fast-forward to main with the implementation commit `chore: configure Matt Pocock engineering workflow`. No push or deployment.
