@@ -21,8 +21,9 @@ class EntryPagesTests(TestCase):
         page = self.client.get(self.login)
         self.assertContains(page, 'class="page entry-page"')
         self.assertContains(page, "branding/logo-mark.svg")
-        self.assertContains(page, LINE)
+        self.assertNotContains(page, LINE)  # a returning player needs only the form
         self.assertContains(page, "<h1>Log in</h1>")
+        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.", count=1)
         self.assertContains(page, 'class="btn btn-primary btn-block"')
         self.assertNotContains(page, "site-header")
         self.assertNotContains(page, "You're invited")
@@ -38,6 +39,24 @@ class EntryPagesTests(TestCase):
             self.assertContains(page, words)
             self.assertNotContains(page, "<Card>")
             self.assertContains(page, f'name="next" value="{self.invite_url}"')
+
+    def test_invited_signup_names_the_inviter_and_counts_the_players(self):
+        self.host.display_name = "Hana <B>"
+        self.host.save()
+        add_player(self.group, "ben")
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '<p class="door-invited">Hana &lt;B&gt; invited you · 2 players</p>', html=False)
+
+    def test_invited_signup_counts_the_players_when_the_inviter_has_left(self):
+        add_player(self.group, "ben")
+        self.host.status = self.host.Status.REMOVED
+        self.host.save()
+        page = self.client.get(self.signup, {"next": self.invite_url})
+        self.assertContains(page, '<p class="door-invited">1 player</p>', html=False)
+        self.assertNotContains(page, "invited you")
+
+    def test_a_plain_signup_names_nobody(self):
+        self.assertNotContains(self.client.get(self.signup), "door-invited")
 
     def test_login_link_to_signup_keeps_the_invite(self):
         page = self.client.get(self.login, {"next": self.invite_url})
@@ -65,7 +84,7 @@ class EntryPagesTests(TestCase):
         page = self.client.post(self.login, {"username": "hana2", "password": "wrong"})
         self.assertContains(page, 'class="notice notice-bad" role="alert"', count=1)
         self.assertContains(page, "That username and password don&#x27;t match. Check capital letters.")
-        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.")
+        self.assertContains(page, "Forgot your password? Ask a host of your group for a reset link.", count=1)
         self.assertContains(page, 'value="hana2"')
         self.assertNotContains(page, 'value="wrong"')
 
@@ -88,8 +107,9 @@ class EntryPagesTests(TestCase):
         self.assertNotContains(page, "for verification")
         self.assertContains(page, 'autocomplete="new-password"', count=2)
         self.assertContains(page, "data-password-toggle", count=1)
-        self.assertContains(page, LINE)  # an invited newcomer lands here first
-        self.assertContains(page, "It never moves money.")
+        # A newcomer reads what the app does before the form, not under the button.
+        self.assertContains(page, '<h1>Create your account</h1>\n<p class="door-line">Keeps the books for your home poker game. It never moves money.</p>', html=False)
+        self.assertNotContains(page, "door-foot")
         self.assertNotContains(page, "site-header")
 
     def test_refused_signup_names_the_broken_rule_and_keeps_the_username(self):

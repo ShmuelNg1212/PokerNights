@@ -30,18 +30,18 @@ class DoorFrameTests(TestCase):
         # The task is inside the sheet; the brand is above it.
         self.assertLess(page.index('class="door-hero"'), page.index('class="door-sheet"'))
         self.assertLess(page.index('class="door-sheet"'), page.index("<h1>Log in</h1>"))
-        self.assertLess(page.index("Keeps the books"), page.index('class="door-sheet"'))
+        self.assertNotIn("Keeps the books", page)
 
-    def test_sign_up_has_the_row_hero_and_the_description_at_the_foot(self):
+    def test_sign_up_has_the_row_hero_and_the_description_under_the_heading(self):
         page = self.client.get(self.signup).content.decode()
         self.assertIn('class="door-hero door-hero-row"', page)
-        self.assertLess(page.index("Create account</button>"), page.index("It never moves money."))
-        self.assertIn('class="door-foot"', page)
+        self.assertLess(page.index("<h1>"), page.index("It never moves money."))
+        self.assertLess(page.index("It never moves money."), page.index("<form"))
 
     def test_an_invited_sign_up_leads_with_the_group(self):
         page = self.client.get(self.signup, {"next": self.invite_url})
         self.assertContains(page, "<h1>Join Kamuning Card Club</h1>")
-        self.assertContains(page, "Create your account to get in.")
+        self.assertContains(page, "invited you")
         self.assertContains(page, "Already have an account?")
         self.assertNotContains(page, "<h1>Create your account</h1>")
 

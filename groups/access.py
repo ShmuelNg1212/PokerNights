@@ -54,9 +54,18 @@ def invite_vouches(request, next_path: str) -> bool:
 
 
 def invite_group_name(request, next_path: str):
-    """The group behind a usable invite address, for the entry pages. The link holder may know it."""
+    """The group behind a usable invite address, who sent it and how many play, for the entry pages.
+
+    The link holder may know these. The inviter is named only while still active in the group.
+    """
+    from accounts.signup import Invitation
+
     invite = _usable_invite_at(next_path)
-    return invite.group.name if invite else None
+    if invite is None:
+        return None
+    active = Member.objects.filter(group=invite.group, status=Member.Status.ACTIVE)
+    inviter = active.filter(user=invite.created_by_id).values_list("display_name", flat=True).first()
+    return Invitation(group=invite.group.name, inviter=inviter, players=active.count())
 
 
 def join_from_invite(request, user, next_path: str):

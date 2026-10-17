@@ -835,7 +835,6 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 .entry-name { margin: 0; font-size: 2rem; font-weight: 800; font-stretch: 88%; letter-spacing: -.01em; line-height: 1.1; }
 .entry-line { margin: 0; max-width: 42ch; color: var(--muted); text-wrap: balance; }
 .door-sheet { flex: 1; margin: 0 -16px; padding: var(--s-5) var(--s-4) calc(var(--s-5) + env(safe-area-inset-bottom)); border-top: 1px solid var(--rule); border-radius: var(--r-sheet) var(--r-sheet) 0 0; background: var(--surface); box-shadow: 0 -12px 48px oklch(0 0 0 / .5); }
-.door-foot { margin: var(--s-5) 0 0; padding-top: var(--s-4); border-top: 1px solid var(--rule); color: var(--muted); font-size: .9rem; text-align: center; text-wrap: balance; }
 @media (max-height: 700px) {
   .door-hero { padding: var(--s-5) 0 20px; }
   .door-hero:not(.door-hero-row, .door-hero-compact) .door-mark { width: 72px; }
@@ -848,6 +847,8 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 }
 .entry-page h1 { margin: 0; font-size: 1.375rem; font-weight: 700; text-align: center; text-wrap: balance; }
 .entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
+.door-invited { margin: var(--s-2) 0 0; color: var(--text); font-weight: 600; text-align: center; text-wrap: balance; }
+.door-line { margin: var(--s-2) auto 0; max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-note { margin: var(--s-3) auto var(--s-5); max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-page .form-section { margin: var(--s-4) 0 0; padding: 0; border-top: 0; }
 .entry-page .form-section .btn-block { margin-top: var(--s-4); }
@@ -923,7 +924,7 @@ legend { padding: 0; }
 .entry-page .hint { font-size: .9rem; }
 .hint-note { display: block; margin-top: 2px; }
 .hint-note strong { color: var(--text); font-weight: 600; }
-.entry-forgot { margin: 0 0 var(--s-2); }
+.entry-forgot { margin: var(--s-4) 0 0; text-align: center; text-wrap: balance; }
 .skip-link:focus { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-4); border-radius: var(--r-btn); }
 @media (min-width: 900px) and (min-height: 1000px) { .entry-page { padding-top: 8vh; } }
 /* A link inside a sentence keeps a 48px touch height without stretching the line. */
@@ -1350,7 +1351,6 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 [data-arrival=full] .door-sheet > form > :nth-child(5) { animation-delay: 160ms; }
 [data-arrival=full] .door-sheet > form > :nth-child(n+6) { animation-delay: 200ms; }
 [data-arrival=full] .door-sheet > form ~ * { animation-delay: 260ms; }
-[data-arrival=full] .door-sheet > .door-foot { animation-delay: 300ms; }
 [data-arrival=short] :is(.door-hero, .door-sheet) { animation: door-short 240ms var(--ease-out) backwards; }
 /* One place: between Log in and Sign up the chip, the name and the sheet are the same things and move.
    Getting in, the chip is the top bar's mark. A screen with a top bar has two marks, and only one may hold the name.
