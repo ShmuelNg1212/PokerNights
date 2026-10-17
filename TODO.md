@@ -7,7 +7,7 @@ Short active items. The detail is in the linked documents.
 The header: the way back and the account token ([plan](doc/plan/1792222305_header_redesign.md)): one bar instead of two on every deeper page, and the username and Log out behind the person's own chip.
 
 - [x] Build it on `feat/header-redesign`. Built 2026-10-17. 1,224 tests pass on SQLite and in the build-like run; `header.mjs` 103 of 103, and the screens, in-place, alerts, door, welcome, seat draw, carried, night and settled checks pass.
-- [ ] Say when to merge and release it.
+- [x] Say when to merge and release it. Released 2026-10-17 as `a673477` (previous production commit `8ca7972`). Live check four minutes after the push: `/healthz` 200 and pages load the new `account.js` (`06c03b32dd`). No migration.
 - [ ] After release, on your phone: open a group, a session and a set. The way back is in the top bar and nothing sits under it; on the set the green dot is beside it. Tap your chip at the top right: your username and Log out. Tap outside it; it closes. On a set, leave it open for ten seconds; it stays open. Draw seats on a set; the mark is on the felt.
 
 Table alerts in the header ([plan](doc/plan/1792163903_alerts_bell.md), [study](doc/study/1792163902_alerts_bell.md)): a bell in the header replaces the panel at the foot of Your groups, and its panel opens by itself once per app session for a phone whose alerts are off.

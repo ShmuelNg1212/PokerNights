@@ -55,3 +55,7 @@ Mode: Operate. Visual authority: the built Rack in DESIGN.md. Shaped with the de
 ## Verification after release
 
 On the phone, in the installed app: see TODO.md.
+
+## Release (2026-10-17)
+
+Merged and pushed as `a673477` (previous production commit `8ca7972`). Four minutes later: `/healthz` 200, and the login page loads `account.js?v=06c03b32dd`. Rollback: revert `a673477` on `main`; no migration.
