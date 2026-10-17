@@ -1096,6 +1096,22 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 
 **Measured.** `header.mjs`, 103 checks at 320, 390 and 1280 (and 3 more with the bell): one row on five pages, the targets, the ellipsis, the live status, the panel in and out of every way, the refresh, the words between screens, Log out, reduced motion and no JavaScript.
 
+### When the books do not balance (2026-10-17)
+
+[Plan](doc/plan/1792225143_books_off.md). From a critique (24/40): the gap was loud but gave no help finding it. This revises "Count-up" and "Count-up in one line" for the state where every player is cashed out and the books differ, and the override state. No new colour, font or asset.
+
+| Part | Rule |
+|---|---|
+| The panel (`#books-gap`, `data-gap`) | The gap in words as the figure: "₱100 missing" or "₱100 too much" (2.5rem, Down), then one sentence ("Cash-outs are ₱100 below buy-ins", rake named only when collected), balanced lines. The causes and the fix sit in a closed "Where to look". About 140px at 390. A player reads "The host is checking the records. Results are final once the books balance." and their own "You: ₱1,000 in · ₱900 out" |
+| One statement | Once every player is cashed out the panel is the one statement: players lose the "Confirmed counts" block; the host bar's line is the short coral "₱100 missing" (`data-dock-gap`), and the running total from 900px turns Down (`data-tone="down"`, words only). "N still to count." appears only while someone is |
+| The rows | While the books are off, each cashed-out row says "₱1,000 in · ₱900 out" and the signed net with its arrow ("Even" at zero). The cash-out amount is Bone during count-up, never Up (a loss was green). A row whose hand-typed final cash-out differs from the count it replaced is `data-suspect`: a 2px Brass mark under the name and "Counted ₱1,000 · cashed out ₱900" in Brass |
+| The host bar's button | "See the ₱100 difference" goes to the first `[data-suspect]` row, else the panel: scrolled into the band between the header and the bar, focused, and answered by a 2px Brass ring that fades (opacity only), also when it was already in view. Without JavaScript it is the anchor |
+| An override | Not success: no green double rule and no balanced reveal. A Brass rule and Bone words, "Off by ₱100, covered by an override from Miguel." (`.books-covered`); the verdicts in the bar and the review are warn (Brass) with the same words |
+| The override link | Quiet, in place, Bone Dim at .875rem with a chevron, 48px |
+| Motion | The panel rises 8px with `shift` once per set and amount, when an update brings it (not on a load or a reload, not on later polls). When an update balances the books, or an override covers them, a copy of the old panel leaves with `leave` (fixed, no taps) and the balanced reveal plays for true balance only. A fix made in two steps (reverse, then re-enter) passes through "not counted yet" and has no leave. Reduced motion: none of it |
+
+**Measured.** `books_gap.mjs` 34 checks, `books_motion.mjs` 28, `count_flow.mjs` 91, `end_set.mjs` (its slate contrast check is stale since 2026-10-04).
+
 ## Do's and Don'ts
 
 ### Do:

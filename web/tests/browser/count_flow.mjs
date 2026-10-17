@@ -151,7 +151,7 @@ try {
  await A.go(`/s/${M.off}/`);
  check('books off: the main button leads to the difference',await A.js(`${shownIn('#live .next-action')}.map(e=>e.textContent.trim()).join()`)==='See the ₱100 difference'&&await A.js(`${primaries}.length`)===0);
  check('books off: the balance check is directly under the overview, its red panel in the first screen',await A.js(`(()=>{const a=document.querySelector('.felt').getBoundingClientRect(),e=document.querySelector('.end-balance').getBoundingClientRect(),b=document.querySelector('.discrepancy').getBoundingClientRect();return e.top>=a.bottom&&e.top<a.bottom+40&&b.bottom<=${DOCK}.getBoundingClientRect().top+2})()`));
- check('books off: the verdict is marked',await A.js(`document.querySelector('[data-dock-status]').dataset.tone==='warn'&&/₱100 missing/.test(document.querySelector('[data-dock-status]').textContent)`));
+ check('books off: the bar says the gap in the panel\'s coral, nothing about counting',await A.js(`(()=>{const g=document.querySelector('[data-dock-gap]');return !!g&&g.textContent.trim()==='₱100 missing'&&!document.querySelector('[data-dock-status]')&&!/still to count/.test(document.querySelector('.dock-next').textContent)})()`));
  check('books off: no disabled button',await A.js(`!${DOCK}.querySelector('button:disabled')`));
  await sleep(300);await A.shot('count-flow-off-390');
  await A.tap(`${DOCK}.querySelector('a.next-action')`,700);
@@ -162,7 +162,7 @@ try {
  check('books balance: the balance line is directly under the overview',await A.js(`(()=>{const a=document.querySelector('.felt').getBoundingClientRect(),b=document.querySelector('.books-balanced').getBoundingClientRect();return b.top>a.bottom&&b.bottom<${DOCK}.getBoundingClientRect().top})()`));
  await sleep(300);await A.shot('count-flow-balanced-390');
  await A.go(`/s/${M.override}/`);
- check('override: the verdict says it is covered, and Finalize is offered',await A.js(`document.querySelector('[data-dock-status]').textContent==='Off by ₱100, covered by an override.'&&document.querySelector('[data-dock-status]').dataset.tone===''`)&&await A.js(`JSON.stringify(${primaries})`)==='["Finalize results"]');
+ check('override: the verdict says it is covered, and Finalize is offered',await A.js(`/^Off by ₱100, covered by an override from /.test(document.querySelector('[data-dock-status]').textContent)&&document.querySelector('[data-dock-status]').dataset.tone==='warn'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Finalize results"]');
  await A.go(`/s/${M.empty}/`);
  check('no buy-in: no main button, and the line that says why',await A.js(`${shownIn('#live .next-action')}.length===0&&/nothing to finalize/.test(document.getElementById('batch-why').textContent)`));
 

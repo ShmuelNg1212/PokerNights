@@ -41,7 +41,7 @@ const send=(method,params={},sessionId)=>new Promise((ok,no)=>{wait.set(++id,[ok
 const LOG=`window.__errors=[];addEventListener('error',e=>__errors.push(e.message));window.__runs=[];window.__frames=[];
 addEventListener('DOMContentLoaded',()=>{
  if(window.Motion){const a=Motion.animate;Motion.animate=function(el,k,o){__runs.push({el:(el.className&&el.className.baseVal===undefined?el.className:el.tagName)+'',keys:Object.keys(k)});return a.apply(this,arguments)}}
- document.addEventListener('live:updated',()=>{const g=document.querySelector('#live #books-gap, #live .discrepancy'),c=document.querySelector('.books-ghost'),b=document.querySelector('[data-balance]');
+ document.addEventListener('live:updated',()=>{const g=document.querySelector('#live #books-gap, #live .discrepancy'),c=document.querySelector('.books-ghost'),b=document.querySelector('[data-balance], .books-covered');
   const f={gap:!!g,inline:g?[g.style.opacity,g.style.transform]:null,amount:g?g.querySelector('.discrepancy-amount').textContent.trim():null,
    ghost:c?{pos:getComputedStyle(c).position,pe:getComputedStyle(c).pointerEvents,op:c.style.opacity,hidden:c.getAttribute('aria-hidden'),role:c.getAttribute('role'),id:c.id}:null,
    balance:b?b.classList.contains('balance-arrived'):null};
@@ -118,7 +118,7 @@ check('the same amount again: no second arrival',await H.js(`!!document.querySel
 await H.js(`localStorage.removeItem('balanced:${SET}');${reset}`);
 await H.js(`document.querySelector('details[data-key=override]').open=true;document.getElementById('override-note').value='Recount lost'`);
 await H.tap('details[data-key=override] [type=submit]');
-check('the override is answered in place',await until(H,`!!document.querySelector('[data-balance]')`));
+check('the override is answered in place',await until(H,`!!document.querySelector('.books-covered')&&!document.querySelector('[data-balance]')`));
 f=await H.js(`__frames.find(f=>!f.gap&&f.balance!==null)`);
 check('override: the panel leaves as a copy',f&&f.ghost&&await H.js(`__runs.some(r=>/books-ghost/.test(r.el))`),[f,await H.js('[__frames,__runs]')]);
 check('override: no balanced reveal',await H.js(`!document.querySelector('.balance-arrived')&&!__runs.some(r=>/books-message/.test(r.el))`),await H.js('__runs'));

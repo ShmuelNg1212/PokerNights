@@ -7,7 +7,7 @@
   <div class="discrepancy" id="books-gap" data-gap="{{ balance.difference }}">
     <div class="discrepancy-statement" role="alert">
       <p class="discrepancy-amount">{{ balance.headline }}</p>
-      {% if me.is_host %}<p>{{ balance.gap_sentence }}</p>
+      {% if me.is_host %}<p class="gap-sentence">{{ balance.gap_sentence }}</p>
       {% else %}<p>The host is checking the records. Results are final once the books balance.</p>{% endif %}
     </div>
     {% if not me.is_host %}{% for line in summary.money_lines %}{% if line.participant.member_id == me.pk %}
