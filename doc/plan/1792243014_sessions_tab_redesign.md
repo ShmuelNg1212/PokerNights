@@ -49,10 +49,17 @@ Acceptance: at 390 px, Ben's first card is his table in play with Open the table
 
 ## Rendezvous checks
 
-- [ ] SQLite and PostgreSQL suites.
-- [ ] `code-review`; `verification-before-completion`. No `security-review`: no auth, money record or user-data write changes. The tab shows only the viewer's own net and debts.
-- [ ] `/impeccable critique` and `audit`, then `polish`; `break-ui` on the card and the past row.
-- [ ] Phone screenshots of host and player at 390 px.
+Recorded 2026-10-17. The plan is frozen after this section.
+
+- [x] SQLite suite: 1305 tests pass (15 skipped, PostgreSQL-only). PostgreSQL suite: 1305 pass, after the polish commit.
+- [x] `code-review` (two axes, done in one context: AGENTS.md allows subagents only during execute). Standards: the open-session destination was duplicated with `web/home.py`, and `sessions_tab` imported the views inside a function. Both fixed in `refactor: share where an open session leads with the home card`. Spec: the morph check and a chips unit test were missing; both added. The card shows location and date, not "location or the date": two sessions at one place on different dates need both.
+- [x] `verification-before-completion`: every claim here comes from a test or browser run in this session.
+- [x] No `security-review`: the tab only reads. It shows the viewer's own net and debts, found through their own member id after `member_for`.
+- [x] `/impeccable critique`: 32/40, single context (degraded banner, same reason). Detector: 3 CLI advisories and 11 in-page findings, none in the new code (chip edge-band samples, the body texture, and the existing k6 chip at 3.8:1). Three P2 issues, fixed in `fix: polish the sessions tab after the design critique`: one bone action on the tab, a short spoken name for each card link, and "Nobody is playing" under "Now playing". Snapshot closed.
+- [x] `break-ui` cases in the browser seed: a 60-character table name, ₱1,999,999.98, a chips session, eight players with "+2", two debts on a row, an earlier year, a draft, a host not seated. Not covered in the browser: "Did not play" (covered by a unit test).
+- [x] Measured bug, fixed during the build: a link stretched over the card by `::after` gave Turbo two `mouseenter` events per tap, and each tap fetched the set page twice.
+- [x] Browser: `sessions_tab.mjs` 130/130, `screens.mjs` 46/46, `header.mjs` 106/106, `settled.mjs` 23/23, `navigate.mjs` 51/53, `home.mjs` 57/60. The navigate failures ("after 22 screen changes", "no poll after leaving the set page") and the home failures ("every link and button in a card is at least 48px tall", empty detail) also fail on `main` without this branch.
+- [x] Phone screenshots of host and player at 390 px, and at 1280 px.
 
 ## Sync docs
 
