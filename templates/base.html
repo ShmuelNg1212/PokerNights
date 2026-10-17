@@ -72,21 +72,20 @@
   <script src="{% static 'js/install.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/chat_browser.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/alerts.js' %}" defer data-turbo-track="reload"></script>
+  <script src="{% static 'js/account.js' %}" defer data-turbo-track="reload"></script>
   <script src="{% static 'js/perf.js' %}" defer data-turbo-track="reload"></script>
 </head>
 <body data-method="{{ request.method }}">
   <a class="skip-link" href="#main">Skip to content</a>
   <div id="offline-notice" class="offline-notice" role="status" data-turbo-permanent hidden>You're offline. Changes can't be saved until you reconnect.</div>
+  {% comment %}The header's start is the brand on Your groups and the way back on a deeper page: a page fills
+     header_start with <nav class="table-bar"> and its one link (DESIGN.md, "The header", 2026-10-17).{% endcomment %}
   {% block header %}<header class="site-header">
-    <a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>
+    {% block header_start %}<a class="brand" href="{% url 'home' %}"><img src="{% static 'branding/logo-mark.svg' %}" alt="" width="28" height="28">PokerNights</a>{% endblock %}
     {% if user.is_authenticated %}
     <div class="header-end">
       {% if push_alerts %}{% include "web/_alerts.html" %}{% endif %}
-      <form method="post" action="{% url 'logout' %}" class="inline">
-        {% csrf_token %}
-        <span class="who">{{ user.username }}</span>
-        <button type="submit" class="btn btn-quiet btn-small">Log out</button>
-      </form>
+      {% include "_account.html" %}
     </div>
     {% endif %}
   </header>{% endblock %}

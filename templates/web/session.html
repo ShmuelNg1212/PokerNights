@@ -4,8 +4,8 @@
 {% block title %}{{ session }} · PokerNights{% endblock %}
 {% block page_class %}table-page{% endblock %}
 {% block head %}<meta name="turbo-refresh-method" content="morph"><meta name="turbo-refresh-scroll" content="preserve">{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %}<span class="back-words"><span class="back-kind">Session: </span>{{ session.table.name }}</span></a><span id="live-status" class="live-status" aria-live="polite"></span></nav>{% endblock %}
 {% block content %}
-<nav class="table-bar"><a href="{% url 'night' session.night_id %}">{% icon 'arrow-left' %} Session: {{ session.table.name }}</a><span id="live-status" class="live-status" aria-live="polite"></span></nav>
 {% if session.night.is_archived %}<div class="notice notice-info archived-notice"><p><strong>This session is archived.</strong> Nothing in this set can change. <a href="{% url 'night' session.night_id %}">Go to the session</a>{% if real_host %} to restore it{% endif %}.</p></div>{% endif %}
 <p id="arrival-news" class="visually-hidden" aria-live="polite"></p>
 <div id="live" data-state="{{ session.state }}" data-version="{{ live_version }}" data-url="{% url 'session_state' session.pk %}"{% if arrival_marks %} data-arrivals="on"{% endif %}>

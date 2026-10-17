@@ -36,12 +36,12 @@ try {
  check('contrast settled badge',await A.js(contrast('.session-link .badge-good'))>=4.5);check('contrast warn badge',await A.js(contrast('.session-link .badge-warn'))>=4.5);check('contrast heading count',await A.js(contrast('.heading-count'))>=4.5);
  // The list and each session page agree.
  const list=await A.js(`${rows}.map(a=>[a.getAttribute('href'),a.querySelector('.badge').textContent.trim()])`);let agree=true;
- for(const [href,status] of list){await A.go(href);const bar=await A.js(`document.querySelector('.table-bar .badge').textContent.trim()`);if(bar!==status){agree=false;console.log('  mismatch',href,status,bar)}}
+ for(const [href,status] of list){await A.go(href);const bar=await A.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()`);if(bar!==status){agree=false;console.log('  mismatch',href,status,bar)}}
  check('top bar of every session matches its row',agree);
  // Marking the last transfer paid turns the row to Settled; undo turns it back.
  const partly=list.find(([,s])=>s==='Partly settled')[0];await A.go(partly);
  for(let i=0;i<12&&await A.js(`!!document.querySelector('form[action$="/paid/"] button')`);i++)await A.click(`document.querySelector('form[action$="/paid/"] button')`);
- check('top bar says Settled after the last paid mark',await A.js(`document.querySelector('.table-bar .badge').textContent.trim()==='Settled'&&!!document.querySelector('.table-bar .badge .icon')`));await A.shot('settled-night-390');
+ check('the heading says Settled after the last paid mark',await A.js(`document.querySelector('.night-overview .felt .row > .badge').textContent.trim()==='Settled'&&!!document.querySelector('.night-overview .felt .row > .badge .icon')`));await A.shot('settled-night-390');
  await A.go('/g/1/');check('row turns Settled',await A.js(`document.querySelector('a.session-link[href="${partly}"] .badge').textContent.trim()==='Settled'`));
  await A.go(partly);await A.click(`document.querySelector('form[action$="/unpaid/"] button')`);await A.go('/g/1/');
  check('row returns to Partly settled after undo',await A.js(`document.querySelector('a.session-link[href="${partly}"] .badge').textContent.trim()==='Partly settled'`));

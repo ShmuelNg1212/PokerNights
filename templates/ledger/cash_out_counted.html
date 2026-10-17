@@ -3,8 +3,8 @@
 {% load money_tags table_tags %}
 {% block title %}Cash out counted players · {{ session }}{% endblock %}
 {% block page_class %}table-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Back to set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %} Back to set {{ session.set_number }}</a></p>
 <div class="table-layout review-layout">
 <aside class="table-left">
 <section class="felt hero" data-unit="{{ unit }}">

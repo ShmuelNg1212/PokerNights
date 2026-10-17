@@ -73,7 +73,6 @@ p { margin: 0.5rem 0; }
 }
 .brand { display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--tap); min-width: var(--tap); font-weight: 800; font-stretch: 88%; font-size: 1.125rem; color: var(--text); text-decoration: none; }
 .brand img { flex: none; }
-.who { color: var(--muted); margin-right: 8px; font-size: 0.9rem; }
 
 .page { max-width: 560px; margin: 0 auto; padding: 16px 16px 96px; }
 
@@ -968,9 +967,16 @@ legend { padding: 0; }
   html:is([data-go=back], [data-go=prev])::view-transition-new(root) { animation: screen-in-left 220ms var(--ease-out) both; }
   /* A carried name keeps its own size at each end; the two fade through each other as the box moves. */
   ::view-transition-old(title), ::view-transition-new(title) { width: 100%; height: 100%; object-fit: none; object-position: left top; }
+  /* The header's start (the brand or the way back) changes its words on a tapped change; the header stays.
+     The old words leave 8px towards where the old screen goes and the new ones come from the other side. */
+  html:is([data-go=deeper], [data-go=back]) :is(.site-header > .brand, .site-header > .table-bar > a) { view-transition-name: header-back; }
+  ::view-transition-old(header-back), ::view-transition-new(header-back) { width: 100%; height: 100%; object-fit: none; object-position: left center; }
+  html[data-go=deeper]::view-transition-old(header-back) { animation: back-out-left 140ms var(--ease-out) both; }
+  html[data-go=deeper]::view-transition-new(header-back) { animation: back-in-right 220ms var(--ease-out) both; }
+  html[data-go=back]::view-transition-old(header-back) { animation: back-out-right 140ms var(--ease-out) both; }
+  html[data-go=back]::view-transition-new(header-back) { animation: back-in-left 220ms var(--ease-out) both; }
   /* A group's tabs: the heading and the tab bar stay, the marker slides under the words to the chosen tab, the
      words stay where they are, the content shifts. */
-  html:is([data-go=next], [data-go=prev]) .group-page > .table-bar { view-transition-name: page-bar; }
   html:is([data-go=next], [data-go=prev]) .group-page > .page-heading { view-transition-name: page-heading; }
   html:is([data-go=next], [data-go=prev]) .tabs { view-transition-name: tabs; }
   html:is([data-go=next], [data-go=prev]) .tab-marker { view-transition-name: tab-current; }
@@ -984,6 +990,10 @@ legend { padding: 0; }
 @keyframes screen-in-right { from { opacity: 0; transform: translateX(24px); } }
 @keyframes screen-out-right { to { opacity: 0; transform: translateX(24px); } }
 @keyframes screen-in-left { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes back-out-left { to { opacity: 0; transform: translateX(-8px); } }
+@keyframes back-in-right { from { opacity: 0; transform: translateX(8px); } }
+@keyframes back-out-right { to { opacity: 0; transform: translateX(8px); } }
+@keyframes back-in-left { from { opacity: 0; transform: translateX(-8px); } }
 
 /* In-app numpad (numpad.js): twelve keys that write into the number field above them. The slot is in the form;
    it takes no room until the keys are in it. */
@@ -1071,7 +1081,7 @@ input.numpad-refused { border-color: var(--down); }
 .final-proof { margin: 0 0 var(--s-4); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .final-proof .verdict { display: block; margin-top: var(--s-1); font-size: 1.0625rem; }
 /* A final set no longer changes, so it shows no live status. */
-.table-bar:has(~ #live[data-state="finalized"]) .live-status { display: none; }
+body:has(#live[data-state="finalized"]) .site-header .live-status { display: none; }
 /* A message never sits on the bottom bar or the number keys. */
 @media (max-width: 899px) {
   .dock-enabled .table-page:has(.table-layout .host-controls) .toast { bottom: calc(var(--dock-h, 128px) + var(--s-2)); }
@@ -1349,6 +1359,9 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 :is([data-welcome], [data-launch]) .home-first > :nth-child(n+5) { animation-delay: 340ms; }
 /* The chip lands in the top bar: the mark sinks and comes back, as a pressed button does. */
 :is(body:has([data-welcome]), [data-launch]) .brand img { animation: welcome-land 320ms var(--ease-out) 380ms; }
+/* A landing page without the brand (a group or a set, since the header holds the way back there, 2026-10-17):
+   the person's own token lands instead, so getting in is still answered in the top bar. */
+:is(body:has([data-welcome]), [data-launch]) .site-header:not(:has(> .brand)) .account-button .account-chip { animation: welcome-land 320ms var(--ease-out) 380ms; }
 
 /* Set page, preparing and in play (DESIGN.md, "Set page"). Everything here is under .table-v2. */
 /* The lead panel: the figure, the timer and the blinds; the rest is one line with the facts behind it. */
@@ -1893,7 +1906,7 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
    once per window on Your groups, opens it by itself with a swing of the bell. */
 .header-end { display: flex; align-items: center; gap: var(--s-1); min-width: 0; }
 /* The panel hangs from the header's right edge (the header is sticky, so it is the anchor); its caret
-   points at the bell, wherever Log out leaves it (alerts.js sets --alerts-caret). */
+   points at the bell, wherever the account token leaves it (alerts.js sets --caret). */
 .alerts { position: static; }
 .alerts-bell { display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap); padding: 0; border: 0; border-radius: var(--r-pill); background: none; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .alerts-bell[aria-expanded=true] { background: var(--rail-2); }
@@ -1902,8 +1915,8 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 .alerts-glyphs .icon { grid-area: 1 / 1; width: 22px; height: 22px; opacity: 0; transform: scale(0.9); transition: opacity var(--t-fast) var(--ease-out), transform 240ms var(--ease-out); }
 .alerts:is([data-state=ask], [data-state=install]) .icon-bell, .alerts[data-state=on] .icon-bell-filled, .alerts[data-state=blocked] .icon-bell-off { opacity: 1; transform: none; }
 .alerts[data-state=blocked] .alerts-bell { color: var(--muted); }
-.alerts-panel { --alerts-caret: 24px; position: absolute; top: calc(100% + 4px); right: 16px; z-index: 8; width: min(300px, calc(100vw - 32px)); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--rail); box-shadow: 0 16px 40px oklch(0 0 0 / .5); transform-origin: calc(100% - var(--alerts-caret)) 0; }
-.alerts-panel::before { content: ""; position: absolute; top: -6px; right: calc(var(--alerts-caret) - 6px); width: 10px; height: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--rail); transform: rotate(45deg); }
+:is(.alerts-panel, .account-panel) { --caret: 24px; position: absolute; top: calc(100% + 4px); right: 16px; z-index: 8; width: min(300px, calc(100vw - 32px)); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--rail); box-shadow: 0 16px 40px oklch(0 0 0 / .5); transform-origin: calc(100% - var(--caret)) 0; }
+:is(.alerts-panel, .account-panel)::before { content: ""; position: absolute; top: -6px; right: calc(var(--caret) - 6px); width: 10px; height: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--rail); transform: rotate(45deg); }
 .alerts-title { margin: 0 0 var(--s-1); font-size: 1rem; font-weight: 750; }
 .alerts-text { margin: 0 0 var(--s-3); color: var(--muted); text-wrap: pretty; }
 p.alerts-text:last-child { margin-bottom: 0; }
@@ -1915,8 +1928,36 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .alerts-line .link-button { flex: none; white-space: nowrap; }
 @keyframes alerts-swing { 0% { transform: rotate(0deg); } 25% { transform: rotate(-14deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-6deg); } 100% { transform: rotate(0deg); } }
 @media (prefers-reduced-motion: no-preference) { .alerts-glyphs.is-swinging { animation: alerts-swing 600ms var(--ease-out); } }
-/* Below 360px the name gives way, so the brand, the bell and Log out keep one line. */
-@media (max-width: 359px) { .header-end .who { display: none; } }
+/* The header (2026-10-17, DESIGN.md "The header"). Its start is the brand on Your groups and the way back
+   on a deeper page; its end is the bell and the account token. One row of 48px targets at every width.
+   The way back takes what room is left and its words end in an ellipsis, never a second line. */
+.site-header .table-bar { flex: 1; min-width: 0; padding: 0; gap: var(--s-2); }
+.site-header .table-bar > a { flex: 0 1 auto; min-width: 0; gap: var(--s-2); margin-left: -4px; padding-right: var(--s-2); color: var(--text); font-size: 1rem; font-weight: 650; text-decoration: none; }
+.site-header .table-bar > a .icon { flex: none; width: 20px; height: 20px; }
+.back-words { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .site-header .table-bar > a:hover .back-words { text-decoration: underline; text-underline-offset: 4px; } }
+.site-header .live-status { margin-left: auto; }
+/* On a narrow phone the set's way back gives up "Session: " on screen (a screen reader still hears it), so the table's name fits. */
+@media (max-width: 389px) { .back-kind { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
+/* Empty until live.js has heard from the server: no dot that claims a connection nobody checked. */
+.live-status:empty { display: none; }
+/* Below 360px the live status keeps its dot and says its words to a screen reader only. */
+@media (max-width: 359px) { .site-header .live-status { font-size: 0; } .site-header .live-status::before { margin-right: 0; } }
+/* The account token: the person's chip in a 48px disclosure; Rail 2 behind it while its panel is open.
+   account.js animates the panel as the bell's; without it the disclosure opens and closes natively. */
+.account { position: static; }
+.account-button { display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap); padding: 0; border-radius: var(--r-pill); list-style: none; -webkit-tap-highlight-color: transparent; }
+.account-button::-webkit-details-marker { display: none; }
+.account[open] > .account-button { background: var(--rail-2); }
+@media (hover: hover) and (pointer: fine) { .account-button:hover { background: var(--rail-2); } }
+.account-button .account-chip { width: 32px; height: 32px; font-size: .8125rem; }
+.account-who { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-4); min-width: 0; }
+.account-who .account-chip { flex: none; width: 40px; height: 40px; font-size: .9375rem; }
+.account-words { display: grid; min-width: 0; }
+.account-label { color: var(--muted); font-size: .875rem; }
+.account-name { font-size: 1.0625rem; font-weight: 700; overflow-wrap: anywhere; }
+.account-out { gap: var(--s-2); }
+.account-out .icon { width: 18px; height: 18px; }
 
 /* The next set has started (2026-10-15): on an ended set's page, a Rail panel with a brass top edge,
    the news and Go to set N. From 900px the button sits beside the words. arrivals.js marks its arrival. */

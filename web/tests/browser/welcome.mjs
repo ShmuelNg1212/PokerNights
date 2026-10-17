@@ -45,7 +45,7 @@ async function page(opts={}){const browserContextId=opts.context||(await send('T
  await size(390);return {s,js,go,login,shot,size,context:browserContextId};}
 const results=[];const check=(name,ok,note='')=>{results.push({name,ok:!!ok});console.log(`${ok?'PASS':'FAIL'} ${name}${note?'  ('+note+')':''}`)};
 const moving=`document.getAnimations().filter(a=>/^welcome-/.test(a.animationName||'')&&a.playState==='running').length`;
-const rest=`!(document.getElementById('main').hasAttribute('data-welcome')||'launch' in document.documentElement.dataset)&&document.getAnimations().length===0&&[...document.querySelectorAll('.group-home, .token-stack > *, .badge-live, .home-create, .brand img')].every(el=>!el.getAttribute('style')&&getComputedStyle(el).opacity==='1')`;
+const rest=`!(document.getElementById('main').hasAttribute('data-welcome')||'launch' in document.documentElement.dataset)&&document.getAnimations().length===0&&[...document.querySelectorAll('.group-home, .token-stack > *, .badge-live, .home-create, .brand img, .account-chip')].every(el=>!el.getAttribute('style')&&getComputedStyle(el).opacity==='1')`;
 try {
  // --- Five cards: a set in play, dues, records.
  for(const [width,height] of [[320,568],[390,844],[1280,800]]){const P=await page();await P.size(width,height);await P.login('mara');const f=await P.js('window.__first');
@@ -83,7 +83,7 @@ try {
  // --- Other landing pages.
  const C=await page();const group=await (async()=>{await C.login('pia');return C.js(`document.querySelector('.group-home h2 a').getAttribute('href')`)})();
  await C.js(`document.querySelector('.site-header form [type=submit]').click()`);await sleep(1300);await C.login('pia',group);f=await C.js('window.__first');
- check('a group page after a login: only the top bar mark lands, nothing else moves',await C.js(`location.pathname===${JSON.stringify(group)}`)&&f.welcome&&JSON.stringify(f.names)==='["welcome-land"]'&&f.main==='none',JSON.stringify(f.names));
+ check('a group page after a login: only the token in the top bar lands, nothing else moves',await C.js(`location.pathname===${JSON.stringify(group)}`)&&f.welcome&&JSON.stringify(f.names)==='["welcome-land"]'&&f.main==='none',JSON.stringify(f.names));
  check('a group page after a login: the mark is taken off',await C.js(`!(document.getElementById('main').hasAttribute('data-welcome')||'launch' in document.documentElement.dataset)&&document.getAnimations().length===0`));
  // --- A newcomer's first screen.
  const D=await page();await D.go('/accounts/signup/',700);
@@ -121,7 +121,7 @@ try {
   if(width===390){await W.shot('welcome-launch-390');
    await W.go('/',1200);f=await W.js('window.__first');check('the same window: a later visit plays nothing',!f.welcome&&f.count===0&&f.cards.every(o=>o===1));
    await send('Page.reload',{},W.s);await sleep(1200);f=await W.js('window.__first');check('the same window: a reload plays nothing',!f.welcome&&f.count===0&&f.cards.every(o=>o===1));
-   await W.js(`document.querySelector('.group-home h2 a').click()`);await sleep(900);await W.js(`document.querySelector('.site-header .brand').click()`);await sleep(150);
+   await W.js(`document.querySelector('.group-home h2 a').click()`);await sleep(900);await W.js(`document.querySelector('.site-header .table-bar a').click()`);await sleep(150);
    check('the same window: back to Your groups by a link plays nothing',await W.js(`location.pathname==='/'&&${still}`));
    await W.js(`document.querySelector('.group-home h2 a').click()`);await sleep(900);await W.js('history.back()');await sleep(150);
    check('the same window: Back plays nothing',await W.js(`location.pathname==='/'&&${still}`));

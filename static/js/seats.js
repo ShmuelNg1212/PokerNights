@@ -37,10 +37,11 @@ dialog.innerHTML = '<div class="stage-head"><h2 id="seat-stage-title">Seat draw<
 '<div class="stage-chairs" aria-hidden="true"></div><div class="stage-seats"></div><div class="stage-tokens"></div><span class="stage-burst" aria-hidden="true"></span><span class="stage-disc" aria-hidden="true">D</span></div></div>' +
 '<div class="stage-actions"><button type="button" class="btn btn-primary btn-block" data-stage-done hidden>Done</button><p class="stage-hint" data-stage-hint hidden>Tap to skip</p></div>';
 // Inside the container Turbo keeps: a form answered in place redraws the body, and a dialog left in it would be removed.
-// The app's mark on the felt, under the dimming and the light: the image the top bar already loaded.
-var brand = document.querySelector(".brand img");
+// The app's mark on the felt, under the dimming and the light: the page's icon, the same file as the brand's.
+// (The set page's header holds the way back, not the brand, since 2026-10-17.)
+var brand = document.querySelector('link[rel="icon"]');
 if (brand) {
-var mark = new Image(52, 52); mark.className = "seat-mark"; mark.alt = ""; mark.src = brand.src;
+var mark = new Image(52, 52); mark.className = "seat-mark"; mark.alt = ""; mark.src = brand.href;
 dialog.querySelector(".seat-line").after(mark);
 }
 (document.getElementById("table-sheets") || document.body).appendChild(dialog);

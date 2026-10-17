@@ -87,7 +87,7 @@
     sheet.hidden = false;
     // The caret sits under the bell's middle, measured from the panel's right edge.
     var from = sheet.getBoundingClientRect().right, at = bell(box).getBoundingClientRect();
-    sheet.style.setProperty("--alerts-caret", Math.max(16, Math.round(from - (at.left + at.width / 2))) + "px");
+    sheet.style.setProperty("--caret", Math.max(16, Math.round(from - (at.left + at.width / 2))) + "px");
     box.classList.add("is-open");
     bell(box).setAttribute("aria-expanded", "true");
     enter(sheet, { opacity: [0, 1], transform: ["translateY(-4px) scale(0.96)", "translateY(0px) scale(1)"] }, "shift");

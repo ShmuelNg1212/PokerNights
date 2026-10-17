@@ -241,7 +241,7 @@ Player identity circles carry initials and are paired with written names. Pale p
 
 ### Navigation
 
-The shared header stays at the top with Rail background, a bottom Line boundary and a strong written brand. The active-set back link and live status share a compact bar. Connection state has a dot and written status; stale values become Bone Dim and status becomes brass.
+The shared header stays at the top with Rail background, a bottom Line boundary and a strong written brand on Your groups; on a deeper page the way back takes the brand's place, and the active set's live status sits beside it (see "The header", 2026-10-17). Connection state has a dot and written status; stale values become Bone Dim and status becomes brass.
 
 ### Badges
 
@@ -1072,13 +1072,29 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 
 | Part | Rule |
 |---|---|
-| The bell | A 48px round icon button before the name in the header, 22px glyph in Bone. Outline when off (and in an iPhone's browser), filled when on, slashed in Bone Dim when blocked; the accessible name carries the state. Rail 2 behind it while its panel is open (and on hover with a fine pointer). No badge or dot. The glyphs cross-fade by CSS transition (180ms opacity, 240ms scale from 0.9, the ease-out token) |
-| The panel | Hangs from the header's right edge, 16px in, 4px below: `min(300px, 100vw − 32px)`, Rail with a 1px Line edge, the surface radius and a soft drop shadow (0 16px 40px). A 10px caret points at the bell's middle wherever Log out leaves it. "Table alerts" at 1rem/750 and one Bone Dim sentence, then the actions: neutral **Turn on** and, from the reminder only, quiet **Not now**, both 48px; on, a green tick, "On for this phone." and **Turn off**; blocked, the sentence alone; in an iPhone's browser, a full-width neutral **Add to Home Screen**. Not modal: focus to the first action on a tap, back to the bell on Escape, Not now or the bell |
+| The bell | A 48px round icon button before the account token in the header (before the name until 2026-10-17), 22px glyph in Bone. Outline when off (and in an iPhone's browser), filled when on, slashed in Bone Dim when blocked; the accessible name carries the state. Rail 2 behind it while its panel is open (and on hover with a fine pointer). No badge or dot. The glyphs cross-fade by CSS transition (180ms opacity, 240ms scale from 0.9, the ease-out token) |
+| The panel | Hangs from the header's right edge, 16px in, 4px below: `min(300px, 100vw − 32px)`, Rail with a 1px Line edge, the surface radius and a soft drop shadow (0 16px 40px). A 10px caret points at the bell's middle wherever the account token leaves it. "Table alerts" at 1rem/750 and one Bone Dim sentence, then the actions: neutral **Turn on** and, from the reminder only, quiet **Not now**, both 48px; on, a green tick, "On for this phone." and **Turn off**; blocked, the sentence alone; in an iPhone's browser, a full-width neutral **Add to Home Screen**. Not modal: focus to the first action on a tap, back to the bell on Escape, Not now or the bell |
 | The reminder | The same panel, opened by itself once per window on Your groups, with Not now; focus stays where it was, and the polite announcer reads the sentence |
 | Motion | Opens with `shift` (scale 0.96 and 4px down to rest, opacity with it) from the caret; closes with `leave` (opacity and 4px up). The reminder alone swings the bell once around its top, −14°, 10°, −6°, 0° in 600ms (`alerts-swing`, CSS). State lines cross-fade (`fade`), the tick springs (`arrive`), a failure nudges. Reduced motion: no movement and no swing |
-| Header below 360px | The name is hidden; the brand, the bell and Log out keep one line |
+| Header below 360px | The name is hidden; the brand, the bell and Log out keep one line (superseded 2026-10-17: the header holds no name and no Log out) |
 
 **Measured.** `alerts_bell.mjs`, 45 checks at 320, 390 and 1280: each state's glyph, name and panel; the reminder once per window, again in a new window, never on a set page, never on or blocked, giving way to the home-screen sheet on Android; the iPhone browser's sheet and focus return; Escape, the outside tap and the bell; a refresh of Your groups with the panel open; 48px targets, the caret on the bell, the panel inside the screen, no horizontal scroll, the header on one line at 320; reduced motion; Motion animating only `transform` and `opacity`; no script error.
+
+### The header (2026-10-17)
+
+[Plan](doc/plan/1792222305_header_redesign.md). One bar above the content instead of two, and Log out behind the person's own chip. No new colour, font or asset; the `log-out` icon was already in the set.
+
+| Part | Rule |
+|---|---|
+| The start | The brand on Your groups and on pages whose way back is in the page (forms). On a group, a session, a set, a player's page and Cash out counted players, the way back (`header_start`, `nav.table-bar`): a 20px arrow and the destination's name in Bone at 1rem/650, a 48px target, one line ending in an ellipsis. Below 390px the set's way back says only the table's name ("Session: " is for screen readers) |
+| The live status | On a set, after the way back, pushed to the end of the start: the dot and "Live · 15:06"; below 360px the dot alone (the words stay for screen readers). Empty, it shows nothing |
+| A session's status | Beside the session's heading on the felt (Open, Partly settled, Settled, Archived), no longer in the bar |
+| The account token | The username's first letter on a 32px chip (`account_token`, colour `(user − 1) mod 10 + 1`) in a 48px round target at the end of the header, after the bell. Rail 2 behind it while open and on hover with a fine pointer. A native `<details>` (`#account`, permanent): without JavaScript it opens and Log out is two taps |
+| The account panel | The bell's panel: hangs from the header's right edge, 16px in, 4px below, Rail, Line edge, surface radius, soft shadow, caret at the token. A 40px chip, "Logged in as" in Bone Dim, the username at 1.0625rem/700, then a neutral full-width **Log out** with its icon, 48px. Not modal; Escape (focus back to the token), a tap outside, the token or another screen closes it; a refresh of the same page does not. The bell and the token each close the other's panel |
+| Motion | The panel opens with `shift` from the caret and closes with `leave`; a tap during the close turns it back from where it is. On a deeper or back screen change the way back's words leave 8px (140ms) towards the old screen's side and arrive 8px from the other (220ms), ease-out, as `header-back`; the header itself stays still. Getting in on a page without the brand: the token lands (`welcome-land`) as the brand's mark does. Reduced motion: none of it |
+| Height | 69px at every width, as before: the front door's sheet height (`100dvh − 69px`) and the offline notice's offset stand |
+
+**Measured.** `header.mjs`, 103 checks at 320, 390 and 1280 (and 3 more with the bell): one row on five pages, the targets, the ellipsis, the live status, the panel in and out of every way, the refresh, the words between screens, Log out, reduced motion and no JavaScript.
 
 ## Do's and Don'ts
 
