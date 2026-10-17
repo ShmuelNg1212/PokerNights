@@ -88,7 +88,8 @@ class BooksOffRowsTests(TestCase):
         html = self.page()
         carlo = self.row(html, "Carlo")
         self.assertIn("data-suspect", carlo)
-        self.assertIn('<span class="count-gap"><span>Counted ₱1,000</span> · <span>cashed out ₱900</span></span>', carlo)
+        self.assertIn('data-suspect="full"', carlo)
+        self.assertIn('<span class="count-gap"><span>Counted ₱1,000</span> · <span>cashed out ₱900</span> · <span>explains the gap</span></span>', carlo)
         self.assertNotIn("data-suspect", self.row(html, "Miguel"))
         self.assertEqual(html.count("data-suspect"), 1)
         # The order of the rows does not change.
@@ -159,3 +160,17 @@ class BooksOffRowsTests(TestCase):
         css = Path(settings.BASE_DIR, "static/css/app.css").read_text()
         block = css[css.index("/* Books off: the rows (2026-10-17) */"):]
         self.assertIn(".count-row.is-cashed_out .count-outcome .num { color: var(--bone); }", block)
+
+    def test_only_a_record_that_moves_the_books_the_way_they_are_off_is_marked(self):
+        # Carlo typed ₱100 under his count, Ben ₱150 over his: the books are ₱50 too much, so only Ben can explain it, in part.
+        for name in ("Miguel", "Carlo", "Ben"):
+            count(self.night, name, 1000)
+        self.night.cash("Carlo", 900)
+        self.night.cash("Ben", 1150)
+        batch(self.night)
+        html = self.page()
+        self.assertNotIn("data-suspect", self.row(html, "Carlo"))
+        ben = self.row(html, "Ben")
+        self.assertIn('data-suspect="part"', ben)
+        self.assertIn("<span>₱150 more than counted</span>", ben)
+        self.assertEqual(html.count("data-suspect"), 1)

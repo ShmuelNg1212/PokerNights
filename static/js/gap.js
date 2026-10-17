@@ -6,7 +6,9 @@
 
   // The first row whose cash-out differs from its confirmed count, else the discrepancy, else the books.
   function target() {
-    return document.querySelector("#live [data-suspect]") || document.getElementById("books-gap") || document.getElementById("balance");
+    // A record that explains the whole gap first, then one that explains part of it, then the books.
+    return document.querySelector('#live [data-suspect="full"]') || document.querySelector("#live [data-suspect]") ||
+      document.getElementById("books-gap") || document.getElementById("balance");
   }
   // The band a target may sit in: under the sticky header, over whatever is fixed at the bottom.
   function band() {
@@ -49,6 +51,9 @@
     var el = target();
     if (!el) return; // the anchor does what it can
     event.preventDefault();
+    // No record to point at: the tap opens where to look, so it always shows something new.
+    var where = !el.hasAttribute("data-suspect") && document.querySelector("#live .discrepancy-where");
+    if (where) where.open = true;
     var room = band(), box = el.getBoundingClientRect(), gap = 16;
     var whole = box.top >= room.top && box.bottom <= room.bottom;
     var smooth = window.pokerMotion ? window.pokerMotion.on() : !matchMedia("(prefers-reduced-motion: reduce)").matches;

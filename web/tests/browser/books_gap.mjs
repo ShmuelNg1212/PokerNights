@@ -69,8 +69,14 @@ for(const width of (process.env.PN_WIDTHS||'320,390,1280').split(',').map(Number
  check(`${width} the ring is gone once it has faded`,await A.js(`!document.querySelector('.gap-ring')`));
  await A.shot(`tapped-${width}`);
  // Already in view: a second tap still answers.
+ // "Where to look" open as the tap leaves it, then the panel is measured.
+ await A.js(`(()=>{const w=document.querySelector('#live .discrepancy-where');if(w)w.open=true})()`);await sleep(100);
+ const whole=await A.js(`(()=>{const b=document.getElementById('books-gap').getBoundingClientRect(),h=document.querySelector('.site-header').getBoundingClientRect().bottom,d=document.querySelector('.host-controls'),f=d&&getComputedStyle(d).position==='fixed'?d.getBoundingClientRect().top:innerHeight;return b.top>=h&&b.bottom<=f})()`);
+ // The button may sit below the fold on a wide screen: bring it into view first, as a person would, then measure.
+ await A.js(`(()=>{const e=document.querySelector('a[data-books-gap]'),f=e.getBoundingClientRect();if(f.top<0||f.bottom>innerHeight)e.scrollIntoView({block:'nearest'})})()`);await sleep(100);
+ const whole2=await A.js(`(()=>{const b=document.getElementById('books-gap').getBoundingClientRect(),h=document.querySelector('.site-header').getBoundingClientRect().bottom,d=document.querySelector('.host-controls'),f=d&&getComputedStyle(d).position==='fixed'?d.getBoundingClientRect().top:innerHeight;return b.top>=h&&b.bottom<=f})()`);
  await A.js(`__runs.length=0`);const y0=await A.js('Math.round(scrollY)');await A.tap('a[data-books-gap]');await sleep(150);
- check(`${width} a second tap with the books in view pulses again without scrolling`,await A.js(`__runs.some(r=>r.el==='gap-ring')`)&&await A.js('Math.round(scrollY)')===y0,{y0,y:await A.js('scrollY')});
+ check(`${width} a second tap pulses again, and scrolls only if the panel is not wholly in view`,await A.js(`__runs.some(r=>r.el==='gap-ring')`)&&(!whole2||await A.js('Math.round(scrollY)')===y0),{whole,whole2,y0,y:await A.js('scrollY')});
  await A.shot(`pulse-${width}`);await sleep(600);
  // A suspect row, as the row agent will mark it, is preferred over the books.
  await A.js(`(()=>{const rows=document.querySelectorAll('#live .count-row');rows[rows.length-1].setAttribute('data-suspect','');scrollTo(0,document.documentElement.scrollHeight);__runs.length=0})()`);
@@ -94,5 +100,10 @@ for(const width of (process.env.PN_WIDTHS||'320,390,1280').split(',').map(Number
  const r=await send('Runtime.evaluate',{expression:`(()=>{const r=document.getElementById('balance').getBoundingClientRect();return {hash:location.hash,top:Math.round(r.top),y:scrollY}})()`,returnByValue:true},N.s);
  check('no JavaScript: the anchor goes to #balance',r.result.value.hash==='#balance'&&r.result.value.top>=0&&r.result.value.top<300,r.result.value);
  await N.shot('nojs-390');}
+// No record explains the gap (set 9): the tap opens "Where to look", so it always shows something new.
+{const W=await user('hana',390);await W.go(`/s/${OFF}/`);await W.js(`scrollTo(0,0)`);
+ const before=await W.js(`document.querySelector('#live .discrepancy-where').open`);
+ await W.tap('a[data-books-gap]');await sleep(700);
+ check('no suspect: the tap opens Where to look',!before&&await W.js(`!document.querySelector('[data-suspect]')&&document.querySelector('#live .discrepancy-where').open`));}
 console.log(`${results.filter(r=>r.ok).length}/${results.length} passed`);
 chrome.kill();process.exit(results.every(r=>r.ok)?0:1);

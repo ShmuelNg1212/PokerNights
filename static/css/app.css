@@ -2015,3 +2015,5 @@ p.alerts-text:last-child { margin-bottom: 0; }
 /* The changed-row vocabulary: a short Brass mark under the name, never a coloured side border. */
 .count-row[data-suspect] .count-who { padding-bottom: 6px; }
 .count-row[data-suspect] .count-who::after { content: ""; position: absolute; left: 0; bottom: 0; width: 2.5rem; height: 2px; border-radius: var(--r-bar); background: var(--brass); pointer-events: none; }
+/* Every player cashed out and the books off: the running total says the gap alone, as the bar does (counts.js still writes the equation, hidden). */
+.count-total[data-gap] .count-equation { display: none; }

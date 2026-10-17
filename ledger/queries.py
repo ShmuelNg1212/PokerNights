@@ -369,7 +369,7 @@ class CountTotal:
             return "All counts match buy-ins."
         if self.difference:
             amount = money.format_amount(abs(self.difference), self.summary.session.unit)
-            suffix = "extra" if self.difference > 0 else "still to account for" if self.missing else "missing"
+            suffix = "too much" if self.difference > 0 else "still to account for" if self.missing else "missing"
             return f"{amount} {suffix}."
         return "Total matches so far; finish counting."
 

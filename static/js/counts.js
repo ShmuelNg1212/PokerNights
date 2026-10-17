@@ -59,7 +59,7 @@
     else if (box.dataset.players === "0") status = "No buy-ins recorded.";
     else if (box.dataset.stray === "1") status = "Cash-out without a buy-in. Check the records.";
     else if (complete && difference === 0n) status = "All counts match buy-ins.";
-    else if (difference !== 0n) status = format(difference < 0n ? -difference : difference, chips) + (difference > 0n ? " extra." : missing ? " still to account for." : " missing.");
+    else if (difference !== 0n) status = format(difference < 0n ? -difference : difference, chips) + (difference > 0n ? " too much." : missing ? " still to account for." : " missing.");
     else status = "Total matches so far; finish counting.";
     // Severity is in the colour and mark too: every count in and matching, or every count in and not.
     var tone = invalid || box.dataset.stray === "1" ? "warn" : complete ? (difference === 0n ? "good" : "warn") : "";

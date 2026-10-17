@@ -25,7 +25,7 @@ await A.go(`/s/${ids.php}/`);await B.go(`/s/${ids.php}/`);
 let q=await state();check('confirmed fallback plus earlier cash-out',q.total==='₱1,000'&&q.coverage==='1 still to count.',q);
 await type(1,'1,000');q=await state();check('typing matches with saved fallback',q.total==='₱2,000'&&q.status==='All counts match buy-ins.'&&q.label.includes('unsaved'),q);
 await type(0,'0');q=await state();check('zero replaces saved count',q.total==='₱1,100'&&q.status==='₱900 missing.',q);
-await type(0,'');await type(1,'1000.50');q=await state();check('centavos exact',q.total==='₱2,000.50'&&q.status==='₱0.50 extra.',q);
+await type(0,'');await type(1,'1000.50');q=await state();check('centavos exact',q.total==='₱2,000.50'&&q.status==='₱0.50 too much.',q);
 await type(1,'oops');q=await state();check('invalid never falls back or claims match',q.total==='Unavailable'&&q.status.includes('unavailable'),q);check('invalid entry identified',await A.js(`document.querySelectorAll('[data-count-input]')[1].getAttribute('aria-invalid')==='true'&&!document.querySelectorAll('[data-count-error]')[1].hidden`));
 for(const bad of ['-1','1.005','1000000001','Infinity','1e3']) {await type(1,bad);check('unsupported draft '+bad,(await state()).total==='Unavailable');}
 await type(0,'1900');await type(1,'');q=await state();check('equal partial sum never claims complete',q.total==='₱2,000'&&q.status.includes('finish counting')&&q.coverage==='1 still to count.',q);

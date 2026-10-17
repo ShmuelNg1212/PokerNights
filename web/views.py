@@ -283,8 +283,14 @@ def session_context(session, me, *, later=UNSET) -> dict:
     books = context["balance"]
     context["books_off"] = bool(books and books.counted and not books.ok)
     if context["books_off"]:
+        # Only a record that moves the books the way they are off can explain the gap: a cash-out typed
+        # higher than its count when there is too much, lower when money is missing.
         for pk, gap in ledger_queries.count_gaps(summary).items():
-            summary.line_for(pk).count_gap = gap
+            moved = gap[1] - gap[0]
+            if (moved > 0) == (books.difference > 0):
+                line = summary.line_for(pk)
+                line.count_gap, line.count_gap_full, line.count_gap_moved = gap, moved == books.difference, abs(moved)
+                line.count_gap_word = "more" if moved > 0 else "less"
     context["set_seconds"], context["set_running"] = clock.timers([session.pk]).get(session.pk, (None, False))
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)
