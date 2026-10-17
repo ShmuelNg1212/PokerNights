@@ -78,6 +78,7 @@ def display_amount(value, unit):
 
 
 ICONS.update({
+    'user': '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />\n  <circle cx="12" cy="7" r="4" />',
     'arrow-up': '<path d="m5 12 7-7 7 7" />\n  <path d="M12 19V5" />',
     'arrow-down': '<path d="M12 5v14" />\n  <path d="m19 12-7 7-7-7" />',
     # Table alerts in the header (2026-10-16): off, on (the same bell, filled) and blocked.

@@ -27,7 +27,7 @@
 <section class="panel player-lead" aria-labelledby="lead-heading">
   <h2 id="lead-heading" class="stat-label">Profit or loss in pesos · {{ stat_period.label }}</h2>
   <p class="player-net">{% include "web/_stat_figure.html" with figure=net class="player-net-figure" %}</p>
-  <p class="player-rank">{{ pesos_groups|length }} group{{ pesos_groups|length|pluralize }}</p>
+  <p class="player-rank">{{ record.sessions }} session{{ record.sessions|pluralize }} in {{ pesos_groups|length }} group{{ pesos_groups|length|pluralize }}</p>
 </section>
 {% if chart %}{% include "web/_running_chart.html" with chart_no_list=True %}{% else %}<p class="muted small chart-none">The chart appears after three sessions.</p>{% endif %}
 <section aria-labelledby="tiles-heading">
@@ -53,9 +53,10 @@
 </div>
 <section class="profile-settings" aria-labelledby="settings-heading">
   <h2 id="settings-heading">Settings</h2>
+  <div class="panel profile-settings-list">
   {% if in_a_group %}
-  <details class="panel profile-setting" id="name"{% if name_form.errors %} open{% endif %}>
-    <summary><span class="grow">Your name</span><span class="muted">{{ own_name|default:"Differs by group" }}</span></summary>
+  <details class="profile-setting" id="name"{% if name_form.errors %} open{% endif %}>
+    <summary><span class="grow">Your name</span><span class="profile-setting-value">{{ own_name|default:"Differs by group" }}</span>{% icon 'chevron-down' %}</summary>
     <form method="post" action="{% url 'profile_name' %}" class="stack" data-once>
       {% csrf_token %}
       {% include "partials/form_fields.html" with form=name_form %}
@@ -65,8 +66,8 @@
     </form>
   </details>
   {% endif %}
-  <details class="panel profile-setting" id="password"{% if password_form.errors %} open{% endif %}>
-    <summary><span class="grow">Password</span><span class="muted">Change</span></summary>
+  <details class="profile-setting" id="password"{% if password_form.errors %} open{% endif %}>
+    <summary><span class="grow">Password</span><span class="profile-setting-value">Change</span>{% icon 'chevron-down' %}</summary>
     <form method="post" action="{% url 'password_change' %}" class="stack" data-once>
       {% csrf_token %}
       {% include "partials/form_fields.html" with form=password_form %}
@@ -74,5 +75,6 @@
       <button type="submit" class="btn btn-block">Change password</button>
     </form>
   </details>
+  </div>
 </section>
 {% endblock %}

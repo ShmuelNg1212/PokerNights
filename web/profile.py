@@ -61,9 +61,9 @@ def group_lines(rows, unit, period, members) -> list:
 
 
 def headline(record, unit) -> list:
+    """Four tiles: the count of sessions is in the line under the total."""
     best, worst = record.best, record.worst
     return [
-        Tile("Sessions", str(record.sessions)),
         Tile("Win rate", f"{record.win_percent}%", note=f"{record.wins} of {record.sessions}"),
         Tile("Average per session", signed(record.average, unit), record.average),
         Tile("Best night", signed(best.net, unit), best.net, note=f"{best.group} · {best.date:%b} {best.date.day}, {best.date.year}"),

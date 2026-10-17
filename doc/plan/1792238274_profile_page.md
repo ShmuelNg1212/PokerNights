@@ -56,10 +56,10 @@ Acceptance: the page loads in a fixed number of queries and shows the figures in
 
 ### 5. Entry from the account panel (design)
 
-- [ ] Add Lucide `user` to `ICONS`.
-- [ ] Add a neutral full-width **Profile** link (48 px, icon) above Log out in `templates/_account.html`. Mark it current on the profile page.
-- [ ] `/impeccable` build pass on `profile.html` inside DESIGN.md tokens and motion presets; `mobile-native` check.
-- [ ] Extend `web/tests/browser/header.mjs` for the new row; add `web/tests/browser/profile.mjs` at 320, 390 and 1280 px: no overflow, 48 px targets, contrast, period change keeps scroll, reduced motion, no JavaScript.
+- [x] Add Lucide `user` to `ICONS`.
+- [x] Add a neutral full-width **Profile** link (48 px, icon) above Log out in `templates/_account.html`. Mark it current on the profile page.
+- [x] `/impeccable` build pass on `profile.html` inside DESIGN.md tokens and motion presets; `mobile-native` check.
+- [x] Extend `web/tests/browser/header.mjs` for the new row; add `web/tests/browser/profile.mjs` (seed: `seed_profile.py`) at 320, 390 and 1280 px: no overflow, 48 px targets, contrast, period change keeps scroll, reduced motion, no JavaScript.
 
 Acceptance: Profile is one tap after the token, and the header checks still pass. Completion: browser checks pass; commit `feat: open your profile from the account panel`.
 

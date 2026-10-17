@@ -76,6 +76,7 @@ for(const width of (process.env.PN_BELL?[]:(process.env.PN_WIDTHS||'320,390,1280
  check(`${width} the token opens its panel inside the screen, under the header`,f.open&&f.panel.left>=8&&f.panel.right<=width-8&&f.panel.top>=69,f);
  check(`${width} the panel's caret points at the token`,await A.js(caretOnToken));
  check(`${width} the panel names the account and offers Log out at 48px`,await A.js(`document.querySelector('.account-name').textContent==='hana'`)&&await A.js(outButton),await A.js(`(()=>{const b=document.querySelector('.account-out');return [b.getBoundingClientRect().height,getComputedStyle(b).minHeight,document.querySelector('.account-name').textContent]})()`));
+ check(`${width} the panel offers Your profile at 48px above Log out`,await A.js(`(()=>{const p=document.querySelector('.account-profile'),o=document.querySelector('.account-out');return p.offsetHeight>=48&&p.getBoundingClientRect().bottom<=o.getBoundingClientRect().top&&p.getAttribute('href')==='/me/'})()`));
  if(width!==1280)await A.shot(`panel-${width}`);
  check(`${width} Motion moved only transform and opacity`,await A.js(`__runs.length>0&&__runs.every(r=>r.keys.every(k=>['transform','opacity'].includes(k)))`),await A.js('__runs'));
  await A.key('Escape');await sleep(350);
