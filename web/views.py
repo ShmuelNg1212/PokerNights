@@ -51,17 +51,6 @@ def profile(request):
     return render(request, "web/profile.html", profile_page.profile_context(request, request.user))
 
 
-def visible_nights(me, archived=False):
-    """The group's sessions with the sets that this member can see (drafts are for hosts only)."""
-    nights = GameNight.objects.filter(group=me.group).select_related("table").prefetch_related("sets")
-    nights = nights.filter(archived_at__isnull=not archived)
-    for night in nights:
-        sets = sorted(night.sets.all(), key=lambda s: s.set_number)
-        night.shown_sets = [s for s in sets if me.is_host or s.state != GameSession.State.SETUP]
-        night.latest_set = night.shown_sets[-1] if night.shown_sets else None
-    return nights
-
-
 GROUP_VIEWS = ("sessions", "stats", "settings")
 
 
@@ -84,7 +73,6 @@ def group(request, group_id):
         context.update(stats_pages.board_context(request, me, periods))
     else:
         context.update(sessions_tab.sessions_context(me))
-        context["archived_nights"] = list(visible_nights(me, archived=True)) if me.is_host else []
     return render(request, "web/group.html", context)
 
 

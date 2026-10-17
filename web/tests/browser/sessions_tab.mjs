@@ -1,7 +1,8 @@
 // The Sessions tab (2026-10-17): table cards with your table first, then your past nights by month.
 // Seed a fresh temporary database with seed_sessions_tab.py alone, serve it on 127.0.0.1:8765, then run.
+// PN_DB names that SQLite file, for the live redraw check, which adds a session from the shell.
 // Reads ids from /private/tmp/pn-sessions-tab-manifest.json. Logs in as ben (player) and hana (host).
-import {spawn} from 'node:child_process';
+import {spawn,execSync} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-sessions-tab-review';mkdirSync(OUT,{recursive:true});
 const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765';
@@ -87,6 +88,16 @@ for(const width of [320,390,1280]){
  check('no JavaScript: the clock has its server value',await A.js(`document.querySelector('[data-clock]').textContent.trim().length>0`));
  await A.tap('.table-cards > li:nth-child(1) .table-card .table-card-when');await sleep(1500);
  check('no JavaScript: a tap on a card opens its set',await A.js('location.pathname')===`/s/${M.mine_live}/`,await A.js('location.pathname'));}
+
+// A live redraw: another session opens while Ben reads the past list. The page morphs in place and keeps its scroll.
+if(process.env.PN_DB){const A=await user('ben',390);await A.go(`/g/${M.group}/`);
+ const before=await A.js(`document.querySelectorAll('.table-card').length`);
+ await A.js(`window.__mark=1;scrollTo(0,900)`);await sleep(300);const y=await A.js('Math.round(scrollY)');
+ execSync(`.venv/bin/python manage.py shell -c "from games.models import Table; from groups.models import Member; from games.tests.helpers import make_session; host=Member.objects.get(group_id=${M.group}, user__username='hana'); make_session(host, table=Table.objects.get(group_id=${M.group}, name='Garage'), state='open')"`,{env:{...process.env,DEBUG:'True',DATABASE_URL:'sqlite:///'+process.env.PN_DB},stdio:'ignore'});
+ await sleep(7000);
+ const after=await A.js(`({cards:document.querySelectorAll('.table-card').length,mark:window.__mark,y:Math.round(scrollY)})`);
+ check('live redraw: the new session arrives without a reload and the scroll stays',after.cards===before+1&&after.mark===1&&Math.abs(after.y-y)<=40,{before,y,after});
+}else console.log('SKIP live redraw: set PN_DB');
 
 chrome.kill();
 const failed=results.filter(r=>!r.ok);

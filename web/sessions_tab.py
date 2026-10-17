@@ -9,21 +9,34 @@ from django.urls import reverse
 from django.utils import timezone
 
 from games import clock
-from games.models import GameSession, Participant
+from games.models import GameNight, GameSession, Participant
 from settlement import queries as settlement_queries
 
 State = GameSession.State
 CHIPS = 6  # seated players shown as chips on a card; the rest are "+N"
 
 
-def _destination(card) -> tuple[str, str]:
-    """Where a card leads and what its button says: the set while it is unfinished, else the session."""
-    s = card.latest_set
-    if s.state == State.RUNNING:
-        return reverse("session", args=[s.pk]), "Open the table"
-    if s.state in (State.SETUP, State.OPEN, State.RECONCILIATION):
-        return reverse("session", args=[s.pk]), f"Open set {s.set_number}"
-    return reverse("night", args=[card.pk]), "Go to the session"
+def visible_nights(me, archived=False):
+    """The group's sessions with the sets that this member can see (drafts are for hosts only)."""
+    nights = GameNight.objects.filter(group=me.group).select_related("table").prefetch_related("sets")
+    nights = nights.filter(archived_at__isnull=not archived)
+    for night in nights:
+        sets = sorted(night.sets.all(), key=lambda s: s.set_number)
+        night.shown_sets = [s for s in sets if me.is_host or s.state != State.SETUP]
+        night.latest_set = night.shown_sets[-1] if night.shown_sets else None
+    return nights
+
+
+def destination(night, latest_set) -> tuple[str, str]:
+    """Where an open session leads and what its button says: the set while it is unfinished, else the session.
+
+    The one rule for the Sessions tab's cards and the group card on Your groups.
+    """
+    if latest_set.state == State.RUNNING:
+        return reverse("session", args=[latest_set.pk]), "Open the table"
+    if latest_set.state in (State.SETUP, State.OPEN, State.RECONCILIATION):
+        return reverse("session", args=[latest_set.pk]), f"Open set {latest_set.set_number}"
+    return reverse("night", args=[night.pk]), "Go to the session"
 
 
 def _band(card) -> int:
@@ -55,7 +68,7 @@ def current_cards(me, nights) -> list:
         card.seconds = seconds.get(card.latest_set.pk)
         card.is_today = card.game_date == today
         card.chips, card.more_seated = card.seated[:CHIPS], max(card.at_table - CHIPS, 0)
-        card.url, card.action_label = _destination(card)
+        card.url, card.action_label = destination(card, card.latest_set)
     return sorted(cards, key=lambda c: (_band(c), c.game_date, c.pk))
 
 
@@ -119,12 +132,11 @@ def past_years(me, nights) -> list:
 
 
 def sessions_context(me) -> dict:
-    from web.views import visible_nights
-
     nights = list(visible_nights(me))
     years = past_years(me, nights)
     return {
         "cards": current_cards(me, nights),
         "past_years": years,
         "not_settled": sum(1 for y in years for m in y.months for n in m.nights if n.settle.status != "settled"),
+        "archived_nights": list(visible_nights(me, archived=True)) if me.is_host else [],
     }

@@ -203,3 +203,12 @@ class SessionsPageTests(Played, TestCase):
         self.assertNotContains(self.client.get(self.url), "Kitchen")
         self.client.force_login(self.host.user)
         self.assertContains(self.client.get(self.url), "Kitchen")
+
+    def test_a_chips_session_shows_chips_and_never_pesos(self):
+        self.played(datetime.date(2026, 9, 4), {self.ben: 6, self.carlo: -6}, unit="chips")
+        self.client.force_login(self.ben.user)
+        page = self.client.get(self.url).content.decode()
+        row = page.split('class="ledger-month"')[1]
+        self.assertIn("+6 chips", row)
+        self.assertIn("Carlo pays you <b>6 chips</b>", row)
+        self.assertNotIn("₱", row)

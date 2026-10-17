@@ -15,6 +15,8 @@ from groups.models import Member
 from notify import services as notify
 from settlement import queries as settlement_queries
 
+from .sessions_tab import destination
+
 State = GameSession.State
 TOKENS_SHOWN = 6
 DUES_SHOWN = 3
@@ -162,18 +164,15 @@ def _choose_status(card, nights, has_table) -> None:
     card.night = (running or nights)[0]
     card.set = card.night.latest_set
     card.more_open = len(nights) - 1
-    set_url = reverse("session", args=[card.set.pk])
+    card.action_url, card.action_label = destination(card.night, card.set)
     if running:
-        card.kind = "play"
-        card.action_label, card.action_url, card.action_primary = "Open the table", set_url, True
+        card.kind, card.action_primary = "play", True
         return
     card.kind = "open"
     if card.set.state in (State.SETUP, State.OPEN, State.RECONCILIATION):
-        card.action_label, card.action_url = f"Open set {card.set.set_number}", set_url
         # A host has work to do in these states; a player can join an open set.
         card.action_primary = card.me.is_host or card.set.state == State.OPEN
     else:
-        card.action_label, card.action_url = "Go to the session", reverse("night", args=[card.night.pk])
         card.action_primary = card.me.is_host
 
 
