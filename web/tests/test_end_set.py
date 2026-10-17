@@ -66,12 +66,12 @@ class EndSetPageTests(TestCase):
         self.night.cash('Bea', 1000)
         page = self.client.get(self.url)
         self.assertContains(page, 'role="alert"')
-        self.assertContains(page, '₱100 is missing')
+        self.assertContains(page, '<p class="discrepancy-amount">₱100 missing</p>', html=True)
         self.assertNotContains(page, 'data-balance=')
         services.record_override(self.night.session.pk, self.night.host, 'Synthetic recount',
                                  'player', self.night.players['Ben'].pk, uuid.uuid4())
         page = self.client.get(self.url)
-        self.assertContains(page, 'A host override covers the difference')
+        self.assertContains(page, 'Off by ₱100, covered by an override from Ben.')
         self.assertContains(page, 'Synthetic recount')
         self.assertContains(page, 'Finalize results')
 
@@ -156,5 +156,5 @@ class NeutralStateTests(TestCase):
         self.assertNotContains(page, 'class="discrepancy"')
         night.cash('A', 1500); night.cash('B', 400)
         page = self.client.get(url)
-        self.assertContains(page, '<p class="discrepancy-amount">−₱100</p>')
+        self.assertContains(page, '<p class="discrepancy-amount">₱100 missing</p>')
         self.assertContains(page, 'role="alert"')
