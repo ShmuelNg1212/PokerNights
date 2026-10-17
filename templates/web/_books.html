@@ -59,8 +59,9 @@
     </form>
     {% endif %}
     {% if balance.counted and not balance.ok %}
+    <p class="override-lead small">Cannot find the error?</p>
     <details data-key="override">
-      <summary class="small">Cannot find the error? Finalize with an override</summary>
+      <summary class="btn btn-quiet btn-block">Finalize with an override</summary>
       <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
         <p class="small muted">{% if summary.rake %}Cash-outs plus rake{% else %}Cash-outs{% endif %} must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
         <div class="field">

@@ -4,6 +4,12 @@ Short active items. The detail is in the linked documents.
 
 ## Active
 
+The override as a button: "Finalize with an override" opens from a quiet full-width button under a "Cannot find the error?" line, instead of a small text link.
+
+- [x] Build it on `feat/override-button`. Built 2026-10-17. 1,254 tests pass; `books_gap.mjs` 35/35, `books_motion.mjs` 28/28.
+- [ ] Say when to merge and release it.
+- [ ] After release, on your phone, on a set where the books are off: under the books' figures, "Cannot find the error?" then an outlined button, **Finalize with an override**. Tap it; it darkens, the chevron turns, and the form opens below. Tap it again; it closes.
+
 When the books do not balance ([plan](doc/plan/1792225143_books_off.md)): the gap in words, each player's in/out and net, the hand-typed cash-out that differs from its count marked, the host bar's button taking the host there, and an override that no longer looks like success.
 
 - [x] Build it on `feat/books-off`. Built 2026-10-17 by four parallel agents and merged. 1,253 tests pass; `books_gap.mjs` 34/34, `books_motion.mjs` 28/28, `count_flow.mjs` 91/91.

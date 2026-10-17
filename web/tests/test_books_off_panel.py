@@ -85,10 +85,11 @@ class BooksOffPanelTests(TestCase):
         self.assertNotIn("Confirmed counts", html)
         self.assertNotIn("data-count-coverage", html)
 
-    def test_the_override_link_stays_in_place(self):
+    def test_the_override_opens_from_a_button_in_place(self):
         html = self.page(self.night.host.user)
         self.assertIn('<details data-key="override">', html)
-        self.assertIn("Cannot find the error? Finalize with an override", html)
+        self.assertIn("Cannot find the error?", html)
+        self.assertIn('<summary class="btn btn-quiet btn-block">Finalize with an override</summary>', html)
 
 
 class RakeWordingTests(TestCase):
