@@ -6,7 +6,7 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 
 - [ ] Front door ([plan](doc/plan/1792250537_front_door_second_pass.md)): Log in shows the chip, the form and "Forgot your password?…" with no description. Open an invite link in a private tab: "Join {group}", "{you} invited you · N players", then the description, then the form.
 - [ ] Sign up: one password field. Type: the two rings fill as you pass 8 characters and add a letter. With the keyboard up, can you see them? Your password manager offers to save.
-- [ ] Send a common password such as "password1": the reason shows directly under the field.
+- [ ] Send a common password such as "password1": the reason shows directly under the field. An invited Sign up's button says "Create account and join"; the username hint lists @ . + - _.
 
 ## Phone checks (released 2026-10-17)
 
@@ -20,7 +20,6 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 
 ## Next (each needs its own study and plan)
 
-- [ ] Front door follow-ups (2026-10-17 critique): the username hint says "Letters and numbers, no spaces" but the server also takes `_ . @ + -` and one letter (reword or tighten: yours); five lines of help under the password field; say on the invite that the account joins the group at once.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`), and the checks that fail on `main` too: `navigate.mjs` (22 screen changes; a poll after leaving the set) and `home.mjs` (48 px targets in a card); see the [browser checks README](web/tests/browser/README.md).
 - [ ] Chip k6: dark initials on the orange fill measure 3.8:1 (found by the Sessions tab critique).
