@@ -2,13 +2,10 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (unreleased: `feat/sessions-tab`)
+## Phone checks (released 2026-10-17)
 
 - [ ] Sessions tab ([plan](doc/plan/1792243014_sessions_tab_redesign.md)): open a group during a game. Your table in play is the first card, on felt, with "You're playing" and **Open the table**; a tap anywhere on the card opens the set, once. Other tables follow; a draft is last, for hosts only.
 - [ ] Past sessions: months, newest first, last year folded. Each row shows your result and "You pay …" or "… pays you …". Pay one transfer: within 5 seconds the line goes.
-
-## Phone checks (released 2026-10-17)
-
 - [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place.
 - [ ] Change your name there: every group shows the new name. Change your password: this phone stays in, another browser is logged out.
 - [ ] Override button: on a set where the books are off, under the books' figures, "Cannot find the error?" then an outlined **Finalize with an override** button. Tap it: it darkens, the chevron turns, the form opens. Tap again: it closes.
