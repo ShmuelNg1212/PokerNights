@@ -1988,7 +1988,10 @@ p.alerts-text:last-child { margin-bottom: 0; }
 :is(.discrepancy-where, [data-key=override]) > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
 :is(.discrepancy-where, [data-key=override])[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .discrepancy-where > summary { font-size: .875rem; }
-[data-key=override] > summary { min-height: var(--tap); color: var(--muted); font-size: .875rem; font-weight: 500; }
+/* The override opens from a quiet button, as the host's other options do; its form's Record override stays the one danger action. */
+.override-lead { margin: var(--s-2) 0 calc(var(--s-1) * -1); color: var(--muted); }
+[data-key=override] > summary.btn { justify-content: center; color: var(--text); }
+[data-key=override][open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
 @media (prefers-reduced-motion: reduce) { :is(.discrepancy-where, [data-key=override]) > summary::after { transition: none; } }
 /* The one sentence under the gap: balanced lines, so "buy-ins" never splits at its hyphen. */
 .discrepancy :is(.gap-sentence, p) { text-wrap: balance; }
