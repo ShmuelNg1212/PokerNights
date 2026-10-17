@@ -32,7 +32,7 @@ try {
  await A.size(390);
  await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));console.log('  invited sign-up height at 390:',await A.js(`document.documentElement.scrollHeight`),'button bottom:',await A.js(`Math.round(document.querySelector('form [type=submit]').getBoundingClientRect().bottom)`));check('invited sign-up: Create account visible without scrolling at 390x844',await A.js(`document.querySelector('form [type=submit]').getBoundingClientRect().bottom<=844`));
  await A.go('/accounts/login/');check('login fits a 390x844 phone',await A.js(`document.documentElement.scrollHeight<=844`));
- await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));check('contrast invite link',await A.js(contrast('.entry-invite a'))>=4.5);await A.go('/accounts/login/');for(const sel of ['.entry-line','.entry-alt','.entry-alt a','.password-toggle','h1'])check('contrast '+sel,await A.js(contrast(sel))>=4.5);
+ await A.go('/accounts/signup/?next='+encodeURIComponent(M.invite));check('contrast invite link',await A.js(contrast('.entry-invite a'))>=4.5);await A.go('/accounts/login/');for(const sel of ['.entry-forgot','.entry-alt','.entry-alt a','.password-toggle','h1'])check('contrast '+sel,await A.js(contrast(sel))>=4.5);
  await A.go('/accounts/signup/');check('contrast hint',await A.js(contrast('.hint'))>=4.5);
  // Invite naming.
  await A.go('/accounts/login/?next='+encodeURIComponent(M.invite));check('login names the inviting group',await A.js(text("You're invited to "+M.group)));
@@ -42,13 +42,13 @@ try {
  // Show / Hide.
  await A.go('/accounts/signup/');
  check('toggle is shown by the script',await A.js(`!document.querySelector('[data-password-toggle]').hidden&&document.querySelectorAll('[data-password-toggle]').length===1`));
- await A.js(`document.querySelector('[name=username]').value='someone';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91';document.querySelector('[data-password-toggle]').focus()`);
+ await A.js(`document.querySelector('[name=username]').value='someone';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[data-password-toggle]').focus()`);
  await A.click(`document.querySelector('[data-password-toggle]')`);
- check('show reveals both fields and keeps names',await A.js(`['password1','password2'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')&&document.querySelector('[data-password-toggle]').getAttribute('aria-label')==='Hide password'&&!document.querySelector('[data-password-toggle]').hasAttribute('aria-pressed')&&document.querySelector('[data-password-toggle]').textContent==='Hide'&&document.activeElement.matches('[data-password-toggle]')`));
+ check('show reveals the one field and keeps its name',await A.js(`document.querySelectorAll('input[type=text],input[type=password]').length===2&&['password1'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')&&document.querySelector('[data-password-toggle]').getAttribute('aria-label')==='Hide password'&&!document.querySelector('[data-password-toggle]').hasAttribute('aria-pressed')&&document.querySelector('[data-password-toggle]').textContent==='Hide'&&document.activeElement.matches('[data-password-toggle]')`));
  await A.shot('entry-signup-shown-390');
  await A.js(`window.__types=null;document.querySelector('form.form-section').addEventListener('submit',e=>{window.__types=[...e.target.querySelectorAll('[name^=password]')].map(f=>f.type);e.preventDefault()})`);
  await A.click(`document.querySelector('form.form-section [type=submit]')`);
- check('fields return to password type on submit',await A.js(`JSON.stringify(window.__types)==='["password","password"]'`));
+ check('the field returns to password type on submit',await A.js(`JSON.stringify(window.__types)==='["password"]'`));
  // Keyboard order and focus ring on login.
  await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').focus()`);const order=[];
  for(let i=0;i<4;i++){await A.key('Tab','Tab',9);order.push(await A.js(`document.activeElement.name||document.activeElement.className||document.activeElement.textContent.trim()`));}
@@ -61,7 +61,7 @@ try {
  check('wrong login: plain words, forgot line, focus on Password',await A.js(`${text("That username and password don't match.")}&&${text('Forgot your password? Ask a host of your group for a reset link.')}&&document.activeElement.name==='password'&&document.querySelectorAll('[role=alert]').length===1&&document.querySelectorAll('[aria-invalid=true]').length===2`));
  check('contrast forgot line',await A.js(contrast('.entry-forgot'))>=4.5);
  for(const width of [320,390]){await A.size(width);check('login error fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));await A.shot('entry-login-error-'+width);}
- await A.size(390);await A.go('/accounts/signup/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password1]').value='12345678';document.querySelector('[name=password2]').value='12345678'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
+ await A.size(390);await A.go('/accounts/signup/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password1]').value='12345678'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
  check('refused sign-up: one alert and focus on the refused field',await A.js(`document.querySelectorAll('[role=alert]').length===1&&${text('Check the highlighted fields.')}&&document.activeElement.name==='username'`));
  check('refused sign-up names the rules under the fields',await A.js(`document.querySelector('#id_password1_error').textContent.includes('Use more than digits.')&&!document.querySelector('#id_password2_error')&&${text('That name is taken. Try another.')}&&document.querySelector('[name=username]').value==='hana'&&getComputedStyle(document.querySelector('[name=username]')).borderTopColor!==getComputedStyle(document.querySelector('[name=password1]')).color`));
  for(const width of [320,390]){await A.size(width);check('sign-up error fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));await A.shot('entry-signup-error-'+width);}
@@ -72,7 +72,7 @@ try {
  check('invite link leads a signed-out person to sign up',await B.js(`location.pathname==='/accounts/signup/'&&${text("Join "+M.group)}&&${text('It never moves money.')}&&document.querySelector('.entry-invite').textContent.includes('Already have an account?')&&!document.querySelector('.entry-alt')&&document.querySelector('.entry-invite a').getBoundingClientRect().bottom<document.querySelector('[name=username]').getBoundingClientRect().top`));
  check('sign up says who sees the name and where a reset comes from',await B.js(`${text('Your friends see this name.')}&&${text('A host of your group can send you a reset link.')}`));
  check('contrast reset note',await B.js(contrast('.hint-note'))>=4.5);
- await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);
+ await B.js(`document.querySelector('[name=username]').value='newcomer';document.querySelector('[name=password1]').value='tablestakes-91'`);
  await B.js(`document.querySelector('form.form-section').addEventListener('submit',()=>setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},5))`);
  await B.click(`document.querySelector('form.form-section [type=submit]')`);
  check('sign-up lands in the group with a welcome',await B.js(`location.pathname.startsWith('/g/')&&${text('Welcome to '+M.group+". You're in.")}`));await B.shot('entry-welcome-390');

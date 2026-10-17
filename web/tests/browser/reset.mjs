@@ -21,7 +21,7 @@ const targets=`[...document.querySelectorAll('main a.btn, main button, main inpu
 // WCAG contrast of an element's text against the page ground, via canvas so oklch resolves.
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.body).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
 try {
- const fill=(P,a,b)=>P.js(`document.querySelector('[name=new_password1]').value=${JSON.stringify(a)};document.querySelector('[name=new_password2]').value=${JSON.stringify(b??a)}`);
+ const fill=(P,a)=>P.js(`document.querySelector('[name=new_password1]').value=${JSON.stringify(a)}`);
  const submit=P=>P.click(`document.querySelector('form.form-section [type=submit]')`);
  const logIn=async(P,name,password)=>{await P.go('/accounts/login/');await P.js(`document.querySelector('[name=username]').value=${JSON.stringify(name)};document.querySelector('[name=password]').value=${JSON.stringify(password)}`);await submit(P)};
  const create=`document.querySelector('form[action$="/reset-link/"] button')`;
@@ -51,15 +51,17 @@ try {
  await B.size(390);
  check('reset page: heading, username, no site header, title without the name',await B.js(`document.querySelector('h1').textContent==='Set a new password'&&${text('Your username is ben.')}&&!document.querySelector('.site-header')&&document.title==='Reset password · PokerNights'`));
  check('reset page fits a 390x844 phone',await B.js(`document.documentElement.scrollHeight<=844`));
- check('cursor starts in New password; one Show button for both fields',await B.js(`document.activeElement.name==='new_password1'&&document.querySelectorAll('[data-password-toggle]').length===1&&!document.querySelector('[data-password-toggle]').hidden`));
+ check('cursor starts in New password; one field with one Show button',await B.js(`document.activeElement.name==='new_password1'&&document.querySelectorAll('[data-password-toggle]').length===1&&!document.querySelector('[data-password-toggle]').hidden`));
  for(const sel of ['h1','.entry-invite','.hint','.password-toggle'])check('contrast '+sel,await B.js(contrast(sel))>=4.5);
  await fill(B,'tablestakes-92');await B.click(`document.querySelector('[data-password-toggle]')`);
- check('show reveals both fields',await B.js(`['new_password1','new_password2'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')`));
+ check('show reveals the field',await B.js(`!document.querySelector('[name=new_password2]')&&['new_password1'].every(n=>document.querySelector('[name='+n+']').type==='text'&&document.querySelector('[name='+n+']').autocomplete==='new-password')`));
  await B.go(link);await fill(B,'12345678');await submit(B);
  check('refused password: plain words, one alert, focus on the refused field, fields empty',await B.js(`${text('Use more than digits.')}&&document.querySelectorAll('[role=alert]').length===1&&document.activeElement.name==='new_password1'&&document.querySelector('[name=new_password1]').value===''&&location.pathname===${JSON.stringify(link)}`));
  check('refused page fits',await B.js(`document.documentElement.scrollWidth<=390`));await B.shot('reset-refused-390');
- await fill(B,'tablestakes-92','tablestakes-93');await submit(B);
- check('mismatch is reported under Repeat password',await B.js(`${text("The two passwords don't match.")}&&document.activeElement.name==='new_password2'`));
+ await fill(B,'1234567');await B.js(`document.querySelector('[name=new_password1]').dispatchEvent(new Event('input'))`);
+ check('the rules tick on the reset page too',await B.js(`[...document.querySelectorAll('.door-rules li')].map(li=>'met' in li.dataset?1:0).join('')==='00'`));
+ await fill(B,'tablestakes-92');await B.js(`document.querySelector('[name=new_password1]').dispatchEvent(new Event('input'))`);
+ check('both rules met for a good password',await B.js(`[...document.querySelectorAll('.door-rules li')].every(li=>'met' in li.dataset)`));
  await B.js(`document.querySelector('form.form-section').addEventListener('submit',()=>setTimeout(()=>{window.__busy=document.querySelector('form.form-section [type=submit]').textContent},20))`);
  await fill(B,'tablestakes-92');await submit(B);
  check('saving logs in and lands on Your groups',await B.js(`location.pathname==='/'&&!!document.querySelector('.site-header')&&${text("Password changed. You're logged in.")}`));await B.shot('reset-done-390');

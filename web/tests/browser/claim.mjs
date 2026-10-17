@@ -44,7 +44,7 @@ try {
  const B=await page();await B.go(tito);
  check('a signed-out visitor lands on Sign up, naming the group',await B.js(`location.pathname==='/accounts/signup/'`)&&await B.js(text('Thursday Regulars')));
  check('opening changed nothing',await A.js(`(async()=>{const r=await fetch(location.href);return (await r.text()).includes('Claim link active until')})()`));
- await B.js(`document.querySelector('[name=username]').value='titoboy';document.querySelector('[name=password1]').value='tablestakes-91';document.querySelector('[name=password2]').value='tablestakes-91'`);await submit(B);
+ await B.js(`document.querySelector('[name=username]').value='titoboy';document.querySelector('[name=password1]').value='tablestakes-91'`);await submit(B);
  check('the new account arrives in the group as the player',await B.js(text("You're in as Tito Boy."))&&await B.js(`new RegExp('^/g/[0-9]+/$').test(location.pathname)`));
  await B.go(settings);check('the player keeps the name and the history',await B.js(`(()=>{const li=${row('Tito Boy')};return li.textContent.includes('(you)')&&li.textContent.includes('1 session · last played Oct 1')&&!li.textContent.includes('No login')})()`));await B.shot('claim-arrived-390');
 

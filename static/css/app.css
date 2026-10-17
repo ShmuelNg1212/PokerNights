@@ -848,6 +848,14 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 .entry-page h1 { margin: 0; font-size: 1.375rem; font-weight: 700; text-align: center; text-wrap: balance; }
 .entry-invite { margin: var(--s-2) 0 0; text-align: center; text-wrap: balance; }
 .door-invited { margin: var(--s-2) 0 0; color: var(--text); font-weight: 600; text-align: center; text-wrap: balance; }
+/* Password rules: a ring until the rule is met, then a filled check. Shape changes as well as colour. */
+.door-rules { display: flex; flex-wrap: wrap; gap: 2px var(--s-4); margin: 0; padding: 0; list-style: none; }
+.door-rules li { display: inline-flex; align-items: center; gap: 6px; }
+.door-rules li::before { content: ""; flex: none; width: 14px; height: 14px; box-sizing: border-box; border: 1.5px solid var(--line); border-radius: 50%; }
+.door-rules li[data-met] { color: var(--text); }
+.door-rules li[data-met]::before { border-color: var(--good); background: var(--good) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.5 7.2l2.3 2.3 4.7-4.9' fill='none' stroke='%23231d17' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
+@keyframes door-tick { from { opacity: .3; transform: scale(.6); } }
+@media (prefers-reduced-motion: no-preference) { .door-rules li[data-met]::before { animation: door-tick 120ms var(--ease-out); } }
 .door-line { margin: var(--s-2) auto 0; max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-note { margin: var(--s-3) auto var(--s-5); max-width: 40ch; color: var(--muted); font-size: .9375rem; text-align: center; text-wrap: balance; }
 .entry-page .form-section { margin: var(--s-4) 0 0; padding: 0; border-top: 0; }

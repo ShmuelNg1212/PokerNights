@@ -1,6 +1,7 @@
 {% load table_tags %}<div class="field">
   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
   {% if toggle %}<div class="password-wrap">{{ field|focus_unless:chat.card }}<button type="button" class="password-toggle" data-password-toggle hidden aria-label="Show password">Show</button></div>{% else %}{{ field|focus_unless:chat.card }}{% endif %}
-  {% if field.help_text %}<div id="{{ field.auto_id }}_helptext" class="hint">{{ field.help_text }}{% if note %}<span class="hint-note">{% if note_strong %}<strong>{{ note_strong }}</strong> {% endif %}{{ note }}</span>{% endif %}</div>{% endif %}
+  {% if field.help_text %}<div id="{{ field.auto_id }}_helptext" class="hint">{% if rules %}<ul class="door-rules" data-password-rules><li data-rule="length">At least 8 characters</li><li data-rule="digits">Not only digits</li></ul><span class="hint-note">When you send, we also check that it is not a common password and not like your username.</span>{% else %}{{ field.help_text }}{% endif %}{% if note %}<span class="hint-note">{% if note_strong %}<strong>{{ note_strong }}</strong> {% endif %}{{ note }}</span>{% endif %}</div>{% endif %}
+  {% if rules %}<span class="visually-hidden" aria-live="polite" data-rules-status></span>{% endif %}
   {% if field.errors %}<div class="errors">{{ field.errors }}</div>{% endif %}
 </div>

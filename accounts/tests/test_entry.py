@@ -98,7 +98,10 @@ class EntryPagesTests(TestCase):
         page = self.client.get(self.signup)
         self.assertContains(page, "<h1>Create your account</h1>")
         self.assertContains(page, "Your friends see this name. Letters and numbers, no spaces.")
-        self.assertContains(page, "At least 8 characters, not a common password, not only digits, and not like your username.")
+        # Two rules the phone can judge tick as the person types (password.js); the server judges all four.
+        self.assertContains(page, '<li data-rule="length">At least 8 characters</li>', html=True)
+        self.assertContains(page, '<li data-rule="digits">Not only digits</li>', html=True)
+        self.assertContains(page, "When you send, we also check that it is not a common password and not like your username.")
         self.assertContains(page, "Forgot it later? A host of your group can send you a reset link.")
         self.assertNotContains(page, "There is no password reset yet.")
         self.assertNotContains(page, "Repeat password")  # Show and the password manager cover a typo
