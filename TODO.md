@@ -2,12 +2,9 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (not released)
-
-- [ ] What next ([plan](doc/plan/1792508082_end_of_set_words_and_next_step.md)): finalize a set. Under the result, "What next?" shows **Play set 2** and **Settle up** side by side; they rise once. **Settle up** opens "Close the session?" with **Not yet**; the session page shows the same two cards and no **Open set 1**. The review page and the final page each say "The books balance" once; each player's result is one line. As a player: "Who pays whom comes when the host settles up."
-
 ## Phone checks (released 2026-10-20)
 
+- [ ] What next ([plan](doc/plan/1792508082_end_of_set_words_and_next_step.md)): finalize a set. Under the result, "What next?" shows **Play set 2** and **Settle up** side by side; they rise once. **Settle up** opens "Close the session?" with **Not yet**; the session page shows the same two cards and no **Open set 1**. The review page and the final page each say "The books balance" once; each player's result is one line. As a player: "Who pays whom comes when the host settles up."
 - [ ] Rename a group: as a host, Group settings → Manage this group. Type a new name and tap **Rename group**: the header and Your groups show it. A rule separates Archive and Delete below. As a player, the form is not there.
 
 ## Phone checks (released 2026-10-18)
