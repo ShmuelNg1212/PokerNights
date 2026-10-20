@@ -30,8 +30,8 @@ What the app does today (Stage 1). Items that are planned but not built are list
 
 - A **session** is one gathering at one table on one date. It holds one or more **sets**, played one after another.
 - Each set has its own buy-ins, cash-outs, balance check, results and timer. A new set starts money-free. Before play starts, the host can record fresh opening buy-ins with the default start option.
-- After play of a set has ended, the host taps **Start next set**. The new set has the same table and settings and the players who were still at the table. The host can add or remove players before starting it.
-- Who pays whom is worked out **once per session**: the host taps **Close session and settle up** when every set is finalized or canceled. The list nets each player's results over all sets.
+- After play of a set has ended, the host taps **Play set N** under “What next?” on the final set page or the session page. The new set has the same table and settings and the players who were still at the table. The host can add or remove players before starting it.
+- Who pays whom is worked out **once per session**: the host taps **Settle up** under “What next?”, then **Close session and settle up** in its sheet, when every set is finalized or canceled. The list nets each player's results over all sets.
 - A closed session cannot get another set.
 
 ## Timers
@@ -223,10 +223,10 @@ The layout and several details below changed on 2026-10-05; “Count-up, review 
 
 - Count-up uses the neutral lead panel and shows ready plus finally cashed-out players out of all players with buy-ins. Earlier partial cash-outs do not complete a player. Total bought in and recorded cash-outs have separate labels.
 - Every eligible host count field stays inline. A confirmed count is written above the draft field. Count confirmation and recording cash-outs remain separate actions. Players see statuses and confirmed counts without host inputs.
-- The host dock links to the batch review when counts are ready, offers finalization only when the books balance, and exposes the next-step explanation. Resume play and cancellation remain under More host controls.
-- Batch review shows the confirmed amount to record, this batch's total, the amount already cashed out and the prospective total after confirmation. It makes no payment and does not finalize.
+- The host dock links to the batch review when counts are ready, offers finalization only when the books balance, and shows a hint under the button only when the hint adds to the button's words. Resume play and cancellation remain under More host controls.
+- Batch review shows “After this batch” against “Bought in” (and collected rake), the table of confirmed amounts with this batch's total, and the verdict above **Cash out N players**. It makes no payment and does not finalize. “Still to count” shows only when somebody is left.
 - The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser; with Motion the rule draws and then the words rise. Reduced motion leaves it static.
-- Final set results use frozen snapshots, with Final tags, signed amounts, directional icons and time played. The viewer's result is prominent. Who pays whom stays on the session page.
+- Final set results use frozen snapshots, with signed amounts, directional icons and one line of facts per player: in, rebuys, out, rake, override, time played. The viewer's result is prominent. Who pays whom stays on the session page.
 - Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check sits above the count list. Waiting for counts is a neutral notice. When every player is cashed out and the books still differ, the panel leads with the exact signed amount and the next step. Long names wrap. JavaScript-free forms remain usable.
 
 
@@ -338,8 +338,23 @@ From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end
 - **The review says where the books will stand,** directly above its button: they balance; they are ₱50 short or over; or some players are still to count.
 - **Finalize asks once.** The button opens a sheet with the players, total bought in, total cashed out and the verdict, and one button "Finalize set N". "Not yet" has the focus. Without scripts the same content is a disclosure.
 - **Messages sit above the bottom bar** on a set page, never on it.
-- **The final page leads with its proof:** "6 players · ₱9,500 in · ₱9,500 out" and "The books balance." The cash-out total is labelled "Total cashed out". Rake rows show only when rake was collected. An even result reads "Even". A final set shows no Live status.
+- **The final page leads with its proof:** "6 players · ₱9,500 in · ₱9,500 out" (and "· ₱300 rake" when rake was collected) and "The books balance." No totals list repeats these figures. The date line ends with the set's time. An even result reads "Even". A final set shows no Live status.
 - **Host controls are evenly spaced:** 8px between neighbouring controls at every width.
+
+### What next? (2026-10-20)
+
+[Plan](../plan/1792508082_end_of_set_words_and_next_step.md), [study](../study/1792508023_end_of_set_words_and_next_step.md).
+
+- **Two equal choices.** On a final set page, a host sees “What next?” and two cards: **Play set N** (“Same players, new buy-ins.”) and **Settle up** (“End the session. See who pays whom.”). The open session page shows the same two cards. Neither is the default.
+- **Play set N** starts the next set at once and opens it. No confirmation: an empty set can be cancelled.
+- **Settle up** opens a sheet: “Close the session?”, three lines (how many sets are added up, who pays whom is listed, no set can start after this), the carry list when there is one, **Close session and settle up**, and **Not yet** with the focus. Without scripts the same content opens in place.
+- **When the cards show.** Host only, while the session is open and no later set is open or in play. With a later set, the final page offers **Go to set N** instead. While another set is unfinished, Settle up is a disabled card: “Finish set N first.”, or “Cancel the set N draft first.” for a draft.
+- **A player** reads “Who pays whom comes when the host settles up.” and **Go to the session**.
+- **The session page** shows **Open set N** only for the latest set that is not finished. The rake row shows only when rake was collected. “Results so far” has a “Not final” badge.
+- **On a phone** “Found a mistake?” and **Reopen set** follow the results, so the choice stands alone under the proof.
+- **Motion.** The two cards rise 8 px and fade in once per set and browser, 60 ms apart, after finalizing. A press during the rise takes over. Reduced motion, a blocked Motion file and a reload show them at once.
+- **Live.** A final set's poll version also carries the session's set states and status, so the choice changes when another set moves or the session closes.
+- Code: `templates/web/_next_step.html`, `templates/web/_carry_pick.html`, `web.views.next_step`, `web.views.live_version`, `static/js/nextstep.js`, the “What next?” block at the end of `static/css/app.css`.
 
 
 On count confirmation, a visible typed field keeps its position when the accepted status adds a line. Other forms' drafts and open Details remain intact. See [the scroll footgun](footguns/count_status_moves_the_field.md).
@@ -635,7 +650,7 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 
 [Plan](../plan/1791728777_carried_debts.md), [study](../study/1791728776_carried_debts.md). Unpaid transfers of earlier sessions can be folded into a later session's settle-up when it is closed.
 
-- **Before closing.** Above "Close session and settle up" a host sees "Carry unpaid transfers from earlier sessions": each transfer that qualifies, with its table and date, ticked. Any can be unticked. A line under the list counts the ticked ones. With none that qualify the close looks as before.
+- **Before closing.** In the Settle up sheet, above "Close session and settle up", a host sees "Carry unpaid transfers from earlier sessions": each transfer that qualifies, with its table and date, ticked. Any can be unticked. A line under the list counts the ticked ones. With none that qualify the close looks as before.
 - **What qualifies.** A transfer of the same group and the same unit, in the current list of a closed session that is not archived, not marked paid, not carried already, whose payer and payee both have a result in the session being closed. Any table.
 - **Closing.** Each ticked transfer moves its amount from the payer's balance to the payee's, on top of the session's results; the balances still sum to zero and the same netting writes the fewest transfers that clear them. The list can therefore name different pairs than the earlier transfers did. Every ticked transfer is checked again under lock; if one was paid, carried elsewhere or no longer qualifies, nothing is closed and the page says so.
 - **The later session's page.** "Who pays whom" is the netted list. Under it, "Includes N unpaid transfers from earlier sessions" opens them, each "{payer} owed {payee}" with a link to its session. A person whose earlier transfer was taken over sees how their figure is made up: this session's balance, each carried debt with its sign, and "To settle".
@@ -658,7 +673,7 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 - **The reminder** (2026-10-16). Once per window (an app launch), on Your groups with a group, for a phone whose permission is unasked: the bell's panel opens by itself with **Not now**, and the bell swings once. It waits for the arrival (about 1.4 seconds after a login, 0.8 otherwise) and gives way to any open sheet, the home-screen sheet first; it then comes at the next start of Your groups in that window. Never on another page, never when on or blocked. `sessionStorage` `pn-alerts-reminded`; without storage there is no reminder. The 30-day Not now of the old foot panel is gone and its key removed.
 - **In the app.** A card on Your groups whose set added the viewer says "Ana added you" with a brass dot, and its button leads, until the viewer opens the set. A refresh of Your groups brings it in.
 - **On the set page, for everyone else.** A player added by someone else gets the brass mark and "Joined" ("You're in" on the viewer's own row) for three seconds, with or without motion; the players count draws its brass line. When the new row is out of view, a toast names who joined ("Ana and Ben joined") with **Show**, which scrolls to the row and marks it again; when it is in view, screen readers hear "Ana joined the set.". The host's own add is marked but not announced. Nothing is announced in a hidden tab.
-- **The next set** (2026-10-15, [plan](../plan/1792073300_next_set_for_players.md)). **Start next set** tells each player carried into the new set, other than the host: "Friday table · set 2 is open", "ari started set 2. You're at the table.", and "ari started set 2" on Your groups (notice kind `next`). Every phone on the previous set's page (counting up, final or canceled) shows within a poll "Set 2 has started", a line saying whether the viewer is at its table, and **Go to set 2**; the final page's own button leads there too. The page learns of it without a write to the previous set: an ended set's live version is "{version}.{later set}" (`web.views.later_set`, `live_version`), asked only for an ended set. A count form on the previous set stays as it was. Switch: `NEXT_SET_NOTICE=False` returns those pages to before; the alert follows `PUSH_ALERTS` and `TABLE_NOTICES`.
+- **The next set** (2026-10-15, [plan](../plan/1792073300_next_set_for_players.md)). **Play set N** tells each player carried into the new set, other than the host: "Friday table · set 2 is open", "ari started set 2. You're at the table.", and "ari started set 2" on Your groups (notice kind `next`). Every phone on the previous set's page (counting up, final or canceled) shows within a poll "Set 2 has started", a line saying whether the viewer is at its table, and **Go to set 2**; the final page's own button leads there too. The page learns of it without a write to the previous set: an ended set's live version is "{version}.{later set}" (`web.views.later_set`, `live_version`), asked only for an ended set. A count form on the previous set stays as it was. Switch: `NEXT_SET_NOTICE=False` returns those pages to before; the alert follows `PUSH_ALERTS` and `TABLE_NOTICES`.
 - **Endpoints.** `POST /alerts/subscribe/` (the browser's `PushSubscription` as JSON; an upsert by its unique endpoint) and `POST /alerts/unsubscribe/`, login and CSRF as everywhere.
 - **Switches.** `PUSH_ALERTS=False` (or a missing VAPID key) sends nothing and hides the bell and the reminder. `TABLE_NOTICES=False` hides "added you". `ARRIVAL_MARKS=False` returns the set page to the 12px rise alone. `SERVICE_WORKER=False` removes the worker and the alerts with it.
 - **Checks.** `notify/tests/` and `web/tests/test_table_alerts.py`; in a browser, `web/tests/browser/arrivals.mjs` and `alerts_bell.mjs`, each on its own fresh `seed_arrivals.py` (the phone's push service stubbed). Real delivery is checked on a phone.

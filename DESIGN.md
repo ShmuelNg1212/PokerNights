@@ -267,11 +267,11 @@ The dock opens review when confirmed counts are ready, offers finalization when 
 
 ### Cash-out review
 
-Neutral-panel totals separate “Total of this batch,” “Recorded cash-outs,” prospective “After this batch” and “Total bought in.” A fixed-layout table pairs initial tokens and wrapping names with right-aligned exact confirmed cash-out amounts. The player column occupies 56%; the batch total has a footer row. A drawn back arrow accompanies the written set link. Awaiting and already-cashed-out lists remain separate. Written guidance states that this action records cash-outs without finalizing or marking payment; stale reviews retain an error and fresh values.
+Neutral-panel totals show prospective “After this batch” against “Bought in” (and “Collected rake” when there is rake); the table footer holds this batch's total. A fixed-layout table pairs initial tokens and wrapping names with right-aligned exact confirmed cash-out amounts. The player column occupies 56%; the batch total has a footer row. A drawn back arrow accompanies the written set link. Awaiting and already-cashed-out lists remain separate; each shows only when it has a player. The button names the action, with no guidance paragraph; stale reviews retain an error and fresh values.
 
 ### Final results
 
-The neutral overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. Facts list buy-in count and total, cumulative cash-outs, any override and recorded time played. Snapshot values supply the results. Override disclosure remains written, and the session link explains where the next set or settle-up belongs. Set-level transfers and payment controls are absent.
+The neutral overview gives the viewer’s frozen signed result prominence when present. Result rows pair tokens and wrapping names with signed right-aligned amounts and direction icons; a written Final tag marks the section. One muted line of facts per row: total in, rebuys, cumulative cash-outs, rake, any override and recorded time played; each figure stays on one line with its word. Snapshot values supply the results. Override disclosure remains written. The next set and settle-up are the “What next?” choice (2026-10-20). Set-level transfers and payment controls are absent.
 
 ### Session overview and settle-up
 
@@ -279,7 +279,7 @@ The open-session neutral overview leads with the current set action and the view
 
 Transfer rows pair payer and payee identity tokens with full names, “pays,” an exact amount and Paid / Not paid text. Identities adapt at 440px of actual card width, including the 416px desktop detail column at a 900px viewport. Named grid areas fix amount, state and action positions. Financial rows align at their top edges; timestamps grow below the badge. Figures stay on one line: the base is 28px, formatted lengths above 10 use 22px narrow / 28px wide, and above 17 use 18px narrow / 22px wide. Currency, digits, decimal precision and the chips unit remain complete. Paid includes its recorded time and “marked by the host.” Host Mark paid and Undo are native POST actions. The session identity order follows first appearance in aggregate standings and keys tokens by member; it need not match a set’s colour order. Payment records retain recorder and undone status, with struck text for reversed records.
 
-Aggregate results remain separate from transfers and payments, using frozen finalized-set values, signed figures and direction icons. Closed results carry Final; open results say “Over finalized sets; session still open.” No-finalization state is explicit. A viewer without a standing receives no invented result. Sets retain number, written state and known timer values; the existing “Play time over all sets” line is distinct from the recap’s finalized-only duration.
+Aggregate results remain separate from transfers and payments, using frozen finalized-set values, signed figures and direction icons. Closed results carry Final; open results carry a “Not final” badge. No-finalization state is explicit. A viewer without a standing receives no invented result. Sets retain number, written state and known timer values; the existing “Play time over all sets” line is distinct from the recap’s finalized-only duration.
 
 ### Closing recap
 
@@ -890,7 +890,7 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 [Plan](doc/plan/1791699815_reopen_set_and_session.md). No new colour, font, asset or motion preset.
 
-- **Reopen set** sits last in the final page's left column, under a Line rule: a 14px heading “Found a mistake?”, one muted sentence and a quiet full-width button. It never competes with “Next set or settle up”. In a closed session the button is “Go to the session” and the sentence says why.
+- **Reopen set** sits last in the final page's left column, under a Line rule: a 14px heading “Found a mistake?”, one muted sentence and a quiet full-width button. Below 900 px it follows the results, so it never competes with the “What next?” choice. In a closed session the button is “Go to the session” and the sentence says why.
 - **Reopen session** is a neutral button in “Manage this session”, after Archive, with its own sentence. With a paid mark the sentence says what to do and no button appears, as the archive rules have it.
 - **The two sheets** reuse the finalize confirmation: a question as the title, three consequences as Rule-separated lines, one labelled reason field with a help line, a primary button that names the action, and a quiet “Keep it final” or “Keep it closed”. Focus starts in the reason field; an empty reason is stopped by the browser.
 - **The reason line** (`.correction`) lives on the felt under the date line: a 2px Brass rule across the panel, a Brass bold lead (“Reopened to correct.”, “Corrected.”, “Reopened.”), the reason in quotation marks in Bone, and who and when in felt ink at 13px. Brass is the system's “this changed” colour.
@@ -1137,6 +1137,17 @@ No figure counts. Reduced motion and a missing Motion file move nothing.
 - **Past sessions** use the full width. Month headings at 0.9375rem, weight 700, Bone Dim. Row: the table in bold, then "date · N sets · status" at 0.875rem in Bone Dim. The status is words: "Settled" with a 14px Up check, "₱500 still to pay", "Partly paid, ₱200 still to pay". At the right, the viewer's net at 1.25rem in the money width with its direction icon, "Even", or "Did not play" in Bone Dim. Under it, one line per unpaid transfer of the viewer's in Up or Down with words: "You pay Carlo ₱500", "Dina pays you ₱200".
 - **Years.** This year's months are open. Each earlier year is a closed disclosure, "2025 · N sessions", 48px, with a chevron that turns (no turn with reduced motion).
 - **Measured.** `sessions_tab.mjs`, 130 checks at 320, 390 and 1280: order, felt only in play, one bone action, link names, 48px targets, contrast (felt ink on felt 7.79:1), no overflow with a 60-character name and ₱1,999,999.98, the pressed card, a tap anywhere opening the set, the year disclosure, a live redraw keeping the scroll, reduced motion and no JavaScript.
+
+### What next? (2026-10-20)
+
+[Plan](doc/plan/1792508082_end_of_set_words_and_next_step.md). No new colour, font, asset or motion preset.
+
+- **Two equal cards** under “What next?” (an h2): **Play set N** and **Settle up**. Each is a `.btn` in a two-column grid (`repeat(auto-fit, minmax(min(100%, 140px), 1fr))`, 12px gap): Rail 2, Line border, 15px corners, the button underside, left-aligned. Title 18px weight 700 Bone; one line 13px Bone Dim, `text-wrap: balance`. Equal height side by side; stacked at 320px they take their content's height. Neither is primary.
+- **Blocked settle-up** is the same card disabled: transparent, Rule border, no underside, title in Bone Dim, and the reason as its line. It is not faded, so the reason keeps 4.5:1.
+- **The settle-up sheet** reuses the reopen sheet: “Close the session?”, three Rule-separated lines, the carry list, a primary **Close session and settle up** and a quiet **Not yet** with the focus.
+- **Final page.** The felt holds the title, the date line ending with the set's time, the proof line and the verdict; no totals list. Each “figure + word” in the proof and the result lines is one unbreakable pair. Below 900px the page is one column and “Found a mistake?” follows the results.
+- **Motion.** One moment, once per set and browser, on the final page only: each card fades in and rises 8px with the `arrive` spring, 80ms then 140ms after the redraw. Opacity and `y` are two animations, so a press during the rise takes over `y` and nothing stays inline. Reduced motion, a blocked Motion file and a reload show the cards at once. Money does not move.
+- **Measured.** 12 motion checks, 4 session-page sheet checks and 7 fallback and contrast checks at 390px; worst-case captures at 320, 390 and 1280px. Contrast: card title 12.46:1, card line 6.6:1, result line 8.28:1.
 
 ## Do's and Don'ts
 

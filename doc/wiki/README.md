@@ -48,6 +48,8 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [stretched_link_prefetches_twice.md](footguns/stretched_link_prefetches_twice.md) | A link stretched over a card by `::after` makes Turbo fetch the page twice per tap; make the card one link |
 | [hub_stamp_counts_seats.md](footguns/hub_stamp_counts_seats.md) | The hub stamp counts seats, not who sits; a swap does not redraw the chips |
 | [stats_order_slides_without_ranked_list.md](footguns/stats_order_slides_without_ranked_list.md) | With nobody ranked, a new order slides the whole board; rows move one by one only in the ranked list |
+| [in_place_answer_skips_page_start.md](footguns/in_place_answer_skips_page_start.md) | An action's answer redraws the set in place; listen to `live:updated` as well as page start |
+| [press_interrupts_a_combined_animation.md](footguns/press_interrupts_a_combined_animation.md) | Animate a button's `y` and `opacity` in two calls, or a press leaves `opacity` inline |
 
 ## Agent workflow
 

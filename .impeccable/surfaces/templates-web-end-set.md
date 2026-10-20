@@ -70,3 +70,11 @@ The approved `doc/plan/1791098885_ui_evolution.md` evolves this surface inside t
 ## 2026-10-10 addendum — count-up in one line
 
 The approved `doc/plan/1791630963_count_up_and_settle_up_revamp.md` recomposes count-up: one 65px line per player with the count field on it, the field stating the count's state, player details in a sheet, one mark per player in the overview, and "The books" in place of Set totals and Balance check. Accounting, the counts form, the preview and the verdict are unchanged. DESIGN.md, "Count-up in one line", supersedes the row and order described above. The earlier screen and its switch were removed on 2026-10-12. Evidence: `count_flow.mjs`, `end_set.mjs`, `dock.mjs`, `player_entries.mjs`, `numpad.mjs` and `inplace.mjs` on fresh seeds; captures at 320, 390 and 1280px reviewed with one fix batch. No separate critique run was made.
+
+## 2026-10-20 addendum — What next? and fewer words
+
+The approved `doc/plan/1792508082_end_of_set_words_and_next_step.md` extends this Operate surface inside the Rack. After the books balance, each fact is said once: the books panel says "The books balance." alone, the dock shows no hint under Finalize results, the review page drops its three paragraphs, and the final page drops its totals list and the "Payment:" paragraph. The final page's proof line and verdict lead; each result row has one line of facts.
+
+The focal moment is "What next?": two equal `.btn` cards, **Play set N** and **Settle up**, on the final set page and the open session page. Settle up opens the reopen-style sheet with the carry list and **Not yet** focused. Below 900px "Found a mistake?" follows the results. The cards rise once per set and browser (`static/js/nextstep.js`, `arrive` spring, opacity and `y` as two animations). No new colour, token, font, asset or preset.
+
+Finish: single-context critique 32/40 (`.impeccable/critique/2026-10-20T15-12-53Z__templates-web-final-set-html.md`), break-ui with a nine-player worst case at 320/390/1280px, code review with five fixes, 1,328 tests on SQLite and PostgreSQL. No physical-phone session yet; the phone check is in TODO.md.

@@ -2,6 +2,10 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
+## Phone checks (not released)
+
+- [ ] What next ([plan](doc/plan/1792508082_end_of_set_words_and_next_step.md)): finalize a set. Under the result, "What next?" shows **Play set 2** and **Settle up** side by side; they rise once. **Settle up** opens "Close the session?" with **Not yet**; the session page shows the same two cards and no **Open set 1**. The review page and the final page each say "The books balance" once; each player's result is one line. As a player: "Who pays whom comes when the host settles up."
+
 ## Phone checks (released 2026-10-20)
 
 - [ ] Rename a group: as a host, Group settings → Manage this group. Type a new name and tap **Rename group**: the header and Your groups show it. A rule separates Archive and Delete below. As a player, the form is not there.
@@ -9,17 +13,13 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 ## Phone checks (released 2026-10-18)
 
 - [ ] Front door ([plan](doc/plan/1792250537_front_door_second_pass.md)): Log in shows the chip, the form and "Forgot your password?…" with no description. Open an invite link in a private tab: "Join {group}", "{you} invited you · N players", then the description, then the form.
-- [ ] Sign up: one password field. Type: the two rings fill as you pass 8 characters and add a letter. With the keyboard up, can you see them? Your password manager offers to save.
-- [ ] Send a common password such as "password1": the reason shows directly under the field. An invited Sign up's button says "Create account and join"; the username hint lists @ . + - _.
+- [ ] Sign up: one password field. Type: the two rings fill as you pass 8 characters and add a letter. With the keyboard up, can you see them? Your password manager offers to save. Send a common password such as "password1": the reason shows directly under the field. An invited Sign up's button says "Create account and join"; the username hint lists @ . + - _.
 
 ## Phone checks (released 2026-10-17)
 
-- [ ] Sessions tab ([plan](doc/plan/1792243014_sessions_tab_redesign.md)): open a group during a game. Your table in play is the first card, on felt, with "You're playing" and **Open the table**; a tap anywhere on the card opens the set, once. Other tables follow; a draft is last, for hosts only.
-- [ ] Past sessions: months, newest first, last year folded. Each row shows your result and "You pay …" or "… pays you …". Pay one transfer: within 5 seconds the line goes.
-- [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place.
-- [ ] Change your name there: every group shows the new name. Change your password: this phone stays in, another browser is logged out.
-- [ ] Override button: on a set where the books are off, under the books' figures, "Cannot find the error?" then an outlined **Finalize with an override** button. Tap it: it darkens, the chevron turns, the form opens. Tap again: it closes.
-- [ ] Books off ([plan](doc/plan/1792225143_books_off.md)): the gap reads "₱100 missing"; each cashed-out player shows in, out and net; **See the ₱100 difference** goes to the suspect player (or the books) with a brass ring. An override line is brass and names who took it.
+- [ ] Sessions tab ([plan](doc/plan/1792243014_sessions_tab_redesign.md)): open a group during a game. Your table in play is the first card, on felt, with "You're playing" and **Open the table**; a tap anywhere on the card opens the set, once. Other tables follow; a draft is last, for hosts only. Past sessions: months, newest first, last year folded. Each row shows your result and "You pay …" or "… pays you …". Pay one transfer: within 5 seconds the line goes.
+- [ ] Profile ([plan](doc/plan/1792238274_profile_page.md)): tap your chip, then **Your profile**. Your pesos total from all groups, the chart, four tiles, then each group; chips groups are separate. All time and This year switch in place. Change your name there: every group shows the new name. Change your password: this phone stays in, another browser is logged out.
+- [ ] Override button: on a set where the books are off, under the books' figures, "Cannot find the error?" then an outlined **Finalize with an override** button. Tap it: it darkens, the chevron turns, the form opens. Tap again: it closes. Books off ([plan](doc/plan/1792225143_books_off.md)): the gap reads "₱100 missing"; each cashed-out player shows in, out and net; **See the ₱100 difference** goes to the suspect player (or the books) with a brass ring. An override line is brass and names who took it.
 - [ ] Header ([plan](doc/plan/1792222305_header_redesign.md)): the way back is in the top bar with nothing under it; on a set the green dot is beside it. Your chip at top right opens username and Log out; tap outside closes it; on a set it stays open for ten seconds. A seat draw's mark is on the felt.
 
 ## Next (each needs its own study and plan)
