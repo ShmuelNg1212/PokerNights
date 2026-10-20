@@ -47,6 +47,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [opening_buy_ins_lock_rake.md](footguns/opening_buy_ins_lock_rake.md) | Configure rake before default opening buy-ins lock the rule |
 | [stretched_link_prefetches_twice.md](footguns/stretched_link_prefetches_twice.md) | A link stretched over a card by `::after` makes Turbo fetch the page twice per tap; make the card one link |
 | [hub_stamp_counts_seats.md](footguns/hub_stamp_counts_seats.md) | The hub stamp counts seats, not who sits; a swap does not redraw the chips |
+| [stats_order_slides_without_ranked_list.md](footguns/stats_order_slides_without_ranked_list.md) | With nobody ranked, a new order slides the whole board; rows move one by one only in the ranked list |
 
 ## Agent workflow
 
