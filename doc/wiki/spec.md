@@ -68,6 +68,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Saved player roster for fast session setup. A roster player needs no login.
 - Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group, or in all their groups at once from their profile; a group where the name is taken is skipped.
 - Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session.
+- Hosts rename a group. Every member sees the new name.
 - Hosts archive and restore sessions and groups. An archived session is left out of the stats and the totals. Deleting is allowed only where no money was ever recorded.
 - Optional banker role: one player designated to handle cash for that night. Not built yet.
 
