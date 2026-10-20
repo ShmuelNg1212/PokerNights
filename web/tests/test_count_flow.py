@@ -1,4 +1,5 @@
 """Count-up as the host works through it: players first, one total, and a main button that follows the state."""
+import re
 import uuid
 
 from django.test import TestCase
@@ -186,7 +187,7 @@ class FinalPageTests(TestCase):
     def test_the_proof_leads_the_overview(self):
         night, html = self.finalized()
         hero = html[html.index('aria-label="Final set overview"'):html.index("</section>", html.index('aria-label="Final set overview"'))]
-        self.assertIn("2 players · ₱2,000 in · ₱2,000 out", hero)
+        self.assertIn("2 players · ₱2,000 in · ₱2,000 out", re.sub(r"<[^>]+>", "", hero))
         self.assertIn('data-tone="good">The books balance.', hero)
         # Each figure once: the proof line carries in and out, so no totals list repeats them.
         self.assertNotIn("<dt>Total cashed out</dt>", hero)

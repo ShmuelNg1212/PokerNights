@@ -5,7 +5,7 @@
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Final</span></div>
       <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}{% if set_seconds is not None %} · {{ set_seconds|duration }}{% endif %}</p>
       {# The proof first, for everyone: what went in, what came out, and that the two agree. #}
-      <p class="final-proof">{{ outcome.results|length }} player{{ outcome.results|length|pluralize }} · {{ outcome.finalization.total_buy_in|amount:unit }} in · {{ outcome.finalization.total_cash_out|amount:unit }} out{% if outcome.finalization.total_rake %} · {{ outcome.finalization.total_rake|amount:unit }} rake{% endif %}
+      <p class="final-proof"><span class="pair">{{ outcome.results|length }} player{{ outcome.results|length|pluralize }}</span> · <span class="pair">{{ outcome.finalization.total_buy_in|amount:unit }} in</span> · <span class="pair">{{ outcome.finalization.total_cash_out|amount:unit }} out</span>{% if outcome.finalization.total_rake %} · <span class="pair">{{ outcome.finalization.total_rake|amount:unit }} rake</span>{% endif %}
         <span class="verdict" data-tone="{% if outcome.finalization.raw_difference %}warn{% else %}good{% endif %}">{% if outcome.finalization.raw_difference %}Off by {{ outcome.finalization.raw_difference|signed_amount:unit }}, covered by an override.{% else %}The books balance.{% endif %}</span></p>
       {% if correction %}{% include "web/_correction.html" with record=correction lead="Corrected." %}{% endif %}
       {% if my_result %}

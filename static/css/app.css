@@ -2105,9 +2105,9 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-step > h2 { margin: 0; }
 .next-choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: var(--s-3); }
 .next-choice > form { display: flex; margin: 0; }
-.next-card { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); width: 100%; min-height: 96px; padding: var(--s-3) var(--s-4) var(--s-4); text-align: left; overflow-wrap: anywhere; }
+.next-card { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); width: 100%; padding: var(--s-3) var(--s-4) var(--s-4); text-align: left; overflow-wrap: anywhere; }
 .next-title { font-size: 1.125rem; font-weight: 700; line-height: 1.2; }
-.next-line { color: var(--muted); font-size: .8125rem; font-weight: 500; line-height: 1.35; text-wrap: pretty; }
+.next-line { color: var(--muted); font-size: .8125rem; font-weight: 500; line-height: 1.35; text-wrap: balance; }
 .next-card:disabled { opacity: 1; background: transparent; border-color: var(--rule); box-shadow: none; }
 .next-card:disabled .next-title { color: var(--muted); }
 .sheets-enabled .next-opener { display: flex !important; }
@@ -2118,4 +2118,11 @@ p.alerts-text:last-child { margin-bottom: 0; }
 /* A hint with nothing to add is not drawn: the button names the step. */
 .host-controls > .dock-hint:empty, .end-set-layout .host-controls > .dock-hint:empty { display: none; }
 .final-proof:last-child { margin-bottom: 0; }
+.final-proof .pair, .result-line .pair { white-space: nowrap; }
 .result-line { margin: var(--s-1) 0 0; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* On a phone the way back from a finished set comes after its results, so the two choices stand alone under the proof. */
+@media (max-width:899px) {
+  .final-layout { display: flex; flex-direction: column; }
+  .final-layout > .table-left { display: contents; }
+  .final-layout .set-correct { order: 1; margin-top: var(--s-4); }
+}

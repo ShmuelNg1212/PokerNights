@@ -1,3 +1,4 @@
+import re
 import uuid
 from django.test import TestCase
 from django.urls import reverse
@@ -63,8 +64,8 @@ class RakeWebTests(TestCase):
         self.n.cash('A', 950); self.n.cash('B', 950)
         settle.finalize(self.n.session.pk, self.n.host)
         page = self.client.get(reverse('session', args=[self.n.session.pk]))
-        self.assertContains(page, '₱2,000 in · ₱1,900 out · ₱100 rake')
-        self.assertContains(page, '₱950 out · ₱50 rake')
+        self.assertIn('₱2,000 in · ₱1,900 out · ₱100 rake', re.sub(r'<[^>]+>', '', page.content.decode()))
+        self.assertContains(page, '₱950 out</span> · <span class="pair">₱50 rake')
         settle.close_night(self.n.session.night_id, self.n.host)
         page = self.client.get(reverse('night', args=[self.n.session.night_id]))
         self.assertContains(page, 'No positive result after rake')

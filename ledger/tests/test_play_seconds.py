@@ -46,7 +46,7 @@ class PlaySecondsTests(TestCase):
         night = self.play()
         settlement.finalize(night.session.pk, night.host)
         self.client.force_login(night.host.user)
-        self.assertContains(self.client.get(reverse("session", args=[night.session.pk])), "₱1,500 out · 3 h 00 min")
+        self.assertContains(self.client.get(reverse("session", args=[night.session.pk])), '₱1,500 out</span> · <span class="pair">3 h 00 min')
         self.assertContains(self.client.get(reverse("night", args=[night.session.night_id])), "played 40 min")
         standings = queries.night_outcome(night.session.night).standings
         self.assertEqual([s.play_seconds for s in standings], [10800, 2400])

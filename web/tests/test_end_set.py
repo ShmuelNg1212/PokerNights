@@ -82,7 +82,7 @@ class EndSetPageTests(TestCase):
         summary.lines[0].buy_ins = []  # Simulate a divergent read, without writing any record.
         with patch('web.views.ledger_queries.summary', return_value=summary):
             page = self.client.get(self.url)
-        self.assertContains(page, '₱1,000 in · ')
+        self.assertContains(page, '₱1,000 in</span> · ')
         self.assertContains(page, 'class="result-amount')
         self.assertContains(page, '<h2>Results</h2>', html=False)
         self.assertNotContains(page, 'counts-form')
