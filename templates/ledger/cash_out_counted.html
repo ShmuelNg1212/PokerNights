@@ -10,9 +10,8 @@
 <section class="felt hero" data-unit="{{ unit }}">
 <h1>Cash out counted players</h1>
 <p class="where">{{ session.table.name }} · Set {{ session.set_number }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
-<dl class="set-totals"><div><dt>Total of this batch</dt><dd>{{ batch_total|amount:unit }}</dd></div><div><dt>Recorded cash-outs</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div>{% if summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}<div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
+<dl class="set-totals"><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div>{% if summary.rake %}<div><dt>Collected rake</dt><dd>{{ summary.rake|amount:unit }}</dd></div>{% endif %}<div><dt>Bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
 </section>
-<p class="small muted">Check each confirmed count. Earlier cash-outs are already included in the recorded total.</p>
 </aside>
 <div class="review-workspace">
 {% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
@@ -22,7 +21,7 @@
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
   <table class="review">
-    <caption class="small muted">Players with a confirmed final count</caption>
+    <caption class="visually-hidden">Players with a confirmed final count</caption>
     <thead><tr><th scope="col">Player</th><th scope="col" class="num">Cash-out</th></tr></thead>
     <tbody>
       {% for line in ready %}
@@ -34,22 +33,18 @@
     </tbody>
     <tfoot><tr><th scope="row">Total of this batch</th><td class="num amount">{{ batch_total|amount:unit }}</td></tr></tfoot>
   </table>
-  <p class="small muted">The cash-out equals the confirmed count. This records the cash-outs. It does not finalize the set and it marks no payment.</p>
   {# One plain verdict, directly above the action. #}
   <p class="review-verdict{% if verdict_tone == 'warn' %} notice{% elif verdict_tone == 'good' %} notice notice-good{% endif %}" role="status"><span class="verdict" data-tone="{{ verdict_tone }}">{{ verdict }}</span></p>
   <button type="submit" class="btn btn-primary btn-block">Cash out {{ ready|length }} player{{ ready|length|pluralize }}</button>
 </form>
 {% else %}
-<div class="notice"><p class="muted">No player has a confirmed count yet. Confirm a final count on the set page first; 0 is a valid count.</p></div>
+<div class="notice"><p class="muted">No confirmed count yet. Confirm counts on the set page first.</p></div>
 {% endif %}
 
+{% if awaiting %}
 <h2>Still to count <span class="muted small">{{ awaiting|length }}</span></h2>
-<div class="review-pending">
-  {% if awaiting %}
-  <ul class="list">{% for line in awaiting %}<li class="row"><span class="grow">{{ line.participant.member.display_name }}</span><span class="badge badge-warn">Awaiting count</span></li>{% endfor %}</ul>
-  <p class="small muted">They stay pending. Run this action again when their counts are confirmed.</p>
-  {% else %}<p class="muted">Nobody. Every player is counted or cashed out.</p>{% endif %}
-</div>
+<ul class="list review-pending">{% for line in awaiting %}<li class="row"><span class="grow">{{ line.participant.member.display_name }}</span><span class="badge badge-warn">Awaiting count</span></li>{% endfor %}</ul>
+{% endif %}
 
 {% if cashed_out %}
 <h2>Already cashed out <span class="muted small">{{ cashed_out|length }}</span></h2>

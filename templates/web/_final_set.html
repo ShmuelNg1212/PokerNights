@@ -3,26 +3,26 @@
   <aside class="table-left">
     <section class="felt hero" data-unit="{{ unit }}" aria-label="Final set overview">
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">Final</span></div>
-      <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}</p>
+      <p class="where">{{ session.game_date|date:"D, M j" }}{% if unit == 'chips' %} · Chips game{% endif %} · Play ended {{ session.ended_at|date:"g:i A" }}{% if set_seconds is not None %} · {{ set_seconds|duration }}{% endif %}</p>
       {# The proof first, for everyone: what went in, what came out, and that the two agree. #}
       <p class="final-proof">{{ outcome.results|length }} player{{ outcome.results|length|pluralize }} · {{ outcome.finalization.total_buy_in|amount:unit }} in · {{ outcome.finalization.total_cash_out|amount:unit }} out{% if outcome.finalization.total_rake %} · {{ outcome.finalization.total_rake|amount:unit }} rake{% endif %}
-        <span class="verdict" data-tone="{% if outcome.finalization.raw_difference %}warn{% else %}good{% endif %}">{% if outcome.finalization.raw_difference %}Off by {{ outcome.finalization.raw_difference|signed_amount:unit }}, covered by an override.{% else %}The books balance.{% if outcome.finalization.total_rake %} Cash-outs plus rake equal gross buy-ins.{% endif %}{% endif %}</span></p>
+        <span class="verdict" data-tone="{% if outcome.finalization.raw_difference %}warn{% else %}good{% endif %}">{% if outcome.finalization.raw_difference %}Off by {{ outcome.finalization.raw_difference|signed_amount:unit }}, covered by an override.{% else %}The books balance.{% endif %}</span></p>
       {% if correction %}{% include "web/_correction.html" with record=correction lead="Corrected." %}{% endif %}
       {% if my_result %}
       <p class="final-title">Your result in set {{ session.set_number }}</p>
       <div class="final-amount {{ my_result.net|sign_class }}">{% include "web/_result_icon.html" with net=my_result.net %} {% if my_result.net == 0 %}Even{% else %}{{ my_result.net|signed_amount:unit }}{% endif %}</div>
       <p class="small">Bought in {{ my_result.buy_in_total|amount:unit }} · cashed out {{ my_result.cashed_out|amount:unit }}{% if my_result.adjustment %} · override {{ my_result.adjustment|signed_amount:unit }}{% endif %}</p>
-      {% else %}<p class="small">The set is finalized. Results are frozen. Settle up at the end of the session.</p>{% endif %}
-      {% if outcome.finalization.total_rake %}<p class="small">Results include already-collected rake.</p>{% endif %}
-      <dl class="set-totals"><div><dt>Total bought in</dt><dd>{{ outcome.finalization.total_buy_in|amount:unit }}</dd></div><div><dt>Total cashed out</dt><dd>{{ outcome.finalization.total_cash_out|amount:unit }}</dd></div>{% if outcome.finalization.total_rake %}<div><dt>Collected rake</dt><dd>{{ outcome.finalization.total_rake|amount:unit }}</dd></div>{% endif %}<div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div></dl>
+      {% endif %}
     </section>
-    <div class="session-next stack">
-      {% if night.is_closed %}<p><strong>Payment:</strong> the session is closed. Who pays whom is on the session page.</p>{% else %}<p><strong>Payment:</strong> at the end of the session. Who pays whom is worked out once, over all sets.</p>{% endif %}
-      {# The notice at the top holds the one primary Go to set N; this one is for a player who scrolled to the end. #}
-      {% if later_set %}<a class="btn btn-block" href="{% url 'session' later_set.pk %}">Go to set {{ later_set.set_number }}</a>
-      <p class="center"><a href="{% url 'night' session.night_id %}">Go to the session</a></p>
-      {% else %}<a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">{% if night.is_closed %}See who pays whom{% elif me.is_host %}Next set or settle up{% else %}Go to the session{% endif %}</a>{% endif %}
-    </div>
+    {# The notice at the top holds the one primary Go to set N; this one is for a player who scrolled to the end. #}
+    {% if later_set %}<div class="session-next stack"><a class="btn btn-block" href="{% url 'session' later_set.pk %}">Go to set {{ later_set.set_number }}</a>
+      <p class="center"><a href="{% url 'night' session.night_id %}">Go to the session</a></p></div>
+    {% elif night.is_closed %}<div class="session-next"><a class="btn btn-primary btn-block" href="{% url 'night' session.night_id %}">See who pays whom</a></div>
+    {% elif can_start_next_set or can_close %}{% include "web/_next_step.html" %}
+    {% elif me.is_host %}<div class="session-next"><a class="btn btn-block" href="{% url 'night' session.night_id %}">Go to the session</a></div>
+    {% else %}<div class="session-next stack"><p>Who pays whom comes when the host settles up.</p>
+      <a class="btn btn-quiet btn-block" href="{% url 'night' session.night_id %}">Go to the session</a></div>
+    {% endif %}
     {% if can_reopen %}{% include "web/_reopen_set.html" %}{% endif %}
   </aside>
   {% include "web/_results.html" %}

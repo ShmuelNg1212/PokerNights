@@ -1,0 +1,35 @@
+{# A host's two ways on once no set is in play: the next set, or settle-up. Equal weight; neither is the default. #}
+{% if can_start_next_set or can_close %}
+<section class="next-step stack" aria-labelledby="next-step-title" data-next-step="{{ night.pk }}:{{ next_set_number }}">
+  <h2 id="next-step-title">What next?</h2>
+  <div class="next-choice">
+    {% if can_start_next_set %}
+    <form method="post" action="{% url 'next_set' night.pk %}" data-once>{% csrf_token %}
+      <button type="submit" class="btn next-card"><span class="next-title">Play set {{ next_set_number }}</span><span class="next-line">Same players, new buy-ins.</span></button>
+    </form>
+    {% endif %}
+    {% if can_close %}
+    <button hidden type="button" class="btn next-card next-opener" data-sheet-open="settle"><span class="next-title">Settle up</span><span class="next-line">End the session. See who pays whom.</span></button>
+    <details class="sheet-source next-fallback" data-key="settle" data-sheet-source="settle" data-title="Close the session?">
+      <summary class="btn next-card"><span class="next-title">Settle up</span><span class="next-line">End the session. See who pays whom.</span></summary>
+      <div class="sheet-content stack">
+        <ul class="reopen-effects">
+          <li>Adds up the results of {{ finalized_count }} set{{ finalized_count|pluralize }}.</li>
+          <li>Lists who pays whom.</li>
+          <li>No set can start after this.{% if reopen_on %} A host can reopen the session.{% endif %}</li>
+        </ul>
+        <form method="post" action="{% url 'night_close' night.pk %}" class="stack" data-once>{% csrf_token %}
+          {% if carryable %}{% include "web/_carry_pick.html" %}{% endif %}
+          <button type="submit" class="btn btn-primary btn-block">Close session and settle up</button>
+        </form>
+        <button hidden type="button" class="btn btn-quiet btn-block sheet-cancel" data-sheet-close data-sheet-focus>Not yet</button>
+      </div>
+    </details>
+    {% elif unfinished_sets %}
+    {% with first=unfinished_sets.0 %}
+    <button type="button" class="btn next-card" disabled aria-describedby="next-blocked"><span class="next-title">Settle up</span><span class="next-line" id="next-blocked">Finish set {{ first.set_number }} first.</span></button>
+    {% endwith %}
+    {% endif %}
+  </div>
+</section>
+{% endif %}

@@ -210,14 +210,15 @@ class FinalizeViewTests(TestCase):
         self.assertContains(page, "The books balance")
         self.assertContains(page, "Finalize results")
         page = self.client.post(reverse("session_finalize", args=[night.session.pk]), follow=True)
-        for text in ("+₱600", "−₱300", "₱2,500", "Payment:</strong> at the end of the session", "Next set or settle up"):
+        for text in ("+₱600", "−₱300", "₱2,500", "What next?", "Play set 2", "Settle up"):
             self.assertContains(page, text)
         self.assertNotContains(page, "pays <strong>")  # no transfer list on a set
         for gone in ("buyins/add", "cashouts/add", "Finalize results", "override/", "Host controls", "Still in play", "seats free", "chips"):
             self.assertNotContains(page, gone)
         self.client.force_login(ben.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertContains(page, "Results of set 1")
+        self.assertContains(page, "Who pays whom comes when the host settles up.")
+        self.assertNotContains(page, "What next?")
         self.assertContains(page, "Go to the session")
 
     def test_player_sees_own_result_and_what_they_owe(self):

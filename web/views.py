@@ -202,6 +202,31 @@ def later_set(session):
     )
 
 
+def next_step(night, me, sets=None, member_ids=None) -> dict:
+    """What a host can do once no set is in play: play the next set, or settle up. Empty for anyone else.
+
+    The final set page and the session page show the same choice from this one answer.
+    """
+    if not me.is_host or night.is_closed or night.is_archived:
+        return {}
+    sets = list(night.sets.order_by("set_number")) if sets is None else sets
+    State = GameSession.State
+    unfinished = [s for s in sets if s.state not in (State.FINALIZED, State.CANCELED)]
+    finalized = sum(1 for s in sets if s.state == State.FINALIZED)
+    step = {
+        "can_start_next_set": not any(s.state in games.IN_PLAY_STATES for s in sets),
+        "next_set_number": sets[-1].set_number + 1 if sets else 1,
+        "unfinished_sets": unfinished,
+        "finalized_count": finalized,
+        "can_close": not unfinished and finalized > 0,
+        "reopen_on": settings.REOPENING,
+    }
+    if step["can_close"] and settings.CARRY_DEBTS:
+        # Earlier unpaid transfers between two of tonight's players, which closing can fold into this list.
+        step["carryable"] = settlement_queries.carryable(night, member_ids)
+    return step
+
+
 def live_version(session, later):
     """What the set page's poll compares: the set's version, a number as before. An ended set's page
     also changes when a later set starts, without a write to the ended set (Start next set does not
@@ -290,6 +315,8 @@ def session_context(session, me, *, later=UNSET) -> dict:
         context["outcome"] = outcome
         context["my_result"] = outcome.result_for(me.pk)
         context["night"] = session.night
+        if later is None:
+            context.update(next_step(session.night, me))
         context["can_reopen"] = me.is_host and settings.REOPENING and not session.night.is_archived
         # A second or later revision says what was corrected: the reason the one before it was reopened.
         if outcome.finalization.revision > 1:
@@ -419,12 +446,8 @@ def night(request, night_id):
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
     context["total_play_seconds"] = sum(timed) if timed else None
     context["total_rake"] = ledger_queries.rake_total([s.pk for s in sets])
-    context["can_start_next_set"] = (
-        me.is_host and not night.is_closed and not any(s.state in games.IN_PLAY_STATES for s in sets)
-    )
     State = GameSession.State
     all_sets = sorted(by_number, key=lambda s: (s.game_date, s.pk), reverse=True)  # the model's own order
-    unfinished = [s for s in all_sets if s.state not in (State.FINALIZED, State.CANCELED)]
     outcome = settlement_queries.night_outcome(night)
     context.update({
         "outcome": outcome,
@@ -432,13 +455,11 @@ def night(request, night_id):
         "my_transfers": outcome.transfers_for(me.pk),
         "my_part": outcome.part_for(me.pk),
         "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
-        "unfinished_sets": unfinished,
-        "can_close": me.is_host and not night.is_closed and not unfinished
-        and any(s.state == State.FINALIZED for s in all_sets),
     })
-    if context["can_close"] and settings.CARRY_DEBTS:
-        # Earlier unpaid transfers between two of tonight's players, which closing can fold into this list.
-        context["carryable"] = settlement_queries.carryable(night, {standing.pk for standing in outcome.standings})
+    context.update(next_step(night, me, by_number, {standing.pk for standing in outcome.standings}))
+    # Open set N leads to a set that still needs the host or the players; a finished one is under Sets.
+    latest = context["latest_set"]
+    context["latest_set"] = latest if latest and latest.state not in (State.FINALIZED, State.CANCELED) else None
     context["my_makeup"] = outcome.makeup_for(me.pk)
     if not night.is_archived:
         # The mark nightlive.js polls with, from rows this page has already read.

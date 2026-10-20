@@ -18,7 +18,7 @@ from . import queries, services
 @require_POST
 def finalize(request, session_id):
     session, actor = session_for(request.user, session_id)
-    attempt(request, services.finalize, session.pk, actor, success=f"The results of set {session.set_number} are final.")
+    attempt(request, services.finalize, session.pk, actor, success=f"Set {session.set_number} is final.")
     return redirect("session", session_id=session.pk)
 
 

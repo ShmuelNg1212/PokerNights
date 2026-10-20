@@ -154,8 +154,10 @@ class NightSettlePageTests(TestCase):
         self.client.force_login(two.host.user)
         page = self.client.get(url)
         self.assertContains(page, "Results so far")
-        self.assertContains(page, "not final")
-        self.assertContains(page, "Not done: set 2 (in play)")
+        self.assertContains(page, "Not final")
+        # While set 2 is in play, opening it is the one next step; settle-up is not offered.
+        self.assertContains(page, "Open set 2")
+        self.assertNotContains(page, reverse("night_close", args=[two.night_id]))
         self.assertNotContains(page, "pays <strong>")
         self.assertEqual(self.client.post(reverse("night_close", args=[two.night_id]), follow=True).status_code, 200)
         self.assertEqual(GameNight.objects.get(pk=two.night_id).status, "open")  # refused

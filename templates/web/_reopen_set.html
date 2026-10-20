@@ -5,7 +5,7 @@
   <p class="small muted">The session is closed, and its transfer list was worked out from this set. Reopen the session first, then this set.</p>
   <a class="btn btn-quiet btn-block" href="{% url 'night' session.night_id %}#manage">Go to the session</a>
   {% else %}
-  <p class="small muted">Reopen the set to correct a count, a cash-out or a buy-in, then finalize it again.</p>
+  <p class="small muted">Correct a count, a cash-out or a buy-in.</p>
   <button hidden type="button" class="btn btn-quiet btn-block reopen-opener" data-sheet-open="reopen">Reopen set</button>
   <details class="sheet-source" data-key="reopen" data-sheet-source="reopen" data-title="Reopen set {{ session.set_number }}?">
     <summary class="btn btn-quiet btn-block">Reopen set</summary>

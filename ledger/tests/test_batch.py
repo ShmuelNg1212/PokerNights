@@ -226,7 +226,7 @@ class BatchPageTests(TestCase):
     def test_review_lists_players_counts_cash_outs_total_and_who_is_pending(self):
         page = self.client.get(self.url)
         for text in ("confirmed final count", "Cash-out", "₱2,500", "₱1,500", "₱0", "₱800", "Total of this batch", "₱4,800",
-                     "Still to count", "Awaiting count", "Cash out 4 players", "It does not finalize the set"):
+                     "Still to count", "Awaiting count", "Cash out 4 players"):
             self.assertContains(page, text)
         html = page.content.decode()
         self.assertEqual(html.count('name="count_id"'), 4)
@@ -242,7 +242,7 @@ class BatchPageTests(TestCase):
         count(self.night, "F", 500)
         page = self.confirm()
         self.assertContains(page, "2 players cashed out; everyone is cashed out.")
-        self.assertContains(page, "Every player is cashed out.")
+        self.assertContains(page, "Finalize results")
         self.assertContains(page, "The books balance")
 
     def test_stale_review_explains_and_shows_a_fresh_one(self):

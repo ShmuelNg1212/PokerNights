@@ -41,10 +41,9 @@ class EndSetPageTests(TestCase):
         count = self.count('Ben', 800)
         page = self.client.get(reverse('cash_out_counted', args=[self.night.session.pk]))
         self.assertContains(page, f'name="count_id" value="{count.pk}"')
-        self.assertContains(page, 'After this batch</dt><dd>₱1,000')
-        self.assertContains(page, 'Recorded cash-outs</dt><dd>₱200')
+        self.assertContains(page, 'After this batch</dt><dd>₱1,000')  # 800 counted + 200 cashed out earlier
+        self.assertContains(page, 'Bought in</dt><dd>₱2,000')
         self.assertContains(page, 'name="request_id"')
-        self.assertContains(page, 'It does not finalize the set')
 
     def test_equal_recorded_totals_with_missing_final_cash_out_do_not_balance(self):
         self.night.cash('Bea', 1800)
@@ -83,9 +82,9 @@ class EndSetPageTests(TestCase):
         summary.lines[0].buy_ins = []  # Simulate a divergent read, without writing any record.
         with patch('web.views.ledger_queries.summary', return_value=summary):
             page = self.client.get(self.url)
-        self.assertContains(page, 'Bought in (1)</dt><dd>₱1,000')
+        self.assertContains(page, '₱1,000 in · ')
         self.assertContains(page, 'class="result-amount')
-        self.assertContains(page, 'Results of set 1')
+        self.assertContains(page, '<h2>Results</h2>', html=False)
         self.assertNotContains(page, 'counts-form')
         self.assertNotContains(page, 'cashouts/add')
         self.assertNotContains(page, 'transfers/')

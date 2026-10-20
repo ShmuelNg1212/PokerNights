@@ -103,14 +103,14 @@ class NextSetPageTests(TestCase):
 
     def test_button_appears_only_after_play_has_ended(self):
         self.client.force_login(self.host.user)
-        self.assertNotContains(self.client.get(self.night_url), "Start next set")
+        self.assertNotContains(self.client.get(self.night_url), "Play set 2")
         services.transition(self.first.pk, self.host, "end")
-        self.assertContains(self.client.get(self.night_url), "Start next set")
+        self.assertContains(self.client.get(self.night_url), "Play set 2")
         page = self.client.post(self.url, follow=True)
         second = GameSession.objects.get(set_number=2)
         self.assertRedirects(page, reverse("session", args=[second.pk]))
         self.assertContains(page, "Set 2 is open")
-        self.assertNotContains(self.client.get(self.night_url), "Start next set")
+        self.assertNotContains(self.client.get(self.night_url), "Play set 3")
         page = self.client.post(self.url, follow=True)  # a repeated tap
         self.assertContains(page, "Set 2 is still open")
         self.assertEqual(GameSession.objects.count(), 2)

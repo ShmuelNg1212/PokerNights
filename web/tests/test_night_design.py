@@ -43,7 +43,7 @@ class NightDesignTests(TestCase):
 
     def test_open_results_are_not_settled_and_recap_is_closed_only(self):
         page = self.client.get(self.url)
-        self.assertContains(page, 'Over finalized sets; session still open.')
+        self.assertContains(page, 'Not final')
         self.assertNotContains(page, 'Still to pay')
         self.assertNotContains(page, 'data-recap=')
         self.close()
@@ -281,6 +281,8 @@ class SettlePageTests(TestCase):
         html = self.client.get(reverse('night', args=[night.session.night_id])).content.decode()
         self.assertNotIn('night-settle', html)
         self.assertIn('Session open', html)
-        self.assertIn('Collected rake across sets', html)
+        self.assertNotIn('Collected rake across sets', html)  # no rake, no row
+        self.assertNotIn('Open set 1', html)  # set 1 is final: the choice is the next step
+        self.assertIn('Play set 2', html)
         self.assertIn('Close session and settle up', html)
         self.assertNotIn('data-my-part', html)

@@ -1,6 +1,6 @@
 # End of set: fewer words and a clear next step: plan
 
-Status: waiting for approval. Date: 2026-10-20, Asia/Manila. Study: [End of set: fewer words and a clear next step](../study/1792508023_end_of_set_words_and_next_step.md).
+Status: approved 2026-10-20 ("approved"); the three open questions as recommended. Date: 2026-10-20, Asia/Manila. Study: [End of set: fewer words and a clear next step](../study/1792508023_end_of_set_words_and_next_step.md).
 
 Mode: design. Visual authority: the built Rack in DESIGN.md. No new colour, font, asset, token or motion preset. No migration. No model, service, permission or URL change.
 
@@ -33,7 +33,7 @@ After the books balance, the host reads each fact once. On the final set page, t
 - "2 players · ₱2,000 in · ₱2,000 out", "✓ The books balance."
 - Your result, when the host played.
 - "What next?" and two equal cards: **Play set 2** "Same players, new buy-ins." · **Settle up** "End the session. See who pays whom."
-- Results: each row is the name, the signed result, and one line "₱1,000 in (1) · ₱1,000 out · 1 h 20 min".
+- Results: each row is the name, the signed result, and one line "₱1,000 in · ₱1,000 out · 1 h 20 min". A rebuy adds ", 1 rebuy" after the amount in.
 - "Found a mistake?" and **Reopen set**, last.
 
 **Final set page, player**
@@ -47,41 +47,41 @@ After the books balance, the host reads each fact once. On the final set page, t
 ## Tasks
 
 ### 1. The choice partial and its context
-- [ ] Add `templates/web/_next_step.html`: "What next?", two cards, the settle-up sheet with the carry list, and a native `details` fallback.
-- [ ] Move the next-step context (`can_start_next_set`, `can_close`, `unfinished_sets`, `carryable`, the next set number, the finalized-set count) into one read-only helper in `web/views.py`. The night view and the final set view both call it.
-- [ ] Cards share `.btn` so `press` and `release` apply. Two equal columns; 48 px minimum; title in Bone, line in Bone Dim.
-- [ ] Settle-up blocked by another unfinished set: the card is disabled and says "Finish set 3 first."
+- [x] Add `templates/web/_next_step.html`: "What next?", two cards, the settle-up sheet with the carry list, and a native `details` fallback.
+- [x] Move the next-step context (`can_start_next_set`, `can_close`, `unfinished_sets`, `carryable`, the next set number, the finalized-set count) into one read-only helper in `web/views.py`. The night view and the final set view both call it.
+- [x] Cards share `.btn` so `press` and `release` apply. Two equal columns; 48 px minimum; title in Bone, line in Bone Dim.
+- [x] Settle-up blocked by another unfinished set: the card is disabled and says "Finish set 3 first."
 - Acceptance: on a final set with an open session and no later set, a host sees both cards. A player sees neither. With a later set, the cards are absent and "Go to set N" stays. With a closed session, "See who pays whom" stays.
 - Done when: view tests cover host, player, later set, closed session and blocked settle-up, and both POSTs work from the final page.
 
 ### 2. Final set page
-- [ ] Hero: remove the totals list, the frozen sentence and the rake note; add the set time to the date line.
-- [ ] Replace the "Payment:" paragraph and **Next set or settle up** with `_next_step.html` for a host, and one line plus a quiet link for a player.
-- [ ] Result rows: replace the facts list with one muted line. Keep rake and override on that line when present. Omit time when it is not recorded.
-- [ ] Reopen: shorten the line to "Correct a count, cash-out or buy-in."
-- [ ] Toast: "Set N is final." (if question 3 is accepted).
+- [x] Hero: remove the totals list, the frozen sentence and the rake note; add the set time to the date line.
+- [x] Replace the "Payment:" paragraph and **Next set or settle up** with `_next_step.html` for a host, and one line plus a quiet link for a player.
+- [x] Result rows: replace the facts list with one muted line. Keep rake and override on that line when present. Omit time when it is not recorded.
+- [x] Reopen: shorten the line to "Correct a count, cash-out or buy-in."
+- [x] Toast: "Set N is final.".
 - Acceptance: at 390 × 844 the host's first screen shows the proof line and both cards without scrolling for a two-player set.
 - Done when: tests pass and the 390 and 1280 px captures match "What you will see".
 
 ### 3. Session page, open
-- [ ] Show **Open set N** only while that set is not finalized or canceled.
-- [ ] Remove "Session open", its hint, and the rake row when the total is 0.
-- [ ] Replace "Start next set" and the settle-up section with `_next_step.html`.
-- [ ] "Results so far": a "Not final" badge; remove the two explanation lines and "Over N finalized sets."
-- [ ] Sets: remove "Each set has its own timer."
+- [x] Show **Open set N** only while that set is not finalized or canceled.
+- [x] Remove "Session open", its hint, and the rake row when the total is 0.
+- [x] Replace "Start next set" and the settle-up section with `_next_step.html`.
+- [x] "Results so far": a "Not final" badge; remove the two explanation lines and "Over N finalized sets."
+- [x] Sets: remove "Each set has its own timer."
 - Acceptance: the open session page has at most one primary-style button on the first screen.
 - Done when: tests pass and the capture shows one choice.
 
 ### 4. Cash-out review
-- [ ] Panel: "After this batch" against "Bought in", and the verdict. Remove "Total of this batch" and "Recorded cash-outs" from the panel; the table footer keeps the batch total.
-- [ ] Remove the three explanation paragraphs; make the caption visually hidden.
-- [ ] "Still to count" only when somebody is left.
+- [x] Panel: "After this batch" against "Bought in", and the verdict. Remove "Total of this batch" and "Recorded cash-outs" from the panel; the table footer keeps the batch total.
+- [x] Remove the three explanation paragraphs; make the caption visually hidden.
+- [x] "Still to count" only when somebody is left.
 - Done when: tests pass and the 390 px capture fits the table and the button on the first screen for two players.
 
 ### 5. Balanced count-up and finalize sheet
-- [ ] Books panel: "The books balance." only.
-- [ ] Dock: no hint while the books balance.
-- [ ] Finalize sheet: one consequence line.
+- [x] Books panel: "The books balance." only.
+- [x] Dock: no hint while the books balance.
+- [x] Finalize sheet: one consequence line.
 - Done when: tests pass; the books-off and override states are unchanged.
 
 ### 6. Motion

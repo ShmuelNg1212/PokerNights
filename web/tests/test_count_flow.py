@@ -163,7 +163,7 @@ class FinalizeAsksOnceTests(TestCase):
         sheet = html[html.index('data-sheet-source="finalize"'):html.index('class="host-more"')]
         self.assertIn('data-title="Finalize set 1?"', sheet)
         for text in ("<dt>Players</dt><dd>2</dd>", "<dt>Total bought in</dt><dd>₱2,000</dd>", "<dt>Total cashed out</dt><dd>₱2,000</dd>",
-                     'data-tone="good">The books balance.', "A host can reopen the set to correct a mistake.", ">Finalize set 1</button>", "data-sheet-close data-sheet-focus"):
+                     'data-tone="good">The books balance.', "Results freeze. A host can reopen the set.", ">Finalize set 1</button>", "data-sheet-close data-sheet-focus"):
             self.assertIn(text, sheet)
         self.assertEqual(html.count(reverse("session_finalize", args=[self.night.session.pk])), 1)
         # The form that finalizes is inside the confirmation, never the first button.
@@ -171,7 +171,7 @@ class FinalizeAsksOnceTests(TestCase):
 
     def test_finalizing_still_works_with_one_post(self):
         page = self.client.post(reverse("session_finalize", args=[self.night.session.pk]), follow=True)
-        self.assertContains(page, "Results of set 1")
+        self.assertContains(page, "Set 1 is final.")
 
 
 class FinalPageTests(TestCase):
@@ -188,8 +188,9 @@ class FinalPageTests(TestCase):
         hero = html[html.index('aria-label="Final set overview"'):html.index("</section>", html.index('aria-label="Final set overview"'))]
         self.assertIn("2 players · ₱2,000 in · ₱2,000 out", hero)
         self.assertIn('data-tone="good">The books balance.', hero)
-        self.assertLess(hero.index("The books balance."), hero.index("The set is finalized."))
-        self.assertIn("<dt>Total cashed out</dt><dd>₱2,000</dd>", hero)
+        # Each figure once: the proof line carries in and out, so no totals list repeats them.
+        self.assertNotIn("<dt>Total cashed out</dt>", hero)
+        self.assertNotIn("The set is finalized.", hero)
         self.assertNotIn("Available to play", hero)
         self.assertNotIn("Collected rake", hero)
         self.assertEqual(html.count("The books balance."), 1)

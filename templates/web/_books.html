@@ -38,7 +38,7 @@
   </div>
   {% elif balance.ok %}
   <div class="books-balanced" data-balance="{{ session.pk }}">
-    <span class="books-message">The books balance. {% if summary.rake %}Cash-outs plus rake equal gross buy-ins.{% else %}Total cashed out equals total bought in.{% endif %}</span>
+    <span class="books-message">The books balance.</span>
   </div>
   {% elif balance.counted %}
   {% elif balance.stray_cash_outs %}

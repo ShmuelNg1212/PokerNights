@@ -111,7 +111,7 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- Finalize the set: results only. Then close the session: who pays whom.
         results = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
-        for text in ("+₱600", "−₱300", "Payment:</strong> at the end of the session"):
+        for text in ("+₱600", "−₱300", "What next?", "Settle up"):
             self.assertContains(results, text)
         self.assertEqual(Transfer.objects.count(), 0)
         night_url = reverse("night", args=[session.night_id])
@@ -313,7 +313,7 @@ class TwoSetSessionAcceptanceTest(TestCase):
         host.post(reverse("participants_add", args=[first.pk]), {"member_id": [m.pk for m in Member.objects.filter(group=group, user__isnull=True)]})
 
         result = self.play_set(host, first, {"A": (1000, 1600), "B": (1000, 700), "C": (500, 200)})
-        self.assertContains(result, "Results of set 1")
+        self.assertContains(result, "Set 1 is final.")
         self.assertNotContains(result, "pays <strong>")
         self.assertEqual(Transfer.objects.count(), 0)
 

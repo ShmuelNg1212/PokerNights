@@ -2099,3 +2099,23 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-jump:hover { color: var(--text); }
 .profile-settings h2 { scroll-margin-top: calc(69px + var(--s-4)); }
 @media (prefers-reduced-motion: reduce) { .profile-setting > summary .icon { transition: none; } }
+
+/* What next? (2026-10-20): the next set and settle-up as two equal choices on the final set page and the open session page. */
+.next-step { padding: var(--s-4) 0; }
+.next-step > h2 { margin: 0; }
+.next-choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: var(--s-3); }
+.next-choice > form { display: flex; margin: 0; }
+.next-card { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); width: 100%; min-height: 96px; padding: var(--s-3) var(--s-4) var(--s-4); text-align: left; overflow-wrap: anywhere; }
+.next-title { font-size: 1.125rem; font-weight: 700; line-height: 1.2; }
+.next-line { color: var(--muted); font-size: .8125rem; font-weight: 500; line-height: 1.35; text-wrap: pretty; }
+.next-card:disabled { opacity: 1; background: transparent; border-color: var(--rule); box-shadow: none; }
+.next-card:disabled .next-title { color: var(--muted); }
+.sheets-enabled .next-opener { display: flex !important; }
+.next-fallback > summary { list-style: none; }
+.next-fallback > summary::-webkit-details-marker { display: none; }
+.next-fallback[open] { grid-column: 1 / -1; }
+.next-fallback[open] > .sheet-content { margin-top: var(--s-3); }
+/* A hint with nothing to add is not drawn: the button names the step. */
+.host-controls > .dock-hint:empty, .end-set-layout .host-controls > .dock-hint:empty { display: none; }
+.final-proof:last-child { margin-bottom: 0; }
+.result-line { margin: var(--s-1) 0 0; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }

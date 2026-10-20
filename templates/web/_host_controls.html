@@ -45,7 +45,7 @@
         {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
       </dl>
       <p class="finalize-verdict"><span class="verdict" data-tone="{% if balance.overridden %}warn{% else %}good{% endif %}">{% if balance.overridden %}{{ balance.covered_text }}{% else %}The books balance.{% endif %}</span></p>
-      <p class="small muted">Finalizing freezes each player's result for this set.{% if reopening %} These results replace the earlier ones.{% elif reopen_on %} A host can reopen the set to correct a mistake.{% else %} It cannot be undone here.{% endif %}</p>
+      <p class="small muted">Results freeze.{% if reopening %} They replace the earlier ones.{% elif reopen_on %} A host can reopen the set.{% else %} This cannot be undone here.{% endif %}</p>
       <form method="post" data-turbo="true" action="{% url 'session_finalize' session.pk %}" data-once>{% csrf_token %}
         <button type="submit" class="btn btn-primary btn-block">Finalize set {{ session.set_number }}</button>
       </form>
@@ -60,7 +60,7 @@
   {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}
-    {% if balance.ok %}{% firstof "Every player is cashed out. Finalizing freezes each player's result." as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override." as hint %}{% elif summary.ready_lines %}{% firstof "Review the confirmed counts before recording cash-outs." as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
+    {% if balance.ok %}{% firstof "" as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override." as hint %}{% elif summary.ready_lines %}{% firstof "" as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
     <p id="batch-why" class="dock-hint small muted" data-hint="{{ hint }}">{{ hint }}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>

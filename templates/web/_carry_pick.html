@@ -1,0 +1,9 @@
+{% load money_tags %}
+<fieldset class="carry-pick" data-carry-pick>
+  <legend>Carry unpaid transfers from earlier sessions</legend>
+  <p class="small muted" id="carry-help">Each ticked one joins tonight's list.</p>
+  <ul class="carry-list" aria-describedby="carry-help">
+    {% for t in carryable %}<li><label class="check carry-option" for="carry-{{ t.pk }}"><input id="carry-{{ t.pk }}" type="checkbox" name="carry" value="{{ t.pk }}" checked><span class="grow"><span class="carry-who"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong></span><span class="muted small">{{ t.plan.night.table.name }}, {{ t.plan.night.game_date|date:"M j" }}</span></span><span class="amount">{{ t.amount|amount:unit }}</span></label></li>{% endfor %}
+  </ul>
+  <p class="small carry-count" data-carry-count aria-live="polite" hidden></p>
+</fieldset>
