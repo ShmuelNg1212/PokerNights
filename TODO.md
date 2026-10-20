@@ -2,7 +2,7 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (not released)
+## Phone checks (released 2026-10-20)
 
 - [ ] Rename a group: as a host, Group settings → Manage this group. Type a new name and tap **Rename group**: the header and Your groups show it. A rule separates Archive and Delete below. As a player, the form is not there.
 
