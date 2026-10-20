@@ -91,11 +91,13 @@ After the books balance, the host reads each fact once. On the final set page, t
 - Result: 12 browser checks pass at 390 px, three runs in a row. The rise is two animations, `opacity` and `y`, so a press during the rise takes over `y` and nothing is left inline. Finalizing redraws the set in place, so the module also runs on `live:updated`. `review-animations` is not installed here; the Motion skill's best practices and DESIGN.md's motion principles were the review.
 
 ### 7. Rendezvous
-- [ ] Full SQLite and PostgreSQL suites.
-- [ ] Browser check at 390 and 1280 px: host and player, pesos and chips, rake, override, long names and large amounts, later set, closed session, blocked settle-up, no JavaScript.
-- [ ] `/impeccable critique` and `audit`, then `polish`; `break-ui` on the cards and result rows.
-- [ ] `code-review`.
-- Done when: each check is recorded in this plan.
+- [x] Full SQLite and PostgreSQL suites: 1,328 tests pass on both (15 PostgreSQL-only skips on SQLite).
+- [x] Browser check at 390 and 1280 px, and 320 px for the worst case: host and player, pesos, rake, override, nine players with long and accented names, ₱999,999 buy-in, rebuys, later set, closed session, blocked settle-up, no JavaScript. No horizontal overflow. Contrast: card title 12.46:1, card line 6.6:1, result line 8.28:1, proof 14.31:1.
+- [x] `/impeccable critique` (single context, see the snapshot `.impeccable/critique/2026-10-20T15-12-53Z__templates-web-final-set-html.md`): 32/40. Fixed: Reopen set competed with the choice on a phone; it now follows the results below 900 px. Detector: 8 advisories, all false positives (bare templates without the stylesheet). `audit` was covered by the same detector run and the contrast and target checks above; `polish` items are in commit `6e2f4e9`.
+- [x] `break-ui` with a worst-case set in the fixture database. Fixed: stacked cards at 320 px kept an empty band; a figure split from its word in the proof line and the result rows. Not changed (older behaviour): the session page's results stack token, name and amount at 320 px; initials such as "BI" and "MÁ"; the finalize toast covers a result row for six seconds.
+- [x] `code-review` (medium): 10 findings. Fixed: the final page's poll missed other sets and the session closing; the open session page had no sheet mount, so Settle up opened inline and a redraw could reset carry ticks; Open set N disappeared when an earlier set was unfinished; a draft read "Finish set N first"; the arrival's once could be spent with no card drawn. Kept: no `request_id` on next set and close (as before; both services refuse a repeat by state); about three queries more for a host on a final page; `display: contents` on the aside (as the count-up layout); the review page's removed totals (approved in task 4).
+- [x] `security-review` not run: no permission, money or user-data rule changed. Both POSTs keep their service checks.
+- Done when: each check is recorded in this plan. Frozen 2026-10-20.
 
 ### 8. Sync docs
 - [ ] DESIGN.md addendum (impeccable `document`), surface brief addendum for `templates-web-end-set`, features.md, spec.md behaviour facts, TODO.md phone checks.
