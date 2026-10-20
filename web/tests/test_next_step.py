@@ -74,3 +74,28 @@ class NextStepTests(TestCase):
         self.assertIn("Play set 3", html)
         self.assertIn("Finish set 2 first.", html)
         self.assertNotIn(reverse("night_close", args=[self.night_id]), html)
+
+    def test_the_poll_sees_the_session_move_on(self):
+        state = reverse("session_state", args=[self.night.session.pk])
+        version = self.client.get(state).json()["version"]
+        self.assertEqual(self.client.get(state, {"v": version}).status_code, 204)
+        settlement.close_night(self.night_id, self.night.host)
+        self.assertEqual(self.client.get(state, {"v": version}).status_code, 200)  # the choice is gone
+
+    def test_open_set_leads_to_an_earlier_unfinished_set(self):
+        second = games.start_next_set(self.night_id, self.night.host)
+        games.transition(second.pk, self.night.host, "start")
+        games.transition(second.pk, self.night.host, "end")  # set 2 counting
+        third = games.start_next_set(self.night_id, self.night.host)
+        games.transition(third.pk, self.night.host, "cancel", reason="nobody came")
+        html = self.client.get(reverse("night", args=[self.night_id])).content.decode()
+        self.assertIn("Open set 2", html)
+
+    def test_a_draft_blocks_settle_up_with_its_own_words(self):
+        from types import SimpleNamespace
+        from django.template.loader import render_to_string
+        draft = SimpleNamespace(set_number=3, state="setup")
+        html = render_to_string("web/_next_step.html", {"night": SimpleNamespace(pk=self.night_id), "can_start_next_set": True,
+                                                         "next_set_number": 4, "can_close": False, "unfinished_sets": [draft]})
+        self.assertIn("Cancel the set 3 draft first.", html)
+        self.assertNotIn("Finish set 3", html)

@@ -126,4 +126,5 @@ class EndedSetPointsToTheNextTests(TestCase):
         page = self.page(t.bea.user, t.first)
         self.assertNotIn("data-next-set", page)
         self.assertIn("Go to the session</a>", page)
-        self.assertIn(f'data-version="{t.first.version}"', page)
+        # No ".{later set}" part: the version is the set's own, then the session's states for its next step.
+        self.assertIn(f'data-version="{t.first.version}:', page)

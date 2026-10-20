@@ -230,8 +230,14 @@ def next_step(night, me, sets=None, member_ids=None) -> dict:
 def live_version(session, later):
     """What the set page's poll compares: the set's version, a number as before. An ended set's page
     also changes when a later set starts, without a write to the ended set (Start next set does not
-    lock it), so then it is "{version}.{later set}"."""
-    return f"{session.version}.{later.pk}" if later else session.version
+    lock it), so then it is "{version}.{later set}". A final set's page shows the session's next step,
+    which changes when another set moves or the session closes, so it also carries their states."""
+    version = f"{session.version}.{later.pk}" if later else session.version
+    if session.state != GameSession.State.FINALIZED:
+        return version
+    states = GameSession.objects.filter(night_id=session.night_id).order_by("pk").values_list("pk", "state")
+    status = GameNight.objects.filter(pk=session.night_id).values_list("status", flat=True).first()
+    return f"{version}:{status}:" + ",".join(f"{pk}{state[0]}" for pk, state in states)
 
 
 def session_context(session, me, *, later=UNSET) -> dict:
@@ -457,9 +463,8 @@ def night(request, night_id):
         "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
     })
     context.update(next_step(night, me, by_number, {standing.pk for standing in outcome.standings}))
-    # Open set N leads to a set that still needs the host or the players; a finished one is under Sets.
-    latest = context["latest_set"]
-    context["latest_set"] = latest if latest and latest.state not in (State.FINALIZED, State.CANCELED) else None
+    # Open set N leads to the latest set that still needs the host or the players; finished ones are under Sets.
+    context["latest_set"] = next((s for s in reversed(sets) if s.state not in (State.FINALIZED, State.CANCELED)), None)
     context["my_makeup"] = outcome.makeup_for(me.pk)
     if not night.is_archived:
         # The mark nightlive.js polls with, from rows this page has already read.

@@ -27,7 +27,7 @@
     </details>
     {% elif unfinished_sets %}
     {% with first=unfinished_sets.0 %}
-    <button type="button" class="btn next-card" disabled aria-describedby="next-blocked"><span class="next-title">Settle up</span><span class="next-line" id="next-blocked">Finish set {{ first.set_number }} first.</span></button>
+    <button type="button" class="btn next-card" disabled aria-describedby="next-blocked"><span class="next-title">Settle up</span><span class="next-line" id="next-blocked">{% if first.state == 'setup' %}Cancel the set {{ first.set_number }} draft first.{% else %}Finish set {{ first.set_number }} first.{% endif %}</span></button>
     {% endwith %}
     {% endif %}
   </div>

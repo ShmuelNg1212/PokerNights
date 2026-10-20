@@ -160,5 +160,5 @@
   </div>
   {% endif %}
 </div>
-{% if recap %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
+{% if recap or can_start_next_set or can_close %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
 {% endblock %}

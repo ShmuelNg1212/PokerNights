@@ -7,11 +7,13 @@
   function arrive() {
     var M = window.pokerMotion, step = document.querySelector(".final-layout [data-next-step]");
     if (!step || !M || !M.on() || document.hidden) return;
+    var cards = Array.prototype.slice.call(step.querySelectorAll(".next-card")).filter(function (card) {
+      return card.getClientRects().length;
+    });
+    if (!cards.length) return; // nothing drawn yet: the once is not spent
     var key = "rack-next:" + step.dataset.nextStep;
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (_) { return; }
-    Array.prototype.slice.call(step.querySelectorAll(".next-card")).filter(function (card) {
-      return card.getClientRects().length;
-    }).forEach(function (card, index) {
+    cards.forEach(function (card, index) {
       // The first keyframe is written before Motion starts (footgun: motion starts a frame late).
       card.style.opacity = "0"; card.style.transform = "translateY(8px)";
       // Two animations: a press takes over y and clears transform when it ends; nothing touches opacity.
