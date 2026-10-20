@@ -52,6 +52,28 @@ class GroupViewTests(TestCase):
         self.assertContains(page, reverse("member_rename_self", args=[self.group.pk]))
         self.assertNotContains(page, "Invite players")
 
+    def test_host_renames_the_group_from_settings(self):
+        page = self.client.get(self.url, {"view": "settings"})
+        self.assertContains(page, reverse("group_rename", args=[self.group.pk]))
+        response = self.client.post(reverse("group_rename", args=[self.group.pk]), {"name": "Sunday Game"})
+        self.assertRedirects(response, f"{self.url}?view=settings#manage")
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.name, "Sunday Game")
+
+    def test_a_refused_group_name_stays_with_its_form(self):
+        self.client.post(reverse("group_rename", args=[self.group.pk]), {"name": "   "})
+        page = self.client.get(self.url, {"view": "settings"})
+        self.assertContains(page, "This field is required.")
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.name, "Friday Game")
+
+    def test_a_player_cannot_rename_the_group(self):
+        self.client.force_login(add_player(self.group, "viewer").user)
+        self.assertNotContains(self.client.get(self.url, {"view": "settings"}), reverse("group_rename", args=[self.group.pk]))
+        self.client.post(reverse("group_rename", args=[self.group.pk]), {"name": "Mine now"})
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.name, "Friday Game")
+
     def test_management_actions_return_to_their_settings_section(self):
         cases = [
             ("table_create", [self.group.pk], {"name": "Kitchen", "seat_count": "9"}, "tables"),

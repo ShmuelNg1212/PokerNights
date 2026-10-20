@@ -102,6 +102,21 @@ def restore_group(actor: Member) -> GameGroup:
 
 
 @transaction.atomic
+def rename_group(actor: Member, name: str) -> GameGroup:
+    """A host gives the group a new name. Nothing is written when the name is the same."""
+    require_host(actor)
+    group = lock_group(actor.group_id)
+    name = clean_name(name, "Group name")
+    old = group.name
+    if old == name:
+        return group  # a repeated tap
+    group.name = name
+    group.save(update_fields=["name"])
+    audit.record("group.renamed", actor=actor.user, group_id=group.pk, target=group, summary=f"Renamed group {old} to {name}")
+    return group
+
+
+@transaction.atomic
 def create_group(user, name: str) -> Member:
     """Create a group. Its creator is the first host."""
     group = GameGroup.objects.create(name=clean_name(name, "Group name"), created_by=user)

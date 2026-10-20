@@ -97,3 +97,41 @@ class GroupViewTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertContains(response, "Friday Game")
         self.assertNotContains(response, "Secret Game")
+
+
+class RenameGroupTests(TestCase):
+    def test_host_renames_the_group_and_the_change_is_audited(self):
+        from audit.models import AuditEvent
+
+        group, host = make_group()
+        services.rename_group(host, "  Sunday   Game ")
+        group.refresh_from_db()
+        self.assertEqual(group.name, "Sunday Game")
+        event = AuditEvent.objects.get(action="group.renamed")
+        self.assertEqual(event.summary, "Renamed group Friday Game to Sunday Game")
+
+    def test_same_name_writes_nothing(self):
+        from audit.models import AuditEvent
+
+        _, host = make_group()
+        services.rename_group(host, "Friday Game")
+        self.assertFalse(AuditEvent.objects.filter(action="group.renamed").exists())
+
+    def test_only_a_host_renames_the_group(self):
+        group, _ = make_group()
+        with self.assertRaises(NotAllowed):
+            services.rename_group(add_player(group, "ben"), "Mine now")
+        group.refresh_from_db()
+        self.assertEqual(group.name, "Friday Game")
+
+    def test_name_is_required_and_bounded(self):
+        _, host = make_group()
+        for name in ("   ", "x" * 61):
+            with self.subTest(name=name), self.assertRaises(RuleError):
+                services.rename_group(host, name)
+
+    def test_an_archived_group_is_not_renamed(self):
+        _, host = make_group()
+        services.archive_group(host)
+        with self.assertRaises(RuleError):
+            services.rename_group(host, "Hidden")

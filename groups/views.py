@@ -60,6 +60,18 @@ def rename_self(request, group_id):
     return group_settings(group_id, "players")
 
 
+@require_POST
+def rename_group(request, group_id):
+    actor = member_for(request.user, group_id)
+    form = GroupForm(request.POST)
+    group = attempt_bound(request, form, services.rename_group, actor, form.cleaned_data["name"]) if form.is_valid() else None
+    if group is None:
+        keep_form(request, f"{group_id}:group", form)
+    else:
+        messages.success(request, f"The group is now {group.name}.")
+    return group_settings(group_id, "manage")
+
+
 PROFILE_NAME = "profile:name"  # the draft key, read by web.profile
 
 

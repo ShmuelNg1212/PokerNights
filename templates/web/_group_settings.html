@@ -256,9 +256,17 @@
 <section id="manage" aria-labelledby="manage-heading">
 <h2 id="manage-heading">Manage this group</h2>
 <div class="panel stack">
-  <p class="small muted">Archiving hides the group from every member and can be undone. Deleting is only possible when no money was ever recorded in the group.</p>
-  <a class="btn btn-block" href="{% url 'group_archive' group.pk %}">Archive group</a>
-  <a class="btn btn-danger btn-block" href="{% url 'group_delete' group.pk %}">Delete group</a>
+  <form method="post" action="{% url 'group_rename' group.pk %}" class="stack" data-once>
+    {% csrf_token %}
+    {% include "partials/form_fields.html" with form=group_form %}
+    <p class="hint">Every member sees the new name.</p>
+    <button type="submit" class="btn btn-block">Rename group</button>
+  </form>
+  <div class="stack manage-end">
+    <p class="small muted">Archiving hides the group from every member and can be undone. Deleting is only possible when no money was ever recorded in the group.</p>
+    <a class="btn btn-block" href="{% url 'group_archive' group.pk %}">Archive group</a>
+    <a class="btn btn-danger btn-block" href="{% url 'group_delete' group.pk %}">Delete group</a>
+  </div>
 </div>
 </section>
 {% endif %}

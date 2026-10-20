@@ -1155,6 +1155,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 :is(#players, #invites) details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
 :is(#players, #invites) details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .roster-form, .roster-manage { padding: var(--s-1) 0 var(--s-2); }
+.manage-end { border-top: 1px solid var(--rule); padding-top: var(--s-4); }
 .roster-manage > .roster-form { padding: 0; }
 .roster-actions { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
 .roster-actions > p { margin: 0; }

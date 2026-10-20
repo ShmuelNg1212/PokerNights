@@ -158,6 +158,8 @@ def group_settings_context(request, me) -> dict:
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
     }
     if me.is_host:
+        context["group_form"] = take_form(request, f"{group_id}:group", GroupForm,
+            initial={"name": me.group.name}, auto_id="group_name_%s")
         context["add_form"] = take_form(request, f"{group_id}:add", NamesForm if tools else NameForm, auto_id="add_%s")
         context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
         for member in members:
