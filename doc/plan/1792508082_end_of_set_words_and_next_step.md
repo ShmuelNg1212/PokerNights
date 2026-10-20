@@ -85,9 +85,10 @@ After the books balance, the host reads each fact once. On the final set page, t
 - Done when: tests pass; the books-off and override states are unchanged.
 
 ### 6. Motion
-- [ ] The two cards arrive once per set per browser on the final page: 8 px rise and fade with `arrive`, 60 ms apart. Key in `localStorage`, read in `try`.
-- [ ] Reduced motion, a blocked Motion file and a reload show the cards at once.
+- [x] The two cards arrive once per set per browser on the final page: 8 px rise and fade with `arrive`, 60 ms apart. Key in `localStorage`, read in `try`.
+- [x] Reduced motion, a blocked Motion file and a reload show the cards at once.
 - Done when: `review-animations` finds nothing material and a browser check confirms once-only and reduced motion.
+- Result: 12 browser checks pass at 390 px, three runs in a row. The rise is two animations, `opacity` and `y`, so a press during the rise takes over `y` and nothing is left inline. Finalizing redraws the set in place, so the module also runs on `live:updated`. `review-animations` is not installed here; the Motion skill's best practices and DESIGN.md's motion principles were the review.
 
 ### 7. Rendezvous
 - [ ] Full SQLite and PostgreSQL suites.
