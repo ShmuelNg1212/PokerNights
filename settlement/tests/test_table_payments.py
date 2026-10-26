@@ -170,6 +170,42 @@ class TablePaymentTests(TestCase):
         self.assertEqual(outcome.status, "unsettled")  # the table payment is not a paid mark
 
 
+class TablePaymentNamesTests(TestCase):
+    def test_only_players_who_bought_in_can_be_named(self):
+        from ledger.tests.helpers import Night
+
+        night = Night("A", "B", "C")
+        night.buy("A", 1000)
+        night.buy("B", 1000)  # C is seated but never bought in
+        night_id = night.session.night_id
+        a, b, c = (night.players[name].member for name in "ABC")
+        self.assertEqual(queries.session_players(night.session.night), [a, b])
+        with self.assertRaises(RuleError):
+            services.record_table_payment(night_id, night.host, c.pk, a.pk, 100, uuid.uuid4())
+
+    def test_closing_refuses_a_payment_that_names_someone_without_a_result(self):
+        from ledger.tests.helpers import Night
+
+        night = Night("A", "B")
+        night.buy("A", 1000)
+        night.buy("B", 1000)
+        night_id = night.session.night_id
+        a, b = night.players["A"].member, night.players["B"].member
+        services.record_table_payment(night_id, night.host, a.pk, b.pk, 10000, uuid.uuid4())
+        night.go("reconciliation")
+        night.cash("A", 1000)
+        night.cash("B", 1000)
+        services.finalize(night.session.pk, night.host)
+        # A buy-in reversed after its payment leaves the payment naming someone with no result. The row is
+        # written directly here; closing must refuse it.
+        stranger = add_player(night.group, "Dee")
+        Payment.objects.create(night=night.session.night, payer=stranger, payee=a, amount=500,
+                               request_id=uuid.uuid4(), recorded_by=night.host.user)
+        with self.assertRaisesMessage(RuleError, "names Dee, who has no result"):
+            services.close_night(night_id, night.host)
+        self.assertFalse(Transfer.objects.exists())
+
+
 class TablePaymentWithCarryTests(TestCase):
     def test_a_carried_transfer_and_a_table_payment_still_clear(self):
         club = Club("Ana", "Ben", "Carlo")

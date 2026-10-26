@@ -6,7 +6,7 @@ decided once per session, over all of its sets, when the host closes it.
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Exists, F, OuterRef
 from django.utils import timezone
 
 from audit import services as audit
@@ -257,6 +257,11 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     at_table = list(
         Payment.objects.filter(night=night, transfer__isnull=True, active=True).values_list("payer_id", "payee_id", "amount")
     )
+    # A buy-in reversed after a payment can leave it naming someone with no result: refuse, nothing is closed.
+    stray = {member_id for payer, payee, _ in at_table for member_id in (payer, payee)} - {member_id for member_id, _ in parties}
+    if stray:
+        names = ", ".join(sorted(Member.objects.filter(pk__in=stray).values_list("display_name", flat=True)))
+        raise RuleError(f"A payment at the table names {names}, who has no result in this session. Undo it first.")
     if at_table:
         parties = list(algorithm.balances(dict(parties), at_table).items())
         if sum(net for _, net in parties) != 0:
@@ -360,18 +365,27 @@ def mark_unpaid(night_id, actor: Member, transfer_id, reason: str = "") -> None:
     )
 
 
-def _session_member(night, member_id) -> Member:
-    """A member with a seat in a set of this session. Withdrawn players never bought in, so they are left out."""
-    from games.models import Participant
+def payable_seats(night):
+    """Seats a table payment can name: an accepted buy-in in a set of this session that is not canceled.
 
+    Only these players have a result when the session closes, so only they can be in its list.
+    """
+    from games.models import Participant
+    from ledger.models import BuyIn
+
+    bought = BuyIn.objects.filter(participant=OuterRef("pk"), reversal__isnull=True)
+    return (
+        Participant.objects.filter(session__night=night).exclude(session__state=State.CANCELED)
+        .filter(Exists(bought)).select_related("member")
+    )
+
+
+def _session_member(night, member_id) -> Member:
     if not str(member_id or "").isdecimal():
         raise RuleError("Choose two players of this session.")
-    seat = (
-        Participant.objects.select_related("member").filter(session__night=night, member_id=member_id)
-        .exclude(status=Participant.Status.WITHDRAWN).first()
-    )
+    seat = payable_seats(night).filter(member_id=member_id).first()
     if seat is None:
-        raise RuleError("Choose two players of this session.")
+        raise RuleError("Choose two players who bought in this session.")
     return seat.member
 
 

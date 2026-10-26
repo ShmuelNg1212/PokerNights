@@ -654,14 +654,6 @@ def unpaid_in(night) -> list:
 
 
 def session_players(night) -> list:
-    """The members with a seat in a set of this session, in the order they first joined it.
-
-    Withdrawn players never bought in and are left out. These are the people a table payment can name.
-    """
-    from games.models import Participant
-
-    seats = (
-        Participant.objects.filter(session__night=night).exclude(status=Participant.Status.WITHDRAWN)
-        .select_related("member").order_by("session__set_number", "join_order")
-    )
+    """The people a table payment can name (``services.payable_seats``), in the order they first joined."""
+    seats = services.payable_seats(night).order_by("session__set_number", "join_order")
     return list({seat.member_id: seat.member for seat in seats}.values())
