@@ -1175,3 +1175,14 @@ This addendum replaces the description placement and the invited Sign up head in
 - **Errors.** A refused field's message sits directly under the field, before its help, on every entry field.
 - **Contrast measured.** `.door-line`, `.door-rules li`, `.entry-forgot` and `.hint` 7.58:1 on the sheet; `.door-invited` 14.31:1.
 - **Height.** The invited Sign up fits 390 × 844; its button ends at 672px. At 320 × 568 it scrolls.
+
+### Paid at the table (2026-10-26)
+
+[Plan](doc/plan/1793020848_payments_before_close.md). Mode: Operate. No new colour, font, component or motion preset.
+
+- **Open session.** A section “Paid at the table” after Results so far. Each row reads like a transfer row without chips: the payer and payee in bold with the drawn arrow between them, the amount at the right on one line, and “21:32 · recorded by hana” beneath in Bone Dim. Long names wrap beside the amount. An own row sits on Rail 2, as in the transfer list. An undone row is struck and ends “undone: {reason}”.
+- **Host actions.** **Undo** is a quiet 48px disclosure under the row; it opens the reason field and a danger **Undo payment**, the same as reversing a buy-in. **Record a payment** is a full-width secondary button with a plus. It opens the shared sheet “Paid at the table”: Who paid and Who received (native selects, side by side from 320px of space), the amount on the numpad, one hint line, and the bone **Record payment**. Without JavaScript the same form is a disclosure, and `n/<id>/paid-at-table/` is a plain page that keeps typed values after a refusal.
+- **Set page.** In a left player's details sheet, under a Rule line, one sentence (“Up ₱4,250.50 in this set. Did someone pay Ben before they left?”) and a secondary **Paid at the table?** button.
+- **Player.** The felt shows their own payment as a sentence. Without a result yet, it sits under its own small label.
+- **Closed session.** “How this is worked out” names the table payments. Payment records label each row “At the table” or “Marked paid”.
+- **Measured.** `table_payments.mjs`, 17 checks at 320, 390 and 1280px, as host and player, and without JavaScript: 48px targets, no sideways scroll, a 37-character name, ₱1,234,567.

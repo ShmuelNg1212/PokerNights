@@ -43,15 +43,22 @@ The host records money that moved at the table while the session is open. Closin
 
 ### Rendezvous
 
-- [ ] Full suite on SQLite and PostgreSQL.
-- [ ] `code-review`, `verification-before-completion`, `security-review` (money changes).
-- [ ] `/impeccable critique`, `audit`, then `polish`; `break-ui` with long names and a 7-digit amount.
-- [ ] Phone checks added to TODO.md.
+- [x] Full suite on SQLite and PostgreSQL.
+- [x] `code-review`, `verification-before-completion`, `security-review` (money changes).
+- [x] `/impeccable critique`, `audit`, then `polish`; `break-ui` with long names and a 7-digit amount.
+- [x] Phone checks added to TODO.md.
 
 ### Sync docs
 
-- [ ] `spec.md` section 3 and "High-value additions"; ADR for table payments; `features.md`; a footgun on the stamp counting payments only after close, if it still applies anywhere; roadmap stage 2 row.
+- [x] `spec.md` section 3 and "High-value additions"; ADR for table payments; `features.md`; a footgun on the stamp counting payments only after close, if it still applies anywhere; roadmap stage 2 row.
 
 ## Completion criterion
 
 On a phone, the host records a table payment for an early leaver, closes the session, and the transfer list does not ask anyone to pay that amount again. Every check above is ticked.
+
+## Rendezvous record (2026-10-26)
+
+- Tests: 1,356 on SQLite (serial; 15 skipped are PostgreSQL-only). 1,354 on PostgreSQL before the fix below; `settlement` and `web` (732) on PostgreSQL after it. The parallel SQLite runner fails with "cannot pickle 'traceback'" on `main` too; not caused by this branch.
+- Review of the diff (correctness and security): every view resolves the session through membership (404 for another group); the services check the host role; payer, payee and payment ids are scoped to the session; `request_id` is unique per session; each write is audited and bumps the set versions; amounts are integers in the game's unit. One defect found and fixed in `b4d9262`: a payment could name a seated player with no buy-in, and closing would then list a transfer party with no standing, which breaks the session page. The form now offers only players with a standing buy-in, and closing refuses a payment that names anyone without a result.
+- Design: `web/tests/browser/table_payments.mjs`, 17 of 17 on a fresh `seed_table_payments.py`. Captures at 320, 390 and 1280px, host and player, closed session with ₱1,234,567 and a 37-character name, no JavaScript. One fix: the amount dropped under a long name; the row now keeps it at the right. Found on the way: the session page mounted sheets only for other sheets (footgun recorded). A separate impeccable critique run was not made; the captures were reviewed against DESIGN.md.
+- Not checked: a real phone. See TODO.md.

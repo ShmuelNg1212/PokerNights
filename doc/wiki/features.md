@@ -67,7 +67,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
 9. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
 10. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
-11. **Close the session.** The app lists who pays whom with the minimum number of transfers. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
+11. **Close the session.** The app lists who pays whom with the minimum number of transfers, after it subtracts the payments made at the table. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
 12. **Set log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
@@ -138,6 +138,19 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Join group shows the group name and the number of active players.
 - Log in is `accounts.views.Login`, Django's `LoginView` with the invite name added to the context.
 
+## Paid at the table
+
+[ADR 0002](../adr/0002-payments-at-the-table.md); [plan](../plan/1793020848_payments_before_close.md).
+
+- While a session is open, the host records money that one player handed another at the table: who paid, who received, the amount. The session page has a “Paid at the table” section with **Record a payment** (a sheet; a plain page without JavaScript).
+- On the set page, a left player's details offer **Paid at the table?** to the host. It opens the form with that player and their set figure filled in: a winner is the payee, a loser the payer. After recording, the host returns to the set.
+- Only players with a standing buy-in in a set of the session can be named. The two players must differ. The amount is more than 0, in the game's unit.
+- The host undoes a payment with a reason. The row stays, struck, with the reason. Nothing changes once the session is closed; reopen it first.
+- Every member sees the list. A player's own payment also shows on the felt: “You paid Ana ₱300 at the table.”
+- Closing subtracts each standing table payment from what is still owed, then works out who pays whom. Results and stats do not change. An overpayment comes back in the list. Closing refuses a payment that names someone with no result (for example after their buy-in was reversed).
+- A closed session names these payments in “How this is worked out”. Payment records say “At the table” or “Marked paid”.
+- A table payment does not count as a paid mark and does not block reopening. Closing again uses it again.
+
 ## Settle status of a session
 
 - A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
@@ -197,7 +210,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 ## Limits today
 
 - The app records who owes what. It does not move money.
-- The transfer list excludes rake already collected at buy-in. It assumes no earlier player payments. A player payment during the game cannot be recorded yet.
+- The transfer list excludes rake already collected at buy-in. It subtracts the payments made at the table before closing (see “Paid at the table”).
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
 - A group's Stats and Group settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.

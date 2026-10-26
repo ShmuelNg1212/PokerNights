@@ -62,6 +62,7 @@ AuditEvent (group_id, session_id as plain integers)
 - **One set in play:** a partial unique constraint allows one set per session in `setup`, `open` or `running`. `games.services.start_next_set()` checks the same under a lock on the session row, copies seats and the latest settings, and carries over participants with status `joined`. It copies no money.
 - **Resume:** a set cannot resume once a later set of its session exists.
 - **Settle-up:** `settlement.services.finalize()` freezes one set's results and writes no transfers. `close_night()` requires every set to be finalized or canceled, sums each member's results over the finalized sets, runs the settle-up algorithm, and writes one `SettlementPlan` for the session. `Transfer` and `Payment` name members, because a player has one participant row per set.
+- **Payments at the table** ([ADR 0002](../adr/0002-payments-at-the-table.md)): a `Payment` with no transfer. `record_table_payment()` and `reverse_table_payment()` write it while the session is open; the check constraint `payment_at_table_names_two_players` requires both players and that they differ. `payable_seats()` is the one rule for who can be named: an accepted buy-in in a set that is not canceled. Results never read payments; only the balances at close do.
 
 ## Timers
 
@@ -177,7 +178,7 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 
 `settlement/algorithm.py`:
 
-- `balances(nets, payments)`: what each party is still owed. A payer is owed more by the amount paid; a payee less. With no payments, the balance equals the result. Stage 1 passes no payments, because none can be recorded before finalization.
+- `balances(nets, payments)`: what each party is still owed. A payer is owed more by the amount paid; a payee less. With no payments, the balance equals the result. `close_night()` passes the session's standing table payments, after any carried transfers.
 - `settle(parties)`: splits the parties into the largest number of groups that each sum to zero (dynamic programming over subsets), then settles each group with one transfer fewer than its size. The result is the minimum number of transfers; the proof is in the module docstring. Ties follow join order, so the output is deterministic. Above 16 parties (more than a table seats) it falls back to one group and the plan is marked `proven_minimal = False`.
 
 ## Archive and delete
@@ -308,7 +309,7 @@ Two things now replace content on the set page without a reload: the 4-second po
 Two more transitions, both in `settlement.services`, host only, with a required reason, idempotent by state like finalize and close. [Plan](../plan/1791699815_reopen_set_and_session.md).
 
 - `reopen_set()`: `finalized → reconciliation`. Refused while the session is closed. `ledger.services.void_results()` marks the current `Finalization` and its `PlayerResult` rows not current and fills `voided_at`, `voided_by`, `void_reason`; `games.services.mark_reopened()` changes the state and clears `finalized_at`. `ended_at` and the play periods are untouched. `write_results()` then writes revision `n + 1`.
-- `reopen_night()`: `closed → open`. Refused while the current plan has an active `Payment`. The plan is marked not current with the same three void fields; `close_night()` writes a new one.
+- `reopen_night()`: `closed → open`. Refused while the current plan has an active paid mark (a `Payment` with a transfer). Table payments do not block it. The plan is marked not current with the same three void fields; `close_night()` writes a new one.
 - **A session has several plans, one current.** `SettlementPlan.night` is a plain link (`night.plans`) with the partial unique rule `plan_one_current`. Every reader of transfers filters `plan__is_current=True`: `night_outcome()` (which also returns `replaced`), `settle_states()`, `unpaid_transfers()`, `unpaid_in()`, `services._transfer()`. A new reader must do the same, or a retired transfer shows as owed.
 - `ledger.services.is_reopened(session)` is true while a set with an earlier finalization is counting up. Only then does `record_buy_in()` accept a host's buy-in outside open and running; it does not reclassify the player's final cash-out.
 - Stats need no change: they read current results of finalized sets in closed sessions.
@@ -338,7 +339,7 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 
 [Plan](../plan/1791706983_session_page_live.md). The set page polls a stored `version`; the session page polls a derived stamp, because the writes that change it (paid marks, close, reopen, set transitions) have no single row to bump.
 
-- `settlement.queries.night_stamp(night)`: a 16-character hash of the session's status and archive mark, each set's id, state and `finalized_at`, the current plan's id, the number of retired plans, and (while a plan is current) how many payments exist and how many stand. Three queries. Never stored.
+- `settlement.queries.night_stamp(night)`: a 16-character hash of the session's status and archive mark, each set's id, state and `finalized_at`, the current plan's id, the number of retired plans, and how many payments exist and how many stand (table payments before closing, paid marks after). Three queries. Never stored.
 - `settlement.queries.stamp_from(...)` is the same rule over rows the caller holds. The session view uses it with what it has already read, so the page carries its stamp (`data-stamp` and `data-state-url` on `.night-layout`) at no cost in queries. `web/tests/test_night_live.py` checks at every kind of change that the page's stamp equals the queried one; if they ever differed the page would redraw on every poll, and `nightlive.js` also refuses to redraw twice for one stamp.
 - `web.views.night_state` (`n/<id>/state/?v=`): 204 when unchanged, else `{"stamp": …}`. Membership as on the page.
 - `static/js/nightlive.js`: on a new stamp it asks Turbo to visit the same address with `replace`, which the page's `turbo-refresh-method: morph` turns into a redraw in place. After a morph it calls `pokerPage.start()`, because a morph restarts no script: the sheet, the recap that opens once and "Settled" must read the new page. It raises `night:refreshed` with the paid marks as they were, which `settle.js` uses to settle a row marked by someone else.

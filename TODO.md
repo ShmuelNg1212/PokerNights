@@ -2,6 +2,10 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
+## Phone checks (unreleased: `feat/payments-before-close`)
+
+- [ ] Paid at the table ([plan](doc/plan/1793020848_payments_before_close.md)): in a running set, cash out a winner with **Leaving the set**. Tap their name: “Up ₱… in this set. Did someone pay …?” and **Paid at the table?**. It opens the form with them as Who received and the amount in. Choose who paid; with the number keys, record it: you are back on the set. On the session page the payment is under “Paid at the table”; that player's phone says “… paid you ₱… at the table.” **Undo** asks for a reason, then strikes the row. Finish and close: the list does not ask for that amount again.
+
 ## Phone checks (released 2026-10-20)
 
 - [ ] What next ([plan](doc/plan/1792508082_end_of_set_words_and_next_step.md)): finalize a set. Under the result, "What next?" shows **Play set 2** and **Settle up** side by side; they rise once. **Settle up** opens "Close the session?" with **Not yet**; the session page shows the same two cards and no **Open set 1**. The review page and the final page each say "The books balance" once; each player's result is one line. As a player: "Who pays whom comes when the host settles up."
@@ -25,8 +29,7 @@ Active and next items only, 40 lines at most. History is in `doc/plan/`, git, an
 - [ ] Repair the stale browser scripts (`rack.mjs`, `end_set.mjs`, `opening.mjs`, `opening_drafts.mjs`, `counts.mjs`, `remaining.mjs`), and the checks that fail on `main` too: `navigate.mjs` (22 screen changes; a poll after leaving the set) and `home.mjs` (48 px targets in a card); see the [browser checks README](web/tests/browser/README.md).
 - [ ] Chip k6: dark initials on the orange fill measure 3.8:1 (found by the Sessions tab critique).
 - [ ] Stats board rows: the rounded `.stat-row` curls its hairline at both ends (found in the profile critique; fixed on the profile only).
-- [ ] Stage 2, what remains: optional banker, payments before a session closes, filters on past sessions. See the [roadmap](doc/roadmap/README.md).
-- [ ] Stage 3, what remains: seasons.
+- [ ] Stages 2 and 3, what remains: optional banker, filters on past sessions, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
 
 ## Waiting for the human

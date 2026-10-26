@@ -64,3 +64,7 @@ The approved `doc/plan/1791625392_session_recap_details.md` replaces the recap's
 ## 2026-10-10 addendum — settle-up in rows
 
 The approved `doc/plan/1791630963_count_up_and_settle_up_revamp.md` recomposes the closed session page: the viewer's own part as the headline (the table's total for the host), one row per transfer with the host's action on it, results and sets after, payment records folded, recap link and Manage at the end. Two moments: a paid transfer settles, and Settled arrives once. DESIGN.md, "Settle-up in rows", supersedes the FIRST VIEWPORT and transfer-row lines above for a closed session. Evidence: `night.mjs` 83 of 83 on a fresh seed; captures at 320, 390 and 1280px reviewed with one fix batch (long amounts on their own line, own rows separated). No separate critique run was made.
+
+## 2026-10-26 addendum — Paid at the table
+
+The approved `doc/plan/1793020848_payments_before_close.md` adds a “Paid at the table” section to the open session, a sheet to record a payment, and an Undo with a reason. The closed page names table payments in its explanation and labels payment records. DESIGN.md, “Paid at the table”, records the composition. Evidence: `table_payments.mjs` 17 of 17 on a fresh seed; captures at 320, 390 and 1280px reviewed with one fix (the amount stays beside long names).
