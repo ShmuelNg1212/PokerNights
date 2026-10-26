@@ -220,6 +220,8 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     Every set must be finalized or canceled. Closing says nothing about
     whether anyone has paid.
 
+    Payments made at the table while the session was open are subtracted first (ADR 0002).
+
     ``carry_ids`` are unpaid transfers of earlier sessions to fold into this list: each one moves
     its amount from the payer's balance to the payee's before the netting, and is then carried,
     neither paid nor unpaid. Every one is checked again here; if one no longer qualifies nothing
@@ -252,6 +254,13 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
         parties = list(balances.items())
         if sum(net for _, net in parties) != 0:
             raise ledger.LedgerInvariantError(f"Session {night.pk}: the balances with carried transfers do not sum to zero.")
+    at_table = list(
+        Payment.objects.filter(night=night, transfer__isnull=True, active=True).values_list("payer_id", "payee_id", "amount")
+    )
+    if at_table:
+        parties = list(algorithm.balances(dict(parties), at_table).items())
+        if sum(net for _, net in parties) != 0:
+            raise ledger.LedgerInvariantError(f"Session {night.pk}: the balances with table payments do not sum to zero.")
     transfers = algorithm.settle(parties)
     plan = SettlementPlan.objects.create(night=night, proven_minimal=algorithm.is_proven_minimal(parties))
     CarriedTransfer.objects.bulk_create(CarriedTransfer(transfer=old, plan=plan, created_by=actor.user) for old in carried)
@@ -273,7 +282,10 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
         summary=f"Closed the session: {len(sets)} set{'' if len(sets) == 1 else 's'}, "
         f"{len(transfers)} transfer{'' if len(transfers) == 1 else 's'}"
         + (f", {len(carried)} earlier transfer{'' if len(carried) == 1 else 's'} carried in" if carried else ""),
-        data={"nets": {str(member_id): net for member_id, net in parties}, "carried": [old.pk for old in carried]},
+        data={
+            "nets": {str(member_id): net for member_id, net in parties}, "carried": [old.pk for old in carried],
+            "at_table": len(at_table),
+        },
     )
     for old in carried:
         audit.record(
@@ -346,3 +358,82 @@ def mark_unpaid(night_id, actor: Member, transfer_id, reason: str = "") -> None:
         "transfer.unpaid", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=transfer,
         summary=f"Marked unpaid again: {_describe(transfer, night.unit)}", reason=reason,
     )
+
+
+def _session_member(night, member_id) -> Member:
+    """A member with a seat in a set of this session. Withdrawn players never bought in, so they are left out."""
+    from games.models import Participant
+
+    seat = (
+        Participant.objects.select_related("member").filter(session__night=night, member_id=member_id)
+        .exclude(status=Participant.Status.WITHDRAWN).first()
+    )
+    if seat is None:
+        raise RuleError("Choose two players of this session.")
+    return seat.member
+
+
+def _bump_sets(night) -> None:
+    # Open set pages poll their set's version: bump it so they show the payment.
+    GameSession.objects.filter(night=night).update(version=F("version") + 1)
+
+
+@transaction.atomic
+def record_table_payment(night_id, actor: Member, payer_id, payee_id, amount: int, request_id) -> Payment:
+    """Record money that one player handed another at the table, while the session is open.
+
+    It changes no result. Closing subtracts it from what is still owed (ADR 0002).
+    """
+    require_host(actor)
+    night = games.lock_night(night_id, actor.group_id)
+    repeated = Payment.objects.filter(night=night, request_id=request_id).first()
+    if repeated is not None:
+        return repeated
+    if night.is_closed:
+        raise RuleError("The session is closed. Mark a transfer paid instead.")
+    if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:
+        raise RuleError("Enter the amount paid, more than 0.")
+    payer, payee = _session_member(night, payer_id), _session_member(night, payee_id)
+    if payer.pk == payee.pk:
+        raise RuleError("Choose two different players.")
+    payment = Payment.objects.create(
+        night=night, payer=payer, payee=payee, amount=amount, request_id=request_id, recorded_by=actor.user,
+    )
+    audit.record(
+        "payment.recorded", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=payment,
+        summary=f"Paid at the table: {payer.display_name} → {payee.display_name} {money.format_amount(amount, night.unit)}",
+        data={"amount": amount, "unit": night.unit},
+    )
+    _bump_sets(night)
+    return payment
+
+
+@transaction.atomic
+def reverse_table_payment(night_id, actor: Member, payment_id, reason: str) -> PaymentReversal:
+    """Undo a table payment recorded by mistake. The payment row stays, with a reversal and its reason."""
+    require_host(actor)
+    night = games.lock_night(night_id, actor.group_id)
+    payment = (
+        Payment.objects.select_related("payer", "payee")
+        .filter(pk=payment_id, night=night, transfer__isnull=True).first()
+    )
+    if payment is None:
+        raise RuleError("That payment is not in this session.")
+    if not payment.active:
+        return payment.reversal  # a repeated tap
+    if night.is_closed:
+        raise RuleError("The session is closed. Reopen it to undo a table payment.")
+    reason = " ".join((reason or "").split())[:255]
+    if not reason:
+        raise RuleError("Give a reason for undoing it. It stays in the log.")
+    payment.active = False
+    payment.save(update_fields=["active"])
+    reversal = PaymentReversal.objects.create(payment=payment, reason=reason, recorded_by=actor.user)
+    audit.record(
+        "payment.reversed", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=payment,
+        summary=f"Undid a table payment: {payment.payer.display_name} → {payment.payee.display_name} "
+        f"{money.format_amount(payment.amount, night.unit)}",
+        reason=reason,
+    )
+    _bump_sets(night)
+    return reversal

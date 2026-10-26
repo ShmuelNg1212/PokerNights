@@ -185,6 +185,7 @@ class NightOutcome:
     results: list = field(default_factory=list)  # services.result_rows(night), kept for the recap
     replaced: list = field(default_factory=list)  # earlier plans, retired when the session was reopened
     carried_in: list = field(default_factory=list)  # earlier transfers this session's list took over
+    table_payments: list = field(default_factory=list)  # paid at the table before closing (ADR 0002), undone ones too
 
     @property
     def total_to_pay(self):
@@ -271,12 +272,13 @@ def night_outcome(night) -> NightOutcome:
         from django.db.models import prefetch_related_objects
 
         prefetch_related_objects(found.replaced, "transfers__payer", "transfers__payee")
+    found.payments = list(
+        Payment.objects.filter(night=night).select_related("payer", "payee", "recorded_by", "reversal")
+    )
+    found.table_payments = [p for p in found.payments if p.transfer_id is None]
     if found.plan is not None:
         found.transfers = list(
             Transfer.objects.filter(plan=found.plan).select_related("payer", "payee").order_by("position")
-        )
-        found.payments = list(
-            Payment.objects.filter(night=night).select_related("payer", "payee", "recorded_by")
         )
         # A transfer's payment is recorded under the transfer's own session (services.mark_paid),
         # so the session's payments hold every active one.
@@ -562,13 +564,13 @@ def session_nets(night_ids, member_ids) -> dict:
 def stamp_from(night, sets, plan_id, replaced, payments, carried=0) -> str:
     """The session page's mark, from rows the caller holds. ``sets`` are ``(pk, state, finalized_at)``;
     ``replaced`` is the number of transfer lists a reopening retired; ``payments`` are
-    ``(how many exist, how many stand)``, counted only while there is a current list."""
+    ``(how many exist, how many stand)``: paid marks after closing, table payments before."""
     import hashlib
 
     seen = (
         night.status, night.archived_at is not None,
         [(pk, state, finalized_at.isoformat() if finalized_at else None) for pk, state, finalized_at in sets],
-        plan_id, replaced, tuple(payments) if plan_id else (0, 0),
+        plan_id, replaced, tuple(payments),
     )
     # How many of this list's transfers a later session has taken over. Left out at zero, so a
     # session nobody carried from keeps the mark it had.
@@ -596,10 +598,8 @@ def night_stamp(night) -> str:
         .values_list("pk", "is_current", "taken")
     )
     plan_id, carried = next(((pk, taken) for pk, current, taken in plans if current), (None, 0))
-    payments = (0, 0)
-    if plan_id:
-        found = Payment.objects.filter(night=night).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
-        payments = (found["made"], found["standing"])
+    found = Payment.objects.filter(night=night).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
+    payments = (found["made"], found["standing"])
     return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments, carried)
 
 

@@ -19,15 +19,15 @@ The host records money that moved at the table while the session is open. Closin
 
 ### Technical
 
-- [ ] **T1. Model constraint.** Add a check constraint: a payment with no transfer has a payer and a payee, and they differ. One migration. Check that no production row has a null transfer before release.
+- [x] **T1. Model constraint.** Add a check constraint: a payment with no transfer has a payer and a payee, and they differ. One migration. Check that no production row has a null transfer before release.
   - Done when: the migration applies on SQLite and PostgreSQL, and a test shows the database refuses a half-filled table payment.
-- [ ] **T2. Services.** In `settlement/services.py` add `record_table_payment(night_id, actor, payer_id, payee_id, amount, request_id)` and `reverse_table_payment(night_id, actor, payment_id, reason)`.
+- [x] **T2. Services.** In `settlement/services.py` add `record_table_payment(night_id, actor, payer_id, payee_id, amount, request_id)` and `reverse_table_payment(night_id, actor, payment_id, reason)`.
   - Acceptance: host only; session open only; both are players of the session; amount is a positive integer; a repeated `request_id` returns the same row; reversal needs a reason and writes a `PaymentReversal`; each write calls `audit.record()` and bumps every set's `version`.
   - Done when: tests cover each rule and the repeated tap.
-- [ ] **T3. Close folds payments in.** `close_night()` passes active table payments to `algorithm.balances()` after the carried transfers, asserts the sum is zero, then settles.
+- [x] **T3. Close folds payments in.** `close_night()` passes active table payments to `algorithm.balances()` after the carried transfers, asserts the sum is zero, then settles.
   - Acceptance: an early leaver paid in full has no transfer; a part payment leaves the rest; an overpayment flows back; a reversed payment counts for nothing; a carried transfer and a table payment together still clear; results and stats are unchanged; reopen and close again gives the same list.
   - Done when: these are tests in `settlement/tests/test_table_payments.py`, and they pass on SQLite and PostgreSQL.
-- [ ] **T4. Queries and stamp.** The session outcome lists table payments apart from paid marks. `night_stamp()` and `stamp_from()` count payments while the session is open too.
+- [x] **T4. Queries and stamp.** The session outcome lists table payments apart from paid marks. `night_stamp()` and `stamp_from()` count payments while the session is open too.
   - Done when: a test shows a new table payment changes the stamp of an open session, and the stamp of a session with no payments is unchanged.
 - [ ] **T5. Views and URLs.** `table_payment` (GET form, POST record) and `table_payment_undo` (POST with reason) in `web`. Membership resolution and 404 on a miss (rule 5).
   - Done when: view tests cover host, player (refused), other group (404), closed session (refused with a message).

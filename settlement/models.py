@@ -86,8 +86,9 @@ class CarriedTransfer(models.Model):
 class Payment(models.Model):
     """A record that money changed hands. The app records payments; it never moves money.
 
-    Marking a transfer paid creates a payment linked to it. ``payer`` or
-    ``payee`` is empty when that side is the banker (a later stage).
+    Marking a transfer paid creates a payment linked to it. A payment with no
+    transfer was made at the table while the session was open (ADR 0002); closing
+    subtracts it from what is still owed. It names both players.
     """
 
     night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="payments")
@@ -108,6 +109,11 @@ class Payment(models.Model):
             models.UniqueConstraint(fields=["night", "request_id"], name="payment_request_once"),
             models.UniqueConstraint(fields=["transfer"], condition=Q(active=True), name="payment_one_active_per_transfer"),
             models.CheckConstraint(condition=Q(amount__gt=0), name="payment_amount_positive"),
+            models.CheckConstraint(
+                condition=Q(transfer__isnull=False)
+                | (Q(payer__isnull=False) & Q(payee__isnull=False) & ~Q(payer=F("payee"))),
+                name="payment_at_table_names_two_players",
+            ),
         ]
         indexes = [models.Index(fields=["night"], name="payment_night")]
 
