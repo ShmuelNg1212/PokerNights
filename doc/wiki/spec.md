@@ -61,6 +61,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Produce the **minimum number of transfers** to settle all debts (who pays whom, how much).
 - Show each player their own net result and what they owe or are owed, clearly.
 - Mark each transfer as paid. Unpaid transfers stay visible, and each session reads Settled, Partly settled or Unsettled.
+- Before a session closes, the host can record a payment made at the table, for example to a player who leaves early. Closing subtracts it from what is still owed. Results do not change ([ADR 0002](../adr/0002-payments-at-the-table.md)).
 - When closing a session, the host can carry earlier unpaid transfers between two of its players into the new settle-up. They are netted with the night's results into one list.
 - Any member can share a closed session's results to the group chat as one picture and as text. The app sends nothing itself.
 
@@ -92,7 +93,6 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 ## Later (not built)
 
 - RSVP with seat limits and a waitlist (typically 9 to 10 seats), recurring games, reminders
-- Payments recorded before a session closes (a player who leaves early and is paid at the table)
 - Dealer tips
 - Notes per session (house rules, disputes)
 - Export results as CSV
