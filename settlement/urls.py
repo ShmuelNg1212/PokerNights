@@ -11,6 +11,8 @@ urlpatterns = [
     path("n/<int:night_id>/archive/", views.night_archive, name="night_archive"),
     path("n/<int:night_id>/restore/", views.night_restore, name="night_restore"),
     path("n/<int:night_id>/delete/", views.night_delete, name="night_delete"),
+    path("n/<int:night_id>/paid-at-table/", views.table_payment, name="table_payment"),
+    path("n/<int:night_id>/paid-at-table/<int:payment_id>/undo/", views.table_payment_undo, name="table_payment_undo"),
     path("n/<int:night_id>/transfers/<int:transfer_id>/paid/", views.transfer_paid, name="transfer_paid"),
     path("n/<int:night_id>/transfers/<int:transfer_id>/unpaid/", views.transfer_unpaid, name="transfer_unpaid"),
 ]

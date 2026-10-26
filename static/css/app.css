@@ -2126,3 +2126,27 @@ p.alerts-text:last-child { margin-bottom: 0; }
   .final-layout > .table-left { display: contents; }
   .final-layout .set-correct { order: 1; margin-top: var(--s-4); }
 }
+
+/* Paid at the table (2026-10-26): money that moved before the session closed. Rows read like the transfer list; no new colour. */
+.table-pay > h2 { margin-bottom: var(--s-2); }
+.table-pay-list { margin-bottom: var(--s-3); }
+.table-pay-row .row { flex-wrap: nowrap; align-items: baseline; gap: var(--s-3); }
+.table-pay-who { min-width: 0; }
+.table-pay-who { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); overflow-wrap: anywhere; }
+.table-pay-who .icon { color: var(--muted); flex: none; }
+.table-pay-row .amount { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.table-pay-row > p { margin: var(--s-1) 0 0; }
+.table-pay-row.is-undone .table-pay-who, .table-pay-row.is-undone .amount { color: var(--muted); }
+.table-pay-row.is-mine { margin-inline: calc(-1 * var(--s-3)); padding-inline: var(--s-3); border-radius: var(--r-row); background: var(--rail-2); }
+.table-pay-undo { margin-top: var(--s-2); }
+.table-pay-undo > summary { list-style: none; width: auto; }
+.table-pay-undo > summary::-webkit-details-marker { display: none; }
+.table-pay-undo[open] > summary { margin-bottom: var(--s-2); }
+.sheets-enabled .table-pay-opener { display: flex !important; }
+.table-pay-fallback > summary { list-style: none; }
+.table-pay-fallback > summary::-webkit-details-marker { display: none; }
+.table-pay-fallback[open] > .sheet-content { margin-top: var(--s-3); }
+.table-pay-parties { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: var(--s-3); }
+.table-pay-parties select { width: 100%; }
+.leaver-pay { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--rule); }
+.leaver-pay > p { margin: 0 0 var(--s-2); }

@@ -29,17 +29,17 @@ The host records money that moved at the table while the session is open. Closin
   - Done when: these are tests in `settlement/tests/test_table_payments.py`, and they pass on SQLite and PostgreSQL.
 - [x] **T4. Queries and stamp.** The session outcome lists table payments apart from paid marks. `night_stamp()` and `stamp_from()` count payments while the session is open too.
   - Done when: a test shows a new table payment changes the stamp of an open session, and the stamp of a session with no payments is unchanged.
-- [ ] **T5. Views and URLs.** `table_payment` (GET form, POST record) and `table_payment_undo` (POST with reason) in `web`. Membership resolution and 404 on a miss (rule 5).
+- [x] **T5. Views and URLs.** `table_payment` (GET form, POST record) and `table_payment_undo` (POST with reason) in `web`. Membership resolution and 404 on a miss (rule 5).
   - Done when: view tests cover host, player (refused), other group (404), closed session (refused with a message).
 
 ### Design (after `/impeccable shape payments before close`)
 
-- [ ] **D1. Shape brief.** Run the shape pass. Fold its decisions into D2–D4 before building.
-- [ ] **D2. Record sheet.** A sheet from the session page: payer, arrow, payee, amount on the existing numpad, one primary button. 48 px targets; one column on a phone.
+- [x] **D1. Shape brief.** Run the shape pass. Fold its decisions into D2–D4 before building.
+- [x] **D2. Record sheet.** A sheet from the session page: payer, arrow, payee, amount on the existing numpad, one primary button. 48 px targets; one column on a phone.
   - Done when: it works with JavaScript off (plain form page) and on (sheet).
-- [ ] **D3. "Paid at the table" list** on the open session page, under the results. Each row: payer → payee, amount, time, who recorded it, **Undo** for the host.
-- [ ] **D4. Closed page.** "How this is worked out" names the table payments instead of "assumes no earlier player payments". Payment records label each row "At the table" or "Marked paid".
-- [ ] **D5. Leaver link** (if Q2 is accepted). On the set page, beside a player who left: "Paid at the table?" opens D2 prefilled.
+- [x] **D3. "Paid at the table" list** on the open session page, under the results. Each row: payer → payee, amount, time, who recorded it, **Undo** for the host.
+- [x] **D4. Closed page.** "How this is worked out" names the table payments instead of "assumes no earlier player payments". Payment records label each row "At the table" or "Marked paid".
+- [x] **D5. Leaver link** (if Q2 is accepted). On the set page, beside a player who left: "Paid at the table?" opens D2 prefilled.
 
 ### Rendezvous
 

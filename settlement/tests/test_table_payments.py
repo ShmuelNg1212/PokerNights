@@ -4,10 +4,11 @@ import uuid
 
 from django.db import IntegrityError, transaction
 from django.test import TestCase
+from django.urls import reverse
 
 from audit.models import AuditEvent
 from groups.errors import NotAllowed, RuleError
-from groups.tests.helpers import add_player
+from groups.tests.helpers import add_player, make_user
 from ledger.models import PlayerResult
 from ledger.tests.test_balance import worked_example
 from settlement import queries, services
@@ -179,3 +180,95 @@ class TablePaymentWithCarryTests(TestCase):
         club.close(second, carry=club.unpaid(first))
         # Ana: +300 − 500 carried − 200 received = −400. Ben: −100 + 500 = +400. Carlo: −200 + 200 = 0.
         self.assertEqual(club.transfers(second), {("Ana", "Ben"): 400})
+
+
+class TablePaymentViewTests(TestCase):
+    """A running set: A and B play; ben has a login, wins ₱400 and leaves early."""
+
+    def setUp(self):
+        from ledger.tests.helpers import Night
+
+        self.night = Night("A", "B")
+        self.ben = self.night.add_login_player("ben")
+        for name in ("A", "B", "ben"):
+            self.night.buy(name, 1000)
+        self.night.cash("ben", 1400, left=True)
+        self.night_id = self.night.session.night_id
+        self.a = self.night.players["A"].member
+        self.page_url = reverse("night", args=[self.night_id])
+        self.form_url = reverse("table_payment", args=[self.night_id])
+
+    def post(self, **data):
+        return self.client.post(self.form_url, {"request_id": str(uuid.uuid4()), **data})
+
+    def test_host_records_from_the_session_page_and_undoes(self):
+        self.client.force_login(self.night.host.user)
+        page = self.client.get(self.page_url)
+        self.assertContains(page, "Paid at the table")
+        self.assertContains(page, "Record a payment")
+        response = self.post(payer=self.a.pk, payee=self.ben.pk, amount="400")
+        self.assertRedirects(response, self.page_url, fetch_redirect_response=False)
+        payment = Payment.objects.get()
+        self.assertEqual((payment.payer, payment.payee, payment.amount, payment.transfer), (self.a, self.ben, 40000, None))
+        page = self.client.get(self.page_url)
+        self.assertContains(page, "recorded by")
+        self.client.post(reverse("table_payment_undo", args=[self.night_id, payment.pk]), {"reason": "wrong player"})
+        payment.refresh_from_db()
+        self.assertFalse(payment.active)
+        self.assertContains(self.client.get(self.page_url), "undone: wrong player")
+
+    def test_a_refusal_keeps_the_values_on_the_fallback_page(self):
+        self.client.force_login(self.night.host.user)
+        response = self.post(payer=self.a.pk, payee=self.a.pk, amount="400")
+        self.assertEqual(response.status_code, 422)
+        self.assertContains(response, "Choose two different players.", status_code=422)
+        self.assertContains(response, 'value="400"', status_code=422)
+        response = self.post(payer=self.a.pk, payee=self.ben.pk, amount="abc")
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(Payment.objects.count(), 0)
+
+    def test_the_leaver_link_fills_in_the_form_and_returns_to_the_set(self):
+        self.client.force_login(self.night.host.user)
+        set_page = self.client.get(reverse("session", args=[self.night.session.pk]))
+        self.assertContains(set_page, "Paid at the table?")
+        page = self.client.get(self.form_url, {"leaver": self.ben.pk, "net": 40000, "from_set": self.night.session.pk})
+        self.assertContains(page, f'<option value="{self.ben.pk}" selected>', count=1)
+        self.assertContains(page, 'value="400"')
+        response = self.post(payer=self.a.pk, payee=self.ben.pk, amount="400", from_set=self.night.session.pk)
+        self.assertRedirects(response, reverse("session", args=[self.night.session.pk]), fetch_redirect_response=False)
+
+    def test_a_loser_who_leaves_is_the_payer(self):
+        self.client.force_login(self.night.host.user)
+        page = self.client.get(self.form_url, {"leaver": self.a.pk, "net": -25050})
+        self.assertContains(page, 'value="250.50"')
+        self.assertContains(page, f'<option value="{self.a.pk}" selected>', count=1)
+
+    def test_a_player_sees_their_own_payment_but_no_form(self):
+        services.record_table_payment(self.night_id, self.night.host, self.a.pk, self.ben.pk, 40000, uuid.uuid4())
+        self.client.force_login(self.ben.user)
+        page = self.client.get(self.page_url)
+        self.assertContains(page, "Paid at the table")
+        self.assertNotContains(page, "Record a payment")
+        self.assertNotContains(page, "Undo payment")
+        self.assertEqual(self.client.get(self.form_url).status_code, 403)
+        self.assertEqual(self.post(payer=self.a.pk, payee=self.ben.pk, amount="1").status_code, 403)
+
+    def test_a_player_sees_nothing_when_there_is_no_payment(self):
+        self.client.force_login(self.ben.user)
+        self.assertNotContains(self.client.get(self.page_url), "Paid at the table")
+
+    def test_another_group_gets_404(self):
+        self.client.force_login(make_user("stranger"))
+        self.assertEqual(self.client.get(self.form_url).status_code, 404)
+        self.assertEqual(self.post(payer=self.a.pk, payee=self.ben.pk, amount="1").status_code, 404)
+
+    def test_a_closed_session_refuses_with_a_message(self):
+        self.night.go("reconciliation")
+        self.night.cash("A", 800)
+        self.night.cash("B", 800)
+        services.finalize(self.night.session.pk, self.night.host)
+        services.close_night(self.night_id, self.night.host)
+        self.client.force_login(self.night.host.user)
+        self.assertContains(self.client.get(self.form_url), "The session is closed.")
+        response = self.post(payer=self.a.pk, payee=self.ben.pk, amount="400")
+        self.assertContains(response, "The session is closed.", status_code=422)

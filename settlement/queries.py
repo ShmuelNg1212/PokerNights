@@ -651,3 +651,17 @@ def night_has_records(night) -> bool:
 def unpaid_in(night) -> list:
     """The transfers of this session that nobody has marked paid and no later session has taken over."""
     return list(Transfer.objects.filter(plan__night=night, plan__is_current=True).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).select_related("payer", "payee").order_by("position"))
+
+
+def session_players(night) -> list:
+    """The members with a seat in a set of this session, in the order they first joined it.
+
+    Withdrawn players never bought in and are left out. These are the people a table payment can name.
+    """
+    from games.models import Participant
+
+    seats = (
+        Participant.objects.filter(session__night=night).exclude(status=Participant.Status.WITHDRAWN)
+        .select_related("member").order_by("session__set_number", "join_order")
+    )
+    return list({seat.member_id: seat.member for seat in seats}.values())

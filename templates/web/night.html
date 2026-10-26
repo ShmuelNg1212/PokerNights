@@ -30,7 +30,13 @@
         <h2 class="stat-label">Your result in this session so far</h2>
         <div class="night-result {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</div>
         {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
+        {% include "web/_my_table_payments.html" %}
         <p class="felt-hint">Not final.</p>
+      </div>
+      {% elif my_table_payments %}
+      <div class="night-mine">
+        <h2 class="stat-label">Paid at the table</h2>
+        {% include "web/_my_table_payments.html" %}
       </div>
       {% endif %}
       {% endif %}
@@ -61,7 +67,7 @@
         </ul>
         <p class="muted small">Each was added to that person's balance before the list above was worked out, so it is settled by paying this list.</p>
       </details>{% endif %}
-      <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results{% if outcome.carried_in %} and the earlier transfers carried in{% endif %}. This list nets every set of the session. It excludes rake already collected at buy-in and assumes no {% if outcome.carried_in %}other {% endif %}earlier player payments.</p></details>
+      <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results{% if outcome.carried_in %} and the earlier transfers carried in{% endif %}. This list nets every set of the session. It excludes rake already collected at buy-in{% if outcome.table_payments %} and subtracts the payments made at the table before closing (see Payment records){% endif %}.</p></details>
     </section>
     {% endif %}
     <section aria-labelledby="results-title">
@@ -73,6 +79,39 @@
         {% empty %}<li class="muted">No finalized set results yet.</li>{% endfor %}
       </ul>
     </section>
+    {% if not night.is_closed and not night.is_archived and players or not night.is_closed and outcome.table_payments %}
+    <section class="table-pay" aria-labelledby="table-pay-title">
+      <h2 id="table-pay-title">Paid at the table</h2>
+      {% if outcome.table_payments %}
+      <ul class="list table-pay-list">
+        {% for p in outcome.table_payments %}
+        <li class="table-pay-row{% if not p.active %} is-undone{% endif %}{% if p.payer_id == me.pk or p.payee_id == me.pk %} is-mine{% endif %}">
+          <div class="row"><span class="grow table-pay-who{% if not p.active %} struck{% endif %}"><strong>{{ p.payer.display_name }}</strong>{% icon 'arrow-right' %}<span class="visually-hidden">paid</span><strong>{{ p.payee.display_name }}</strong></span><span class="amount{% if not p.active %} struck{% endif %}">{{ p.amount|amount:unit }}</span></div>
+          <p class="small muted">{{ p.created_at|date:"H:i" }} · recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% if p.reversal.reason %}: {{ p.reversal.reason }}{% endif %}{% endif %}</p>
+          {% if players and p.active %}
+          <details class="table-pay-undo" data-key="table-pay-undo-{{ p.pk }}">
+            <summary class="btn btn-small btn-quiet">Undo</summary>
+            <form method="post" data-turbo="true" action="{% url 'table_payment_undo' night.pk p.pk %}" class="form-row" data-once>{% csrf_token %}
+              <div class="grow"><input type="text" name="reason" data-keep="table-pay-undo-{{ p.pk }}" maxlength="255" required placeholder="Reason for undoing" aria-label="Reason for undoing this payment"></div>
+              <button type="submit" class="btn btn-small btn-danger">Undo payment</button>
+            </form>
+          </details>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% elif players %}
+      <p class="small muted">When a player is paid, or pays, before the session closes, record it here. Closing subtracts it.</p>
+      {% endif %}
+      {% if players %}
+      <button hidden type="button" class="btn btn-block table-pay-opener" data-sheet-open="table-pay">{% icon 'plus' %}Record a payment</button>
+      <details class="sheet-source table-pay-fallback" data-key="table-pay" data-sheet-source="table-pay" data-title="Paid at the table">
+        <summary class="btn btn-block">Record a payment</summary>
+        <div class="sheet-content">{% include "settlement/_table_payment_form.html" %}</div>
+      </details>
+      {% endif %}
+    </section>
+    {% endif %}
     <section aria-labelledby="sets-title">
       <h2 id="sets-title">Sets</h2>
       <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
@@ -81,7 +120,7 @@
     {% if outcome.payments %}
     <section aria-labelledby="payments-title">
       <details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">{{ outcome.payments|length }}</span></h2>{% icon 'chevron-down' %}</summary>
-      <ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} pays {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br><span class="muted">Recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul>
+      <ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} {% if p.transfer_id %}pays{% else %}paid{% endif %} {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br><span class="muted">{% if p.transfer_id %}Marked paid{% else %}At the table{% endif %} · recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul>
       </details>
     </section>
     {% endif %}
@@ -160,5 +199,5 @@
   </div>
   {% endif %}
 </div>
-{% if recap or can_start_next_set or can_close %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
+{% if recap or can_start_next_set or can_close or players %}<div id="table-sheets" data-turbo-permanent></div>{% endif %}
 {% endblock %}

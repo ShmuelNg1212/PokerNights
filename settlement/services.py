@@ -364,6 +364,8 @@ def _session_member(night, member_id) -> Member:
     """A member with a seat in a set of this session. Withdrawn players never bought in, so they are left out."""
     from games.models import Participant
 
+    if not str(member_id or "").isdecimal():
+        raise RuleError("Choose two players of this session.")
     seat = (
         Participant.objects.select_related("member").filter(session__night=night, member_id=member_id)
         .exclude(status=Participant.Status.WITHDRAWN).first()

@@ -474,6 +474,12 @@ def night(request, night_id):
             sum(1 for t in outcome.transfers if t.carried),
         )
     context["replaced_plans"] = outcome.replaced
+    context["my_table_payments"] = [
+        p for p in outcome.table_payments if p.active and me.pk in (p.payer_id, p.payee_id)
+    ]
+    if host.is_host and not night.is_closed and not night.is_archived:
+        context["players"] = settlement_queries.session_players(night)
+        context["values"] = {}
     if not night.is_closed and outcome.replaced:
         context["reopening"] = outcome.replaced[-1]
     if host.is_host and night.is_closed and not night.is_archived and settings.REOPENING:

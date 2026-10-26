@@ -1,0 +1,18 @@
+{% load money_tags %}{# One payment made at the table: who handed the money, who took it, how much. The session page's sheet and the fallback page share it. #}
+<form method="post" data-turbo="true" action="{% url 'table_payment' night.pk %}" class="stack table-pay-form" data-once>{% csrf_token %}{% request_id_field %}
+  {% if from_set %}<input type="hidden" name="from_set" value="{{ from_set }}">{% endif %}
+  <div class="table-pay-parties">
+    <label>Who paid
+      <select name="payer" required data-keep="table-pay-payer"><option value="">Choose a player</option>{% for m in players %}<option value="{{ m.pk }}"{% if values.payer == m.pk|stringformat:"d" %} selected{% endif %}>{{ m.display_name }}</option>{% endfor %}</select>
+    </label>
+    <label>Who received
+      <select name="payee" required data-keep="table-pay-payee"><option value="">Choose a player</option>{% for m in players %}<option value="{{ m.pk }}"{% if values.payee == m.pk|stringformat:"d" %} selected{% endif %}>{{ m.display_name }}</option>{% endfor %}</select>
+    </label>
+  </div>
+  <label>Amount {% if unit == 'chips' %}(chips){% else %}(pesos){% endif %}
+    <input class="sheet-amount" type="text" name="amount" value="{{ values.amount }}" data-keep="table-pay-amount" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" inputmode="decimal" autocomplete="off" required>
+  </label>
+  <p class="hint">Closing the session subtracts this from what is still owed. Results do not change.</p>
+  <div data-numpad-slot></div>
+  <button type="submit" class="btn btn-primary btn-block">Record payment</button>
+</form>

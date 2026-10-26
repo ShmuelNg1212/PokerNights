@@ -9,8 +9,10 @@ from django.http import Http404
 
 from groups import services as groups
 from groups.access import member_for, require_host
+from groups.errors import RuleError
 from groups.http import attempt, group_settings, request_id_from
 from groups.models import Member
+from ledger import money
 
 from . import queries, services
 
@@ -59,6 +61,73 @@ def transfer_paid(request, night_id, transfer_id):
 def transfer_unpaid(request, night_id, transfer_id):
     night, actor = night_for(request.user, night_id)
     attempt(request, services.mark_unpaid, night.pk, actor, transfer_id)
+    return redirect("night", night_id=night.pk)
+
+
+def _back_to(night, request):
+    """The set page the host came from, when it is a set of this session; else the session page."""
+    from games.models import GameSession
+
+    set_id = request.POST.get("from_set") or request.GET.get("from_set")
+    if set_id and str(set_id).isdecimal() and GameSession.objects.filter(pk=set_id, night=night).exists():
+        return int(set_id)
+    return None
+
+
+def _prefill(query, unit) -> dict:
+    """The form's first values. A left player's link sends ``leaver`` and their set figure ``net``, an
+    integer in the game's unit: a winner is paid, a loser pays. The host chooses the other player."""
+    values = {"payer": "", "payee": "", "amount": ""}
+    leaver, net = query.get("leaver", ""), query.get("net", "")
+    if leaver.isdecimal() and net.lstrip("-").isdecimal() and int(net):
+        values["payee" if int(net) > 0 else "payer"] = leaver
+        values["amount"] = money.plain_amount(abs(int(net)), unit)
+    return values
+
+
+def table_payment(request, night_id):
+    """Record a payment made at the table while the session is open (ADR 0002).
+
+    The session page opens the form in a sheet; this page is its fallback, and where a left
+    player's link on the set page leads, with the figures filled in.
+    """
+    night, actor = night_for(request.user, night_id)
+    require_host(actor)
+    players = queries.session_players(night)
+    from_set = _back_to(night, request)
+    error = ""
+    if request.method == "POST":
+        values = {key: request.POST.get(key, "") for key in ("payer", "payee", "amount")}
+        try:
+            amount = money.parse_amount(values["amount"], night.unit)
+        except money.MoneyError as refused:
+            error = str(refused)
+        else:
+            try:
+                services.record_table_payment(
+                    night.pk, actor, values["payer"], values["payee"], amount, request_id_from(request)
+                )
+            except RuleError as refused:
+                error = str(refused)
+            else:
+                messages.success(request, "Payment recorded. Closing the session subtracts it.")
+                if from_set:
+                    return redirect("session", session_id=from_set)
+                return redirect("night", night_id=night.pk)
+    else:
+        values = _prefill(request.GET, night.unit)
+    context = {
+        "night": night, "unit": night.unit, "players": players, "values": values, "error": error,
+        "from_set": from_set, "closed": night.is_closed,
+    }
+    return render(request, "settlement/table_payment.html", context, status=422 if error else 200)
+
+
+@require_POST
+def table_payment_undo(request, night_id, payment_id):
+    night, actor = night_for(request.user, night_id)
+    attempt(request, services.reverse_table_payment, night.pk, actor, payment_id, request.POST.get("reason", ""),
+            success="Payment undone. It stays in the records.")
     return redirect("night", night_id=night.pk)
 
 

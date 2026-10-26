@@ -1,0 +1,1 @@
+{% load money_tags %}{% for p in my_table_payments %}<p class="small">{% if p.payer_id == me.pk %}You paid {{ p.payee.display_name }} {{ p.amount|amount:unit }} at the table.{% else %}{{ p.payer.display_name }} paid you {{ p.amount|amount:unit }} at the table.{% endif %}</p>{% endfor %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block screen %} data-depth="3"{% endblock %}
+{% block title %}Paid at the table · {{ night }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<p class="small"><a href="{% if from_set %}{% url 'session' from_set %}{% else %}{% url 'night' night.pk %}{% endif %}">Back to the {% if from_set %}set{% else %}session{% endif %}</a></p>
+<h1>Paid at the table</h1>
+<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
+{% if closed %}
+<div class="notice notice-info">The session is closed. Mark a transfer paid on the session page instead.</div>
+{% else %}
+<p class="muted">Record cash that one player handed another tonight, for example to a player who left early.</p>
+{% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
+<div class="form-section">{% include "settlement/_table_payment_form.html" %}</div>
+{% endif %}
+{% endblock %}

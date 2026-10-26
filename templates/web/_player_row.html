@@ -40,6 +40,12 @@
         {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-primary btn-block sheet-swap" data-sheet-swap="cash-{{ p.pk }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
         <p class="sheet-summary">Bought in <strong>{{ line.buy_in_total|amount:unit }}</strong>{% if line.has_cash_out %} · cashed out <strong>{{ line.cashed_out|amount:unit }}</strong>{% endif %}</p>
         <p class="muted small">{% if line.play_seconds is not None %}Played {% clock_value line.play_seconds line.clock_running %}{% else %}Play has not started.{% endif %}</p>
+        {% if me.is_host and p.status == 'left' and line.has_cash_out and line.cash_net and not session.night.is_closed %}
+        <div class="leaver-pay">
+          <p class="small">{% if line.cash_net > 0 %}Up {{ line.cash_net|amount:unit }} in this set. Did someone pay {{ p.member.display_name }} before they left?{% else %}Down {{ line.cash_net|amount:unit|cut:"−" }} in this set. Did {{ p.member.display_name }} pay someone before leaving?{% endif %}</p>
+          <a class="btn btn-block" href="{% url 'table_payment' session.night_id %}?leaver={{ p.member_id }}&amp;net={{ line.cash_net }}&amp;from_set={{ session.pk }}">Paid at the table?</a>
+        </div>
+        {% endif %}
         {% include "web/_player_actions.html" %}
         </div>
       </details>
