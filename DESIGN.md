@@ -1186,3 +1186,16 @@ This addendum replaces the description placement and the invited Sign up head in
 - **Player.** The felt shows their own payment as a sentence. Without a result yet, it sits under its own small label.
 - **Closed session.** “How this is worked out” names the table payments. Payment records label each row “At the table” or “Marked paid”.
 - **Measured.** `table_payments.mjs`, 17 checks at 320, 390 and 1280px, as host and player, and without JavaScript: 48px targets, no sideways scroll, a 37-character name, ₱1,234,567.
+
+### RSVP (2026-10-27)
+
+[Plan](doc/plan/1793109970_rsvp_waitlist.md). Mode: Operate, inside the Rack. No new colour, font, token, icon or motion preset.
+
+- **Coming up** follows Now playing on the Sessions tab. A card per announced session: Rail, Rule border, the sheet radius; no felt. The table name links to the session; the card itself is not a link and does not darken when pressed, because it holds the answer buttons. Then the date and start time, the confirmed players' chips, and "3 of 9 seats · 1 waiting".
+- **The viewer's line.** Not answered: "Are you in?" and two buttons side by side, a bone **I'm in** (**Join the waitlist** when full) and **Can't make it**. Confirmed: the 10px bone dot and "You're in", with a quiet **Can't make it**. Waiting: "Waitlist · 2nd in line" in Brass (10:1), with a quiet **Leave the waitlist**. Out: "You said you can't make it" in Bone Dim, with a quiet **I'm in after all**.
+- **Your groups** adds a home row "Are you in? Friday table · Fri, Oct 30, 8:00 PM" until the viewer answers.
+- **Who's coming** (session page, a panel): the heading with "3 of 9 seats" in the figure style, the viewer's own line, then Coming, Waitlist (the place in Brass at the left), and folded "Can't make it · N" and (host) "Not answered · N". A row is chip, name and "answered by …"; a long name wraps beside its chip. The host's action sits at the row's right as a quiet 48px disclosure (**Mark out**, **Seat now**, **Mark in**); open, it takes the full width with one sentence and the button. **Seats** on the number keys with **Save**; a refusal says "3 players are coming. Mark someone out first."
+- **Announce** (host, draft): a panel before the next step: start time (native) and seats (number keys) side by side, a bone **Announce to the group**, and "4 players with a login get a notice."
+- **The felt** of an announced session before play says only "Starts 8:00 PM." The count is in Who's coming.
+- **Add players** for set 1 lists the confirmed first with "Said they're coming", ticked, then the waitlist with "Waitlist · 1st".
+- **Measured.** `rsvp.mjs`, 28 checks at 320, 390 and 1280px, as host and players, and without JavaScript: 48px targets, no sideways scroll with a 60-character name, Brass contrast, the line moving up.

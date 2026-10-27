@@ -79,7 +79,7 @@ All five answered on 2026-10-27: each REC is accepted.
 - **R1.** SQLite: 1405 tests pass (15 skipped: PostgreSQL only). PostgreSQL: 1405 tests pass. The add-and-remove race test fails with the lock fix switched off, and passes with it.
 - **R2.** `code-review` (high): 10 findings, all fixed in `0603956`. `security-review`: no finding. A malformed member id is a 404 (`27283e6`).
 - **R3.** `/impeccable critique` ran in this session, not in two subagents (AGENTS.md allows subagents only in execute). The detector found advisories only: the browser's default black, from scanning partials without the stylesheet. The review fixed a long name below its chip (`e5b9921`), and the start time, the seat count and the empty Now playing text said twice (`9a5f3d2`). Browser check `rsvp.mjs`: 28 of 28 at 320, 390 and 1280 px, as host and player, and without JavaScript. The Brass waitlist line measures 10:1.
-- **Open, not in this feature.** On add-players, a long name beside two badges wraps to five lines at 390 px. The row layout is older than RSVP; it is in TODO.md.
+- **Open, not in this feature.** On add-players, a long name beside two badges wraps to five lines at 390 px. The row layout is older than RSVP.
 
 ## Completion criterion
 

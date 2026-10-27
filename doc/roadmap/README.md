@@ -65,4 +65,4 @@ These used the plan's defaults in Stage 1. They can still change.
 
 ## Later (from `spec.md`, not planned)
 
-RSVP with a waitlist, recurring games, reminders, tips, session notes, CSV export, chip denominations. (Rake, the session timer, the bankroll graph, unpaid transfers carried across sessions and sharing results as an image are built.)
+Recurring games, reminders, tips, session notes, CSV export, chip denominations. (RSVP with a waitlist, rake, the session timer, the bankroll graph, unpaid transfers carried across sessions and sharing results as an image are built.)

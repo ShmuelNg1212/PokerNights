@@ -46,6 +46,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - **Rake (optional):** off, a flat amount or a percentage, taken from every buy-in and rebuy. It is chosen before a set accepts money and is locked after that. The group keeps a running total of rake collected, with pesos and chips separate.
 - **Seat draw (optional):** before a set starts the host can draw the dealer and the seats. Every phone shows the same draw.
 - On a phone, numbers are typed with the app's own number keys.
+- **RSVP** ([ADR 0003](../adr/0003-rsvp-with-a-waitlist.md)): a host announces a session with an optional start time and a seat limit (the table's seats by default). Players answer In or Out. Players past the limit wait in line; when a seat opens, the first in line gets it and is told. A host can answer for any player, seat a waiting player over the limit, or mark a player out. Answers count until set 1 is in play. Set 1's Add players starts with the confirmed players ticked.
 
 ### 2. Cash-outs and balance check
 - A cash-out is typed as an amount in the session's unit. There is no chip count and no chip-to-cash rate.
@@ -92,7 +93,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ## Later (not built)
 
-- RSVP with seat limits and a waitlist (typically 9 to 10 seats), recurring games, reminders
+- Recurring games, reminders
 - Dealer tips
 - Notes per session (house rules, disputes)
 - Export results as CSV

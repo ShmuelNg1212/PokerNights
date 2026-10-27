@@ -345,11 +345,22 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 - `static/js/nightlive.js`: on a new stamp it asks Turbo to visit the same address with `replace`, which the page's `turbo-refresh-method: morph` turns into a redraw in place. After a morph it calls `pokerPage.start()`, because a morph restarts no script: the sheet, the recap that opens once and "Settled" must read the new page. It raises `night:refreshed` with the paid marks as they were, which `settle.js` uses to settle a row marked by someone else.
 - Something a future change makes the session page show must enter the stamp, or other people's pages will not learn of it.
 
-## Live updates of Your groups and the Sessions tab
+## RSVP
+
+[ADR 0003](../adr/0003-rsvp-with-a-waitlist.md); [plan](../plan/1793109970_rsvp_waitlist.md).
+
+- An RSVP belongs to the session (`GameNight`), not to a set. `GameNight` has `announced_at`, `start_time` and `seat_limit`; `games.Rsvp` is one row per member and session, with `status` (`confirmed`, `waitlisted`, `out`) and `queued_at` for the line order.
+- The writes are in `games/services.py`: `announce_night`, `answer_rsvp`, `set_seat_limit`, `seat_from_waitlist`. Each locks the session row (`lock_night`), writes an audit event with set 1's id, and bumps every set's version. Moving up happens inside the write that frees the seat.
+- `games/rsvp.py` only reads: `answering_open()` (announced, open, not archived, set 1 Draft or Open), `answering_nights()`, and `boards()`, which builds who is coming for any number of sessions in a constant number of queries.
+- Players see an announced draft through `games.access.night_for`. `session_for` still hides the set while it is a draft.
+- Removing a member: `groups.services.REMOVE_LOCKS` locks their answering sessions before the member row, then `REMOVED_HOOKS` turns their answers Out. Adding players locks the session, then the member, so the two never wait on each other.
+- The night stamp and the hub stamp include the answers of sessions that still take answers, so open pages redraw.
+
+
 
 [Plan](../plan/1791711535_hub_pages_live.md). The same script and redraw as the session page, with a stamp over groups.
 
-- `settlement.queries.hub_stamp(group_ids)`: a hash, over those groups, of each set's id, state and `finalized_at` with its session's id, status and archive mark; the count of players at the table of each unfinished set; the count of active members per group; each plan's id and whether it is current; how many payments exist and stand. Five queries however many groups.
+- `settlement.queries.hub_stamp(group_ids)`: a hash, over those groups, of each set's id, state and `finalized_at` with its session's id, status and archive mark; the count of players at the table of each unfinished set; the count of active members per group; each plan's id and whether it is current; how many payments exist and stand; and the seat limit, start time and answers of each session still taking answers (`games.rsvp.answering_nights`). Six queries however many groups, seven when a session takes answers.
 - `web.views.home_state` (`state/`) covers the requester's active memberships in unarchived groups; `group_state` (`g/<id>/state/`) one group through `member_for`. Both share `_stamp_answer` with `night_state`.
 - `home.html` and the Sessions view of `group.html` declare `turbo-refresh-method: morph` and hold a hidden element with `data-state-url`. They carry **no stamp**: `home_cards` is held to 11 queries. `nightlive.js` therefore asks at once on such a page and takes the answer as its baseline.
 - `nightlive.js` now serves every page with `data-state-url`. It does not start on a page that answered a form (`data-method` other than GET) and treats an open disclosure with a form and no `data-key` as in use.
@@ -358,7 +369,7 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 
 ## Sessions tab
 
-- `web/sessions_tab.py` builds the tab: `visible_nights(me)` (drafts for hosts only), `current_cards(me, nights)` and `past_years(me, nights)`. The group view calls `sessions_context(me)`.
+- `web/sessions_tab.py` builds the tab: `visible_nights(me)` (drafts for hosts only), `coming_cards(me, nights)` (announced sessions still taking answers, with their `boards()`), `current_cards(me, nights)` (it leaves out an announced draft) and `past_years(me, nights)`. The group view calls `sessions_context(me)`.
 - The intent: the tab answers "where is my table?" first. So the card order is by band (in play and mine, in play, open and mine, open, drafts), not by date.
 - Reads are batched: the seated players of every card in one query, the clocks in one, and the viewer's nets (`session_nets`) and unpaid transfers (`unpaid_transfers`) in one each. The query count does not grow with the number of sessions (a test holds it).
 - `destination(night, latest_set)` is the one rule for where an open session leads and what its button says. The Sessions tab and the group card on Your groups (`web/home.py`) both use it.

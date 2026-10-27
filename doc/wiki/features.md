@@ -138,7 +138,18 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Join group shows the group name and the number of active players.
 - Log in is `accounts.views.Login`, Django's `LoginView` with the invite name added to the context.
 
-## Paid at the table
+## RSVP
+
+[ADR 0003](../adr/0003-rsvp-with-a-waitlist.md); [plan](../plan/1793109970_rsvp_waitlist.md).
+
+- A host creates a session as before. On its page, the **Announce to the group** card takes an optional start time and the seats (the table's by default). Announcing tells each member with a login.
+- Players see the session under **Coming up** on the Sessions tab, and "Are you in?" on Your groups until they answer. They tap **I'm in** or **Can't make it**. When the seats are full, the button reads **Join the waitlist**.
+- The card then reads "You're in", "Waitlist · 2nd in line" or "You said you can't make it", with one quiet button to change it.
+- When a confirmed player drops out, the first in line gets the seat and a notice: "A seat opened. You're in."
+- The session page shows **Who's coming**: the confirmed, the waitlist in order, and folded lists of who can't make it and (for hosts) who has not answered. A host can **Mark in**, **Mark out**, **Seat now** (adds a seat) and change the seats. The seats cannot go below the number coming.
+- Answers stop when set 1 is in play. While set 1 is Open, the session is under both Coming up and Now playing.
+- Set 1's **Add players** ticks the confirmed players first, no more than the free seats, and shows the waitlist with each place.
+
 
 [ADR 0002](../adr/0002-payments-at-the-table.md); [plan](../plan/1793020848_payments_before_close.md).
 

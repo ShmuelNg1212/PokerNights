@@ -2,6 +2,10 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
+## Phone checks (unreleased: `feat/rsvp-waitlist`)
+
+- [ ] RSVP ([plan](doc/plan/1793109970_rsvp_waitlist.md)): as a host, create a session and tap **Announce to the group** with a time and 3 seats. Another phone gets "… is getting a game together. Are you in?" and sees "Are you in?" on Your groups. On the Sessions tab under Coming up, tap **I'm in**. Fill the seats; the next phone reads **Join the waitlist**, then "Waitlist · 1st in line". One confirmed player taps **Can't make it**: the waiting phone gets "A seat opened. You're in." On the session page, as host: **Seat now**, **Mark out**, change the seats. Open set 1, then **Add players**: the confirmed are ticked.
+
 ## Phone checks (released 2026-10-26)
 
 - [ ] Paid at the table ([plan](doc/plan/1793020848_payments_before_close.md)): in a running set, cash out a winner with **Leaving the set**. Tap their name: “Up ₱… in this set. Did someone pay …?” and **Paid at the table?**. It opens the form with them as Who received and the amount in. Choose who paid; with the number keys, record it: you are back on the set. On the session page the payment is under “Paid at the table”; that player's phone says “… paid you ₱… at the table.” **Undo** asks for a reason, then strikes the row. Finish and close: the list does not ask for that amount again.
