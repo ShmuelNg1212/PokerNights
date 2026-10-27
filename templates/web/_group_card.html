@@ -28,7 +28,7 @@
     {% if card.action_url %}<a class="btn btn-primary btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>{% endif %}
   </section>
   {% endif %}
-  {% if card.asked %}<a class="home-row home-ask" href="{% url 'night' card.asked.pk %}#coming"><span class="grow"><strong>Are you in?</strong> <span class="home-when">{{ card.asked.table.name }} · {{ card.asked.game_date|date:"D j M" }}{% if card.asked.start_time %}, {{ card.asked.start_time|time:"g:i A" }}{% endif %}</span></span>{% icon 'chevron-right' %}</a>{% endif %}
+  {% if card.asked %}<a class="home-row home-ask" href="{% url 'night' card.asked.pk %}#coming"><span class="grow"><strong>Are you in?</strong> <span class="home-when">{{ card.asked.table.name }} · {{ card.asked.game_date|date:"D, M j" }}{% if card.asked.start_time %}, {{ card.asked.start_time|time:"g:i A" }}{% endif %}</span></span>{% icon 'chevron-right' %}</a>{% endif %}
   {% if card.more_open %}<a class="home-row" href="{% url 'group' card.group.pk %}"><span class="grow">More open session{{ card.more_open|pluralize }}</span><span class="home-count">{{ card.more_open }}</span>{% icon 'chevron-right' %}</a>{% endif %}
 
   {% if card.dues %}

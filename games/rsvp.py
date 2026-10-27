@@ -71,7 +71,7 @@ def waitlist(night) -> list:
 
 
 def _when(night) -> str:
-    when = f"{night.game_date:%a %-d %b}"
+    when = f"{night.game_date:%a, %b %-d}"
     if night.start_time:
         when += f", {night.start_time:%-I:%M %p}"
     return when

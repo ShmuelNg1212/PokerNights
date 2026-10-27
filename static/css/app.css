@@ -652,9 +652,13 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .rsvp-mine { margin:var(--s-3) 0 var(--s-2); padding-bottom:var(--s-3); border-bottom:1px solid var(--rule); }
 .rsvp-group-title { margin:var(--s-4) 0 var(--s-1); font-size:.9375rem; font-weight:700; color:var(--muted); }
 .rsvp-list { list-style:none; margin:0; padding:0; }
-.rsvp-row { padding:var(--s-1) 0; }
+/* A row is the player, with the host's action at its right; an open action takes the full width under it. */
+.rsvp-row { display:flex; flex-wrap:wrap; align-items:center; gap:0 var(--s-2); padding:var(--s-1) 0; }
 .rsvp-row + .rsvp-row { border-top:1px solid var(--rule); }
-.rsvp-row > .row { min-height:48px; align-items:center; gap:var(--s-3); }
+.rsvp-row > .row { flex:1 1 0; min-width:0; min-height:48px; flex-wrap:nowrap; align-items:center; gap:var(--s-3); }
+.rsvp-row > .row > .chip { flex:none; }
+.rsvp-host { flex:none; }
+.rsvp-host[open] { flex-basis:100%; }
 .rsvp-row .grow { min-width:0; overflow-wrap:anywhere; }
 .rsvp-row.is-mine { background:var(--rail-2); border-radius:var(--r-row); padding-inline:var(--s-2); }
 .rsvp-place { flex:none; min-width:1.5ch; color:var(--brass); font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
