@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks (unreleased: session chip values)
+## Phone checks (released 2026-10-28: session chip values)
 
 - [ ] Set chip values on a session. Add and remove colours. Check the numeric keyboard and colour names on your phone. End a set and tap **Count by chips**. Enter quantities, check the preview and send. Confirm on the host phone and inspect **Chip breakdown**. The values now lock. Check another set shares them, another session can use different values, and reduced motion keeps the sheet still.
 
