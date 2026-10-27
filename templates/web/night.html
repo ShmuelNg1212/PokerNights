@@ -22,7 +22,8 @@
       {% include "web/_night_lead.html" %}
       {% else %}
       {% if reopening %}{% include "web/_correction.html" with record=reopening lead="Reopened." %}{% endif %}
-      {% if not me.is_host %}<p class="felt-hint">Who pays whom comes when the host settles up.</p>{% endif %}
+      {% if board and before_play %}<p class="felt-hint">{% if night.start_time %}Starts {{ night.start_time|time:"g:i A" }}. {% endif %}{{ board.confirmed|length }} of {{ board.limit }} seats taken.</p>
+      {% elif not me.is_host %}<p class="felt-hint">Who pays whom comes when the host settles up.</p>{% endif %}
       {% if latest_set %}<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
       {% if total_rake %}<dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>{% endif %}
       {% if my_standing %}
@@ -41,6 +42,7 @@
       {% endif %}
       {% endif %}
     </section>
+    {% if board or announce %}{% include "web/_rsvp.html" %}{% endif %}
     {% if me.is_host and not night.is_closed %}{% include "web/_next_step.html" %}{% endif %}
   </div>
   <div class="night-detail">
@@ -70,6 +72,7 @@
       <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results{% if outcome.carried_in %} and the earlier transfers carried in{% endif %}. This list nets every set of the session. It excludes rake already collected at buy-in{% if outcome.table_payments %} and subtracts the payments made at the table before closing (see Payment records){% endif %}.</p></details>
     </section>
     {% endif %}
+    {% if not before_play or outcome.standings %}
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="badge">Not final</span>{% endif %}</h2>
       {% if night.is_closed %}<p class="small muted">Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>{% elif total_rake %}<p class="small muted">Includes rake already collected.</p>{% endif %}
@@ -79,6 +82,7 @@
         {% empty %}<li class="muted">No finalized set results yet.</li>{% endfor %}
       </ul>
     </section>
+    {% endif %}
     {% if not night.is_closed and not night.is_archived and players or not night.is_closed and outcome.table_payments %}
     <section class="table-pay" aria-labelledby="table-pay-title">
       <h2 id="table-pay-title">Paid at the table</h2>
@@ -112,11 +116,13 @@
       {% endif %}
     </section>
     {% endif %}
+    {% if not before_play or me.is_host %}
     <section aria-labelledby="sets-title">
       <h2 id="sets-title">Sets</h2>
       <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
       {% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}.</p>{% endif %}
     </section>
+    {% endif %}
     {% if outcome.payments %}
     <section aria-labelledby="payments-title">
       <details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">{{ outcome.payments|length }}</span></h2>{% icon 'chevron-down' %}</summary>

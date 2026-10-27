@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from games import clock
+from games import rsvp
 from games.models import GameNight, GameSession, Participant
 from settlement import queries as settlement_queries
 
@@ -48,9 +49,28 @@ def _band(card) -> int:
     return playing if card.mine else playing + 1
 
 
+def is_coming(night) -> bool:
+    """An announced session whose set 1 is still a draft: it is on "Coming up", not "Now playing"."""
+    sets = sorted(night.sets.all(), key=lambda s: s.set_number)
+    return night.announced_at is not None and not night.is_closed and bool(sets) and sets[0].state == State.SETUP
+
+
+def coming_cards(me, nights) -> list:
+    """Announced sessions not yet open, soonest first, each with its RSVP board (``card.rsvp``)."""
+    cards = sorted((n for n in nights if is_coming(n)), key=lambda n: (n.game_date, n.start_time or datetime.time.max, n.pk))
+    if not cards:
+        return []
+    sets = {n.pk: min(n.sets.all(), key=lambda s: s.set_number) for n in cards}
+    found = rsvp.boards(cards, me, sets=sets)
+    today = timezone.localdate()
+    for card in cards:
+        card.rsvp, card.is_today = found[card.pk], card.game_date == today
+    return cards
+
+
 def current_cards(me, nights) -> list:
     """The open sessions with something this member may see, as cards in the order the tab shows them."""
-    cards = [n for n in nights if not n.is_closed and n.shown_sets]
+    cards = [n for n in nights if not n.is_closed and n.shown_sets and not is_coming(n)]
     set_ids = [c.latest_set.pk for c in cards]
     seated = {}
     for p in (
@@ -140,6 +160,7 @@ def sessions_context(me) -> dict:
     nights = list(visible_nights(me))
     years = past_years(me, nights)
     return {
+        "coming": coming_cards(me, nights),
         "cards": current_cards(me, nights),
         "past_years": years,
         "not_settled": sum(1 for y in years for m in y.months for n in m.nights if n.settle.status != "settled"),

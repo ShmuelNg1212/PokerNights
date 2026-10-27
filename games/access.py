@@ -42,12 +42,13 @@ def session_for(user, session_id) -> tuple[GameSession, object]:
 def night_for(user, night_id) -> tuple[GameNight, object]:
     """``(night, member)`` for a requester in the session's group, or 404.
 
-    A session whose only sets are drafts is hidden from players.
+    A session whose only sets are drafts is hidden from players, unless a host announced it.
     """
     night = GameNight.objects.select_related("table", "group").filter(pk=night_id).first()
     if night is None:
         raise Http404("Not found")
     member = member_for(user, night.group_id)
-    if not member.is_host and not night.sets.exclude(state=GameSession.State.SETUP).exists():
+    if (not member.is_host and night.announced_at is None
+            and not night.sets.exclude(state=GameSession.State.SETUP).exists()):
         raise Http404("Not found")
     return night, member

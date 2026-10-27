@@ -18,6 +18,7 @@ from accounts import services as accounts
 from audit.models import AuditEvent
 
 from games import clock
+from games import rsvp
 from games import seats as seat_draws
 from games import services as games
 from games.access import night_for, read_only, session_for
@@ -438,6 +439,27 @@ def night_state(request, night_id):
     return _stamp_answer(request, settlement_queries.night_stamp(night))
 
 
+def _rsvp_context(request, night, me, by_number) -> dict:
+    """Who is coming, or, for a host before it is announced, the Announce card."""
+    first = by_number[0] if by_number else None
+    if night.announced_at is not None:
+        board = rsvp.boards([night], me, sets={night.pk: first})[night.pk]
+        notify.mark_night_seen(request.user, night.pk)
+        draft = request.session.pop("seats_draft", None)
+        # Before play, the page is about who is coming: the empty results and sets wait.
+        return {"board": board, "seats_draft": draft["seat_limit"] if draft and draft.get("night") == night.pk else "",
+                "before_play": not any(s.started_at for s in by_number)}
+    if me.is_host and not night.is_archived and not night.is_closed and first is not None \
+            and first.state in rsvp.ANSWER_STATES:
+        draft = request.session.pop("announce_draft", None)
+        draft = draft if draft and draft.get("night") == night.pk else {}
+        told = Member.objects.filter(group_id=night.group_id, status=Member.Status.ACTIVE, user__isnull=False) \
+            .exclude(user_id=request.user.pk).count()
+        return {"announce": {"start_time": draft.get("start_time", ""),
+                             "seat_limit": draft.get("seat_limit", night.table.seat_count), "told": told}}
+    return {}
+
+
 def night(request, night_id):
     """The session page: its sets, in order."""
     night, host = night_for(request.user, night_id)
@@ -466,12 +488,13 @@ def night(request, night_id):
     # Open set N leads to the latest set that still needs the host or the players; finished ones are under Sets.
     context["latest_set"] = next((s for s in reversed(sets) if s.state not in (State.FINALIZED, State.CANCELED)), None)
     context["my_makeup"] = outcome.makeup_for(me.pk)
+    context.update(_rsvp_context(request, night, me, by_number))
     if not night.is_archived:
         # The mark nightlive.js polls with, from rows this page has already read.
         context["stamp"] = settlement_queries.stamp_from(
             night, [(s.pk, s.state, s.finalized_at) for s in by_number], outcome.plan.pk if outcome.plan else None,
             len(outcome.replaced), (len(outcome.payments), sum(1 for p in outcome.payments if p.active)),
-            sum(1 for t in outcome.transfers if t.carried),
+            sum(1 for t in outcome.transfers if t.carried), rsvp=context["board"].mark if context.get("board") else None,
         )
     context["replaced_plans"] = outcome.replaced
     context["my_table_payments"] = [

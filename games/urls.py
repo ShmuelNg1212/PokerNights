@@ -20,4 +20,8 @@ urlpatterns = [
     path("s/<int:session_id>/draw/seat/", views.seat_choose, name="seat_choose"),
     path("s/<int:session_id>/draw/late/", views.seat_late, name="seat_late"),
     path("n/<int:night_id>/next-set/", views.next_set, name="next_set"),
+    path("n/<int:night_id>/announce/", views.night_announce, name="night_announce"),
+    path("n/<int:night_id>/rsvp/", views.night_rsvp, name="night_rsvp"),
+    path("n/<int:night_id>/seats/", views.night_seats, name="night_seats"),
+    path("n/<int:night_id>/seat-now/", views.night_seat_now, name="night_seat_now"),
 ]

@@ -633,6 +633,48 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .table-card > .btn { margin-top:var(--s-1); }
 .new-session { margin:var(--s-4) 0 0; }
 
+/* RSVP (2026-10-27). "Coming up" cards hold their answer buttons, so the card is not one link and does not
+   darken when pressed; the title is the link. The same viewer block sits on the session page. */
+.table-cards .coming-card:is(:active, .is-going) { box-shadow:none; }
+.coming-card .table-card-title a { color:inherit; text-decoration:none; }
+@media (hover: hover) and (pointer: fine) { .coming-card .table-card-title a:hover strong { color:var(--brass); } }
+.rsvp-you { display:flex; align-items:center; gap:var(--s-2); margin:var(--s-1) 0 0; font-weight:700; }
+.rsvp-you.is-waiting { color:var(--brass); }
+.rsvp-you.is-out { color:var(--muted); font-weight:600; }
+.rsvp-actions { display:grid; gap:var(--s-2); }
+.rsvp-actions.is-asking { grid-template-columns:repeat(auto-fit, minmax(min(100%, 130px), 1fr)); }
+.rsvp-actions form { margin:0; }
+.rsvp-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s-1) var(--s-3); }
+.rsvp-head h2 { margin:0; flex:1 1 auto; }
+.rsvp-count { margin:0; color:var(--muted); font-variant-numeric:tabular-nums; }
+.rsvp-count .figure { color:var(--text); font-size:1.25rem; font-weight:800; font-stretch:88%; }
+.rsvp-head .small { flex-basis:100%; margin:0; }
+.rsvp-mine { margin:var(--s-3) 0 var(--s-2); padding-bottom:var(--s-3); border-bottom:1px solid var(--rule); }
+.rsvp-group-title { margin:var(--s-4) 0 var(--s-1); font-size:.9375rem; font-weight:700; color:var(--muted); }
+.rsvp-list { list-style:none; margin:0; padding:0; }
+.rsvp-row { padding:var(--s-1) 0; }
+.rsvp-row + .rsvp-row { border-top:1px solid var(--rule); }
+.rsvp-row > .row { min-height:48px; align-items:center; gap:var(--s-3); }
+.rsvp-row .grow { min-width:0; overflow-wrap:anywhere; }
+.rsvp-row.is-mine { background:var(--rail-2); border-radius:var(--r-row); padding-inline:var(--s-2); }
+.rsvp-place { flex:none; min-width:1.5ch; color:var(--brass); font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
+.rsvp-host > summary { min-height:48px; list-style:none; }
+.rsvp-host > summary::-webkit-details-marker { display:none; }
+.rsvp-host form { display:grid; gap:var(--s-2); justify-items:start; padding:var(--s-1) 0 var(--s-2); }
+.rsvp-host form p { margin:0; }
+.rsvp-more { margin-top:var(--s-3); }
+.rsvp-more > summary { display:flex; align-items:center; gap:var(--s-2); min-height:48px; font-weight:700; cursor:pointer; list-style:none; }
+.rsvp-more > summary::-webkit-details-marker { display:none; }
+.rsvp-more > summary .icon { transition:transform var(--t-fast) var(--ease-out); }
+.rsvp-more[open] > summary .icon { transform:rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .rsvp-more > summary .icon { transition:none; } }
+.rsvp-seats { display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s-2); margin-top:var(--s-4); padding-top:var(--s-3); border-top:1px solid var(--rule); }
+.rsvp-seats [data-numpad-slot] { flex-basis:100%; }
+.rsvp-announce-fields { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap:var(--s-3); }
+.rsvp-announce-fields .field + .field { margin-top:0; }
+.rsvp-announce-form { display:grid; gap:var(--s-3); }
+.rsvp-announce-form .hint { margin:0; }
+
 .ledger-month { margin:var(--s-5) 0 0; font-size:.9375rem; font-weight:700; color:var(--muted); }
 .ledger > h2 + .ledger-month { margin-top:var(--s-3); }
 .ledger .session-link { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--s-1) var(--s-3); }

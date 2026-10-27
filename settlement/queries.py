@@ -561,7 +561,7 @@ def session_nets(night_ids, member_ids) -> dict:
     return {(row["finalization__session__night_id"], row["member_id"]): row["total"] for row in rows}
 
 
-def stamp_from(night, sets, plan_id, replaced, payments, carried=0) -> str:
+def stamp_from(night, sets, plan_id, replaced, payments, carried=0, rsvp=None) -> str:
     """The session page's mark, from rows the caller holds. ``sets`` are ``(pk, state, finalized_at)``;
     ``replaced`` is the number of transfer lists a reopening retired; ``payments`` are
     ``(how many exist, how many stand)``: paid marks after closing, table payments before."""
@@ -576,6 +576,9 @@ def stamp_from(night, sets, plan_id, replaced, payments, carried=0) -> str:
     # session nobody carried from keeps the mark it had.
     if plan_id and carried:
         seen += (carried,)
+    # Who is coming, once the session is announced (``games.rsvp.Board.mark``). Left out before.
+    if rsvp is not None:
+        seen += (rsvp,)
     return hashlib.sha1(repr(seen).encode()).hexdigest()[:16]
 
 
@@ -600,7 +603,19 @@ def night_stamp(night) -> str:
     plan_id, carried = next(((pk, taken) for pk, current, taken in plans if current), (None, 0))
     found = Payment.objects.filter(night=night).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
     payments = (found["made"], found["standing"])
-    return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments, carried)
+    board = None
+    if night.announced_at is not None:
+        from games import rsvp
+
+        board = rsvp.boards([night], _nobody(night))[night.pk].mark
+    return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments, carried, rsvp=board)
+
+
+def _nobody(night):
+    """A viewer who is no member, so a board read for the stamp skips the host-only roster query."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(pk=None, is_host=False, group_id=night.group_id)
 
 
 def hub_stamp(group_ids) -> str:
@@ -640,6 +655,18 @@ def hub_stamp(group_ids) -> str:
          for pk, state, done, night, status, archived in sets],
         seated, members, plans, paid["made"], paid["standing"],
     )
+    # Announced sessions and their answers. Left out when there are none, so the mark stays as it was.
+    from games.models import GameNight, Rsvp
+
+    announced = list(
+        GameNight.objects.filter(group_id__in=group_ids, announced_at__isnull=False).order_by("pk")
+        .values_list("pk", "seat_limit", "start_time")
+    )
+    if announced:
+        answers = list(
+            Rsvp.objects.filter(night__group_id__in=group_ids).order_by("pk").values_list("pk", "status", "queued_at")
+        )
+        seen += (repr(announced), repr(answers))
     return hashlib.sha1(repr(seen).encode()).hexdigest()[:16]
 
 

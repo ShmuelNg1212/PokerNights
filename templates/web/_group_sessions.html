@@ -16,6 +16,11 @@
   </div>
 {% endif %}
 </section>
+{% if coming %}<section class="group-sessions" aria-labelledby="coming-sessions">
+<h2 id="coming-sessions">Coming up</h2>
+<ul class="table-cards">{% for card in coming %}{% include "web/_coming_card.html" %}{% endfor %}</ul>
+</section>
+{% endif %}
 {% if past_years %}
 <section class="group-sessions ledger" aria-labelledby="past-sessions">
 <h2 id="past-sessions">Past sessions{% if not_settled %} <span class="muted small heading-count">{{ not_settled }} not settled</span>{% endif %}</h2>

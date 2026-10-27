@@ -1,0 +1,28 @@
+{% load money_tags table_tags %}
+{# The viewer's own answer and the one thing they can do next. Shared by the Sessions tab card and the session page. #}
+{% with row=board.mine %}
+{% if row.status == 'confirmed' %}
+<p class="rsvp-you" id="rsvp-you-{{ night.pk }}"><span class="you-dot" aria-hidden="true"></span>You're in</p>
+{% elif row.status == 'waitlisted' %}
+<p class="rsvp-you is-waiting" id="rsvp-you-{{ night.pk }}">Waitlist · {{ row.place|ordinal_place }} in line</p>
+{% elif row.status == 'out' %}
+<p class="rsvp-you is-out" id="rsvp-you-{{ night.pk }}">You said you can't make it</p>
+{% else %}
+<p class="rsvp-you is-asked" id="rsvp-you-{{ night.pk }}">Are you in?</p>
+{% endif %}
+<div class="rsvp-actions{% if not row %} is-asking{% endif %}">
+  {% if not row or row.status == 'out' %}
+  <form method="post" action="{% url 'night_rsvp' night.pk %}" data-once>{% csrf_token %}{% request_id_field %}
+    <input type="hidden" name="going" value="in"><input type="hidden" name="back" value="{{ back }}">
+    <button type="submit" class="btn btn-block{% if not row %} btn-primary{% else %} btn-quiet{% endif %}">{% if row %}I'm in after all{% elif board.full %}Join the waitlist{% else %}I'm in{% endif %}</button>
+  </form>
+  {% endif %}
+  {% if row.status != 'out' %}
+  <form method="post" action="{% url 'night_rsvp' night.pk %}" data-once>{% csrf_token %}{% request_id_field %}
+    <input type="hidden" name="going" value="out"><input type="hidden" name="back" value="{{ back }}">
+    <button type="submit" class="btn btn-block{% if row %} btn-quiet{% endif %}">{% if row.status == 'waitlisted' %}Leave the waitlist{% else %}Can't make it{% endif %}</button>
+  </form>
+  {% endif %}
+</div>
+{% if row and row.status == 'out' and board.full %}<p class="hint">The seats are full: you would join the waitlist.</p>{% endif %}
+{% endwith %}

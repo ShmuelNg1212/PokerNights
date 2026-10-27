@@ -5,6 +5,8 @@ seat while the session has one under its seat limit, else it waits in line. When
 seat opens, the first in line takes it and is told. Each write locks the session row.
 """
 
+from dataclasses import dataclass, field
+
 from django.db import transaction
 from django.db.models import F
 from django.urls import reverse
@@ -240,3 +242,91 @@ def member_removed(member, actor_user) -> None:
         if was == Status.CONFIRMED and answering_open(night, first):
             _fill(night, actor_user, first)
         _changed(night)
+
+
+# --- Reading -------------------------------------------------------------------
+
+@dataclass
+class Board:
+    """Who is coming to one announced session, for its page and its Sessions tab card."""
+
+    night: object
+    confirmed: list = field(default_factory=list)  # Rsvp rows, in the order they answered
+    waitlisted: list = field(default_factory=list)  # Rsvp rows, in line order; each has .place
+    out: list = field(default_factory=list)
+    not_answered: list = field(default_factory=list)  # Members; filled for a host only
+    mine: object = None  # the viewer's Rsvp row, or None
+    open: bool = False  # answers still count
+
+    @property
+    def limit(self) -> int:
+        return self.night.seat_limit
+
+    @property
+    def free(self) -> int:
+        return max(self.limit - len(self.confirmed), 0)
+
+    @property
+    def full(self) -> bool:
+        return self.free == 0
+
+    @property
+    def people(self) -> list:
+        """Every member on this board, for the colours of their chips."""
+        return [r.member for r in self.confirmed + self.waitlisted + self.out] + self.not_answered
+
+    @property
+    def chips(self) -> list:
+        return [r.member for r in self.confirmed[:6]]
+
+    @property
+    def more(self) -> int:
+        return max(len(self.confirmed) - 6, 0)
+
+    @property
+    def mark(self) -> tuple:
+        """What another person can change here, for the polling stamps."""
+        rows = sorted((r.pk, r.status, r.queued_at.isoformat()) for r in self.confirmed + self.waitlisted + self.out)
+        return (self.night.announced_at.isoformat(), self.limit, str(self.night.start_time), rows)
+
+
+def boards(nights, me, *, sets=None) -> dict:
+    """``{night_id: Board}`` for the announced ones among ``nights``. Two queries, whatever their number.
+
+    ``sets`` is ``{night_id: set 1}`` when the caller has the sets already; else set 1 is read per night.
+    """
+    nights = [n for n in nights if n.announced_at is not None]
+    if not nights:
+        return {}
+    found = {n.pk: Board(n) for n in nights}
+    answered = {}
+    for row in Rsvp.objects.filter(night_id__in=found).select_related("member").order_by("queued_at", "id"):
+        board = found[row.night_id]
+        answered.setdefault(row.night_id, set()).add(row.member_id)
+        {Status.CONFIRMED: board.confirmed, Status.WAITLISTED: board.waitlisted, Status.OUT: board.out}[row.status].append(row)
+        if row.member_id == me.pk:
+            board.mine = row
+    roster = None
+    if me.is_host:
+        roster = list(Member.objects.filter(group_id=me.group_id, status=Member.Status.ACTIVE).order_by("display_name", "pk"))
+    for board in found.values():
+        for place, row in enumerate(board.waitlisted, 1):
+            row.place = place
+        first = (sets or {}).get(board.night.pk)
+        board.open = answering_open(board.night, first)
+        if roster is not None:
+            seen = answered.get(board.night.pk, set())
+            board.not_answered = [m for m in roster if m.pk not in seen]
+    return found
+
+
+def answers_for_set_one(session) -> dict:
+    """``{member_id: (status, place in line or None)}`` for set 1 of an announced session; else empty."""
+    if session.set_number != 1 or session.night.announced_at is None:
+        return {}
+    found, place = {}, 0
+    for member_id, status in session.night.rsvps.order_by("queued_at", "id").values_list("member_id", "status"):
+        if status == Status.WAITLISTED:
+            place += 1
+        found[member_id] = (status, place if status == Status.WAITLISTED else None)
+    return found

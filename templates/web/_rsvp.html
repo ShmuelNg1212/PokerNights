@@ -1,0 +1,72 @@
+{% load table_tags %}
+{# RSVP on the session page: the host's Announce card before players see it, then who is coming. #}
+{% if announce %}
+<section class="panel rsvp-announce" id="announce" aria-labelledby="announce-title">
+  <h2 id="announce-title">Announce to the group</h2>
+  <p class="small muted">Players see this session and answer In or Out. Past the seats, they wait in line.</p>
+  <form method="post" action="{% url 'night_announce' night.pk %}" class="rsvp-announce-form" data-once>{% csrf_token %}
+    <div class="rsvp-announce-fields">
+      <div class="field">
+        <label for="announce-time">Start time <span class="muted">(optional)</span></label>
+        <input id="announce-time" type="time" name="start_time" value="{{ announce.start_time }}" step="300">
+      </div>
+      <div class="field">
+        <label for="announce-seats">Seats</label>
+        <input id="announce-seats" type="text" name="seat_limit" value="{{ announce.seat_limit }}" data-numpad="whole" inputmode="numeric" autocomplete="off" required>
+      </div>
+    </div>
+    <div data-numpad-slot></div>
+    <button type="submit" class="btn btn-primary btn-block">Announce to the group</button>
+    <p class="hint">{{ announce.told }} player{{ announce.told|pluralize }} with a login get{{ announce.told|pluralize:"s," }} a notice.</p>
+  </form>
+</section>
+{% endif %}
+{% if board %}
+<section class="panel rsvp" id="coming" aria-labelledby="coming-title">
+  <div class="rsvp-head">
+    <h2 id="coming-title">Who's coming</h2>
+    <p class="rsvp-count"><strong class="figure">{{ board.confirmed|length }} of {{ board.limit }}</strong> seats{% if board.waitlisted %} · {{ board.waitlisted|length }} waiting{% endif %}</p>
+    {% if night.start_time %}<p class="small muted">Starts {{ night.start_time|time:"g:i A" }}</p>{% endif %}
+  </div>
+  {% if board.open and not me.is_host or board.open and board.mine %}
+  <div class="rsvp-mine">{% include "web/_rsvp_mine.html" with back="night" %}</div>
+  {% endif %}
+  {% if not board.open %}<p class="small muted">Answers are closed: play has started.</p>{% endif %}
+
+  <h3 class="rsvp-group-title">Coming</h3>
+  <ul class="list rsvp-list">
+    {% for row in board.confirmed %}{% include "web/_rsvp_row.html" with person=row.member %}
+    {% empty %}<li class="muted small">Nobody yet.</li>{% endfor %}
+  </ul>
+
+  {% if board.waitlisted %}
+  <h3 class="rsvp-group-title">Waitlist</h3>
+  <ol class="list rsvp-list rsvp-line">
+    {% for row in board.waitlisted %}{% include "web/_rsvp_row.html" with person=row.member waiting=True %}{% endfor %}
+  </ol>
+  {% endif %}
+
+  {% if board.out %}
+  <details class="rsvp-more" data-key="rsvp-out-{{ night.pk }}"><summary><span class="grow">Can't make it <span class="muted">· {{ board.out|length }}</span></span>{% icon 'chevron-down' %}</summary>
+    <ul class="list rsvp-list">{% for row in board.out %}{% include "web/_rsvp_row.html" with person=row.member %}{% endfor %}</ul>
+  </details>
+  {% endif %}
+
+  {% if me.is_host and board.not_answered %}
+  <details class="rsvp-more" data-key="rsvp-none-{{ night.pk }}"><summary><span class="grow">Not answered <span class="muted">· {{ board.not_answered|length }}</span></span>{% icon 'chevron-down' %}</summary>
+    <ul class="list rsvp-list">{% for member in board.not_answered %}{% include "web/_rsvp_row.html" with row=None person=member %}{% endfor %}</ul>
+  </details>
+  {% endif %}
+
+  {% if me.is_host and board.open %}
+  <form method="post" action="{% url 'night_seats' night.pk %}" class="rsvp-seats" data-once>{% csrf_token %}
+    <div class="field grow">
+      <label for="rsvp-seats-{{ night.pk }}">Seats</label>
+      <input id="rsvp-seats-{{ night.pk }}" type="text" name="seat_limit" value="{{ seats_draft|default:board.limit }}" data-numpad="whole" inputmode="numeric" autocomplete="off" required>
+    </div>
+    <button type="submit" class="btn">Save</button>
+    <div data-numpad-slot></div>
+  </form>
+  {% endif %}
+</section>
+{% endif %}

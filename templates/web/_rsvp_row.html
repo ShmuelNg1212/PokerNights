@@ -1,0 +1,29 @@
+{% load money_tags table_tags %}
+{# One person on the session page's RSVP list. ``person`` is the member; ``row`` their Rsvp, or None on a host's Not answered list. #}
+<li class="rsvp-row{% if person.pk == me.pk %} is-mine{% endif %}">
+  <div class="row">
+    {% if waiting %}<span class="rsvp-place" aria-label="Number {{ row.place }} in line">{{ row.place }}</span>{% endif %}
+    {% member_token person board.people %}
+    <span class="grow"><strong>{{ person.display_name }}</strong>{% if person.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
+      {% if row and row.answered_by_id != person.user_id %}<br><span class="small muted">answered by {{ row.answered_by.username }}</span>{% endif %}</span>
+  </div>
+  {% if me.is_host and board.open %}
+  <details class="rsvp-host" data-key="rsvp-host-{{ night.pk }}-{{ person.pk }}">
+    <summary class="btn btn-small btn-quiet">{% if row.status == 'confirmed' %}Mark out{% elif row.status == 'waitlisted' %}Seat now{% else %}Mark in{% endif %}</summary>
+    {% if row.status == 'waitlisted' %}
+    <form method="post" action="{% url 'night_seat_now' night.pk %}" data-once>{% csrf_token %}
+      <input type="hidden" name="member" value="{{ person.pk }}">
+      <p class="small muted">{% if board.full %}This adds a seat: the session goes to {{ board.limit|add:1 }}.{% else %}A seat is free.{% endif %}</p>
+      <button type="submit" class="btn btn-small btn-primary">Seat {{ person.display_name }}</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'night_rsvp' night.pk %}" data-once>{% csrf_token %}{% request_id_field %}
+      <input type="hidden" name="member" value="{{ person.pk }}"><input type="hidden" name="back" value="night">
+      <input type="hidden" name="going" value="{% if row.status == 'confirmed' %}out{% else %}in{% endif %}">
+      {% if row.status == 'confirmed' %}<p class="small muted">{% if board.waitlisted %}The first in line takes the seat.{% else %}The seat stays free.{% endif %}</p>{% elif board.full %}<p class="small muted">The seats are full: this puts them on the waitlist.</p>{% endif %}
+      <button type="submit" class="btn btn-small{% if row.status == 'confirmed' %} btn-danger{% else %} btn-primary{% endif %}">{% if row.status == 'confirmed' %}Mark {{ person.display_name }} out{% else %}Mark {{ person.display_name }} in{% endif %}</button>
+    </form>
+    {% endif %}
+  </details>
+  {% endif %}
+</li>

@@ -4,18 +4,19 @@ Every figure comes from batched queries over the viewer's active memberships, so
 the number of queries does not grow with groups or players.
 """
 
+import datetime
 from dataclasses import dataclass, field
 
 from django.db.models import Count, OuterRef, Subquery
 from django.urls import reverse
 
 from games import clock
-from games.models import GameNight, GameSession, Participant, Table
+from games.models import GameNight, GameSession, Participant, Rsvp, Table
 from groups.models import Member
 from notify import services as notify
 from settlement import queries as settlement_queries
 
-from .sessions_tab import destination
+from .sessions_tab import destination, is_coming
 
 State = GameSession.State
 TOKENS_SHOWN = 6
@@ -54,6 +55,7 @@ class Card:
     last_night: GameNight = None
     last_net: object = None
     added: object = None  # the viewer was put in this set and has not opened it yet (a notify.Notice)
+    asked: GameNight = None  # an announced session the viewer has not answered yet
 
     @property
     def group(self):
@@ -101,6 +103,15 @@ def home_cards(user) -> list:
             by_group.setdefault(night.group_id, []).append(night)
     for group_id, card in cards.items():
         _choose_status(card, by_group.get(group_id, []), group_id in with_table)
+
+    # An announced session still taking answers, that the viewer has not answered: the card asks.
+    coming = [n for n in open_nights if is_coming(n)]
+    if coming:
+        answered = set(Rsvp.objects.filter(night__in=coming, member_id__in=my_ids).values_list("night_id", flat=True))
+        for night in sorted(coming, key=lambda n: (n.game_date, n.start_time or datetime.time.max, n.pk)):
+            card = cards[night.group_id]
+            if night.pk not in answered and card.asked is None:
+                card.asked = night
 
     playing = [card.set.pk for card in cards.values() if card.kind == "play"]
     if playing:

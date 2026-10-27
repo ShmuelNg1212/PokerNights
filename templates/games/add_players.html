@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block screen %} data-depth="4"{% endblock %}
-{% load static %}
+{% load static table_tags %}
 {% block title %}Add players · {{ session }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
 {% block content %}
@@ -39,7 +39,9 @@
                  {% if row.at_table %}disabled{% endif %} {% if row.checked %}checked{% endif %}>
             <span class="grow">{{ row.member.display_name }}</span>
             {% if row.at_table %}<span class="badge badge-good">At the table</span>
-            {% elif row.left_earlier %}<span class="badge">Left earlier</span>{% endif %}
+            {% elif row.left_earlier %}<span class="badge">Left earlier</span>
+            {% elif row.rsvp.0 == 'confirmed' %}<span class="badge">Said they're coming</span>
+            {% elif row.rsvp.0 == 'waitlisted' %}<span class="badge">Waitlist · {{ row.rsvp.1|ordinal_place }}</span>{% endif %}
             {% if not row.member.has_login %}<span class="badge">No login</span>{% endif %}
           </label>
         </li>

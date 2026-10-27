@@ -1,5 +1,8 @@
+import datetime
+
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from groups.access import member_for, require_host
@@ -17,7 +20,7 @@ from groups import services as groups
 from groups.models import Member
 from ledger import money
 
-from . import services
+from . import rsvp, services
 from .access import night_for, session_for
 from .forms import PresetForm, SessionForm, SettingsForm, TableForm
 from .models import Participant, SettingsPreset, Table
@@ -157,6 +160,10 @@ def participants_add(request, session_id):
         return redirect("session", session_id=session.pk)
 
     status = dict(Participant.objects.filter(session=session).values_list("member_id", "status"))
+    # Set 1 of an announced session starts with the players who said they are coming ticked.
+    answers = rsvp.answers_for_set_one(session)
+    if not posted:
+        selected = {member_id for member_id, (state, _) in answers.items() if state == "confirmed"}
     rows, seated_names, roster = [], [], {}
     for member in Member.objects.filter(group_id=session.group_id, status=Member.Status.ACTIVE):
         at_table = status.get(member.pk) == Participant.Status.JOINED
@@ -165,7 +172,14 @@ def participants_add(request, session_id):
             "at_table": at_table,
             "left_earlier": status.get(member.pk) in (Participant.Status.LEFT, Participant.Status.WITHDRAWN),
             "checked": member.pk in selected and not at_table,
+            "rsvp": answers.get(member.pk, (None, None)),
         })
+    if answers:
+        # Coming first, then the waitlist in line order, then everyone else as before.
+        order = {"confirmed": 0, "waitlisted": 1}
+        rows.sort(key=lambda row: (order.get(row["rsvp"][0], 2), row["rsvp"][1] or 0))
+    for row in rows:
+        member, at_table = row["member"], row["at_table"]
         if at_table:
             seated_names.append(member.display_name.lower())
         else:
@@ -271,3 +285,72 @@ def group_delete(request, group_id):
 def _deleted(actor, confirm_name) -> bool:
     services.delete_group(actor, confirm_name)
     return True
+
+
+# --- RSVP ----------------------------------------------------------------------
+
+def _rsvp_back(request, night):
+    """Back to where the answer was given: the group's Sessions tab or the session page."""
+    if request.POST.get("back") == "tab":
+        return redirect(reverse("group", args=[night.group_id]) + f"#coming-{night.pk}")
+    return redirect(reverse("night", args=[night.pk]) + "#coming")
+
+
+def _small_int(value):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+@require_POST
+def night_announce(request, night_id):
+    night, actor = night_for(request.user, night_id)
+    raw_time, raw_seats = request.POST.get("start_time", "").strip(), request.POST.get("seat_limit", "").strip()
+    start_time = None
+    if raw_time:
+        try:
+            start_time = datetime.time.fromisoformat(raw_time)
+        except ValueError:
+            start_time = False
+    seats = _small_int(raw_seats) if raw_seats else None
+    if start_time is False:
+        messages.error(request, "Enter the start time as hours and minutes, or leave it empty.")
+    elif raw_seats and seats is None:
+        messages.error(request, "Enter the number of seats.")
+    elif attempt(request, rsvp.announce, night.pk, actor, start_time=start_time, seat_limit=seats,
+                 success="Announced. Players can answer now.") is not None:
+        request.session.pop("announce_draft", None)
+        return redirect(reverse("night", args=[night.pk]) + "#coming")
+    request.session["announce_draft"] = {"night": night.pk, "start_time": raw_time, "seat_limit": raw_seats}
+    return redirect(reverse("night", args=[night.pk]) + "#announce")
+
+
+@require_POST
+def night_rsvp(request, night_id):
+    """In or Out. Without ``member`` the requester answers for themselves; with it, a host answers for that player."""
+    night, actor = night_for(request.user, night_id)
+    member_id = request.POST.get("member") or actor.pk
+    going = request.POST.get("going") == "in"
+    attempt(request, rsvp.answer, night.pk, actor, member_id, going, request_id_from(request))
+    return _rsvp_back(request, night)
+
+
+@require_POST
+def night_seats(request, night_id):
+    night, actor = night_for(request.user, night_id)
+    seats = _small_int(request.POST.get("seat_limit"))
+    if seats is None:
+        messages.error(request, "Enter the number of seats.")
+    elif attempt(request, rsvp.set_seat_limit, night.pk, actor, seats, success=f"{seats} seats.") is None:
+        request.session["seats_draft"] = {"night": night.pk, "seat_limit": request.POST.get("seat_limit", "")}
+    return redirect(reverse("night", args=[night.pk]) + "#coming")
+
+
+@require_POST
+def night_seat_now(request, night_id):
+    night, actor = night_for(request.user, night_id)
+    row = attempt(request, rsvp.seat_from_waitlist, night.pk, actor, request.POST.get("member"))
+    if row is not None:
+        messages.success(request, f"{row.member.display_name} has a seat. The session now has {row.night.seat_limit} seats.")
+    return redirect(reverse("night", args=[night.pk]) + "#coming")

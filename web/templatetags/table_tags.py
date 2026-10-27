@@ -129,3 +129,11 @@ def focus_unless(field, card):
     if card and not field.form.errors:
         return field.as_widget(attrs={"autofocus": False})
     return field.as_widget()
+
+
+@register.filter
+def ordinal_place(number):
+    """1st, 2nd, 3rd, 4th … for a place in line."""
+    number = int(number)
+    suffix = "th" if 10 <= number % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
