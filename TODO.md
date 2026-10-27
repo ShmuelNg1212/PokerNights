@@ -2,7 +2,7 @@
 
 Active and next items only, 40 lines at most. History is in `doc/plan/`, git, and claude-mem.
 
-## Phone checks (unreleased: `feat/rsvp-waitlist`)
+## Phone checks (released 2026-10-27)
 
 - [ ] RSVP ([plan](doc/plan/1793109970_rsvp_waitlist.md)): as a host, create a session and tap **Announce to the group** with a time and 3 seats. Another phone gets "… is getting a game together. Are you in?" and sees "Are you in?" on Your groups. On the Sessions tab under Coming up, tap **I'm in**. Fill the seats; the next phone reads **Join the waitlist**, then "Waitlist · 1st in line". One confirmed player taps **Can't make it**: the waiting phone gets "A seat opened. You're in." On the session page, as host: **Seat now**, **Mark out**, change the seats. Open set 1, then **Add players**: the confirmed are ticked.
 
