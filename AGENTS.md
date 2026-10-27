@@ -1,3 +1,4 @@
+<!-- ai-coding-master-workflow v2 -->
 # PokerNights: agent workflow
 
 PokerNights is a web app for home poker cash games. It records buy-ins and cash-outs, checks that the books balance, and calculates who pays whom. It does not move money.
@@ -10,39 +11,39 @@ The human makes strategic decisions: outcomes, priorities, acceptance criteria. 
 
 This spine is the only workflow. Skill suites (superpowers, claude-mem make-plan/do, issue-driven flows) supply tools for its stages; their own workflows do not run.
 
-**Size gate.** Work that fits one Conventional Commit goes straight to execute. Larger work runs the full spine and stops after the plan for human approval. If the scope grows past one commit during execution, stop and ask.
+**Size gate.** Work that fits one Conventional Commit goes straight to execute. Work fits one commit when it stays in one area and has one clear done condition. Larger work runs the full spine and stops after the plan for human approval. If the scope grows past one commit during execution, stop and ask.
 
-**Mode.** Start each task with one line naming the mode: technical, design, or mixed. Mixed runs the technical part first, then the design pass, before rendezvous. The human corrects the mode if wrong.
+**Mode.** Start each task with one line naming the mode (technical, design, or mixed) and the skills from [doc/workflow/skills-per-stage.md](doc/workflow/skills-per-stage.md) that the task needs. Name them for each task. A check done once per session falls behind by the third task. Mixed runs the technical part first, then the design pass, before rendezvous. The human corrects the mode if wrong.
 
 ### Stages
 
 - **study**: write `doc/study/{date +%s}_{topic}.md`. Get the timestamp with `date +%s`. Write only the study doc. A study is not rewritten later; it gets a dated addendum. Commit as `docs:`.
-- **plan**: write `doc/plan/{date +%s}_{topic}.md` as the editable task board for another session: checkboxes, acceptance criteria, and a completion criterion per task. Put an **OPEN QUESTIONS** section near the top when human input is needed. Commit as `docs:`.
+- **plan**: write `doc/plan/{date +%s}_{topic}.md` as the editable task board for another session: checkboxes, acceptance criteria, and a completion criterion per task. Mark each task `tests: first` (rules, money, and settlement logic) or `tests: alongside` (behaviour found by a browser probe). Put an **OPEN QUESTIONS** section near the top when human input is needed. Commit as `docs:`.
 - **approval**: present the plan and wait. "Fold the answers in" or "reconstitute the plan" means update the plan, then wait again.
-- **execute**: make a feature branch, stacked on the last unreleased one. Tick tasks in the plan doc as they finish. Continue until done or blocked.
-- **rendezvous**: run the tests, review, record checks in the plan, and leave a verified feature branch. The plan is frozen after this. Merge to main only on "ship" (see Release).
+- **execute**: make a feature branch, stacked on the last unreleased one. Write the tests before the code for `tests: first` tasks. Tick tasks in the plan doc as they finish. Continue until done or blocked.
+- **rendezvous**: run the tests and the review skills. Then exercise the first thing the user will do with the change (a page behind sign-in, a write). Do not test a page that works either way. A check counts only if it could fail for the reason the claim could be false. Allow two fix-and-recheck rounds. If a check still fails after the second round, stop and ask. Record the checks in the plan and leave a verified feature branch. The plan is frozen after this. Merge to main only on "ship" (see Release).
 - **sync docs**: make `doc/wiki/` match the code. Delete stale text as well as adding new text.
 
 Other commands: **collect-commit** commits uncommitted work as one or more Conventional Commits. Plans conceived as a batch wait in `doc/roadmap/plan_queue/`; take one at a time and reconstitute it against the current code before approval.
 
 ### Skills per stage
 
-| Stage | Technical | Design (impeccable) |
-|---|---|---|
-| study | `grilling`, then `domain-modeling` (same as `/grill-with-docs`); `research` for primary sources; `prototype` to test logic before planning | `/impeccable shape [feature]` |
-| plan | `codebase-design` | the shape brief's decisions as plan tasks |
-| execute | `tdd`; `diagnosing-bugs` for failures; `wizard` for steps only the human can do | `/impeccable [feature]` or a refine command; `animate` for motion; `mobile-native`; stay inside DESIGN.md's tokens and motion presets |
-| rendezvous | `code-review`; `verification-before-completion`; `security-review` when auth, money, or user data change | `/impeccable critique` and `audit`, then `polish`; `review-animations`; `break-ui` |
-| sync docs | `writing-for-agents` when editing AGENTS.md, skills, or wiki | same |
-| any | `handoff` when a session gets long | same |
+Use a skill only when the task needs it. Skip it for small or clear work. The table is in [doc/workflow/skills-per-stage.md](doc/workflow/skills-per-stage.md). Read it when you name the mode.
 
-Human-run health checks: `/improve-codebase-architecture`, `/retro`.
+### Fallbacks
 
 **Codex fallbacks.** Codex has no claude-mem and no impeccable. There, read `doc/adr/`, the latest plans and `git log` for history, and use taste-skill `design-taste-frontend` with DESIGN.md as the reference. Say the fallback in one line at the start of the task.
 
 ### Subagents
 
-Spawn subagents only during execute, and only when the approved plan has 3 or more tasks in separate files or areas. Code-writing subagents use git worktrees. During study, read-only explore agents may run wide searches. Pass this file's rules into every subagent prompt that explores code.
+Subagents may run in execute, rendezvous, and sync docs. They may not run in plan: the plan is the human's approval gate.
+
+- **execute**: spawn code-writing subagents only when the approved plan has 3 or more tasks and no two of them edit the same file. Code-writing subagents use git worktrees.
+- **rendezvous**: spawn read-only subagents for independent checks: the review skills, the test run, a browser probe. Give each one a different question, and ask for a verdict, the evidence, and `file:line` for each finding. The main agent reads their findings, fixes what they find, and records the checks in the plan.
+- **sync docs**: spawn one subagent per wiki page when 3 or more pages need changes. Each subagent edits only its own page. The main agent checks the result against the code.
+- **study**: read-only explore agents may run wide searches.
+
+Subagents never merge, push, or tick tasks in the plan. The main agent does these after it checks the subagent's result. Pass this file's rules into every subagent prompt that explores code.
 
 ## Knowledge homes
 
@@ -56,6 +57,7 @@ Each kind of knowledge has one home. Look there first; write there only.
 | Current state | `doc/wiki/`: [spec.md](doc/wiki/spec.md), [architecture.md](doc/wiki/architecture.md), [setup.md](doc/wiki/setup.md), [deployment.md](doc/wiki/deployment.md), [features.md](doc/wiki/features.md), [footguns/](doc/wiki/footguns/) |
 | Design sources | [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md), owned by impeccable |
 | Active work | [TODO.md](TODO.md): active and next items only, 40 lines at most |
+| Skills table | [doc/workflow/skills-per-stage.md](doc/workflow/skills-per-stage.md) |
 | Frozen records | `doc/study/`, `doc/plan/`, [doc/roadmap/](doc/roadmap/README.md) |
 | Human-vetted | `doc/canonical/` (if present): read only; report conflicts to the human |
 

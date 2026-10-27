@@ -62,24 +62,36 @@ Nothing is dropped.
 
 ## Tasks
 
-- [ ] **T1. Create `doc/workflow/skills-per-stage.md`.** Start from `templates/skills-per-stage.md`. Use the current PokerNights table rows (including `verification-before-completion`, `handoff`, and the impeccable design column). Add the v2 marker on line 1.
+- [x] **T1. Create `doc/workflow/skills-per-stage.md`.** Start from `templates/skills-per-stage.md`. Use the current PokerNights table rows (including `verification-before-completion`, `handoff`, and the impeccable design column). Add the v2 marker on line 1.
   - Done when: the file has a table with Technical and Design (impeccable) columns, no `{{` placeholder, and the same skills as today.
-- [ ] **T2. Edit AGENTS.md: size gate, mode, stages.** Apply the rows above, following the answers to Q1 and Q2.
+- [x] **T2. Edit AGENTS.md: size gate, mode, stages.** Apply the rows above, following the answers to Q1 and Q2.
   - Done when: each changed bullet is short sentences, and the project rules in the table above are still present.
-- [ ] **T3. Edit AGENTS.md: skills pointer and Fallbacks.** Replace the table with a pointer to T1's file. Add the "Fallbacks" heading with the Codex text.
+- [x] **T3. Edit AGENTS.md: skills pointer and Fallbacks.** Replace the table with a pointer to T1's file. Add the "Fallbacks" heading with the Codex text.
   - Done when: no table remains in AGENTS.md and the Codex text is unchanged.
-- [ ] **T4. Edit AGENTS.md: subagents.** Replace the section with the v2 per-stage rules. Keep the project's prompt rule.
+- [x] **T4. Edit AGENTS.md: subagents.** Replace the section with the v2 per-stage rules. Keep the project's prompt rule.
   - Done when: the section names execute, rendezvous, sync docs, and study, and says subagents never merge, push, or tick tasks.
-- [ ] **T5. Edit AGENTS.md: knowledge homes and marker.** Add the Skills table row. Add the v2 marker as line 1.
+- [x] **T5. Edit AGENTS.md: knowledge homes and marker.** Add the Skills table row. Add the v2 marker as line 1.
   - Done when: line 1 is the marker and the table has the new row.
-- [ ] **T6. Optional GEMINI.md** (only if Q4 is yes). Write `GEMINI.md` with `@AGENTS.md`. Add it to `.git/info/exclude`.
+- [x] **T6. Optional GEMINI.md** (only if Q4 is yes). Write `GEMINI.md` with `@AGENTS.md`. Add it to `.git/info/exclude`.
   - Done when: `git status` does not list GEMINI.md.
-- [ ] **T7. Verify.** Run `grep -n '{{' AGENTS.md doc/workflow/skills-per-stage.md`. Check each link in AGENTS.md resolves. Compare Git, Release, Writing, and Project facts with `main`: they must be unchanged.
+- [x] **T7. Verify.** Run `grep -n '{{' AGENTS.md doc/workflow/skills-per-stage.md`. Check each link in AGENTS.md resolves. Compare Git, Release, Writing, and Project facts with `main`: they must be unchanged.
   - Done when: grep finds nothing, all links resolve, and `git diff main -- AGENTS.md` shows no change inside those four sections.
-- [ ] **T8. Commit.** Commit as `docs: update the agent workflow to v2`. Record the checks in this plan. Do not merge or push. Merge only on "ship".
+- [x] **T8. Commit.** Commit as `docs: update the agent workflow to v2`. Record the checks in this plan. Do not merge or push. Merge only on "ship".
 
 ## Not in scope
 
 - The Release section, the design rules, and the stack.
 - Any code, template, or static file.
 - The uncommitted `.obsidian/` and `.impeccable/` files in the working tree.
+
+## Answers (2026-10-27)
+
+All five RECs accepted: Q1 test marks adopted, Q2 mode line adopted, Q3 subagent prompt rule kept, Q4 GEMINI.md added (local only), Q5 "ship" rule kept.
+
+## Checks (rendezvous)
+
+- `grep '{{'` over AGENTS.md and `doc/workflow/skills-per-stage.md`: no hits.
+- Every link in AGENTS.md resolves.
+- Git, Release, Writing, and Project facts sections: identical to `main`.
+- `GEMINI.md` is git-ignored through `.git/info/exclude`. CLAUDE.md is unchanged.
+- Not run: the test suite. This change touches docs only.
