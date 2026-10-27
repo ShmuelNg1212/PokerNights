@@ -204,3 +204,13 @@ class RsvpHomeTests(TestCase):
         self.assertIn("8:00 PM", page)
         rsvp.answer(night.pk, ana, ana.pk, False, uuid.uuid4())
         self.assertNotIn("Are you in?", self.client.get(reverse("home")).content.decode())
+
+
+class RsvpBadInputTests(TestCase):
+    def test_a_member_that_is_not_a_number_is_a_404(self):
+        group, host = make_group()
+        night = make_session(host).night
+        rsvp.announce(night.pk, host)
+        self.client.force_login(host.user)
+        for name in ("night_rsvp", "night_seat_now"):
+            self.assertEqual(self.client.post(reverse(name, args=[night.pk]), {"member": "x'", "going": "in"}).status_code, 404)

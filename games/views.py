@@ -1,6 +1,6 @@
 import datetime
 
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -330,7 +330,9 @@ def night_announce(request, night_id):
 def night_rsvp(request, night_id):
     """In or Out. Without ``member`` the requester answers for themselves; with it, a host answers for that player."""
     night, actor = night_for(request.user, night_id)
-    member_id = request.POST.get("member") or actor.pk
+    member_id = _small_int(request.POST.get("member")) if request.POST.get("member") else actor.pk
+    if member_id is None:
+        raise Http404("Not found")
     going = request.POST.get("going") == "in"
     attempt(request, rsvp.answer, night.pk, actor, member_id, going, request_id_from(request))
     return _rsvp_back(request, night)
@@ -350,7 +352,10 @@ def night_seats(request, night_id):
 @require_POST
 def night_seat_now(request, night_id):
     night, actor = night_for(request.user, night_id)
-    row = attempt(request, rsvp.seat_from_waitlist, night.pk, actor, request.POST.get("member"))
+    member_id = _small_int(request.POST.get("member"))
+    if member_id is None:
+        raise Http404("Not found")
+    row = attempt(request, rsvp.seat_from_waitlist, night.pk, actor, member_id)
     if row is not None:
         messages.success(request, f"{row.member.display_name} has a seat. The session now has {row.night.seat_limit} seats.")
     return redirect(reverse("night", args=[night.pk]) + "#coming")
