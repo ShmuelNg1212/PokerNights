@@ -146,7 +146,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - Players see the session under **Coming up** on the Sessions tab, and "Are you in?" on Your groups until they answer. They tap **I'm in** or **Can't make it**. When the seats are full, the button reads **Join the waitlist**.
 - The card then reads "You're in", "Waitlist · 2nd in line" or "You said you can't make it", with one quiet button to change it.
 - When a confirmed player drops out, the first in line gets the seat and a notice: "A seat opened. You're in."
-- The session page shows **Who's coming**: the confirmed, the waitlist in order, and folded lists of who can't make it and (for hosts) who has not answered. A host can **Mark in**, **Mark out**, **Seat now** (adds a seat) and change the seats. The seats cannot go below the number coming.
+- The session page shows **Who's coming**: the confirmed, the waitlist in order, and folded lists of who can't make it and (for hosts) who has not answered. A host can **Mark in**, **Mark out**, **Seat now** (adds a seat) and change the seats. A tap on a row opens a short confirmation under it; the pill reads **Cancel** while it is open. The answer updates the page in place, and the player glides to their new list. The seats cannot go below the number coming.
 - Answers stop when set 1 is in play. While set 1 is Open, the session is under both Coming up and Now playing.
 - Set 1's **Add players** ticks the confirmed players first, no more than the free seats, and shows the waitlist with each place.
 
