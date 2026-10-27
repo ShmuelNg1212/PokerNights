@@ -105,3 +105,40 @@ Notice kinds to add: `announced` ("Ace table · Fri 8:00 PM. Are you in?"), `sea
 ## Not in scope
 
 Reminders, recurring games, offers with a time limit, a deadline to answer, guests outside the roster, "Maybe".
+
+## Addendum 2026-10-27: design shape brief
+
+Mode: Operate, inside the Rack. No new colour, font, token, icon or motion preset. Authority: DESIGN.md, mainly "Sessions tab (2026-10-17)", "Badges", "Player rows" and "Paid at the table (2026-10-26)".
+
+**Job.** A player opens the group in the days before a game, between other things. They must learn three facts in one glance: when and where, whether there is a seat, and their own answer. The host must see who is coming and act for players without a login.
+
+**Sessions tab: "Coming up".** A new section after "Now playing" and before Past sessions. It shows only when an announced session exists.
+
+- One card per announced session. Rail surface, Rule border, 26 px radius. No felt: felt marks only a set in play.
+- Card content, in order: the table name (as "Now playing" cards); "Fri 31 Oct · 8:00 PM · Kamuning" in Bone Dim; the confirmed players as the existing 36 px chip stack with "+N"; one line "6 of 9 seats · 2 waiting".
+- The viewer's line, as "You're playing" with the 10 px dot:
+  - Not answered: two buttons side by side, primary **I'm in** and secondary **Can't make it**. When the seats are full, the primary reads **Join the waitlist**.
+  - Confirmed: "You're in" with the bone dot. A quiet **Can't make it** under it.
+  - Waitlisted: "Waitlist · 2nd in line" in Brass. A quiet **Leave the waitlist**.
+  - Out: "You said you can't make it" in Bone Dim. A quiet **I'm in after all**.
+- The card is not one big link, because it holds buttons. The title is the link to the session page. This is a recorded exception to the Sessions tab rule.
+- The answer is a native form POST. With JavaScript, it updates the card in place ("Actions update in place"). The line shows only after the server accepts.
+
+**Session page (draft, announced).** A section "Who's coming" before the set steps.
+
+- Head: "6 of 9 seats" in the figure style, then the start time.
+- **Coming**: one 48 px row per confirmed player: chip, name, "answered by hana" in Bone Dim when a host answered.
+- **Waitlist**: rows numbered 1, 2, 3 in line order.
+- **Can't make it**: a closed disclosure with its count.
+- **Not answered** (host only): a closed disclosure with its count.
+- Host row actions, as the quiet 48 px disclosure under a row: confirmed → **Mark out**; waitlisted → **Seat now** (raises the limit by one, says so); out or not answered → **Mark in**.
+- Host **Seats**: the limit on the numpad with **Save**. A refusal shows under the field: "6 players are coming. Mark someone out first."
+- A moved-up player's row shows the badge "Moved up" for this page view, as "Joined".
+
+**Draft session page, host, not announced.** An "Announce" card first in the prep steps: start time (native time field, optional), seats (numpad, the table's count filled in), primary **Announce to the group**, and one hint line: "N players with a login get a notice." After announce the card goes away and "Who's coming" takes its place.
+
+**Set 1 add-players.** A first group "Coming" with every confirmed player ticked. Then "Waitlist" unticked, each with its place. Then the rest of the roster as today.
+
+**States and ranges.** 0 to 30 roster players; seats 2 to 12; host over the limit after **Seat now**; 60-character names; no start time; a session at a table that is archived later. Closed, archived or set 1 in play: the RSVP section and card go away; the set takes over.
+
+**Anti-goals.** No countdown, no reminder, no "Maybe". No colour alone for a state: each state has words. No animation of the seat count.
