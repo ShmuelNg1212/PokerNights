@@ -1,0 +1,8 @@
+<fieldset class="chip-value-row" data-chip-value-row>
+  <legend class="visually-hidden">Chip denomination</legend>
+  <div class="chip-colour-field field"><label for="{{ form.colour.id_for_label }}">Colour</label><div class="chip-colour-select"><span class="denomination-swatch" data-chip-swatch aria-hidden="true"></span>{{ form.colour }}</div>{{ form.colour.errors }}</div>
+  <div class="chip-value-field field"><label for="{{ form.value.id_for_label }}">{{ form.value.label }}</label>{{ form.value }}{{ form.value.errors }}</div>
+  <div class="chip-label-field field"><label for="{{ form.label.id_for_label }}">Label <span class="muted">(optional)</span></label>{{ form.label }}{{ form.label.errors }}</div>
+  <label class="chip-remove small">{{ form.DELETE }}<span>Remove</span></label>
+  {{ form.non_field_errors }}
+</fieldset>

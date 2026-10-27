@@ -43,6 +43,7 @@
       {% endif %}
     </section>
     {% if board or announce %}{% include "web/_rsvp.html" %}{% endif %}
+    {% include "web/_chip_values.html" %}
     {% if me.is_host and not night.is_closed %}{% include "web/_next_step.html" %}{% endif %}
   </div>
   <div class="night-detail">

@@ -1,8 +1,10 @@
 from django.urls import path
 
 from . import views
+from . import chip_views
 
 urlpatterns = [
+    path("n/<int:night_id>/chip-values/", chip_views.values, name="chip_values"),
     path("g/<int:group_id>/archive/", views.group_archive, name="group_archive"),
     path("g/<int:group_id>/restore/", views.group_restore, name="group_restore"),
     path("g/<int:group_id>/delete/", views.group_delete, name="group_delete"),

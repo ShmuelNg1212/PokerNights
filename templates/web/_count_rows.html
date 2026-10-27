@@ -41,11 +41,14 @@
         <span class="count-outcome">{% if line.status == 'ready' %}<small>Counted</small><span class="num">{{ line.count.amount|amount:unit }}</span>{% elif line.entered %}<small>Entered</small><span class="num">{{ line.entered.amount|amount:unit }}</span>{% else %}<small>Awaiting count</small>{% endif %}</span>
         {% endif %}
       </div>
+      {% if me.is_host %}{% include "web/_chip_count_option.html" %}{% endif %}
       <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
         <summary class="small">Details</summary><div class="sheet-content">
         <p class="sheet-summary">Bought in <strong>{{ line.buy_in_total|amount:unit }}</strong>{% if line.has_cash_out %} · cashed out <strong>{{ line.cashed_out|amount:unit }}</strong>{% endif %}{% if line.status == 'ready' %} · counted <strong>{{ line.count.amount|amount:unit }}</strong>{% endif %}</p>
         <p class="muted small">{% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}{% if line.play_seconds is not None %} · Played {% clock_value line.play_seconds line.clock_running %}{% endif %}</p>
         {% include "web/_player_actions.html" %}
+        {% include "ledger/_chip_breakdown.html" with record=line.count suffix="confirmed" %}
+        {% if not line.count %}{% include "ledger/_chip_breakdown.html" with record=line.entered suffix="entered" %}{% endif %}
         </div>
       </details>
     </li>{% endwith %}

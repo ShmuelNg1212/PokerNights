@@ -26,6 +26,7 @@ from games.models import GameNight, GameSession, Participant, SettingsPreset, Ta
 from groups import services as groups
 from groups.models import Invite, Member
 from ledger import money
+from ledger import chip_views
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import BalanceAdjustment, BuyIn, CashOut
@@ -271,6 +272,7 @@ def session_context(session, me, *, later=UNSET) -> dict:
         # A player types their own final count while the set is counting up; the host confirms it.
         "can_enter_count": settings.PLAYER_ENTRIES and not me.is_host and session.state == GameSession.State.RECONCILIATION,
         "any_entered": any(line.entered for line in summary.lines),
+        "chip_values": chip_views.denominations(session.night),
         "prep": prep.states(session, summary, me),
     }
     later = later_set(session) if later is UNSET else later
@@ -289,6 +291,11 @@ def session_context(session, me, *, later=UNSET) -> dict:
         context["can_seat_late"] = live and me.is_host and session.state == "running" and seating is not None and seating.state == "seated"
     played, running_ids = clock.player_clocks(session)
     for line in summary.lines:
+        if (session.night.chip_values and session.state == GameSession.State.RECONCILIATION
+                and line.has_money and not line.is_cashed_out and not session.night.is_archived
+                and (me.is_host or context["can_enter_count"] and line.participant.member_id == me.pk
+                     and line.count is None)):
+            line.chip_form = chip_views.form_context(session, line.participant, me)
         line.play_seconds = played.get(line.participant.pk)
         line.clock_running = line.participant.pk in running_ids
         # The row offers "Cash out" only where the ledger would accept it mid-set.
@@ -351,6 +358,11 @@ def session(request, session_id):
     session, me = session_for(request.user, session_id)
     context = session_context(session, shown_as(me, session.night))
     context["real_host"] = me.is_host
+    chip_drafts = request.session.pop("chip_count_drafts", {})
+    for line in context["summary"].lines:
+        draft = chip_drafts.get(str(line.participant.pk))
+        if draft and getattr(line, "chip_form", None):
+            line.chip_form = chip_views.form_context(session, line.participant, me, draft)
     # A notice that this player was put in the set has done its job once they open it.
     notify.mark_seen(request.user, session.pk)
     # Players just added on Add players are marked once (static/js/flow.js).
@@ -472,6 +484,7 @@ def night(request, night_id):
         one.play_seconds, one.clock_running = timers.get(one.pk, (None, False))
     timed = [one.play_seconds for one in sets if one.play_seconds is not None]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context["chip_values"] = chip_views.denominations(night)
     context["total_play_seconds"] = sum(timed) if timed else None
     context["total_rake"] = ledger_queries.rake_total([s.pk for s in sets])
     State = GameSession.State

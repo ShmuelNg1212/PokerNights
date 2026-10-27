@@ -26,7 +26,7 @@
     <tbody>
       {% for line in ready %}
       <tr>
-        <th scope="row"><span class="review-player">{% player_token line.participant participants %}<span>{{ line.participant.member.display_name }}</span></span><input type="hidden" name="count_id" value="{{ line.count.pk }}"></th>
+        <th scope="row"><span class="review-player">{% player_token line.participant participants %}<span>{{ line.participant.member.display_name }}</span></span>{% include "ledger/_chip_breakdown.html" with record=line.count suffix="review" %}<input type="hidden" name="count_id" value="{{ line.count.pk }}"></th>
         <td class="num amount">{{ line.count.amount|amount:unit }}</td>
       </tr>
       {% endfor %}

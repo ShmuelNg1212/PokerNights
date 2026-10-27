@@ -569,6 +569,7 @@ def stamp_from(night, sets, plan_id, replaced, payments, carried=0, rsvp=None) -
 
     seen = (
         night.status, night.archived_at is not None,
+        night.chip_values_revision, night.chip_values_locked_at is not None,
         [(pk, state, finalized_at.isoformat() if finalized_at else None) for pk, state, finalized_at in sets],
         plan_id, replaced, tuple(payments),
     )

@@ -17,9 +17,12 @@
     <button type="submit" class="btn btn-primary">Send to host</button>
   </form>
   <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.</p>
+  {% include "web/_chip_count_option.html" %}
+  {% include "ledger/_chip_breakdown.html" with record=line.entered suffix="own-entered" %}
   {% if line.entered %}</details>{% endif %}
   {% elif line.status == 'ready' %}
   <p class="own-count-state">{% if not line.entry %}The host counted <strong class="num">{{ line.count.amount|amount:unit }}</strong> for you.{% elif line.entry.amount == line.count.amount %}The host confirmed your count.{% else %}The host confirmed {{ line.count.amount|amount:unit }}. You entered {{ line.entry.amount|amount:unit }}.{% endif %}</p>
+  {% include "ledger/_chip_breakdown.html" with record=line.count suffix="own-confirmed" %}
   {% else %}
   <p class="own-count-state">You are cashed out: <strong class="num">{{ line.cashed_out|amount:unit }}</strong>.</p>
   {% endif %}

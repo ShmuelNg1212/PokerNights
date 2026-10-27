@@ -1,0 +1,11 @@
+{% load money_tags %}
+{% if chip_values or me.is_host and not night.is_closed and not night.is_archived %}
+<section class="panel session-chip-values" aria-labelledby="chip-values-title">
+  <h2 id="chip-values-title">Chip values</h2>
+  {% if chip_values %}
+  <dl class="chip-value-reference">{% for row in chip_values %}<div><dt><span class="denomination-swatch denomination-{{ row.colour }}" aria-hidden="true"></span><span>{{ row.name }}{% if row.label %}<small class="muted">{{ row.colour_name }}</small>{% endif %}</span></dt><dd class="num">{{ row.value|amount:unit }}</dd></div>{% endfor %}</dl>
+  <p class="small muted">Every set uses these values.{% if night.chip_values_locked_at %} Locked after the first chip-based count.{% endif %}</p>
+  {% else %}<p class="muted small">Count ending stacks by colour. Set the values once for this session.</p>{% endif %}
+  {% if me.is_host and not night.is_closed and not night.is_archived and not night.chip_values_locked_at %}<a class="btn btn-block" href="{% url 'chip_values' night.pk %}">{% if chip_values %}Edit chip values{% else %}Set chip values{% endif %}</a>{% endif %}
+</section>
+{% endif %}

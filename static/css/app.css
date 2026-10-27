@@ -2212,3 +2212,56 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .table-pay-parties select { width: 100%; }
 .leaver-pay { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--rule); }
 .leaver-pay > p { margin: 0 0 var(--s-2); }
+
+/* Physical chip colours are session data. Names and values always accompany the swatch. */
+.denomination-swatch { display: inline-block; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bone-dim); box-shadow: inset 0 0 0 3px var(--ground); }
+.denomination-white { background: #ece8df; } .denomination-red { background: #b6444d; }
+.denomination-blue { background: #467cc2; } .denomination-green { background: #469764; }
+.denomination-black { background: #333333; } .denomination-yellow { background: #e4bd48; }
+.denomination-purple { background: #9361b1; } .denomination-orange { background: #d48d48; }
+.denomination-pink { background: #dd86a1; } .denomination-grey { background: #b4b1a6; }
+.denomination-brown { background: #916743; } .denomination-teal { background: #70b9bd; }
+.session-chip-values { margin-top: var(--s-4); }
+.chip-value-reference { margin: var(--s-3) 0; }
+.chip-value-reference > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
+.chip-value-reference dt { display: flex; align-items: center; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
+.chip-value-reference dt small { display: block; }
+.chip-value-reference dd { margin: 0; flex-shrink: 0; }
+.chip-value-fields { border: 0; padding: 0; min-width: 0; }
+.chip-value-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; border: 0; padding: 16px; margin: 0 0 12px; background: var(--rail); border-radius: var(--radius); min-width: 0; }
+.chip-value-row[hidden] { display: none; }
+.chip-value-row .field { min-width: 0; margin: 0; }
+.chip-value-row input:not([type=checkbox]), .chip-value-row select { width: 100%; min-width: 0; font-size: 16px; }
+.chip-colour-select { display: flex; align-items: center; gap: 8px; }
+.chip-colour-select .denomination-swatch { flex-basis: 20px; height: 20px; width: 20px; }
+.chip-label-field { grid-column: 1 / -1; }
+.chip-remove { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; grid-column: 1 / -1; justify-self: start; }
+.chip-remove input { width: 20px; height: 20px; }
+.chip-values-form [data-chip-add] { margin: 4px 0 12px; }
+.chip-count-intro { margin: 0 0 16px; color: var(--bone-dim); }
+.chip-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px; column-gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+.chip-quantity-row label { display: flex; align-items: center; gap: 12px; min-height: 48px; min-width: 0; margin: 0; cursor: pointer; }
+.chip-denomination { min-width: 0; overflow-wrap: anywhere; }
+.chip-denomination strong, .chip-denomination .small { display: block; }
+.chip-quantity-row input { width: 100%; min-width: 0; height: 48px; text-align: right; font-size: 20px; font-variant-numeric: tabular-nums; }
+.chip-subtotal { grid-column: 1 / -1; justify-self: end; margin-top: 4px; overflow-wrap: anywhere; }
+.chip-count-total { padding: 20px 0 8px; display: flex; flex-direction: column; gap: 4px; }
+.chip-count-total output { display: block; font-size: clamp(28px, 8vw, 40px); font-weight: 750; font-stretch: 80%; line-height: 1.2; overflow-wrap: anywhere; }
+.chip-count-actions { display: grid; gap: 4px; margin-top: 16px; }
+.chip-count-option { margin: 8px 0 0; }
+.count-row > .chip-count-option { display: flex; justify-content: flex-end; }
+.chip-count-opener { display: none; }
+.sheets-enabled .chip-count-opener { display: inline-flex !important; }
+.sheets-enabled .chip-count-fallback { display: none; }
+.chip-breakdown { margin-top: 12px; font-weight: 500; }
+.chip-breakdown > summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; text-decoration: underline; text-underline-offset: .2em; }
+.chip-breakdown dl { margin: 0; }
+.chip-breakdown dl > div { display: flex; gap: 12px; justify-content: space-between; padding: 8px 0; }
+.chip-breakdown dt { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+.chip-breakdown .denomination-swatch { width: 16px; height: 16px; flex-basis: 16px; border-width: 1px; box-shadow: none; }
+.chip-breakdown dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.chip-count-form input[aria-invalid=true] { border-color: var(--down); }
+@media (max-width: 380px) {
+  .chip-value-row { grid-template-columns: minmax(0, 1fr); }
+  .chip-colour-field, .chip-value-field { grid-column: 1 / -1; }
+}
