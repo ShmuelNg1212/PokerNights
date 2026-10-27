@@ -1,5 +1,15 @@
 # Browser checks
 
+## Session chip values
+
+Use a fresh temporary database for this flow. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py` with that database selected. Start the local server with the same database. Run `node web/tests/browser/chip_values.mjs`.
+
+The fixture creates synthetic host `hana` and player `ben`. It writes `/private/tmp/pn-chip-manifest.json`. The probe performs real setup, count, confirmation and cash-out writes. It consumes its fixtures. Reset the temporary database before a repeat.
+
+The 34 checks cover session isolation, shared sets, both units, exact previews, invalid quantities, draft retention, stale revisions, focus, reduced motion and forms without JavaScript. Captures cover setup and count sheets at 320, 390 and 1280 px. Reports are in `/private/tmp/pn-chip-review/`, or `PN_REVIEW_DIR`. Real-phone keyboard and touch checks remain in TODO.md.
+
+## Existing flow checks
+
 Use a **fresh temporary database**, never the development database. The fixture creates synthetic host `hana`, player `ben`, and five sets. These dependency-free Node scripts drive installed Chrome through CDP. The scripts close only their own browser process.
 
 From the repository root, with the existing Python environment:

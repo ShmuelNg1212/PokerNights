@@ -18,6 +18,8 @@ Record buy-ins and cash-outs, check that the books balance, and calculate who pa
 
 The approved brief describes a dim room, late at night, one hand free and short glances between hands. A session contains one or more sets. Each set has its own money records, counts and timer. Settle-up happens at the end of the session.
 
+An optional chip calculator reduces arithmetic at count-up. The host assigns colours and values per session. Every set shares them. Players and hosts enter whole quantities; the server calculates the amount and saves its breakdown. Values lock after the first chip-based count is submitted. The existing host confirmation and cash-out steps still apply. Values use the session's unit, not a chips-to-pesos exchange rate. See [ADR 0004](doc/adr/0004-session-chip-values.md).
+
 ## Capabilities and Constraints
 
 Django templates, plain CSS and small vanilla JavaScript modules. Integer money only: centavos in pesos games, whole chips in chips games. Chips have no peso value. Server-confirmed figures are authoritative. Count-up also shows an explicitly labelled local preview while the host types, to compare remaining stacks plus cash-outs with buy-ins before recording cash-outs. Hosts can add existing roster players or create a no-login roster player from an ongoing set; late buy-ins remain separate. Accounting and permissions stay unchanged in the redesign. Since 2026-10-11 a host closing a session can carry earlier unpaid transfers between two of its players into that session's settle-up; they are netted with its results into one list. Seating is an optional seat draw before a set starts (2026-10-11): the server draws the dealer and the order around the table, and every phone plays it back.

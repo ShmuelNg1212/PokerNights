@@ -11,7 +11,7 @@ One Django 6.1 project with server-rendered templates, one stylesheet and small 
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `notify` | Table alerts (2026-10-15): `Notice` (a player was put in a set by someone else; one per player and set) and `PushSubscription` (a phone that takes notifications). Sends Web Push after the commit | `services.py`, `push.py`, `views.py` |
 | `groups` | `GameGroup`, `GroupRakeAccount`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
-| `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, the lifecycle, the clock | `services.py`, `access.py`, `forms.py` |
+| `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, session chip values, the lifecycle, the clock | `services.py`, `access.py`, `forms.py`, `chips.py` |
 | `ledger` | `BuyIn`, `RakeEntry`, `CountEntry` (a player's own statement of their final count, never a count), `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()` for a set, `close_night()` for a session, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
 | `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. Its one write is through another app's service: opening a set marks the viewer's notice seen (`notify.services.mark_seen`) | `views.py` |
@@ -25,7 +25,7 @@ Dependencies point one way: `accounts → groups → games → ledger → settle
 ## Rules that the code follows
 
 1. Only `services.py` functions write. Views call services.
-2. Each write to a session opens a transaction and locks the session row (`games.services.lock_session`, `select_for_update`). Writes to one session run one at a time.
+2. Each session write opens a transaction. A set write uses `games.services.lock_session()`: lock its parent `GameNight` first, then its `GameSession` row with `select_for_update`. Session-wide writes use `lock_night()` first. This lock order prevents an assignment edit and a count submission from taking the same locks in opposite orders. Writes in one session run one at a time.
 3. Each write that a form starts carries a `request_id` (a hidden field from the `{% request_id_field %}` tag). A unique constraint and a check under the lock make a repeated submission a no-op.
 4. Money records are never updated or deleted. A correction is a reversal row with a reason.
 5. Each write records an `AuditEvent` in the same transaction and increments `GameSession.version`.
@@ -58,7 +58,7 @@ AuditEvent (group_id, session_id as plain integers)
 ## Sessions and sets
 
 - **Naming:** the screen word "session" is the `GameNight` model. The screen word "set" is the `GameSession` model, which existed first. See [footguns/session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md).
-- `GameNight` holds table, date, location, game type, unit and status (`open`, `closed`). `GameSession.night` and `set_number` place a set in it.
+- `GameNight` holds table, date, location, game type, unit, chip values and status (`open`, `closed`). `GameSession.night` and `set_number` place a set in it.
 - **One set in play:** a partial unique constraint allows one set per session in `setup`, `open` or `running`. `games.services.start_next_set()` checks the same under a lock on the session row, copies seats and the latest settings, and carries over participants with status `joined`. It copies no money.
 - **Resume:** a set cannot resume once a later set of its session exists.
 - **Settle-up:** `settlement.services.finalize()` freezes one set's results and writes no transfers. `close_night()` requires every set to be finalized or canceled, sums each member's results over the finalized sets, runs the settle-up algorithm, and writes one `SettlementPlan` for the session. `Transfer` and `Payment` name members, because a player has one participant row per set.
@@ -90,6 +90,20 @@ AuditEvent (group_id, session_id as plain integers)
 - Reversing a batch cash-out voids its count. Resuming play voids counts that are not cashed out.
 - The finalization gate: each player with a buy-in needs a final cash-out, and the totals must match or be overridden.
 
+### Session chip values
+
+`GameNight.chip_values` holds one optional denomination table for all its sets. Each row has a fixed colour ID, an optional label and a positive integer value in the session unit. A new session starts without assignments. Colours have no assumed value. This is an input method for stack values, not an exchange rate.
+
+`games.services.set_chip_values()` replaces the table under the session lock. It checks the posted `chip_values_revision`. Each successful save increments that revision and creates a `ChipValueChange` row. Unique constraints on the session and request ID make prior saves safe to repeat. The service audits the save and increments every set's live version. The session page's stamp includes the revision and lock state.
+
+`ledger.services.enter_count()` and `confirm_count()` accept denomination IDs and whole quantities as an alternative to an amount. Both use `games.chips.calculate()` under the same parent-first lock. The server checks the revision and calculates the total with integer arithmetic. It rejects unknown or repeated IDs, fractions, negative quantities and totals above the amount limit. Blank quantities mean zero only inside an explicitly submitted chip form. An untouched form needs the separate Empty stack action.
+
+A successful chip-based submission sets `GameNight.chip_values_locked_at`, including a player's unconfirmed entry. A refused submission does not lock the table. Clearing counts or reopening the session does not unlock it. This prevents later edits from changing the meaning of another player's count. A configured table also blocks a unit change.
+
+`CountEntry.chip_breakdown` and `FinalCount.chip_breakdown` retain the denominations, quantities and subtotals used for that record. Corrections create new count versions. Accepting a player's entry copies its breakdown. A direct amount replacement has no unrelated chip breakdown. Host confirmation, cash-out and balance checks use the existing count workflow.
+
+`games/chip_views.py` adapts the setup form. `ledger/chip_views.py` adapts the chip-count forms. Both keep their writes in services. The native pages work without JavaScript. `static/js/denominations.js` adds exact BigInt previews and saves each draft's revision with its quantities across live redraws. A stale draft shows Recount needed and disables submission until the person loads current values and recounts. The server checks the revision again when the form is sent.
+
 ## Adding players
 
 - **One player:** `games.services.add_participant()`. A player joins for themselves, or a host adds one member. The unique `(session, member)` constraint makes a repeat a no-op.
@@ -105,7 +119,7 @@ AuditEvent (group_id, session_id as plain integers)
 - A chips game has **no peso value**. Nothing in the code converts chips to pesos. There is no chip rate and no "chips per buy-in".
 - `ledger/money.py` is the only place that parses and formats: `parse_amount(text, unit)` and `format_amount(value, unit)` give `₱1,600` or `1,600 chips`. Chip input must be a whole number. Templates use `{{ value|amount:unit }}`.
 - A buy-in must be between the minimum and the maximum of the settings in force.
-- The unit can change only while the game has no accepted buy-in or cash-out. `games.services.has_money()` asks the checks in `SESSION_MONEY_CHECKS`; `ledger` registers one at start-up. The same check blocks cancel.
+- The unit can change only while the game has no accepted buy-in or cash-out and the session has no configured chip values. `games.services.has_money()` asks the money checks in `SESSION_MONEY_CHECKS`; `ledger` registers one at start-up. The money check also blocks cancel.
 - `Finalization` and `PlayerResult` store the unit, so later statistics never add pesos to chips.
 - Totals are calculated on demand in `ledger/queries.py`. Nothing is stored until finalization.
 

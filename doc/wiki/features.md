@@ -24,7 +24,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 - In a pesos game, each figure is a peso amount: buy-ins, cash-outs, results and transfers.
 - In a chips game, each figure is a chip count, shown as "1,600 chips". A chips game has no peso value. No ₱ appears on its screens, and its transfers are in chips.
 - The app does not convert between chips and pesos.
-- The unit of a game cannot change after the first accepted buy-in.
+- The unit of a game cannot change after the first accepted buy-in. It also cannot change once the session has chip values.
 
 ## Sessions and sets
 
@@ -44,7 +44,7 @@ What the app does today (Stage 1). Items that are planned but not built are list
 ## End of a set
 
 1. **End play.** The set's timer and every player's time stop at one moment.
-2. **Confirm final counts.** The host types what each player has left, for as many players as are counted, then confirms. Each "Confirm count" button and "Confirm all counts" confirm every typed count at once. 0 is a valid count. An empty field is skipped and stays "Awaiting count"; it is never treated as zero. If one value is refused, nothing is saved and the typed values stay in their fields.
+2. **Confirm final counts.** The host enters what each player has left, then confirms. Direct amount fields can confirm several players at once. **Count by chips** calculates one player's stack from the session's chip values (see below). 0 is a valid count. An empty direct amount field is skipped and stays "Awaiting count"; it is never treated as zero. If a direct amount is refused, no count in that submission is saved and the typed values stay in their fields.
 The live stack counter adds remaining counts, accepted cash-outs and collected rake, then compares the sum with gross buy-ins. The host preview updates while typing; a valid draft replaces a saved count. A blank field uses its saved count, or stays uncounted if none exists. Zero is valid. Missing players and invalid entries prevent a complete match. Final-cashed-out players contribute only through cash-outs, so their saved counts are not added twice. Overrides stay outside this raw stack check. Unsaved totals are labelled Preview; confirmation and cash-out remain separate. Players and JavaScript-free views see confirmed totals only.
 
 3. **Statuses.** Each player is "Awaiting count", "Ready to cash out" or "Cashed out".
@@ -53,6 +53,20 @@ The live stack counter adds remaining counts, accepted cash-outs and collected r
 6. **Finalize the set.** Needs a final cash-out for every player and balanced books (or an override). This freezes the set's results. It lists no transfers.
 
 The individual cash-out still exists: tap the row's Cash out button during play (for early departures), or expand "Details" while counting. Without JavaScript, expand the player row’s Cash out form.
+
+## Session chip values (2026-10-28)
+
+[Plan](../plan/1793117581_session_chip_values.md).
+
+- **Setup.** On the session page, a host selects **Set chip values**. Add 1 to 12 different colours. Give each colour a positive value and an optional label of up to 40 characters. Values use the session's unit: pesos or whole chip units. All sets in that session share the table. Each new session starts without assignments.
+- **Read and edit.** All members can read the saved chip values on the session page. A host can edit them until the first successful chip-based count is sent or confirmed. A player's unconfirmed submission also locks the values. Clearing a count or reopening a set does not unlock them. A session with chip values cannot change its unit.
+- **Count a stack.** At count-up, a host selects **Count by chips** for one player. A player with a login has the same option under **Your count**. Its sheet shows each colour and written label, the value of one chip, a quantity field and a subtotal. The total updates as a labelled preview. Enter whole quantities. Leave unused colours blank.
+- **An empty stack.** Select **Empty stack** to submit zero. An untouched form is not a zero count.
+- **Save and confirm.** The server calculates the total with exact integer arithmetic. It saves the denominations and quantities with the count. The host's confirmation keeps a player's submitted breakdown. **Chip breakdown** opens the saved calculation in count details and cash-out review. A direct amount correction does not inherit an earlier breakdown.
+- **Existing flow.** Direct amount entry stays available. A player's count still needs host confirmation. Confirmation, cash-out and the balance check remain separate steps. Chip values are an input method in the session's unit. They do not create a chips-to-pesos exchange rate.
+- **Changed values.** Typed quantities survive live updates and refused submissions. If the assignments change before submission, the draft shows **Recount needed** and blocks sending. Select **Load current values and recount** before continuing. The server also refuses a stale revision.
+- **Without JavaScript.** Setup, adding a colour and counting use ordinary forms. The server calculates the total when the count is sent. On phones, quantity fields use the numeric keyboard. Sheet movement and added-row movement stop under reduced motion.
+- **Checks.** `web/tests/browser/chip_values.mjs` passed 34 checks. The checks cover signed-in setup, player submission, host confirmation, cash-out, session isolation, shared sets, stale drafts, native forms and layouts at 320, 390 and 1280 px. The full suite passed 1,429 tests on PostgreSQL and 1,429 on SQLite with 17 PostgreSQL-only skips.
 
 ## A game night (one set)
 

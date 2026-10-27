@@ -1,6 +1,6 @@
 # Poker Home Game App (Cash Games): Project Spec
 
-Updated 2026-10-12 to match the app as built. The earlier text asked for chip counts with a chip-to-cash rate and listed five open decisions; both are replaced below. The history of each change is in `doc/study/` and `doc/plan/`.
+Updated 2026-10-28 to match the app as built. Counts can use optional session chip denominations. There is no chip-to-cash exchange rate. The history of each change is in `doc/study/` and `doc/plan/`.
 
 ## Overview
 
@@ -49,9 +49,13 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - **RSVP** ([ADR 0003](../adr/0003-rsvp-with-a-waitlist.md)): a host announces a session with an optional start time and a seat limit (the table's seats by default). Players answer In or Out. Players past the limit wait in line; when a seat opens, the first in line gets it and is told. A host can answer for any player, seat a waiting player over the limit, or mark a player out. Answers count until set 1 is in play. Set 1's Add players starts with the confirmed players ticked.
 
 ### 2. Cash-outs and balance check
-- A cash-out is typed as an amount in the session's unit. There is no chip count and no chip-to-cash rate.
+- A cash-out is recorded as an amount in the session's unit. Direct amount entry remains available.
 - A player who leaves during play is cashed out by the host. Players leave at different times.
 - At the end of a set the host ends play and counts up: one final count per player still at the table. A player with a login can send their own count; the host confirms it or types another, and only a confirmed count is cashed out.
+- **Chip values (optional):** a host assigns a positive value to each of 1 to 12 different chip colours, with an optional label. The table belongs to the session and applies to all its sets. A new session starts without assignments. It does not copy values from another session ([ADR 0004](../adr/0004-session-chip-values.md)).
+- Chip values use the session's unit: centavos in pesos games or whole chip units in chips games. They are denominations, not an exchange rate. The session's unit cannot change after chip values are configured.
+- A host or player can enter whole quantities by colour. The server calculates the total with integer arithmetic. The count keeps its original values, quantities and subtotals. Host confirmation and the balance check still apply. An untouched form is not a zero stack; zero must be entered or sent with **Empty stack**.
+- Assignments lock after the first chip-based count is submitted, including a player's count that awaits host confirmation. Clearing a count or reopening a set or session does not unlock them. Before that, only a host can edit them. A form with an old assignment revision is refused.
 - **Balance check:** remaining stacks plus cash-outs plus collected rake must equal total bought in. If not, show the discrepancy amount and its direction (short or over) so the table can find the error. Finalizing is blocked until the books balance, or the host overrides with a note and assigns the difference to one named player or as an equal share.
 - Finalizing a set asks for confirmation once.
 - A host can reopen a finalized set, or a closed session, with a reason that everyone sees. Earlier results are kept and marked as replaced. A session with a transfer marked paid is not reopened until the mark is removed.

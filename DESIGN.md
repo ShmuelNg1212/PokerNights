@@ -119,6 +119,16 @@ components:
 
 # Design System: PokerNights
 
+## 2026-10-28: Session chip values
+
+Mode: Operate, inside the Rack. [Plan](doc/plan/1793117581_session_chip_values.md).
+
+- **Session page.** Chip values is a neutral panel under the preparation controls. Each row pairs a physical chip swatch and written name with its value. The host's Set chip values or Edit chip values opens a focused page. After first use the panel explains the lock.
+- **Setup.** Each denomination has Colour, Value, an optional Label and Remove. Add a colour preserves other rows and focuses the new colour field. A new row uses the existing `shift` preset: 8 px and opacity, with no money animation. At 380 px and below, fields stack so colour names stay readable. Inputs use at least 16 px text and 48 px targets. Remove uses a labelled checkbox and works without JavaScript.
+- **Count-up.** Count by chips opens the existing bottom sheet for one named player. The native link opens the same task on a page. Each row shows colour, written label, value, quantity and subtotal. The total is labelled Preview. Blank forms show a dash. Confirm count or Send to host is the primary action. Empty stack is a separate secondary action.
+- **Evidence and recovery.** Chip breakdown is a disclosure in count details and cash-out review. A stale draft shows Recount needed and a Load current values and recount link. Its original revision stays with its quantities through live redraws. Failed writes preserve the inputs. A successful write closes the sheet through the shared motion system.
+- **Motion.** Reuse the existing sheet, press, shift and accepted-change feedback. Figures change directly. Reduced motion disables movement. No new curve, font or status colour is introduced. Physical chip swatches are data, separate from player identity and financial status.
+
 ## Overview
 
 **Creative North Star: "The Rack"**
