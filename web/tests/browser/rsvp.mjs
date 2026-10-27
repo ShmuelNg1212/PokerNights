@@ -22,7 +22,7 @@ async function user(name,{width=390,height=844,scripts=true}={}){const {browserC
  return {s,js,go,shot,width};}
 const results=[];function check(name,ok,detail){results.push({name,ok:!!ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail===undefined?'':JSON.stringify(detail)}`)}
 const fits=w=>`document.documentElement.scrollWidth<=${w}`;
-const targets=sel=>`[...document.querySelectorAll('${sel} button, ${sel} summary.btn, ${sel} input:not([type=hidden]), ${sel} .rsvp-more > summary')].filter(e=>e.offsetParent).map(e=>Math.round(e.getBoundingClientRect().height))`;
+const targets=sel=>`[...document.querySelectorAll('${sel} button, ${sel} summary.btn, ${sel} .rsvp-pill, ${sel} input:not([type=hidden]), ${sel} .rsvp-more > summary')].filter(e=>e.offsetParent).map(e=>Math.round(e.getBoundingClientRect().height))`;
 // Contrast of an element's text on the first opaque background behind it.
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d',{willReadFrequently:true});const rgb=v=>{c.clearRect(0,0,1,1);c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data]};
  const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};
@@ -61,12 +61,24 @@ check('Who\'s coming: three coming, one waiting numbered, Can\'t make it and Not
 check('a roster player answered by the host says so',await H.js(`/answered by hana/.test(document.querySelector('.rsvp').textContent)`));
 check('host controls are 48px',(await H.js(targets('.rsvp'))).every(h=>h>=48),await H.js(targets('.rsvp')));
 await H.js(`document.querySelector('.rsvp').scrollIntoView()`);await H.shot('rsvp-coming-host-390',true);
+// A host's row opens its confirmation in place: the pill keeps its place and reads Cancel.
+const row=n=>`[...document.querySelectorAll('.rsvp-row')].find(r=>r.querySelector('strong').textContent===${JSON.stringify(n)})`;
+const pillAt=n=>H.js(`(()=>{const b=${row(n)}.querySelector('.rsvp-pill').getBoundingClientRect();return Math.round(b.left)+','+Math.round(b.top+scrollY)})()`);
+const closedAt=await pillAt('Ana');await H.js(`${row("Ana")}.querySelector('summary').click()`);await sleep(900);
+check('open: the pill stays where it was and reads Cancel; one button confirms',await pillAt('Ana')===closedAt&&await H.js(`(()=>{const r=${row("Ana")};return r.querySelector('.rsvp-pill').innerText.trim()==='Cancel'&&[...r.querySelectorAll('button')].filter(b=>b.offsetParent).map(b=>b.textContent.trim()).join('|')==='Mark Ana out'})()`),[closedAt,await pillAt('Ana')]);
+const styled=await H.js(`[...document.querySelectorAll('.rsvp [style]')].map(e=>e.className+' '+e.getAttribute('style')).filter(t=>!/ $/.test(t))`);check('open: nothing is left moving or styled inline',!styled.length,styled);
+await H.js(`document.querySelector('.rsvp').scrollIntoView()`);await H.shot('rsvp-confirm-host-390',true);
+await H.js(`${row("Dina")}.querySelector('summary').click()`);await sleep(400);
+check('one confirmation at a time',await H.js(`[...document.querySelectorAll('.rsvp-host[open]')].map(d=>d.closest('li').dataset.person).length===1&&${row("Dina")}.querySelector('.rsvp-host').open`));
+await H.js(`${row("Dina")}.querySelector('summary').focus()`);await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27},H.s);await sleep(300);
+check('Escape closes it and keeps focus on the row',await H.js(`!document.querySelector('.rsvp-host[open]')&&document.activeElement===${row("Dina")}.querySelector('summary')`));
 // Seats refused under the count, keeping what was typed.
 await H.js(`(()=>{const f=document.querySelector('.rsvp-seats');f.querySelector('input[name=seat_limit]').value='2';f.querySelector('button').click()})()`);await sleep(1500);
 check('lowering under the count is refused with the reason',await H.js(`/3 players are coming\\. Mark someone out first\\./.test(document.documentElement.innerHTML)&&document.querySelector('.rsvp-seats input[name=seat_limit]').value==='2'`),await H.js(`[document.querySelector('.rsvp-seats input[name=seat_limit]').value,location.href,/3 players are coming/.test(document.documentElement.innerHTML)]`));
 // Seat now from the waitlist.
-await H.js(`(()=>{const d=document.querySelector('.rsvp-line .rsvp-host');d.open=true;d.querySelector('button').click()})()`);await sleep(1500);
+await H.js(`window.__stay=1;(()=>{const d=document.querySelector('.rsvp-line .rsvp-host');d.open=true;d.querySelector('button').click()})()`);await sleep(1500);
 check('Seat now seats Ben and raises the seats to 4',await H.js(`/4 of 4/.test(document.querySelector('.rsvp-count').textContent)&&!document.querySelector('.rsvp-line')`),await H.js(`document.querySelector('.rsvp-count').textContent`));
+check('the answer updates in place: no reload, the row closed and marked',await H.js(`window.__stay===1&&!document.querySelector('.rsvp-host[open]')&&${row("Ben")}.classList.contains('just-changed')`));
 // Set 1's add-players.
 await H.go('/s/'+M.friday_set+'/players/add-several/');
 check('add-players ticks the four coming and lists them first',await H.js(`(()=>{const rows=[...document.querySelectorAll('[data-pick-row]')];const ticked=rows.filter(r=>r.querySelector('input').checked);return ticked.length===4&&rows.slice(0,4).every(r=>r.querySelector('input').checked)&&/Said they're coming/.test(rows[0].textContent)})()`));

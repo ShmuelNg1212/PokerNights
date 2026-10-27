@@ -1,0 +1,5 @@
+{% load table_tags %}{# The person on an RSVP row: place in line, chip, name and who answered. #}
+{% if waiting %}<span class="rsvp-place" aria-label="Number {{ row.place }} in line">{{ row.place }}</span>{% endif %}
+    {% member_token person board.people %}
+    <span class="grow"><strong>{{ person.display_name }}</strong>{% if person.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
+      {% if row.answered_by_name %}<br><span class="small muted">answered by {{ row.answered_by_name }}</span>{% endif %}</span>

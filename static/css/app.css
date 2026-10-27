@@ -655,17 +655,33 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 /* A row is the player, with the host's action at its right; an open action takes the full width under it. */
 .rsvp-row { display:flex; flex-wrap:wrap; align-items:center; gap:0 var(--s-2); padding:var(--s-1) 0; }
 .rsvp-row + .rsvp-row { border-top:1px solid var(--rule); }
-.rsvp-row > .row { flex:1 1 0; min-width:0; min-height:48px; flex-wrap:nowrap; align-items:center; gap:var(--s-3); }
-.rsvp-row > .row > .chip { flex:none; }
-.rsvp-host { flex:none; }
-.rsvp-host[open] { flex-basis:100%; }
+.rsvp-row .row { flex:1 1 0; min-width:0; min-height:48px; flex-wrap:nowrap; align-items:center; gap:var(--s-3); }
+.rsvp-row .row > .chip { flex:none; }
+.rsvp-host { flex:1 1 100%; min-width:0; }
 .rsvp-row .grow { min-width:0; overflow-wrap:anywhere; }
 .rsvp-row.is-mine { background:var(--rail-2); border-radius:var(--r-row); padding-inline:var(--s-2); }
 .rsvp-place { flex:none; min-width:1.5ch; color:var(--brass); font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
-.rsvp-host > summary { min-height:48px; list-style:none; }
+/* The host's row is the summary. Its pill stays at the end of the row and turns from the action
+   into Cancel while the confirmation is open: both words share one cell, so the pill keeps its width. */
+.rsvp-host > summary { display:flex; cursor:pointer; font-weight:inherit; color:inherit; list-style:none; border-radius:var(--r-row); -webkit-tap-highlight-color:transparent; }
 .rsvp-host > summary::-webkit-details-marker { display:none; }
-.rsvp-host form { display:grid; gap:var(--s-2); justify-items:start; padding:var(--s-1) 0 var(--s-2); }
-.rsvp-host form p { margin:0; }
+.rsvp-host > summary:focus-visible { outline:3px solid var(--brass); outline-offset:2px; }
+.rsvp-pill { flex:none; display:inline-grid; justify-items:center; overflow:hidden; }
+.rsvp-pill > span { grid-area:1 / 1; transition:opacity 120ms var(--ease-in), transform var(--t-fast) var(--ease-out), visibility 0s 120ms; }
+.rsvp-pill-undo, .rsvp-host[open] .rsvp-pill-do { opacity:0; visibility:hidden; transform:translateY(80%); }
+.rsvp-host[open] .rsvp-pill-do { transform:translateY(-80%); }
+.rsvp-host[open] .rsvp-pill-undo { opacity:1; visibility:visible; transform:none; transition-delay:0s; transition-timing-function:var(--ease-out); }
+.rsvp-host[open] .rsvp-pill { background:var(--rail-2); }
+@media (hover: hover) { .rsvp-host > summary:hover .rsvp-pill { background:var(--rail-2); } }
+.rsvp-confirm { margin:var(--s-1) 0 var(--s-2); padding:var(--s-3); border-radius:var(--r-row); background:var(--rail-2); }
+.rsvp-row.is-mine .rsvp-confirm { background:var(--rail); }
+.rsvp-confirm form { display:grid; gap:var(--s-3); margin:0; }
+.rsvp-confirm form p { margin:0; }
+/* The person just answered for glides over the rows between, so the mark is opaque. */
+.rsvp-row.just-changed { position:relative; z-index:1; border-radius:var(--r-row); background-color:color-mix(in oklch, var(--brass) 12%, var(--surface)); }
+.motion-on .rsvp-row.change-fading { background-color:var(--surface); }
+.motion-on .rsvp-row.is-mine.change-fading { background-color:var(--rail-2); }
+@media (prefers-reduced-motion: reduce) { .rsvp-pill > span { transition:none; } }
 .rsvp-more { margin-top:var(--s-3); }
 .rsvp-more > summary { display:flex; align-items:center; gap:var(--s-2); min-height:48px; font-weight:700; cursor:pointer; list-style:none; }
 .rsvp-more > summary::-webkit-details-marker { display:none; }
