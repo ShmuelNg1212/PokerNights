@@ -20,9 +20,9 @@ from groups.models import GroupRakeAccount
 from groups import services as groups_services
 from groups.services import clean_name, add_roster_player, lock_group
 
-from . import clock, rsvp
+from . import chips, clock, rsvp
 from .models import (
-    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
+    ChipValueChange, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
     SettingsVersion, StakesFields, Table, Unit,
 )
 
@@ -138,7 +138,7 @@ ARCHIVED = "This session is archived. Restore it before changing anything."
 
 def lock_night(night_id, group_id, *, allow_archived=False) -> GameNight:
     """The session row, locked for the rest of the transaction. An archived session takes no write."""
-    night = GameNight.objects.select_for_update().select_related("table").filter(pk=night_id, group_id=group_id).first()
+    night = GameNight.objects.select_for_update(of=("self",)).select_related("table").filter(pk=night_id, group_id=group_id).first()
     if night is None:
         raise RuleError("That session is not in this group.")
     if night.is_archived and not allow_archived:
@@ -147,15 +147,18 @@ def lock_night(night_id, group_id, *, allow_archived=False) -> GameNight:
 
 
 def lock_session(session_id, group_id) -> GameSession:
-    """The session row, locked for the rest of the transaction. Every session write starts here."""
+    """Lock the parent session before the set, in the same order as session-wide writes."""
+    night_id = GameSession.objects.filter(pk=session_id, group_id=group_id).values_list("night_id", flat=True).first()
+    if night_id is None:
+        raise RuleError("That set is not in this group.")
+    night = lock_night(night_id, group_id)
     session = (
-        GameSession.objects.select_for_update().select_related("table", "night").filter(pk=session_id, group_id=group_id).first()
+        GameSession.objects.select_for_update(of=("self",)).select_related("table")
+        .filter(pk=session_id, group_id=group_id).first()
     )
     if session is None:
         raise RuleError("That set is not in this group.")
-    # The join locks the session row too, so archiving waits for this write or this write sees it.
-    if session.night.is_archived:
-        raise RuleError(ARCHIVED)
+    session.night = night
     return session
 
 
@@ -243,6 +246,8 @@ def update_settings(session_id, actor: Member, data: dict, *, request_id=None) -
     if rake != previous.rake() and has_money(session):
         raise RuleError("Buy-ins or cash-outs are recorded, so rake cannot change. Reverse them first.")
     if unit != session.unit:
+        if session.night.chip_values:
+            raise RuleError("This session has chip values. Its unit cannot change.")
         # Amounts already recorded would change meaning, so the unit is fixed once money is in.
         if has_money(session):
             raise RuleError("Buy-ins are recorded, so the unit cannot change. Reverse them first.")
@@ -1270,3 +1275,32 @@ def rsvp_member_removed(member, actor_user) -> None:
         if was == RsvpStatus.CONFIRMED:
             _fill_seats(night, actor_user, first)
         _bump_sets(night)
+
+
+@transaction.atomic
+def set_chip_values(night_id, actor: Member, values, request_id, *, revision) -> GameNight:
+    """Replace one session's denomination table before its first chip-based count."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    if ChipValueChange.objects.filter(night=night, request_id=request_id).exists():
+        return night
+    if night.is_closed:
+        raise RuleError("This session is closed. Its chip values cannot change.")
+    if night.chip_values_locked_at is not None:
+        raise RuleError("Chip values are locked because a chip count has been submitted.")
+    if type(revision) is not int or revision != night.chip_values_revision:
+        raise RuleError("Chip values changed. Reload the values and check them before saving.")
+    night.chip_values = chips.denominations(values)
+    night.chip_values_revision += 1
+    night.save(update_fields=["chip_values", "chip_values_revision"])
+    change = ChipValueChange.objects.create(
+        night=night, request_id=request_id, revision=night.chip_values_revision,
+        values=night.chip_values, created_by=actor.user,
+    )
+    audit.record(
+        "night.chip_values", actor=actor.user, group_id=night.group_id,
+        target=change, summary=f"Saved chip values for {night}",
+        data={"revision": night.chip_values_revision, "values": night.chip_values},
+    )
+    _bump_sets(night)
+    return night

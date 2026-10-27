@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from audit import services as audit
 from games import services as games
+from games import chips as chip_math
 from games.models import GameSession, Participant
 from groups.access import require_host
 from groups.errors import NotAllowed, RuleError
@@ -276,13 +277,33 @@ def _check_countable(session, participant, amount) -> None:
         raise RuleError(f"{name} is already cashed out. Reverse that cash-out to count again.")
 
 
-def _write_count(session, actor, participant, amount, request_id, entry=None) -> FinalCount:
+def _chip_amount(session, quantities, revision, empty_stack):
+    if session.night.is_closed:
+        raise RuleError("This session is closed. Reopen it before entering a count.")
+    if type(revision) is not int or revision != session.night.chip_values_revision:
+        raise RuleError("Chip values changed. Reload and check the values before sending your count.")
+    return chip_math.calculate(session.night.chip_values, quantities, empty_stack=empty_stack)
+
+
+def _lock_chip_values(session, actor):
+    if session.night.chip_values_locked_at is None:
+        session.night.chip_values_locked_at = timezone.now()
+        session.night.save(update_fields=["chip_values_locked_at"])
+        audit.record(
+            "night.chip_values_locked", actor=actor.user, group_id=session.group_id,
+            session_id=session.pk, target=session.night,
+            summary="Chip values locked after the first chip-based count",
+        )
+
+
+def _write_count(session, actor, participant, amount, request_id, entry=None, chip_breakdown=None) -> FinalCount:
     """Store a confirmed count as the player's current one, with the next version."""
     latest = FinalCount.objects.filter(participant=participant).order_by("-version").first()
     FinalCount.objects.filter(participant=participant, is_current=True).update(is_current=False)
     count = FinalCount.objects.create(
         session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
         request_id=request_id, confirmed_by=actor.user, entry=entry,
+        chip_breakdown=entry.chip_breakdown if entry is not None else (chip_breakdown or []),
     )
     audit.record(
         "count.confirmed", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=count,
@@ -295,7 +316,8 @@ def _write_count(session, actor, participant, amount, request_id, entry=None) ->
 
 
 @transaction.atomic
-def confirm_count(session_id, actor: Member, participant_id, amount: int, request_id) -> FinalCount:
+def confirm_count(session_id, actor: Member, participant_id, amount: int, request_id, *,
+                  chips=None, chip_revision=None, empty_stack=False) -> FinalCount:
     """Confirm what a player has at the end of the set. Zero is a valid count; a missing one is not zero.
 
     Confirming again replaces the count with the next version. This records no cash-out.
@@ -308,8 +330,13 @@ def confirm_count(session_id, actor: Member, participant_id, amount: int, reques
     if session.state != State.RECONCILIATION:
         raise RuleError("Final counts are confirmed after play has ended.")
     participant = _participant(session, participant_id)
+    breakdown = []
+    if chips is not None:
+        amount, breakdown = _chip_amount(session, chips, chip_revision, empty_stack)
     _check_countable(session, participant, amount)
-    count = _write_count(session, actor, participant, amount, request_id)
+    count = _write_count(session, actor, participant, amount, request_id, chip_breakdown=breakdown)
+    if chips is not None:
+        _lock_chip_values(session, actor)
     games.touch(session)
     return count
 
@@ -367,7 +394,8 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entr
 
 
 @transaction.atomic
-def enter_count(session_id, actor: Member, amount: int, request_id) -> CountEntry:
+def enter_count(session_id, actor: Member, amount: int, request_id, *,
+                chips=None, chip_revision=None, empty_stack=False) -> CountEntry:
     """A player states what they have left at the end of the set. The host confirms it, or types another number.
 
     This is not a count: nothing is cashed out and no total changes. Entering again replaces
@@ -382,6 +410,9 @@ def enter_count(session_id, actor: Member, amount: int, request_id) -> CountEntr
     if session.state != State.RECONCILIATION:
         raise RuleError("You can enter your count after the host ends play.")
     participant = _own_participant(session, actor)
+    breakdown = []
+    if chips is not None:
+        amount, breakdown = _chip_amount(session, chips, chip_revision, empty_stack)
     if not _is_amount(amount) or amount < 0:
         raise RuleError("Enter your count, 0 or more.")
     if not _accepted_buy_ins(session).filter(participant=participant).exists():
@@ -395,8 +426,10 @@ def enter_count(session_id, actor: Member, amount: int, request_id) -> CountEntr
     CountEntry.objects.filter(participant=participant, is_current=True).update(is_current=False)
     entry = CountEntry.objects.create(
         session=session, participant=participant, amount=amount, version=(latest.version + 1) if latest else 1,
-        request_id=request_id, entered_by=actor.user,
+        request_id=request_id, entered_by=actor.user, chip_breakdown=breakdown,
     )
+    if chips is not None:
+        _lock_chip_values(session, actor)
     audit.record(
         "count.entered", actor=actor.user, group_id=session.group_id, session_id=session.pk, target=entry,
         summary=f"{participant.member.display_name} entered their final count: "

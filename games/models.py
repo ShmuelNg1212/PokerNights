@@ -142,6 +142,11 @@ class GameNight(models.Model):
     # How many players an announced session confirms. Set at announce from the table's seats.
     seat_limit = models.PositiveSmallIntegerField(null=True, blank=True)
 
+    # Physical denominations shared by every set. Values use this session's unit.
+    chip_values = models.JSONField(default=list, blank=True)
+    chip_values_revision = models.PositiveIntegerField(default=0)
+    chip_values_locked_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ["-game_date", "-id"]
         constraints = [
@@ -163,6 +168,23 @@ class GameNight(models.Model):
     @property
     def is_archived(self):
         return self.archived_at is not None
+
+
+class ChipValueChange(models.Model):
+    """An assignment save. Its unique request ID makes every prior save replayable."""
+
+    night = models.ForeignKey(GameNight, on_delete=models.CASCADE, related_name="chip_value_changes")
+    request_id = models.UUIDField()
+    revision = models.PositiveIntegerField()
+    values = models.JSONField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["night", "request_id"], name="chip_values_request_once"),
+            models.UniqueConstraint(fields=["night", "revision"], name="chip_values_revision_once"),
+        ]
 
 
 class Rsvp(models.Model):
