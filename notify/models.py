@@ -9,17 +9,25 @@ from django.db import models
 
 
 class Notice(models.Model):
-    """A player was put in a set by someone else. Written once per player and set."""
+    """A player was put in a set by someone else (once per player and set), or an RSVP event of a session.
+
+    An RSVP notice has ``night_id``; its ``session_id`` is the session's set 1. A set notice has no ``night_id``.
+    """
 
     class Kind(models.TextChoices):
         OPEN = "open", "The set opened"
         ADDED = "added", "Added to an open set"
         NEXT = "next", "Carried into the next set"
+        ANNOUNCED = "announced", "A session was announced"
+        SEATED = "seated", "Moved up from the waitlist"
+
+    RSVP_KINDS = ("announced", "seated")
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notices")
     group_id = models.BigIntegerField()
     session_id = models.BigIntegerField()
-    kind = models.CharField(max_length=8, choices=Kind.choices)
+    night_id = models.BigIntegerField(null=True, blank=True)
+    kind = models.CharField(max_length=10, choices=Kind.choices)
     title = models.CharField(max_length=120)
     body = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
@@ -28,7 +36,14 @@ class Notice(models.Model):
     seen_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["user", "session_id"], name="notice_once_per_set")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "session_id"], condition=models.Q(night_id__isnull=True), name="notice_once_per_set"
+            ),
+            models.UniqueConstraint(
+                fields=["user", "night_id"], condition=models.Q(kind="announced"), name="notice_announced_once"
+            ),
+        ]
         indexes = [models.Index(fields=["user", "seen_at"], name="notice_unseen")]
 
     def __str__(self):

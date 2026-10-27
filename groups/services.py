@@ -159,6 +159,8 @@ def set_role(actor: Member, member_id, role: str) -> Member:
 # Reasons a member cannot be removed yet. An app that knows about play registers a guard:
 # guard(member) raises RuleError. This app does not import the apps that depend on it.
 REMOVE_GUARDS = []
+# Called with (member, actor user) inside the removal's transaction, after the member is removed.
+REMOVED_HOOKS = []
 
 LAST_HOST = "A group needs at least one host. Make someone else a host first."
 TURNED_OFF = "This is turned off."
@@ -202,6 +204,8 @@ def remove_member(actor: Member, member_id) -> Member:
         raise RuleError(block)
     member.status = Member.Status.REMOVED
     member.save(update_fields=["status"])
+    for hook in REMOVED_HOOKS:
+        hook(member, actor.user)
     audit.record(
         "member.removed", actor=actor.user, group_id=group.pk, target=member,
         summary=f"Removed {member.display_name} from the group",

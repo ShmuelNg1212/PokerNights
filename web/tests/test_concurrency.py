@@ -507,3 +507,21 @@ class ConcurrentClaimTests(TransactionTestCase):
 
         live = ClaimLink.objects.filter(member=self.carlo, used_at__isnull=True, revoked_at__isnull=True)
         self.assertEqual(live.count(), 1)
+
+
+class ConcurrentRsvpTests(TransactionTestCase):
+    def test_ten_players_answer_in_for_two_seats(self):
+        from games import rsvp
+        from games.models import Rsvp
+
+        night = Night("Seated", state="open")
+        rsvp.announce(night.session.night_id, night.host, seat_limit=2)
+        members = [add_player(night.group, f"r{i}") for i in range(10)]
+        outcomes = race(*[
+            (lambda member=member: rsvp.answer(night.session.night_id, member, member.pk, True, uuid.uuid4()))
+            for member in members
+        ])
+        self.assertEqual(kinds(outcomes), ["ok"] * 10, outcomes)
+        rows = Rsvp.objects.filter(night_id=night.session.night_id)
+        self.assertEqual(rows.filter(status="confirmed").count(), 2)
+        self.assertEqual(rows.filter(status="waitlisted").count(), 8)

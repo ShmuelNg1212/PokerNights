@@ -131,11 +131,21 @@ class GameNight(models.Model):
     archived_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
+    # Announced: players see the session before play and answer In or Out. Empty while only hosts see it.
+    announced_at = models.DateTimeField(null=True, blank=True)
+    # Asia/Manila wall time. Optional; the date is the session's game_date.
+    start_time = models.TimeField(null=True, blank=True)
+    # How many players an announced session confirms. Set at announce from the table's seats.
+    seat_limit = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["-game_date", "-id"]
         constraints = [
             models.CheckConstraint(condition=Q(status__in=["open", "closed"]), name="night_status_valid"),
+            models.CheckConstraint(
+                condition=Q(seat_limit__isnull=True) | Q(seat_limit__gte=2, seat_limit__lte=12),
+                name="night_seat_limit_valid",
+            ),
         ]
         indexes = [models.Index(fields=["group", "status", "game_date"], name="night_group_status_date")]
 
@@ -149,6 +159,38 @@ class GameNight(models.Model):
     @property
     def is_archived(self):
         return self.archived_at is not None
+
+
+class Rsvp(models.Model):
+    """One member's answer for one announced session. Each answer changes the row; the audit log keeps the history.
+
+    The waitlist is the waitlisted rows in ``queued_at`` order. A new In goes to the end of the line.
+    """
+
+    class Status(models.TextChoices):
+        CONFIRMED = "confirmed", "Coming"
+        WAITLISTED = "waitlisted", "Waitlist"
+        OUT = "out", "Can't make it"
+
+    night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="rsvps")
+    member = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="rsvps")
+    status = models.CharField(max_length=10, choices=Status.choices)
+    queued_at = models.DateTimeField()
+    answered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    updated_at = models.DateTimeField(auto_now=True)
+    # The last answer's id: the same tap sent twice is recorded once.
+    request_id = models.UUIDField(null=True, blank=True, unique=True)
+
+    class Meta:
+        ordering = ["night", "queued_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["night", "member"], name="rsvp_once_per_night"),
+            models.CheckConstraint(condition=Q(status__in=["confirmed", "waitlisted", "out"]), name="rsvp_status_valid"),
+        ]
+        indexes = [models.Index(fields=["night", "status", "queued_at"], name="rsvp_night_line")]
+
+    def __str__(self):
+        return f"{self.member.display_name}: {self.status} for night {self.night_id}"
 
 
 class GameSession(models.Model):
