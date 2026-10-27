@@ -159,6 +159,8 @@ def set_role(actor: Member, member_id, role: str) -> Member:
 # Reasons a member cannot be removed yet. An app that knows about play registers a guard:
 # guard(member) raises RuleError. This app does not import the apps that depend on it.
 REMOVE_GUARDS = []
+# Called with (group_id, member_id) before the member row is locked, so locks keep one order.
+REMOVE_LOCKS = []
 # Called with (member, actor user) inside the removal's transaction, after the member is removed.
 REMOVED_HOOKS = []
 
@@ -193,6 +195,8 @@ def remove_member(actor: Member, member_id) -> Member:
     """Take a member off the roster. Their records stay theirs, and a host can bring them back."""
     require_host(actor)
     group = _lock_group(actor.group_id)
+    for lock in REMOVE_LOCKS:
+        lock(group.pk, member_id)
     # The member row is locked so that seating the same member waits for this, and this for it.
     member = Member.objects.select_for_update().filter(group=group, pk=member_id).first()
     if member is None:

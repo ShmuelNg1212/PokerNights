@@ -7,7 +7,7 @@ from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 
 from audit.models import AuditEvent
-from games import rsvp
+from games import rsvp, services
 from games.models import GameNight, Rsvp
 from groups import services as groups_services
 from groups.access import NotAllowed
@@ -33,10 +33,10 @@ class RsvpTests(TestCase):
         self.ana, self.ben, self.carlo, self.dina, self.emil = self.players
 
     def announce(self, **kwargs):
-        return rsvp.announce(self.night.pk, self.host, **kwargs)
+        return services.announce_night(self.night.pk, self.host, **kwargs)
 
     def answer(self, member, going=True, actor=None):
-        return rsvp.answer(self.night.pk, actor or member, member.pk, going, rid())
+        return services.answer_rsvp(self.night.pk, actor or member, member.pk, going, rid())
 
     def status(self, member):
         return Rsvp.objects.get(night=self.night, member=member).status
@@ -55,7 +55,7 @@ class RsvpTests(TestCase):
     def test_announce_can_choose_the_seats(self):
         self.assertEqual(self.announce(seat_limit=6).seat_limit, 6)
         with self.assertRaises(RuleError):
-            rsvp.announce(make_session(self.host, table_name="Back table").night.pk, self.host, seat_limit=13)
+            services.announce_night(make_session(self.host, table_name="Back table").night.pk, self.host, seat_limit=13)
 
     def test_announce_tells_every_member_with_a_login_but_the_host(self):
         self.announce()
@@ -64,7 +64,7 @@ class RsvpTests(TestCase):
 
     def test_only_a_host_announces_and_only_once(self):
         with self.assertRaises(NotAllowed):
-            rsvp.announce(self.night.pk, self.ana)
+            services.announce_night(self.night.pk, self.ana)
         first = self.announce().announced_at
         self.assertEqual(self.announce().announced_at, first)  # a repeated tap
         self.assertEqual(Notice.objects.filter(night_id=self.night.pk).count(), len(self.players))
@@ -108,8 +108,8 @@ class RsvpTests(TestCase):
     def test_the_same_request_is_recorded_once(self):
         self.announce()
         request_id = rid()
-        rsvp.answer(self.night.pk, self.ana, self.ana.pk, True, request_id)
-        rsvp.answer(self.night.pk, self.ana, self.ana.pk, False, request_id)  # replayed with other data
+        services.answer_rsvp(self.night.pk, self.ana, self.ana.pk, True, request_id)
+        services.answer_rsvp(self.night.pk, self.ana, self.ana.pk, False, request_id)  # replayed with other data
         self.assertEqual(self.status(self.ana), "confirmed")
 
     def test_a_player_answers_only_for_themselves(self):
@@ -126,7 +126,6 @@ class RsvpTests(TestCase):
 
     def test_answers_stop_when_set_one_is_in_play(self):
         self.announce()
-        from games import services
         services.transition(self.first.pk, self.host, "open")
         self.answer(self.ana)  # open: still counts
         services.transition(self.first.pk, self.host, "start")
@@ -143,7 +142,7 @@ class RsvpTests(TestCase):
         self.announce()
         _, other_host = make_group("zed", "Other")
         with self.assertRaises(RuleError):
-            rsvp.answer(self.night.pk, other_host, other_host.pk, True, rid())
+            services.answer_rsvp(self.night.pk, other_host, other_host.pk, True, rid())
 
     # --- Seats -----------------------------------------------------------------
 
@@ -152,17 +151,17 @@ class RsvpTests(TestCase):
         for player in self.players[:3]:
             self.answer(player)
         with self.assertRaisesMessage(RuleError, "3 players are coming"):
-            rsvp.set_seat_limit(self.night.pk, self.host, 2)
+            services.set_seat_limit(self.night.pk, self.host, 2)
         with self.assertRaises(RuleError):
-            rsvp.set_seat_limit(self.night.pk, self.host, 13)
+            services.set_seat_limit(self.night.pk, self.host, 13)
         with self.assertRaises(NotAllowed):
-            rsvp.set_seat_limit(self.night.pk, self.ana, 6)
+            services.set_seat_limit(self.night.pk, self.ana, 6)
 
     def test_raising_the_limit_seats_the_line_in_order(self):
         self.announce(seat_limit=2)
         for player in self.players:
             self.answer(player)
-        rsvp.set_seat_limit(self.night.pk, self.host, 4)
+        services.set_seat_limit(self.night.pk, self.host, 4)
         self.assertEqual(self.line(), [self.emil])
         self.assertEqual((self.status(self.carlo), self.status(self.dina)), ("confirmed", "confirmed"))
 
@@ -170,7 +169,7 @@ class RsvpTests(TestCase):
         self.announce(seat_limit=2)
         for player in (self.ana, self.ben, self.carlo, self.dina):
             self.answer(player)
-        rsvp.seat_from_waitlist(self.night.pk, self.host, self.dina.pk)
+        services.seat_from_waitlist(self.night.pk, self.host, self.dina.pk)
         self.night.refresh_from_db()
         self.assertEqual((self.status(self.dina), self.night.seat_limit, self.line()), ("confirmed", 3, [self.carlo]))
 
@@ -210,3 +209,47 @@ class RsvpTests(TestCase):
                                 answered_by=self.host.user)
         with self.assertRaises(IntegrityError), transaction.atomic():
             Rsvp.objects.filter(pk=row.pk).update(status="maybe")
+
+
+@override_settings(TABLE_NOTICES=True)
+class RsvpReviewFixTests(TestCase):
+    """The findings of the 2026-10-27 review, one test each."""
+
+    def setUp(self):
+        self.group, self.host = make_group()
+        self.first = make_session(self.host, seat_count=4)
+        self.night = self.first.night
+        self.ana, self.ben, self.carlo = (add_player(self.group, n) for n in ("ana", "ben", "carlo"))
+        services.announce_night(self.night.pk, self.host, seat_limit=2)
+        for member in (self.ana, self.ben, self.carlo):
+            services.answer_rsvp(self.night.pk, member, member.pk, True, rid())
+
+    def test_a_session_with_answers_can_still_be_deleted(self):
+        services.transition(self.first.pk, self.host, "cancel", "No game")
+        services.delete_night(self.night.pk, self.host)
+        self.assertFalse(Rsvp.objects.exists())
+
+    def test_a_group_with_answers_can_still_be_deleted(self):
+        services.transition(self.first.pk, self.host, "cancel", "No game")
+        services.delete_group(self.host, self.group.name)
+        self.assertFalse(Rsvp.objects.exists())
+
+    def test_an_answer_alone_is_not_a_record_that_blocks_a_claim(self):
+        self.assertFalse(groups_services._has_records(self.carlo))
+
+    def test_seat_now_twice_returns_the_same_seat(self):
+        first = services.seat_from_waitlist(self.night.pk, self.host, self.carlo.pk)
+        again = services.seat_from_waitlist(self.night.pk, self.host, self.carlo.pk)
+        self.assertEqual((first.pk, again.status), (again.pk, "confirmed"))
+
+    def test_set_one_grows_with_the_seat_limit(self):
+        services.set_seat_limit(self.night.pk, self.host, 6)
+        self.first.refresh_from_db()
+        self.assertEqual(self.first.seat_count, 6)
+        services.set_seat_limit(self.night.pk, self.host, 3)
+        self.first.refresh_from_db()
+        self.assertEqual(self.first.seat_count, 6)  # never shrinks below what the table had
+
+    def test_removal_locks_the_session_before_the_member(self):
+        self.assertIn(services.lock_rsvp_nights, groups_services.REMOVE_LOCKS)
+        self.assertIn(services.rsvp_member_removed, groups_services.REMOVED_HOOKS)

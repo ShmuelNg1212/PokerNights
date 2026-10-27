@@ -20,11 +20,13 @@ from groups.models import GroupRakeAccount
 from groups import services as groups_services
 from groups.services import clean_name, add_roster_player, lock_group
 
-from . import clock
+from . import clock, rsvp
 from .models import (
-    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, SeatDraw, SeatPlace, SettingsPreset, SettingsVersion,
-    StakesFields, Table, Unit,
+    GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
+    SettingsVersion, StakesFields, Table, Unit,
 )
+
+RsvpStatus = Rsvp.Status
 
 
 def validated_stakes(data: dict) -> dict:
@@ -1051,3 +1053,220 @@ def seat_late_player(session_id, actor: Member, participant_id, after_participan
     )
     touch(session)
     return place
+
+
+# --- RSVP: announce a session, answers, seats ---------------------------------
+
+def _clean_seat_limit(value) -> int:
+    if type(value) is not int or not rsvp.MIN_SEATS <= value <= rsvp.MAX_SEATS:
+        raise RuleError(f"Seats must be between {rsvp.MIN_SEATS} and {rsvp.MAX_SEATS}.")
+    return value
+
+
+def _require_open(night) -> GameSession:
+    first = rsvp.set_one(night)
+    if night.announced_at is None:
+        raise RuleError("This session is not announced yet.")
+    if not rsvp.answering_open(night, first):
+        raise RuleError("Answers are closed: play has started. Ask a host to add you to the set.")
+    return first
+
+
+def _rsvp_when(night) -> str:
+    when = f"{night.game_date:%a, %b %-d}"
+    if night.start_time:
+        when += f", {night.start_time:%-I:%M %p}"
+    return when
+
+
+def _night_url(night) -> str:
+    return reverse("night", args=[night.pk])
+
+
+def _fit_set_one(first, limit) -> None:
+    """Set 1 has room for everyone the session confirms, so the host can seat them all from add-players."""
+    if first.seat_count < limit:
+        first.seat_count = limit
+        first.save(update_fields=["seat_count"])
+
+
+def _seat_rsvp(night, row, actor_user, first) -> None:
+    """Move one waiting row into a seat and tell its member."""
+    row.status = RsvpStatus.CONFIRMED
+    row.save(update_fields=["status", "updated_at"])
+    audit.record(
+        "rsvp.seated", actor=actor_user, group_id=night.group_id, session_id=first.pk, target=row,
+        summary=f"{row.member.display_name} moved up from the waitlist",
+    )
+    if row.member.user_id and row.member.user_id != actor_user.pk:
+        notify.tell_night(
+            [row.member.user_id], group_id=night.group_id, night_id=night.pk, session_id=first.pk, kind="seated",
+            title=f"{night.table.name} · {_rsvp_when(night)}", body="A seat opened. You're in.", url=_night_url(night),
+            actor_name="",
+        )
+
+
+def _fill_seats(night, actor_user, first) -> None:
+    """Seat the line in order while there are free seats."""
+    free = night.seat_limit - rsvp.confirmed_count(night)
+    for row in rsvp.waitlist(night)[:max(free, 0)]:
+        _seat_rsvp(night, row, actor_user, first)
+
+
+@transaction.atomic
+def announce_night(night_id, actor: Member, *, start_time=None, seat_limit=None) -> GameNight:
+    """Make a draft session visible to players and tell each member with a login. A repeated tap changes nothing."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    if night.announced_at is not None:
+        return night
+    first = rsvp.set_one(night)
+    if night.is_closed or first is None or first.state not in rsvp.ANSWER_STATES:
+        raise RuleError("Play has started. Add players to the set instead.")
+    night.seat_limit = _clean_seat_limit(night.table.seat_count if seat_limit is None else seat_limit)
+    night.start_time = start_time
+    night.announced_at = timezone.now()
+    night.save(update_fields=["seat_limit", "start_time", "announced_at"])
+    _fit_set_one(first, night.seat_limit)
+    audit.record(
+        "night.announced", actor=actor.user, group_id=night.group_id, session_id=first.pk, target=night,
+        summary=f"Announced {night} with {night.seat_limit} seats",
+    )
+    users = Member.objects.filter(
+        group_id=night.group_id, status=Member.Status.ACTIVE, user__isnull=False
+    ).exclude(user_id=actor.user_id).values_list("user_id", flat=True)
+    notify.tell_night(
+        list(users), group_id=night.group_id, night_id=night.pk, session_id=first.pk, kind="announced",
+        title=f"{night.table.name} · {_rsvp_when(night)}", body=f"{actor.display_name} is getting a game together. Are you in?",
+        url=_night_url(night), actor_name=actor.display_name,
+    )
+    _bump_sets(night)
+    return night
+
+
+@transaction.atomic
+def answer_rsvp(night_id, actor: Member, member_id, going: bool, request_id) -> Rsvp:
+    """Record In or Out for ``member_id``. A player answers for themselves; a host for anyone on the roster."""
+    if str(member_id) != str(actor.pk):
+        require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    first = _require_open(night)
+    if request_id is not None:
+        done = Rsvp.objects.filter(request_id=request_id, night=night).first()
+        if done is not None:
+            return done  # the same tap sent twice
+    member = Member.objects.filter(group_id=night.group_id, pk=member_id, status=Member.Status.ACTIVE).first()
+    if member is None:
+        raise RuleError("That player is not in this group.")
+    row = Rsvp.objects.filter(night=night, member=member).first()
+    was = row.status if row else None
+    if going and was in (RsvpStatus.CONFIRMED, RsvpStatus.WAITLISTED):
+        return row
+    if not going and was == RsvpStatus.OUT:
+        return row
+    now = timezone.now()
+    if going:
+        status = RsvpStatus.CONFIRMED if rsvp.confirmed_count(night) < night.seat_limit else RsvpStatus.WAITLISTED
+    else:
+        status = RsvpStatus.OUT
+    if row is None:
+        row = Rsvp(night=night, member=member, queued_at=now)
+    if going:
+        row.queued_at = now  # a new In goes to the end of the line
+    row.status, row.answered_by, row.request_id = status, actor.user, request_id
+    row.save()
+    by = "" if member.pk == actor.pk else f" (answered by {actor.display_name})"
+    words = {RsvpStatus.CONFIRMED: "is coming", RsvpStatus.WAITLISTED: "joined the waitlist", RsvpStatus.OUT: "can't make it"}
+    audit.record(
+        "rsvp.answered", actor=actor.user, group_id=night.group_id, session_id=first.pk, target=row,
+        summary=f"{member.display_name} {words[status]}{by}",
+    )
+    if was == RsvpStatus.CONFIRMED:
+        _fill_seats(night, actor.user, first)
+    _bump_sets(night)
+    return row
+
+
+@transaction.atomic
+def set_seat_limit(night_id, actor: Member, limit) -> GameNight:
+    """Change how many players the session confirms. Raising it seats the line in order."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    first = _require_open(night)
+    limit = _clean_seat_limit(limit)
+    coming = rsvp.confirmed_count(night)
+    if limit < coming:
+        raise RuleError(f"{coming} players are coming. Mark someone out first.")
+    if limit == night.seat_limit:
+        return night
+    night.seat_limit = limit
+    night.save(update_fields=["seat_limit"])
+    _fit_set_one(first, limit)
+    audit.record(
+        "night.seats", actor=actor.user, group_id=night.group_id, session_id=first.pk, target=night,
+        summary=f"Set the seats of {night} to {limit}",
+    )
+    _fill_seats(night, actor.user, first)
+    _bump_sets(night)
+    return night
+
+
+@transaction.atomic
+def seat_from_waitlist(night_id, actor: Member, member_id) -> Rsvp:
+    """A host seats one waiting player now. The limit grows to make room."""
+    require_host(actor)
+    night = lock_night(night_id, actor.group_id)
+    first = _require_open(night)
+    row = night.rsvps.select_related("member").filter(member_id=member_id).first()
+    if row is not None and row.status == RsvpStatus.CONFIRMED:
+        return row  # the same tap sent twice: they have the seat
+    if row is None or row.status != RsvpStatus.WAITLISTED:
+        raise RuleError("That player is not on the waitlist.")
+    coming = rsvp.confirmed_count(night) + 1
+    if coming > rsvp.MAX_SEATS:
+        raise RuleError(f"A session has {rsvp.MAX_SEATS} seats at most.")
+    night.seat_limit = max(night.seat_limit, coming)
+    night.save(update_fields=["seat_limit"])
+    _fit_set_one(first, night.seat_limit)
+    _seat_rsvp(night, row, actor.user, first)
+    _bump_sets(night)
+    return row
+
+
+def _rsvp_nights_of(group_id, member_id) -> list:
+    """The sessions still taking answers where this member holds a seat or a place in line."""
+    return sorted(set(
+        rsvp.answering_nights([group_id]).filter(
+            rsvps__member_id=member_id, rsvps__status__in=(RsvpStatus.CONFIRMED, RsvpStatus.WAITLISTED),
+        ).values_list("pk", flat=True)
+    ))
+
+
+def lock_rsvp_nights(group_id, member_id) -> None:
+    """Lock those sessions before the member row (``groups.services.REMOVE_LOCKS``).
+
+    Adding players locks a session, then its members; removing a member must take them in the same order.
+    """
+    for night_id in _rsvp_nights_of(group_id, member_id):
+        lock_night(night_id, group_id)
+
+
+def rsvp_member_removed(member, actor_user) -> None:
+    """A member left the group: each of their answers for a session still taking answers turns Out.
+
+    Called inside the removal's transaction (``groups.services.REMOVED_HOOKS``), after ``lock_rsvp_nights``.
+    """
+    for night_id in _rsvp_nights_of(member.group_id, member.pk):
+        night = lock_night(night_id, member.group_id)
+        row = night.rsvps.get(member=member)
+        was = row.status
+        row.status, row.answered_by, row.request_id = RsvpStatus.OUT, actor_user, None
+        row.save()
+        first = rsvp.set_one(night)
+        audit.record(
+            "rsvp.answered", actor=actor_user, group_id=night.group_id, session_id=first.pk, target=row,
+            summary=f"{member.display_name} left the group, so can't make it",
+        )
+        if was == RsvpStatus.CONFIRMED:
+            _fill_seats(night, actor_user, first)
+        _bump_sets(night)

@@ -5,7 +5,7 @@
     {% if waiting %}<span class="rsvp-place" aria-label="Number {{ row.place }} in line">{{ row.place }}</span>{% endif %}
     {% member_token person board.people %}
     <span class="grow"><strong>{{ person.display_name }}</strong>{% if person.pk == me.pk %} <span class="muted small">(you)</span>{% endif %}
-      {% if row and row.answered_by_id != person.user_id %}<br><span class="small muted">answered by {{ row.answered_by.username }}</span>{% endif %}</span>
+      {% if row.answered_by_name %}<br><span class="small muted">answered by {{ row.answered_by_name }}</span>{% endif %}</span>
   </div>
   {% if me.is_host and board.open %}
   <details class="rsvp-host" data-key="rsvp-host-{{ night.pk }}-{{ person.pk }}">

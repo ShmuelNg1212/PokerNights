@@ -656,15 +656,15 @@ def hub_stamp(group_ids) -> str:
         seated, members, plans, paid["made"], paid["standing"],
     )
     # Announced sessions and their answers. Left out when there are none, so the mark stays as it was.
-    from games.models import GameNight, Rsvp
+    from games import rsvp
+    from games.models import Rsvp
 
-    announced = list(
-        GameNight.objects.filter(group_id__in=group_ids, announced_at__isnull=False).order_by("pk")
-        .values_list("pk", "seat_limit", "start_time")
-    )
+    # Only sessions still taking answers can change, so the read does not grow with history.
+    announced = list(rsvp.answering_nights(group_ids).order_by("pk").values_list("pk", "seat_limit", "start_time"))
     if announced:
         answers = list(
-            Rsvp.objects.filter(night__group_id__in=group_ids).order_by("pk").values_list("pk", "status", "queued_at")
+            Rsvp.objects.filter(night_id__in=[pk for pk, _, _ in announced]).order_by("pk")
+            .values_list("pk", "status", "queued_at")
         )
         seen += (repr(announced), repr(answers))
     return hashlib.sha1(repr(seen).encode()).hexdigest()[:16]

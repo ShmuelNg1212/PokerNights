@@ -5,7 +5,7 @@ import uuid
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from games import rsvp
+from games import rsvp, services
 from games.models import Rsvp
 from games.tests.helpers import make_session
 from groups.models import Member
@@ -50,7 +50,7 @@ class RsvpPageTests(TestCase):
         self.assertIn('value="20"', page)
 
     def test_a_player_cannot_announce(self):
-        rsvp.announce(self.night.pk, self.host)  # so the player can reach the session at all
+        services.announce_night(self.night.pk, self.host)  # so the player can reach the session at all
         self.as_(self.ana)
         self.assertEqual(self.post("night_announce").status_code, 403)
 
@@ -60,13 +60,13 @@ class RsvpPageTests(TestCase):
         self.as_(self.ana)
         self.assertEqual(self.client.get(reverse("night", args=[self.night.pk])).status_code, 404)
         self.assertNotIn("Coming up", self.tab())
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         self.assertEqual(self.client.get(reverse("night", args=[self.night.pk])).status_code, 200)
         self.assertEqual(self.client.get(reverse("session", args=[self.first.pk])).status_code, 404)
         self.assertIn("Coming up", self.tab())
 
     def test_another_group_gets_404(self):
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         _, stranger = make_group("zed", "Other")
         self.as_(stranger)
         self.assertEqual(self.client.get(reverse("night", args=[self.night.pk])).status_code, 404)
@@ -75,9 +75,9 @@ class RsvpPageTests(TestCase):
     # --- Answers ---------------------------------------------------------------
 
     def test_a_player_answers_from_the_tab_and_sees_each_state(self):
-        rsvp.announce(self.night.pk, self.host)
-        rsvp.answer(self.night.pk, self.ben, self.ben.pk, True, uuid.uuid4())
-        rsvp.answer(self.night.pk, self.carlo, self.carlo.pk, True, uuid.uuid4())
+        services.announce_night(self.night.pk, self.host)
+        services.answer_rsvp(self.night.pk, self.ben, self.ben.pk, True, uuid.uuid4())
+        services.answer_rsvp(self.night.pk, self.carlo, self.carlo.pk, True, uuid.uuid4())
         self.as_(self.ana)
         self.assertIn("Join the waitlist", self.tab())
         response = self.post("night_rsvp", {"going": "in", "back": "tab", "request_id": str(uuid.uuid4())})
@@ -92,13 +92,13 @@ class RsvpPageTests(TestCase):
         self.assertIn("You're in", self.tab())
 
     def test_a_player_cannot_answer_for_another(self):
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         self.as_(self.ana)
         self.assertEqual(self.post("night_rsvp", {"going": "in", "member": self.ben.pk}).status_code, 403)
         self.assertFalse(Rsvp.objects.exists())
 
     def test_a_host_answers_seats_and_marks_out_from_the_session_page(self):
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         fe = Member.objects.create(group=self.group, display_name="Fe")
         self.as_(self.host)
         page = self.client.get(reverse("night", args=[self.night.pk])).content.decode()
@@ -116,9 +116,8 @@ class RsvpPageTests(TestCase):
         self.assertIn("3 players are coming. Mark someone out first.", page)
 
     def test_answers_close_once_play_starts(self):
-        from games import services
 
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         services.transition(self.first.pk, self.host, "open")
         services.transition(self.first.pk, self.host, "start")
         self.as_(self.ana)
@@ -129,27 +128,27 @@ class RsvpPageTests(TestCase):
     def test_opening_the_session_page_clears_the_rsvp_notice(self):
         from notify.models import Notice
 
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         self.as_(self.ana)
         self.client.get(reverse("night", args=[self.night.pk]))
         self.assertIsNotNone(Notice.objects.get(user=self.ana.user, night_id=self.night.pk).seen_at)
 
     def test_an_answer_changes_the_page_stamp(self):
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         self.as_(self.ana)
         url = reverse("night_state", args=[self.night.pk])
         page = self.client.get(reverse("night", args=[self.night.pk])).content.decode()
         stamp = page.split('data-stamp="')[1].split('"')[0]
         self.assertEqual(self.client.get(url, {"v": stamp}).status_code, 204)
-        rsvp.answer(self.night.pk, self.ben, self.ben.pk, True, uuid.uuid4())
+        services.answer_rsvp(self.night.pk, self.ben, self.ben.pk, True, uuid.uuid4())
         self.assertEqual(self.client.get(url, {"v": stamp}).status_code, 200)
 
     # --- Set 1 -----------------------------------------------------------------
 
     def test_set_one_add_players_ticks_the_confirmed(self):
-        rsvp.announce(self.night.pk, self.host)
+        services.announce_night(self.night.pk, self.host)
         for member in (self.ana, self.ben, self.carlo):
-            rsvp.answer(self.night.pk, member, member.pk, True, uuid.uuid4())
+            services.answer_rsvp(self.night.pk, member, member.pk, True, uuid.uuid4())
         self.as_(self.host)
         response = self.client.get(reverse("participants_add", args=[self.first.pk]))
         rows = {row["member"].pk: row for row in response.context["rows"]}
@@ -176,9 +175,9 @@ class RsvpQueryCountTests(TestCase):
 
         def announce_one(name):
             night = make_session(host, table_name=name).night
-            rsvp.announce(night.pk, host)
+            services.announce_night(night.pk, host)
             for member in players[:12]:
-                rsvp.answer(night.pk, member, member.pk, True, uuid.uuid4())
+                services.answer_rsvp(night.pk, member, member.pk, True, uuid.uuid4())
 
         announce_one("A")
         self.client.get(url)
@@ -198,11 +197,11 @@ class RsvpHomeTests(TestCase):
         ana = add_player(group, "ana")
         self.client.force_login(ana.user)
         self.assertNotIn("Are you in?", self.client.get(reverse("home")).content.decode())
-        rsvp.announce(night.pk, host, start_time=__import__("datetime").time(20, 0))
+        services.announce_night(night.pk, host, start_time=__import__("datetime").time(20, 0))
         page = self.client.get(reverse("home")).content.decode()
         self.assertIn("Are you in?", page)
         self.assertIn("8:00 PM", page)
-        rsvp.answer(night.pk, ana, ana.pk, False, uuid.uuid4())
+        services.answer_rsvp(night.pk, ana, ana.pk, False, uuid.uuid4())
         self.assertNotIn("Are you in?", self.client.get(reverse("home")).content.decode())
 
 
@@ -210,7 +209,46 @@ class RsvpBadInputTests(TestCase):
     def test_a_member_that_is_not_a_number_is_a_404(self):
         group, host = make_group()
         night = make_session(host).night
-        rsvp.announce(night.pk, host)
+        services.announce_night(night.pk, host)
         self.client.force_login(host.user)
         for name in ("night_rsvp", "night_seat_now"):
             self.assertEqual(self.client.post(reverse(name, args=[night.pk]), {"member": "x'", "going": "in"}).status_code, 404)
+
+
+@override_settings(TABLE_NOTICES=True)
+class RsvpPageReviewFixTests(TestCase):
+    def setUp(self):
+        self.group, self.host = make_group()
+        self.first = make_session(self.host, seat_count=2)
+        self.night = self.first.night
+        self.ana, self.ben, self.carlo = (add_player(self.group, n) for n in ("ana", "ben", "carlo"))
+        services.announce_night(self.night.pk, self.host)
+
+    def test_coming_up_stays_while_set_one_is_open(self):
+        services.transition(self.first.pk, self.host, "open")
+        self.client.force_login(self.ana.user)
+        page = self.client.get(reverse("group", args=[self.group.pk])).content.decode()
+        self.assertIn("Coming up", page)
+        self.assertIn("Set 1 · Open", page)  # and the set is on Now playing
+        self.assertIn("Are you in?", self.client.get(reverse("home")).content.decode())
+
+    def test_answered_by_names_the_host_as_the_group_knows_them(self):
+        self.host.display_name = "Hana T."
+        self.host.save()
+        fe = Member.objects.create(group=self.group, display_name="Fe")
+        services.answer_rsvp(self.night.pk, self.host, fe.pk, True, uuid.uuid4())
+        self.client.force_login(self.ana.user)
+        page = self.client.get(reverse("night", args=[self.night.pk])).content.decode()
+        self.assertIn("answered by Hana T.", page)
+        self.assertNotIn(f"answered by {self.host.user.username}", page)
+
+    def test_add_players_ticks_no_more_than_the_free_seats(self):
+        from games.models import GameSession
+
+        for member in (self.ana, self.ben, self.carlo):
+            services.answer_rsvp(self.night.pk, member, member.pk, True, uuid.uuid4())
+        services.seat_from_waitlist(self.night.pk, self.host, self.carlo.pk)
+        GameSession.objects.filter(pk=self.first.pk).update(seat_count=2)  # as if set 1 had fewer seats
+        self.client.force_login(self.host.user)
+        rows = self.client.get(reverse("participants_add", args=[self.first.pk])).context["rows"]
+        self.assertEqual([r["member"] for r in rows if r["checked"]], [self.ana, self.ben])

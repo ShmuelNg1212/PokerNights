@@ -7,7 +7,7 @@ ben has not answered. "Back room" is a draft that is not announced yet.
 import datetime, json, uuid
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from games import rsvp, services as games
+from games import services as games
 from groups import services as groups
 from groups.models import Member
 User = get_user_model()
@@ -23,11 +23,11 @@ def draft(name, days):
                                        "location": "Kamuning", "game_type": "nlh", **stakes})
 friday = draft("Friday table", 3)
 back = draft("Back room", 5)
-rsvp.announce(friday.night_id, host, start_time=datetime.time(20, 0), seat_limit=3)
+games.announce_night(friday.night_id, host, start_time=datetime.time(20, 0), seat_limit=3)
 for m in (people["carlo"], people["ana"]):
-    rsvp.answer(friday.night_id, m, m.pk, True, uuid.uuid4())
-rsvp.answer(friday.night_id, host, long_one.pk, True, uuid.uuid4())
-rsvp.answer(friday.night_id, people["dina"], people["dina"].pk, True, uuid.uuid4())
+    games.answer_rsvp(friday.night_id, m, m.pk, True, uuid.uuid4())
+games.answer_rsvp(friday.night_id, host, long_one.pk, True, uuid.uuid4())
+games.answer_rsvp(friday.night_id, people["dina"], people["dina"].pk, True, uuid.uuid4())
 json.dump({"group": host.group_id, "friday": friday.night_id, "friday_set": friday.pk, "back": back.night_id,
            "ben": people["ben"].pk, "dina": people["dina"].pk}, open("/private/tmp/pn-rsvp-manifest.json", "w"))
 print("seeded")

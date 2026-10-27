@@ -49,10 +49,17 @@ def _band(card) -> int:
     return playing if card.mine else playing + 1
 
 
-def is_coming(night) -> bool:
-    """An announced session whose set 1 is still a draft: it is on "Coming up", not "Now playing"."""
+def _first(night):
     sets = sorted(night.sets.all(), key=lambda s: s.set_number)
-    return night.announced_at is not None and not night.is_closed and bool(sets) and sets[0].state == State.SETUP
+    return sets[0] if sets else None
+
+
+def is_coming(night) -> bool:
+    """An announced session still taking answers: it is on "Coming up".
+
+    While set 1 is a draft it is only there. Once set 1 is open it is also on "Now playing", to reach the set.
+    """
+    return rsvp.answering_open(night, _first(night)) if night.announced_at is not None else False
 
 
 def coming_cards(me, nights) -> list:
@@ -60,7 +67,7 @@ def coming_cards(me, nights) -> list:
     cards = sorted((n for n in nights if is_coming(n)), key=lambda n: (n.game_date, n.start_time or datetime.time.max, n.pk))
     if not cards:
         return []
-    sets = {n.pk: min(n.sets.all(), key=lambda s: s.set_number) for n in cards}
+    sets = {n.pk: _first(n) for n in cards}
     found = rsvp.boards(cards, me, sets=sets)
     today = timezone.localdate()
     for card in cards:
@@ -70,7 +77,8 @@ def coming_cards(me, nights) -> list:
 
 def current_cards(me, nights) -> list:
     """The open sessions with something this member may see, as cards in the order the tab shows them."""
-    cards = [n for n in nights if not n.is_closed and n.shown_sets and not is_coming(n)]
+    cards = [n for n in nights if not n.is_closed and n.shown_sets
+             and not (is_coming(n) and n.shown_sets[-1].state == State.SETUP)]
     set_ids = [c.latest_set.pk for c in cards]
     seated = {}
     for p in (

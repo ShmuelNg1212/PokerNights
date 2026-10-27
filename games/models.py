@@ -5,6 +5,10 @@ from django.db.models import F, Q
 from groups.models import GameGroup, Member
 
 
+# A table, a set and an announced session seat 2 to 12 players.
+MIN_SEATS, MAX_SEATS = 2, 12
+
+
 class GameType(models.TextChoices):
     HOLDEM = "nlh", "No-Limit Hold'em"
     PLO = "plo", "Pot-Limit Omaha"
@@ -96,7 +100,7 @@ class Table(models.Model):
         ordering = ["name", "id"]
         constraints = [
             models.UniqueConstraint(fields=["group", "name"], name="table_name_unique"),
-            models.CheckConstraint(condition=Q(seat_count__gte=2, seat_count__lte=12), name="table_seat_count_valid"),
+            models.CheckConstraint(condition=Q(seat_count__gte=MIN_SEATS, seat_count__lte=MAX_SEATS), name="table_seat_count_valid"),
         ]
 
     def __str__(self):
@@ -143,7 +147,7 @@ class GameNight(models.Model):
         constraints = [
             models.CheckConstraint(condition=Q(status__in=["open", "closed"]), name="night_status_valid"),
             models.CheckConstraint(
-                condition=Q(seat_limit__isnull=True) | Q(seat_limit__gte=2, seat_limit__lte=12),
+                condition=Q(seat_limit__isnull=True) | Q(seat_limit__gte=MIN_SEATS, seat_limit__lte=MAX_SEATS),
                 name="night_seat_limit_valid",
             ),
         ]
@@ -172,8 +176,9 @@ class Rsvp(models.Model):
         WAITLISTED = "waitlisted", "Waitlist"
         OUT = "out", "Can't make it"
 
-    night = models.ForeignKey(GameNight, on_delete=models.PROTECT, related_name="rsvps")
-    member = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="rsvps")
+    # Not a money record: an RSVP goes with its session or roster entry when either is deleted.
+    night = models.ForeignKey(GameNight, on_delete=models.CASCADE, related_name="rsvps")
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="rsvps")
     status = models.CharField(max_length=10, choices=Status.choices)
     queued_at = models.DateTimeField()
     answered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
@@ -248,7 +253,7 @@ class GameSession(models.Model):
             models.UniqueConstraint(
                 fields=["night"], condition=Q(state__in=["setup", "open", "running"]), name="night_one_set_in_play"
             ),
-            models.CheckConstraint(condition=Q(seat_count__gte=2, seat_count__lte=12), name="session_seat_count_valid"),
+            models.CheckConstraint(condition=Q(seat_count__gte=MIN_SEATS, seat_count__lte=MAX_SEATS), name="session_seat_count_valid"),
         ]
         indexes = [
             models.Index(fields=["group", "state", "game_date"], name="session_group_state_date"),

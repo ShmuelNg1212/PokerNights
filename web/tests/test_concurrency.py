@@ -511,17 +511,31 @@ class ConcurrentClaimTests(TransactionTestCase):
 
 class ConcurrentRsvpTests(TransactionTestCase):
     def test_ten_players_answer_in_for_two_seats(self):
-        from games import rsvp
         from games.models import Rsvp
 
         night = Night("Seated", state="open")
-        rsvp.announce(night.session.night_id, night.host, seat_limit=2)
+        games.announce_night(night.session.night_id, night.host, seat_limit=2)
         members = [add_player(night.group, f"r{i}") for i in range(10)]
         outcomes = race(*[
-            (lambda member=member: rsvp.answer(night.session.night_id, member, member.pk, True, uuid.uuid4()))
+            (lambda member=member: games.answer_rsvp(night.session.night_id, member, member.pk, True, uuid.uuid4()))
             for member in members
         ])
         self.assertEqual(kinds(outcomes), ["ok"] * 10, outcomes)
         rows = Rsvp.objects.filter(night_id=night.session.night_id)
         self.assertEqual(rows.filter(status="confirmed").count(), 2)
         self.assertEqual(rows.filter(status="waitlisted").count(), 8)
+
+    def test_adding_and_removing_an_answered_member_at_once_does_not_deadlock(self):
+        from groups import services as group_services
+
+        for round_ in range(5):
+            night = Night(state="open")
+            games.announce_night(night.session.night_id, night.host)
+            bob = add_player(night.group, f"bob{round_}")
+            games.answer_rsvp(night.session.night_id, bob, bob.pk, True, uuid.uuid4())
+            other_host = add_player(night.group, f"host{round_}", role="host")
+            outcomes = race(
+                lambda: games.add_participant(night.session.pk, night.host, bob.pk),
+                lambda: group_services.remove_member(other_host, bob.pk),
+            )
+            self.assertNotIn("error", kinds(outcomes), outcomes)

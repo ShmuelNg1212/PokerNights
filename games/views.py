@@ -162,8 +162,12 @@ def participants_add(request, session_id):
     status = dict(Participant.objects.filter(session=session).values_list("member_id", "status"))
     # Set 1 of an announced session starts with the players who said they are coming ticked.
     answers = rsvp.answers_for_set_one(session)
-    if not posted:
-        selected = {member_id for member_id, (state, _) in answers.items() if state == "confirmed"}
+    if not posted and answers:
+        # Only as many as the set has free seats, the first to answer first.
+        joined = {m for m, st in status.items() if st == Participant.Status.JOINED}
+        free = session.seat_count - len(joined)
+        coming = [m for m, (state, _) in answers.items() if state == "confirmed" and m not in joined]
+        selected = set(coming[:max(free, 0)])
     rows, seated_names, roster = [], [], {}
     for member in Member.objects.filter(group_id=session.group_id, status=Member.Status.ACTIVE):
         at_table = status.get(member.pk) == Participant.Status.JOINED
@@ -318,7 +322,7 @@ def night_announce(request, night_id):
         messages.error(request, "Enter the start time as hours and minutes, or leave it empty.")
     elif raw_seats and seats is None:
         messages.error(request, "Enter the number of seats.")
-    elif attempt(request, rsvp.announce, night.pk, actor, start_time=start_time, seat_limit=seats,
+    elif attempt(request, services.announce_night, night.pk, actor, start_time=start_time, seat_limit=seats,
                  success="Announced. Players can answer now.") is not None:
         request.session.pop("announce_draft", None)
         return redirect(reverse("night", args=[night.pk]) + "#coming")
@@ -334,7 +338,7 @@ def night_rsvp(request, night_id):
     if member_id is None:
         raise Http404("Not found")
     going = request.POST.get("going") == "in"
-    attempt(request, rsvp.answer, night.pk, actor, member_id, going, request_id_from(request))
+    attempt(request, services.answer_rsvp, night.pk, actor, member_id, going, request_id_from(request))
     return _rsvp_back(request, night)
 
 
@@ -344,7 +348,7 @@ def night_seats(request, night_id):
     seats = _small_int(request.POST.get("seat_limit"))
     if seats is None:
         messages.error(request, "Enter the number of seats.")
-    elif attempt(request, rsvp.set_seat_limit, night.pk, actor, seats, success=f"{seats} seats.") is None:
+    elif attempt(request, services.set_seat_limit, night.pk, actor, seats, success=f"{seats} seats.") is None:
         request.session["seats_draft"] = {"night": night.pk, "seat_limit": request.POST.get("seat_limit", "")}
     return redirect(reverse("night", args=[night.pk]) + "#coming")
 
@@ -355,7 +359,7 @@ def night_seat_now(request, night_id):
     member_id = _small_int(request.POST.get("member"))
     if member_id is None:
         raise Http404("Not found")
-    row = attempt(request, rsvp.seat_from_waitlist, night.pk, actor, member_id)
+    row = attempt(request, services.seat_from_waitlist, night.pk, actor, member_id)
     if row is not None:
         messages.success(request, f"{row.member.display_name} has a seat. The session now has {row.night.seat_limit} seats.")
     return redirect(reverse("night", args=[night.pk]) + "#coming")

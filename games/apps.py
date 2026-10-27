@@ -13,7 +13,9 @@ class GamesConfig(AppConfig):
             groups.ARCHIVE_GUARDS.append(guard_group_archive)
         if guard_member_removal not in groups.REMOVE_GUARDS:
             groups.REMOVE_GUARDS.append(guard_member_removal)
-        from .rsvp import member_removed
+        from .services import lock_rsvp_nights, rsvp_member_removed
 
-        if member_removed not in groups.REMOVED_HOOKS:
-            groups.REMOVED_HOOKS.append(member_removed)
+        if lock_rsvp_nights not in groups.REMOVE_LOCKS:
+            groups.REMOVE_LOCKS.append(lock_rsvp_nights)
+        if rsvp_member_removed not in groups.REMOVED_HOOKS:
+            groups.REMOVED_HOOKS.append(rsvp_member_removed)
