@@ -56,7 +56,7 @@ check('Dina moved up: You\'re in',await D.js(`/You're in/.test(document.querySel
 await B.go(tab);check('Ben is now 1st in line',await B.js(`/1st in line/.test(document.querySelector('.coming-card .rsvp-you').textContent)`));
 // Host: Who's coming.
 const H=await user('hana');await H.go(friday);
-check('the felt says the time and seats taken',await H.js(`/Starts 8:00 PM\\. 3 of 3 seats taken\\./.test(document.querySelector('.hero').textContent)`));
+check('the felt says the time once; the count is in Who\'s coming',await H.js(`/Starts 8:00 PM\\./.test(document.querySelector('.hero').textContent)&&!/Starts/.test(document.querySelector('.rsvp').textContent)&&/3 of 3/.test(document.querySelector('.rsvp-count').textContent)`));
 check('Who\'s coming: three coming, one waiting numbered, Can\'t make it and Not answered folded',await H.js(`(()=>{const r=document.querySelector('.rsvp');return r.querySelectorAll('.rsvp-list:not(.rsvp-line) > .rsvp-row').length>=3&&r.querySelector('.rsvp-line .rsvp-place').textContent.trim()==='1'&&[...r.querySelectorAll('.rsvp-more > summary')].map(s=>s.textContent.replace(/\\s+/g,' ').trim()).join('|')==="Can't make it · 1|Not answered · 1"})()`),await H.js(`[...document.querySelectorAll('.rsvp-more > summary')].map(s=>s.textContent.replace(/\\s+/g,' ').trim())`));
 check('a roster player answered by the host says so',await H.js(`/answered by hana/.test(document.querySelector('.rsvp').textContent)`));
 check('host controls are 48px',(await H.js(targets('.rsvp'))).every(h=>h>=48),await H.js(targets('.rsvp')));

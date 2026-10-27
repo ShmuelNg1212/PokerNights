@@ -26,7 +26,6 @@
   <div class="rsvp-head">
     <h2 id="coming-title">Who's coming</h2>
     <p class="rsvp-count"><strong class="figure">{{ board.confirmed|length }} of {{ board.limit }}</strong> seats{% if board.waitlisted %} · {{ board.waitlisted|length }} waiting{% endif %}</p>
-    {% if night.start_time %}<p class="small muted">Starts {{ night.start_time|time:"g:i A" }}</p>{% endif %}
   </div>
   {% if board.open and not me.is_host or board.open and board.mine %}
   <div class="rsvp-mine">{% include "web/_rsvp_mine.html" with back="night" %}</div>

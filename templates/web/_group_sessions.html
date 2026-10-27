@@ -8,7 +8,8 @@
 {% else %}
   <div class="panel empty-state">
     <h3>Nobody is playing</h3>
-    {% if not me.is_host %}<p class="muted">A host starts the next session. It appears here when it opens.</p>
+    {% if coming %}<p class="muted">The next session is under Coming up.</p>
+    {% elif not me.is_host %}<p class="muted">A host starts the next session. It appears here when it opens.</p>
     {% elif tables %}<p class="muted">Start one when the players arrive.</p>
     <p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>
     {% else %}<p class="muted">A session needs a table. Add one in Group settings first.</p>
