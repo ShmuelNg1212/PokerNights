@@ -11,7 +11,7 @@ One Django 6.1 project with server-rendered templates, one stylesheet and small 
 | `audit` | Append-only `AuditEvent` and `record()` | `services.py` |
 | `notify` | Table alerts (2026-10-15): `Notice` (a player was put in a set by someone else; one per player and set) and `PushSubscription` (a phone that takes notifications). Sends Web Push after the commit | `services.py`, `push.py`, `views.py` |
 | `groups` | `GameGroup`, `GroupRakeAccount`, `Member` (roles; roster players without logins), `Invite`, access helpers | `services.py`, `access.py`, `errors.py`, `http.py` |
-| `games` | `Table`, `SettingsPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, session chip values, the lifecycle, the clock | `services.py`, `access.py`, `forms.py`, `chips.py` |
+| `games` | `Table`, `SettingsPreset`, `ChipPreset`, `GameNight` (session), `GameSession` (set), `SettingsVersion`, `Participant`, `ParticipantBatch`, `PlayPeriod`, `PlayInterval`, session chip values, the lifecycle, the clock | `services.py`, `access.py`, `forms.py`, `chips.py` |
 | `ledger` | `BuyIn`, `RakeEntry`, `CountEntry` (a player's own statement of their final count, never a count), `FinalCount`, `CashOut`, `CashOutBatch`, reversals, `BalanceAdjustment`, the balance check, `Finalization`, `PlayerResult`, amount parsing and formatting | `services.py`, `queries.py`, `money.py` |
 | `settlement` | Settle-up algorithm, `finalize()` for a set, `close_night()` for a session, `SettlementPlan`, `Transfer`, `Payment`, `PaymentReversal` | `algorithm.py`, `services.py`, `queries.py` |
 | `web` | Pages that read from several apps: home, group, session, set, polling endpoint, set log. No models. Its one write is through another app's service: opening a set marks the viewer's notice seen (`notify.services.mark_seen`) | `views.py` |
@@ -102,7 +102,9 @@ A successful chip-based submission sets `GameNight.chip_values_locked_at`, inclu
 
 `CountEntry.chip_breakdown` and `FinalCount.chip_breakdown` retain the denominations, quantities and subtotals used for that record. Corrections create new count versions. Accepting a player's entry copies its breakdown. A direct amount replacement has no unrelated chip breakdown. Host confirmation, cash-out and balance checks use the existing count workflow.
 
-`games/chip_views.py` adapts the setup form. `ledger/chip_views.py` adapts the chip-count forms. Both keep their writes in services. The native pages work without JavaScript. `static/js/denominations.js` adds exact BigInt previews and saves each draft's revision with its quantities across live redraws. A stale draft shows Recount needed and disables submission until the person loads current values and recounts. The server checks the revision again when the form is sent.
+`ChipPreset` holds a group's reusable chip values with a unit. `games.services.save_chip_preset()` and `archive_chip_preset()` lock the group row and validate with `games.chips.denominations()`. Each write creates a `ChipPresetChange` row with a unique request ID, so a repeated or late request writes nothing. A session never references a preset: the Chip values page fills its form from one, and `set_chip_values()` saves a copy.
+
+`games/chip_views.py` adapts the setup and preset forms. `ledger/chip_views.py` adapts the chip-count forms. Both keep their writes in services. The native pages work without JavaScript. `static/js/denominations.js` adds exact BigInt previews and saves each draft's revision with its quantities across live redraws. A stale draft shows Recount needed and disables submission until the person loads current values and recounts. The server checks the revision again when the form is sent.
 
 ## Adding players
 

@@ -54,6 +54,15 @@ The live stack counter adds remaining counts, accepted cash-outs and collected r
 
 The individual cash-out still exists: tap the row's Cash out button during play (for early departures), or expand "Details" while counting. Without JavaScript, expand the player row’s Cash out form.
 
+## Chip presets (2026-10-28)
+
+[Plan](../plan/1793173506_chip_value_presets.md). [ADR 0005](../adr/0005-group-chip-presets.md).
+
+- **Manage.** Group settings has a **Chip presets** section below Presets. Each preset shows its name, a Chips badge for a chips unit, and its colours with values. A host selects **New chip preset** or a preset's name. The page has a name, a unit and the same colour rows as a session. **Archive chip preset** removes it from new choices.
+- **Use.** On a session's Chip values page, **Start from a preset** lists presets of the session's unit. **Fill** replaces the rows; nothing saves until **Save chip values**. With JavaScript the rows fill in place and the note says "Filled from …".
+- **Save one.** **Save as a group preset** below the rows saves them as a new preset. On a locked session it saves the session's values. The session does not change.
+- **Copies.** A session keeps its own values. Editing or archiving a preset changes no session.
+
 ## Session chip values (2026-10-28)
 
 [Plan](../plan/1793117581_session_chip_values.md).
@@ -65,7 +74,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 - **Save and confirm.** The server calculates the total with exact integer arithmetic. It saves the denominations and quantities with the count. The host's confirmation keeps a player's submitted breakdown. **Chip breakdown** opens the saved calculation in count details and cash-out review. A direct amount correction does not inherit an earlier breakdown.
 - **Existing flow.** Direct amount entry stays available. A player's count still needs host confirmation. Confirmation, cash-out and the balance check remain separate steps. Chip values are an input method in the session's unit. They do not create a chips-to-pesos exchange rate.
 - **Changed values.** Typed quantities survive live updates and refused submissions. If the assignments change before submission, the draft shows **Recount needed** and blocks sending. Select **Load current values and recount** before continuing. The server also refuses a stale revision.
-- **Without JavaScript.** Setup, adding a colour and counting use ordinary forms. The server calculates the total when the count is sent. On phones, quantity fields use the numeric keyboard. Sheet movement and added-row movement stop under reduced motion.
+- **Without JavaScript.** Setup, adding a colour and counting use ordinary forms. The server calculates the total when the count is sent. On phones, values and quantities use the app's number keys. In a count, the total and the keys stay at the foot of the sheet while the colours scroll. Sheet movement and added-row movement stop under reduced motion.
 - **Checks.** `web/tests/browser/chip_values.mjs` passed 34 checks. The checks cover signed-in setup, player submission, host confirmation, cash-out, session isolation, shared sets, stale drafts, native forms and layouts at 320, 390 and 1280 px. The full suite passed 1,429 tests on PostgreSQL and 1,429 on SQLite with 17 PostgreSQL-only skips.
 
 ## A game night (one set)
@@ -309,7 +318,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 
 - The group page has tabs on the one group address: **Sessions** (default), **Stats** and **Group settings** (`?view=stats`, `?view=settings`). An unknown `view` shows Sessions.
 - Sessions shows the sessions in progress as table cards, then the past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
-- Group settings holds players, invite links, tables, presets and the group rake account. Each management action returns to its own section. Players read the same lists without host forms.
+- Group settings holds players, invite links, tables, presets, chip presets and the group rake account. Each management action returns to its own section. Players read the same lists without host forms.
 - Stats appears once the group has a closed session. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately.
   - Only closed sessions count, using the current frozen results of their finalized sets. Canceled sets and open sessions are excluded.
   - A player's sets are added per session first. Several sets in one session count as one session.
@@ -359,9 +368,9 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - **Twelve keys in fixed places:** 1 to 9, one key that depends on the field, 0 and delete. That key is a decimal point where a decimal is allowed (pesos, the rake percentage) and "00" where it is not (chips, seats). On the setup forms it follows the Unit choice. Holding delete clears the field.
 - **A key that cannot give a valid number does nothing** and the field is marked for a moment: a second decimal point, a third decimal place, a digit past the largest amount.
 - **In a buy-in or cash-out sheet** the keys are part of the sheet, between the amount and the action.
-- **On a page with several number fields** (count-up, New session, Set settings, presets, New table) a panel rises from the bottom when a number field is tapped. It names the field and has **Next** and **Done**. During count-up it takes the host bar's place, shows the running total, and Next goes to the next player still to count.
+- **On a page with several number fields** (count-up, New session, Set settings, presets, chip values, chip presets, New table) a panel rises from the bottom when a number field is tapped. It names the field and has **Next** and **Done**. During count-up it takes the host bar's place, shows the running total, and Next goes to the next player still to count.
 - **It fails safe.** The field stays a real field and the form sends the same value. The phone's keyboard is switched off only once the keys exist. If the script is missing or fails, or with the environment variable `NUMPAD=False`, every field uses the phone's keyboard as before.
-- Script: `static/js/numpad.js`. A field opts in with `data-numpad="pesos|chips|percent|whole|amount"`; a form that wants the keys in a fixed place holds an empty `<div data-numpad-slot>`. [Plan](../plan/1791202390_host_gaps_numpad_count_up.md).
+- Script: `static/js/numpad.js`. A field opts in with `data-numpad="pesos|chips|count|percent|whole|amount"`; a form that wants the keys in a fixed place holds an empty `<div data-numpad-slot>`. [Plan](../plan/1791202390_host_gaps_numpad_count_up.md).
 
 ## Count-up, review and finalize (rework of 2026-10-05)
 
