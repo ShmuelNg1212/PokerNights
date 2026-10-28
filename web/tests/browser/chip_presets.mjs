@@ -75,7 +75,10 @@ try {
  await P.tap(`${D}.querySelector('[name=qty_red]')`);await P.tap(key('dialog[open]','4'),80);
  check('count: total from preset values',await P.js(`${D}.querySelector('[data-chip-total]').textContent==='₱100'`));
  await P.js(`${D}.querySelector('.chip-count-send [type=submit]:not([name])').scrollIntoView({block:'center'})`);
- await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(1500);
+ // The sheet fills Your count; the card sends it.
+ await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(900);
+ await P.tap(`document.querySelector('.numpad-panel [data-numpad-done]')`);await sleep(400);
+ await P.tap(`document.querySelector('.own-count [type=submit]')`);await sleep(1500);
  check('count: the count reaches the server',await P.js(`document.querySelector('.own-count').textContent.includes('You entered ₱100')`));
  // A chips session is not offered a pesos preset.
  await H.go(`/n/${ids.chips}/chip-values/`);

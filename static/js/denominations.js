@@ -30,11 +30,11 @@
     form.querySelector('[data-chip-stale]').hidden = !stale;
     form.querySelector('.btn-primary').disabled = stale;
     form.querySelector('[data-chip-empty]').disabled = stale;
-    var total = 0n, typed = false, invalid = false;
+    var total = 0n, typed = false, invalid = false, pairs = [];
     form.querySelectorAll("[data-chip-quantity-row]").forEach(function (row) {
       var input = row.querySelector("[data-chip-quantity]"), text = input.value.trim(), subtotal = 0n;
       var bad = !!text && !/^[0-9]{1,12}$/.test(text);
-      if (text) typed = true;
+      if (text) { typed = true; pairs.push([input.name.slice(4), text]); }
       if (!bad && text) subtotal = BigInt(text) * BigInt(row.dataset.value);
       if (subtotal > LIMIT) bad = true;
       total += subtotal; invalid = invalid || bad;
@@ -47,6 +47,79 @@
     var hint = form.querySelector("[data-chip-hint]");
     hint.textContent = invalid ? "Use whole quantities. The total must be within the allowed amount." : "";
     hint.hidden = !invalid;
+    if (carrier(form)) form.querySelector('.btn-primary').textContent = typed && !invalid && !stale ? "Use " + amount(total, form.dataset.unit) : "Use count";
+    return {total: total, typed: typed, invalid: invalid, stale: stale, pairs: pairs, revision: Number(revision)};
+  }
+
+  // --- On the set page the sheet is a calculator. It writes its total into the player's count field and
+  // its quantities into the row's chip field; "Confirm all counts", or the card's Send, saves both.
+  // The native chip page has no chip field, so it still sends the count itself.
+  function carrier(form) {
+    return form.closest("dialog") ? document.querySelector('[data-chip-carry="' + form.dataset.chipKey + '"]') : null;
+  }
+  function plain(value, unit) {
+    if (unit === "chips") return String(value);
+    var cents = value % 100n;
+    return String(value / 100n) + (cents ? "." + String(cents).padStart(2, "0") : "");
+  }
+  function shownBy(carry) { try { return carry.value ? JSON.parse(carry.value).shown : null; } catch (_) { return null; } }
+  function storeKey() { var region = document.getElementById("live"); return region && region.dataset.url ? "rack-chips:" + region.dataset.url : null; }
+  // A chip field holds only while its count field still shows the sheet's total: typing over it drops the chips.
+  function holdChips() {
+    var kept = {};
+    document.querySelectorAll("[data-chip-carry]").forEach(function (carry) {
+      var key = carry.dataset.chipCarry, field = document.querySelector('[data-sheet-return="' + key + '"]');
+      if (carry.value && (!field || field.value.trim() !== shownBy(carry))) carry.value = "";
+      if (carry.value) kept[key] = carry.value;
+      var note = document.querySelector('[data-chip-note="' + key + '"]');
+      if (note) note.hidden = !carry.value;
+    });
+    // Kept for this tab, as counts.js keeps the typed counts, so leaving the page does not lose the breakdown.
+    try { var at = storeKey(); if (at) { if (Object.keys(kept).length) sessionStorage.setItem(at, JSON.stringify(kept)); else sessionStorage.removeItem(at); } } catch (_) {}
+  }
+  function recall() {
+    var kept;
+    try { kept = JSON.parse(sessionStorage.getItem(storeKey())); } catch (_) {}
+    if (!kept) return;
+    Object.keys(kept).forEach(function (key) {
+      var carry = document.querySelector('[data-chip-carry="' + key + '"]');
+      if (carry && !carry.value) carry.value = kept[key];
+    });
+  }
+  function fill(form, empty) {
+    var carry = carrier(form), field = carry && document.querySelector('[data-sheet-return="' + form.dataset.chipKey + '"]');
+    if (!field) return false;
+    if (empty) form.querySelectorAll("[data-chip-quantity]").forEach(function (input) { input.value = ""; });
+    var sum = preview(form);
+    if (sum.stale) return true;
+    if (!empty && (sum.invalid || !sum.typed)) {
+      var hint = form.querySelector("[data-chip-hint]");
+      if (!sum.invalid) { hint.textContent = "Enter a quantity, or choose No chips left."; hint.hidden = false; }
+      return true;
+    }
+    var shown = plain(empty ? 0n : sum.total, form.dataset.unit);
+    carry.value = JSON.stringify({quantities: empty ? [] : sum.pairs, revision: sum.revision, empty_stack: !!empty, shown: shown});
+    field.value = shown;
+    // A key typed next goes after the total. Focus comes back when the sheet closes, and moves the caret to the start.
+    field.addEventListener("focus", function () { try { field.setSelectionRange(field.value.length, field.value.length); } catch (_) {} }, {once: true});
+    field.dispatchEvent(new Event("input", {bubbles: true})); // the host dock's preview follows
+    remember(form);
+    holdChips();
+    var close = form.closest("dialog").querySelector(".sheet-head button");
+    if (close) close.click();
+    return true;
+  }
+  // The sheet opens with the quantities its chip field holds, when the page came back from a refusal.
+  function refill(form) {
+    var carry = carrier(form), data = null;
+    if (!carry || !carry.value) return;
+    try { data = JSON.parse(carry.value); } catch (_) { return; }
+    var inputs = Array.from(form.querySelectorAll("[data-chip-quantity]"));
+    if (inputs.some(function (input) { return input.value.trim(); })) return;
+    (data.quantities || []).forEach(function (pair) {
+      var input = form.querySelector('[name="qty_' + pair[0] + '"]');
+      if (input) input.value = pair[1];
+    });
   }
   function update(root) {
     root.querySelectorAll("[data-chip-count]").forEach(function (form) {
@@ -65,6 +138,16 @@
       var form = event.target.closest('form'); remember(form); preview(form);
     }
   });
+  // Before forms.js, Turbo and sheets.js see it: a calculator sheet sends nothing.
+  document.addEventListener("submit", function (event) {
+    var form = event.target;
+    if (!form.matches || !form.matches("[data-chip-count]")) return;
+    var empty = !!event.submitter?.matches("[data-chip-empty]");
+    if (fill(form, empty)) { event.preventDefault(); event.stopPropagation(); }
+  }, true);
+  document.addEventListener("input", function (event) {
+    if (event.target.matches && event.target.matches("[data-sheet-return]")) holdChips();
+  });
   document.addEventListener("submit", function (event) {
     var form = event.target;
     if (!form.matches("[data-chip-count]") || !event.submitter?.matches("[data-chip-empty]")) return;
@@ -77,16 +160,22 @@
     event.preventDefault();
     event.target.form.querySelector("[data-chip-save-preset]").click();
   });
-  document.addEventListener("sheet:shown", function (event) { update(event.detail.body); });
+  document.addEventListener("sheet:shown", function (event) {
+    event.detail.body.querySelectorAll("[data-chip-count]").forEach(refill);
+    update(event.detail.body);
+  });
   document.addEventListener("live:updating", function () { document.querySelectorAll('[data-chip-count]').forEach(remember); });
   document.addEventListener("inplace:updated", function (event) {
     var form = event.detail.form;
     if (form?.matches('[data-chip-count]') && !document.querySelector('.message-error')) delete drafts[form.dataset.chipKey];
   });
-  document.addEventListener("live:updated", function () { update(document); });
+  document.addEventListener("live:updated", function () { update(document); holdChips(); });
+  document.addEventListener("inplace:updated", holdChips);
 
   window.pokerPage.register(function () {
     drafts = Object.create(null);
+    recall();
+    setTimeout(holdChips, 0); // after counts.js has put back the typed counts the chip fields belong to
     update(document);
     var form = document.querySelector("[data-chip-values]");
     if (!form || form.querySelector("fieldset[disabled]")) return;

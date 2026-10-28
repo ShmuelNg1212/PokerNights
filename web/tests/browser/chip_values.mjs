@@ -52,7 +52,10 @@ await P.js(`document.querySelector('dialog').dispatchEvent(new Event('cancel',{c
 check('close restores opener focus',await P.js(`!document.querySelector('dialog[open]')&&document.activeElement.dataset.sheetOpen==='chip-count-${ids.player}'`));
 await P.click(`document.querySelector('.own-count [data-sheet-open="chip-count-${ids.player}"]')`);
 check('reopened sheet keeps draft',await P.js(`document.querySelector('dialog [name=qty_red]').value==='4'&&document.querySelector('dialog [name=qty_green]').value==='9'`));
-await P.click(`document.querySelector('dialog .btn-primary')`);
+// The sheet fills Your count; the card sends it.
+await P.click(`document.querySelector('dialog .btn-primary')`);await sleep(500);
+check('player sheet fills the card',await P.js(`!document.querySelector('dialog[open]')&&document.querySelector('#own-count').value==='1000'`));
+await P.click(`document.querySelector('.own-count [type=submit]')`);
 check('player submits and accepted sheet closes',await P.js(`!document.querySelector('dialog[open]')&&document.body.textContent.includes('You entered')&&document.body.textContent.includes('₱1,000')`));
 await A.go(`/n/${ids.night}/chip-values/`);check('first submission locks setup',await A.js(`document.body.textContent.includes('Chip values are locked')&&document.querySelector('.chip-value-fields').disabled`));
 await A.go(`/s/${ids.set}/`);
@@ -63,8 +66,10 @@ check('host reviews original breakdown',await A.js(`document.querySelector('dial
 await A.js(`document.querySelector('dialog').dispatchEvent(new Event('cancel',{cancelable:true}))`);await sleep(400);
 await A.click(`document.querySelector('[data-sheet-open="chip-count-${ids.a}"]')`);
 await type(A,'dialog [name=qty_green]','10');
-await A.click(`document.querySelector('dialog .btn-primary')`);
-check('host confirms own chip count',await A.js(`!document.querySelector('dialog[open]')&&document.body.textContent.includes('Count confirmed.')`));
+// The sheet fills A's field; Confirm all counts saves it.
+await A.click(`document.querySelector('dialog .btn-primary')`);await sleep(500);
+await A.click(`document.querySelector('button[form=counts-form].confirm-all')`);
+check('host confirms own chip count',await A.js(`!document.querySelector('dialog[open]')&&document.body.textContent.includes('1 count confirmed')`));
 await A.go(`/s/${ids.set}/cash-out-counted/`);
 check('cash-out review balances with breakdowns',await A.js(`document.body.textContent.includes('After this batch the books balance.')&&document.querySelectorAll('.chip-breakdown').length===2`));
 await A.click(`document.querySelector('.batch-review button[type=submit]')`);

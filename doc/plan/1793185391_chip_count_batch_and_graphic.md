@@ -40,7 +40,7 @@ None. The human approved the defaults on 2026-10-28:
   - View tests: posted chip fields reach the service; a refusal redraws them.
   - **Complete when:** view tests pass.
 
-- [ ] **3. The sheet fills the field. `tests: alongside`.**
+- [x] **3. The sheet fills the field. `tests: alongside`.**
   - In the inline sheet, the primary action becomes "Use ₱X". It writes the total into the count field and the quantities into the hidden fields. Then it closes and returns focus to the field.
   - The row says "by chips" and shows the breakdown under the field.
   - Editing the field by hand clears the chip fields and the marker.
@@ -48,6 +48,7 @@ None. The human approved the defaults on 2026-10-28:
   - Player card: the same. The sheet fills "Your count"; the card sends it.
   - Browser probe: fill by chips, type another player, confirm all: both counts are saved and the chip breakdown shows. Edit after filling: the chip data goes.
   - **Complete when:** the probe passes at 390 and 320 px.
+  - Done 2026-10-28. Deviations: before the save, the row says "by chips" without the breakdown; the breakdown shows in Details after the save. `chip_batch.mjs` (17 checks) runs at 390 px; `chip_numpad.mjs` covers the fill-and-send path at 320 px.
 
 - [ ] **4. The chip rack. `tests: alongside`.**
   - Drawn chip per colour: real colour, striped edge, value on the face. Tap: +1.

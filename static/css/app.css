@@ -1589,7 +1589,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .count-v2 .player-opens .icon { width: 14px; height: 14px; margin-left: 2px; color: var(--muted); vertical-align: -.1em; }
 html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-sub { color: var(--muted); font-size: .8125rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
-.count-from { color: var(--brass); }
+.count-from, .count-chip-note { color: var(--brass); }
 .count-v2 .count-entry { display: contents; }
 .count-v2 .count-entry input[data-count-input] { grid-column: 3; grid-row: 1; min-width: 0; min-height: var(--tap); padding-left: 34px; }
 .count-tick { grid-column: 3; grid-row: 1; justify-self: start; width: 18px; height: 18px; margin-left: 10px; fill: none; stroke: var(--up); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; opacity: 0; }

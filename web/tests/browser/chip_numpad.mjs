@@ -66,7 +66,10 @@ try {
   await P.shot(`count-sheet-${w}`);
   if(w===320){
    await P.js(`${D}.querySelector('.chip-count-send [type=submit]:not([name])').scrollIntoView({block:'center'})`);await sleep(200);
-   await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(1500);
+   // The sheet fills Your count; the card sends it.
+   await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(900);
+   await P.tap(`document.querySelector('.numpad-panel [data-numpad-done]')`);await sleep(400);
+   await P.tap(`document.querySelector('.own-count [type=submit]')`);await sleep(1500);
    check('count: the keyed count reaches the server',await P.js(`!document.querySelector('dialog[open]')&&document.querySelector('.own-count').textContent.includes('₱28')`),await P.js(`document.querySelector('.own-count')?.textContent.replace(/\\s+/g,' ').slice(0,200)`));
   } else { await P.js(`${D}.close()`);await sleep(400); }
  }

@@ -14,6 +14,12 @@ Use a fresh temporary database. Migrate it, then run `manage.py shell < web/test
 
 The fixture makes a twelve-colour chip count for player `ben` and an empty setup page for host `hana`. It writes `/private/tmp/pn-chip-numpad-manifest.json`. The 22 checks tap with emulated touch at 390 × 844 and 320 × 568. They cover the setup value field, the count sheet's keys, the dock that keeps the total and keys in view, and a sent count. The probe consumes the count fixture. Captures are in `/private/tmp/pn-chip-numpad-review/`, or `PN_REVIEW_DIR`.
 
+## Chip sheet as a calculator
+
+Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py`. Start the local server with the same database. Run `node web/tests/browser/chip_batch.mjs`.
+
+The 17 checks tap with emulated touch at 390 × 844. The host fills one player's count from the chip sheet, types another, and saves both with one confirm. The probe checks the button label, the field, focus, the "by chips" note, the chip field, the dock preview, a reopened sheet and the saved breakdown. Typing over a filled total drops the chips. A player fills Your count from the sheet and sends it. The probe consumes set 1 and the second set. Captures are in `/private/tmp/pn-chip-batch-review/`, or `PN_REVIEW_DIR`.
+
 ## Existing flow checks
 
 Use a **fresh temporary database**, never the development database. The fixture creates synthetic host `hana`, player `ben`, and five sets. These dependency-free Node scripts drive installed Chrome through CDP. The scripts close only their own browser process.
