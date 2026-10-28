@@ -241,6 +241,26 @@
 </div>
 </section>
 
+<section id="chip-presets" aria-labelledby="chip-presets-heading">
+<h2 id="chip-presets-heading">Chip presets</h2>
+<div class="panel">
+  {% if chip_presets %}
+  <ul class="list">
+    {% for item in chip_presets %}{% with preset=item.preset %}
+    <li>
+      <div class="row">
+        <span class="grow">{% if me.is_host %}<a href="{% url 'chip_preset_edit' group.pk preset.pk %}">{{ preset.name }}</a>{% else %}{{ preset.name }}{% endif %}</span>
+        {% if preset.unit == 'chips' %}<span class="badge">Chips</span>{% endif %}
+      </div>
+      <ul class="chip-preset-values small" aria-label="Chip values in {{ preset.name }}">{% for row in item.rows %}<li><span class="denomination-swatch denomination-{{ row.colour }}" aria-hidden="true"></span>{{ row.name }} <span class="num">{{ row.value|amount:preset.unit }}</span></li>{% endfor %}</ul>
+    </li>
+    {% endwith %}{% endfor %}
+  </ul>
+  {% else %}<p class="muted">No chip presets yet. A chip preset saves what each colour is worth, so a session's chip values take one tap.</p>{% endif %}
+  {% if me.is_host %}<p><a class="btn btn-block" href="{% url 'chip_preset_create' group.pk %}">New chip preset</a></p>{% endif %}
+</div>
+</section>
+
 <section id="rake" aria-labelledby="rake-heading">
 <h2 id="rake-heading">Group rake account</h2>
 <div class="panel" aria-label="Accumulated rake">

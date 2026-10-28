@@ -72,6 +72,11 @@
     form.querySelectorAll("[data-chip-quantity]").forEach(function (input) { input.value = ""; });
     preview(form);
   }, true);
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" || !event.target.matches || !event.target.matches("[data-chip-preset-name]")) return;
+    event.preventDefault();
+    event.target.form.querySelector("[data-chip-save-preset]").click();
+  });
   document.addEventListener("sheet:shown", function (event) { update(event.detail.body); });
   document.addEventListener("live:updating", function () { document.querySelectorAll('[data-chip-count]').forEach(remember); });
   document.addEventListener("inplace:updated", function (event) {
@@ -109,18 +114,47 @@
       if (rows().length >= 12) return;
       // Reuse a removed slot so repeated add/remove actions cannot exhaust the formset limit.
       var slot = Array.from(list.querySelectorAll("[data-chip-value-row]")).find(function (row) { return row.hidden; });
-      if (slot) {
-        slot.querySelectorAll("input").forEach(function (input) { input.value = input.type === "checkbox" ? "on" : ""; input.checked = false; });
-        slot.querySelector("select").value = ""; slot.querySelectorAll(".errorlist").forEach(function (el) { el.remove(); });
-      } else {
-        var holder = document.createElement("template"); holder.innerHTML = template.innerHTML.replaceAll("__prefix__", count.value);
-        slot = holder.content.firstElementChild; list.appendChild(slot); count.value = String(Number(count.value) + 1);
-      }
+      if (slot) blank(slot); else slot = fresh();
       sync();
       var motion = window.pokerMotion;
       if (motion) motion.settle(slot, motion.run(slot, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift"), ["opacity", "transform"]);
       slot.querySelector("select").focus();
     }, {signal: life.signal});
+    function blank(row) {
+      row.querySelectorAll("input").forEach(function (input) { input.value = input.type === "checkbox" ? "on" : ""; input.checked = false; });
+      row.querySelector("select").value = ""; row.querySelectorAll(".errorlist").forEach(function (el) { el.remove(); });
+    }
+    function fresh() {
+      var holder = document.createElement("template"); holder.innerHTML = template.innerHTML.replaceAll("__prefix__", count.value);
+      var row = holder.content.firstElementChild; list.appendChild(row); count.value = String(Number(count.value) + 1);
+      return row;
+    }
+    // A group preset fills the rows in place; the server's Fill does the same without JavaScript. Nothing saves.
+    var pick = document.querySelector("[data-chip-preset-form]"), offered = document.getElementById("chip-presets");
+    if (pick && offered) {
+      var presets = JSON.parse(offered.textContent);
+      pick.addEventListener("submit", function (event) {
+        var chosen = presets[pick.elements.preset.value];
+        if (!chosen) return;
+        event.preventDefault();
+        var all = Array.from(list.querySelectorAll("[data-chip-value-row]"));
+        chosen.rows.forEach(function (values, at) {
+          var row = all[at] || fresh();
+          blank(row);
+          row.querySelector('[name$="-colour"]').value = values.colour;
+          row.querySelector('[name$="-label"]').value = values.label;
+          row.querySelector('[name$="-value"]').value = values.value;
+        });
+        all.slice(chosen.rows.length).forEach(function (row) { row.querySelector('[name$="-DELETE"]').checked = true; });
+        sync();
+        form.querySelector("[data-chip-from-preset]").value = pick.elements.preset.value;
+        pick.querySelector("[data-chip-preset-note]").textContent = "Filled from " + chosen.name + ". Check the values, then save.";
+        var motion = window.pokerMotion;
+        if (motion) rows().forEach(function (row, at) {
+          motion.settle(row, motion.run(row, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: at * 0.03 }), ["opacity", "transform"]);
+        });
+      }, {signal: life.signal});
+    }
     form.addEventListener("change", function (event) {
       var row = event.target.closest("[data-chip-value-row]"); if (!row) return;
       if (event.target.name.endsWith("-DELETE")) {

@@ -17,7 +17,7 @@ from django.utils import timezone
 from accounts import services as accounts
 from audit.models import AuditEvent
 
-from games import clock
+from games import chips, clock
 from games import rsvp
 from games import seats as seat_draws
 from games import services as games
@@ -158,6 +158,7 @@ def group_settings_context(request, me) -> dict:
         "rake_totals": rake_totals,
         "rake_sets": rake_sets,
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
+        "chip_presets": [{"preset": preset, "rows": chips.named(preset.values)} for preset in games.chip_presets_for(me.group)],
     }
     if me.is_host:
         context["group_form"] = take_form(request, f"{group_id}:group", GroupForm,

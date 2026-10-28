@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block screen %} data-depth="2"{% endblock %}
+{% block title %}Chip preset · {{ group.name }}{% endblock %}
+{% block page_class %}form-page{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'group' group.pk %}?view=settings#chip-presets">{{ group.name }} settings</a></p>
+<h1>{% if preset %}Edit chip preset{% else %}New chip preset{% endif %}</h1>
+<p class="hint">Save the values of a chip set you use often. A session copies them when the host saves its chip values, so a later edit changes no session.</p>
+<form method="post" class="form-section chip-values-form" data-chip-values data-once>
+  {% csrf_token %}<input type="hidden" name="request_id" value="{{ request_id }}">
+  {% if error %}<p class="notice notice-bad" role="alert">{{ error }}</p>{% endif %}
+  {% include "partials/field.html" with field=form.name %}
+  {% include "partials/field.html" with field=form.unit %}
+  {{ formset.management_form }}{{ formset.non_form_errors }}
+  <fieldset class="chip-value-fields">
+    <legend class="visually-hidden">Chip values in this preset</legend>
+    <div data-chip-value-rows>{% for form in formset %}{% include "games/_chip_value_row.html" %}{% endfor %}</div>
+    <button type="submit" name="intent" value="add" class="btn btn-block" data-chip-add formnovalidate>Add a colour</button>
+    <p class="small muted">Up to 12 colours. Values are in the unit above: pesos, or chip units with no peso value.</p>
+    <button type="submit" class="btn btn-primary btn-block">Save chip preset</button>
+  </fieldset>
+  <template data-chip-value-template>{% include "games/_chip_value_row.html" with form=formset.empty_form %}</template>
+</form>
+{% if preset %}
+<form method="post" class="form-section chip-preset-archive">
+  {% csrf_token %}<input type="hidden" name="request_id" value="{{ request_id }}">
+  <p class="small muted">Archiving removes this preset from new choices. Sessions keep their chip values.</p>
+  <button type="submit" name="intent" value="archive" class="btn btn-quiet btn-block">Archive chip preset</button>
+</form>
+{% endif %}
+{{ colours|json_script:"chip-colours" }}
+{% endblock %}

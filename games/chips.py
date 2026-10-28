@@ -34,6 +34,14 @@ def denominations(rows):
     return cleaned
 
 
+def named(values):
+    """Saved rows with what a screen shows: the label or colour name, the colour name and its swatch."""
+    palette = {key: (name, colour) for key, name, colour in COLOURS}
+    return [{**row, "name": row["label"] or palette[row["colour"]][0],
+             "colour_name": palette[row["colour"]][0], "hex": palette[row["colour"]][1]}
+            for row in values]
+
+
 def calculate(values, quantities, *, empty_stack=False):
     """Calculate a stack in integer units and retain its complete denomination breakdown."""
     if not values:

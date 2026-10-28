@@ -15,10 +15,7 @@ from . import queries, services
 
 
 def denominations(night):
-    palette = {key: (name, colour) for key, name, colour in chips.COLOURS}
-    return [{**row, "name": row["label"] or palette[row["colour"]][0],
-             "colour_name": palette[row["colour"]][0], "hex": palette[row["colour"]][1]}
-            for row in night.chip_values]
+    return chips.named(night.chip_values)
 
 
 def form_context(session, participant, actor, draft=None):

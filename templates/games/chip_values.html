@@ -12,8 +12,24 @@
 {% else %}
 <p class="small muted">Values lock after the first chip-based count is sent or confirmed.</p>
 {% endif %}
+{% if saved_preset %}<p class="notice notice-good" role="status">Saved {{ saved_preset }} as a group preset.</p>{% endif %}
+{% if not locked %}{% if presets %}
+{# Its own form: Enter in a value field must not fill over the rows. With JavaScript the rows fill in place (denominations.js). #}
+<form method="post" class="chip-preset-pick" data-chip-preset-form>
+  {% csrf_token %}<input type="hidden" name="intent" value="preset"><input type="hidden" name="revision" value="{{ revision }}">
+  <label for="chip-preset">Start from a preset</label>
+  <div class="chip-preset-choose">
+    <select id="chip-preset" name="preset">{% for p in presets %}<option value="{{ p.pk }}"{% if from_preset.pk == p.pk %} selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>
+    <button type="submit" class="btn">Fill</button>
+  </div>
+  <p class="small muted" data-chip-preset-note aria-live="polite">{% if from_preset %}Filled from {{ from_preset.name }}. Check the values, then save.{% else %}Fills the rows below. Nothing changes until you save.{% endif %}</p>
+  {% if preset_error and intent == "preset" %}<p class="notice notice-bad" role="alert">{{ preset_error }}</p>{% endif %}
+</form>
+{{ preset_fill|json_script:"chip-presets" }}
+{% elif intent == "preset" and preset_error %}<p class="notice notice-bad" role="alert">{{ preset_error }}</p>{% endif %}{% endif %}
 <form method="post" class="form-section chip-values-form" data-chip-values data-unit="{{ unit }}" data-once>
   {% csrf_token %}<input type="hidden" name="request_id" value="{{ request_id }}"><input type="hidden" name="revision" value="{{ revision }}">
+  <input type="hidden" name="from_preset" value="{{ from_preset.pk|default:'' }}" data-chip-from-preset>
   {% if error %}<p class="notice notice-bad" role="alert">{{ error }} <a href="{% url 'chip_values' night.pk %}">Load saved values</a></p>{% endif %}
   {{ formset.management_form }}{{ formset.non_form_errors }}
   <fieldset{% if locked %} disabled{% endif %} class="chip-value-fields">
@@ -25,6 +41,16 @@
     <button type="submit" class="btn btn-primary btn-block">Save chip values</button>
     {% endif %}
   </fieldset>
+  {% if locked and not night.chip_values %}{% else %}
+  {# Outside the fieldset, so a locked session's saved values can still become a preset. #}
+  <details class="chip-save-preset"{% if intent == "save_preset" and preset_error %} open{% endif %}>
+    <summary>Save as a group preset</summary>
+    <p class="small muted">{% if locked %}Saves this session's values{% else %}Saves the rows above{% endif %} for the group's next sessions. This session does not change.</p>
+    <div class="field"><label for="chip-preset-name">Preset name</label><input type="text" id="chip-preset-name" name="preset_name" value="{{ preset_name }}" maxlength="60" autocomplete="off" data-chip-preset-name{% if intent == "save_preset" and preset_error %} aria-invalid="true" aria-describedby="chip-preset-name-error"{% endif %}>
+    {% if intent == "save_preset" and preset_error %}<div class="errors" id="chip-preset-name-error" role="alert">{{ preset_error }}</div>{% endif %}</div>
+    <button type="submit" name="intent" value="save_preset" class="btn btn-block" data-chip-save-preset>Save as a group preset</button>
+  </details>
+  {% endif %}
   <template data-chip-value-template>{% include "games/_chip_value_row.html" with form=formset.empty_form %}</template>
 </form>
 {{ colours|json_script:"chip-colours" }}
