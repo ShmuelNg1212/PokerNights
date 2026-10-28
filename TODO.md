@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks (unreleased: `feat/chip-numpad`, `feat/chip-presets`)
+## Phone checks (released 2026-10-28: chip number keys and chip presets)
 
 - [ ] Chip keys: on Chip values, tap a Value field. The app's number keys rise, not the phone keyboard; a pesos value has a decimal point. Tap Label: the keys go and the phone keyboard comes. Tap **Count by chips**: the keys are in the sheet with **00**, not a point. Scroll a long list: the total and the keys stay at the foot. Send a count and check the total.
 - [ ] Chip presets: Group settings → **New chip preset**. Name it, add two colours with the number keys, save: it is listed with its values. On a new session's Chip values, pick it under **Start from a preset** and tap **Fill**: the rows fill in place. Save, then count by chips with those values. Edit the preset: the session keeps its values. Try **Save as a group preset**. As a player, you see presets but no edit link.
