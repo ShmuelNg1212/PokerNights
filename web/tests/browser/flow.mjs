@@ -75,7 +75,7 @@ async function story(width,key){
  check(`${W} a tap on a button of a moving row opens its sheet`,after.open&&/Buy-in|Rebuy/.test(after.title)&&await A.js(`window.__tapAt`)===gap);
  check(`${W} cash-out: the Left badge springs in and the name dims`,await A.js(`__runs.some(r=>r.el==='badge'&&r.keys.join()==='opacity,transform')&&getComputedStyle(document.querySelector('.just-left .player-name')).animationName==='name-dim'`));
  await A.shot(`flow-shift-${width}`);
- await A.js(`${dialog}.querySelector('.sheet-head button').click()`);await sleep(900);
+ await A.js(`${dialog}.querySelector('.sheet-head button').click()`);await sleep(900);for(let i=0;i<11&&!await A.js(rowsAtRest);i++)await sleep(100);
  const settled=await A.js(`[...document.querySelectorAll('#live li[data-watch]')].map(r=>r.getBoundingClientRect().top+scrollY)`);
  check(`${W} cash-out: rows end at rest, moved by ${Math.round(before[2]-settled[2])}px`,await A.js(rowsAtRest)&&Math.abs((before[2]-settled[2])-gap)<=1);
  // A rebuy by the other host.
@@ -136,7 +136,8 @@ try {
  await H.js(`window.dispatchEvent(new Event('online'))`);await sleep(1500);
  check('typing: no redraw and no movement',await H.js(`__f.length`)===n&&await H.js(`__runs.length===0`));
  const blurred=H.redraw(false);await H.js(`document.activeElement.blur()`);f=await blurred;
- check('count confirmed: the status badge springs and the progress line is marked',!!f&&await H.js(`__runs.some(r=>r.el.includes('badge-live'))&&document.querySelector('.count-progress').classList.contains('just-changed')`));
+ // The confirmed row draws its green tick; its status words are for screen readers only.
+ check('count confirmed: the row draws its tick and the progress line is marked',!!f&&await H.js(`(()=>{const t=document.querySelector('.count-row.just-changed.is-ready .count-tick');return !!t&&getComputedStyle(t).opacity==='1'&&getComputedStyle(t.querySelector('path')).animationName==='tick-draw'})()&&document.querySelector('.count-progress').classList.contains('just-changed')`));
  await sleep(600);
  other(`ledger.confirm_counts(${K.set},host,{${K.players[1]}:80000},u())
 ledger.cash_out_counted(${K.set},host,list(FinalCount.objects.filter(session_id=${K.set},is_current=True).values_list('pk',flat=True)),u())`);

@@ -2,7 +2,9 @@
 // Seed a fresh temporary database with seed.py, seed_end_set.py, seed_night.py and seed_opening.py: set 3 is
 // in play with eight players, set 4 is an empty draft, sets 19 to 22 are open. The script consumes its fixtures.
 import {spawn} from 'node:child_process';
-import {writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
+// Open sets from seed_opening.py.
+const OPEN=JSON.parse(readFileSync('/private/tmp/pn-opening-manifest.json','utf8'));
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-rack-review';mkdirSync(OUT,{recursive:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 rmSync('/private/tmp/pn-table-chrome',{recursive:true,force:true});
@@ -131,15 +133,15 @@ try {
  check('started: the usual buy-in went to both players, the timer runs',await H.js(`document.querySelector('.felt .badge').textContent==='In play'&&/₱/.test(document.querySelector('.display-amount').textContent)&&document.querySelectorAll('.player-row .buy-opener').length===2`));
  await H.go('/s/4/');check('opening the page again does not replay the start',await H.js(`document.getAnimations().length===0&&!document.querySelector('.table-v2 .felt').getAttribute('style')`));
  // An open set as a player.
- await P.go('/s/19/');
+ await P.go(`/s/${OPEN.live.set}/`);
  check('a player on an open set: the stakes, Join first, no checklist',await P.js(`!document.querySelector('.prep-step')&&${text('The host starts the set.')}&&${text('Blinds')}&&document.querySelector('.player-list > li').matches('.join-row')&&!!document.querySelector('.join-row .btn-primary')`));
  await P.shot('table-open-player-390');await P.click(`document.querySelector('.join-row button')`,100);
  check('Join seats the player, first in their own list',await P.until(`!document.querySelector('.join-row')&&document.querySelector('.player-row').textContent.includes('(you)')`));
  // Desktop preparation.
- await H.size(1280,800);await H.go('/s/19/');check('1280px open set: checklist in the left column, no overflow',await H.js(`document.documentElement.scrollWidth<=1280&&document.querySelector('.prep').getBoundingClientRect().right<document.querySelector('.table-players').getBoundingClientRect().left`));await H.shot('table-open-1280');await H.size(390);
+ await H.size(1280,800);await H.go(`/s/${OPEN.live.set}/`);check('1280px open set: checklist in the left column, no overflow',await H.js(`document.documentElement.scrollWidth<=1280&&document.querySelector('.prep').getBoundingClientRect().right<document.querySelector('.table-players').getBoundingClientRect().left`));await H.shot('table-open-1280');await H.size(390);
 
  // ===== Fail safe.
- const R=await page();await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},R.s);await R.login('hana');await R.go('/s/21/');
+ const R=await page();await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},R.s);await R.login('hana');await R.go(`/s/${OPEN.default.set}/`);
  await R.click(`document.querySelector('.host-controls button[value=start]')`,50);await R.until(`document.getElementById('live').dataset.state==='running'`);
  check('reduced motion: the set starts and nothing moves',await R.js(`document.getAnimations().length===0&&!document.querySelector('.table-v2 .felt').getAttribute('style')&&document.querySelector('.felt .badge').textContent==='In play'`));
  await R.click(`document.querySelector('.player-row .player-opener')`,400);
@@ -147,17 +149,17 @@ try {
  const X=await page();await send('Network.enable',{},X.s);await send('Network.setBlockedURLs',{urls:['*vendor/motion-*']},X.s);const before=errors.length;await X.login('hana');await X.go('/s/3/');
  await X.click(`document.querySelectorAll('.player-row .player-opener')[3]`,500);await X.click(`document.querySelector('dialog [data-sheet-swap]')`,500);
  check('Motion blocked: rows, sheets and the page work, with no script error',await X.js(`!window.Motion&&document.querySelector('dialog.sheet').open&&document.querySelector('#sheet-title').textContent.startsWith('Cash out')`)&&errors.length===before,errors.slice(before).join('; '));
- const N=await page();await N.login('hana');await send('Emulation.setScriptExecutionDisabled',{value:true},N.s);await N.go('/s/20/');
- check('no JavaScript, open set: the steps, the option and Start are all there',await N.js(`document.querySelectorAll('.prep-step').length===4&&!!document.querySelector('#opening-buy-ins')&&!!document.querySelector('button[value=start]')`));
+ const N=await page();await N.login('hana');await send('Emulation.setScriptExecutionDisabled',{value:true},N.s);await N.go(`/s/${OPEN.opt_out.set}/`);
+ check('no JavaScript, open set: the steps, the option and Start are all there',await N.js(`[...document.querySelectorAll('.prep-step')].map(e=>e.dataset.step).join()==='players,stakes,open,seats,start'&&!!document.querySelector('#opening-buy-ins')&&!!document.querySelector('button[value=start]')`));
  await N.click(`document.querySelector('.host-controls button[value=start]')`,1500);
- check('no JavaScript: Start works and the page in play is whole',await N.js(`location.pathname==='/s/20/'&&!!document.querySelector('.table-v2 .felt')&&document.querySelector('.felt .badge').textContent==='In play'`));
+ check('no JavaScript: Start works and the page in play is whole',await N.js(`location.pathname==='/s/${OPEN.opt_out.set}/'&&!!document.querySelector('.table-v2 .felt')&&document.querySelector('.felt .badge').textContent==='In play'`));
  check('no JavaScript: each row offers Rebuy, Cash out and Details as native disclosures',await N.js(`(()=>{const row=document.querySelector('.player-row');const s=[...row.querySelectorAll('summary')].filter(e=>e.getClientRects().length).map(e=>e.textContent.trim());return s.join('|')==='Rebuy|Cash out|Details'&&!row.querySelector('.player-opens .icon').getClientRects().length})()`),await N.js(`[...document.querySelector('.player-row').querySelectorAll('summary')].map(e=>e.textContent.trim()).join('|')`));
  await N.js(`(()=>{const d=[...document.querySelectorAll('.player-row details')].find(x=>x.querySelector('summary').textContent.trim()==='Rebuy');d.open=true;d.querySelector('[name=amount]').value='500'})()`);
  await N.click(`[...document.querySelectorAll('.player-row details')].find(x=>x.querySelector('summary').textContent.trim()==='Rebuy').querySelector('[type=submit]')`,1500);
- check('no JavaScript: a rebuy from the native form is recorded',await N.js(`location.pathname==='/s/20/'&&/1 rebuy/.test(document.querySelector('.player-row').textContent)`));
+ check('no JavaScript: a rebuy from the native form is recorded',await N.js(`location.pathname==='/s/${OPEN.opt_out.set}/'&&/1 rebuy/.test(document.querySelector('.player-row').textContent)`));
  check('no JavaScript: Details on the panel is a native disclosure',await N.js(`document.querySelector('.set-facts > summary').getClientRects().length>0&&!document.querySelector('.set-facts').open`));
  // Late frames on the start, with the processor slowed four times.
- const L=await page();await L.login('hana');await L.go('/s/22/');await send('Emulation.setCPUThrottlingRate',{rate:4},L.s);
+ const L=await page();await L.login('hana');await L.go(`/s/${OPEN.chips.set}/`);await send('Emulation.setCPUThrottlingRate',{rate:4},L.s);
  await L.js(`window.__frames=[];let last=0;const tick=n=>{if(last)window.__frames.push(n-last);last=n;requestAnimationFrame(tick)};requestAnimationFrame(tick)`);
  await L.click(`document.querySelector('.host-controls button[value=start]')`,50);await L.until(`document.getElementById('live').dataset.state==='running'`,12000);await L.js('window.__mark=window.__frames.length');await sleep(1000);
  const frames=(await L.js('window.__frames.slice(window.__mark)'));const worst=Math.round(Math.max(...frames)),late=frames.filter(d=>d>34).length;

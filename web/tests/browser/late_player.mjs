@@ -36,7 +36,7 @@ await sleep(4600);check('second host sees live arrival',await B.js(`document.bod
 check('new join timer shown',await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late arrival')).textContent.includes('Played')`));
 await A.go(path);await A.js(`document.querySelector('[name=names]').value='late ARRIVAL'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
 check('duplicate bound name and seated recovery',await A.js(`document.querySelector('[name=names]').value==='late ARRIVAL'&&document.querySelector('[name=names]').getAttribute('aria-invalid')==='true'&&document.body.textContent.includes('Already at the table: late ARRIVAL.')`));await A.shot('late-duplicate-390');
-await A.go(`/g/1/`);check('new identity saved to group roster',await A.js(`document.body.textContent.includes('Late arrival')`));
+await A.go(`/g/1/?view=settings`);check('new identity saved to group roster',await A.js(`document.body.textContent.includes('Late arrival')`));
 await A.go(`/s/${ids.full}/`);const fullPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(fullPath);
 check('full table explains disabled new action',await A.js(`document.body.textContent.includes('The table is full')&&document.querySelector('[name=names]').matches(':disabled')&&document.querySelector('[data-pick-submit]').matches(':disabled')`));
 await A.go(`/s/${ids.stale}/`);const stalePath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(stalePath);await A.js(`document.querySelector('[name=names]').value='After end'`);
@@ -45,8 +45,11 @@ check('ended race retains name and disables add',await A.js(`document.querySelec
 await B.go(`/s/${ids.stale}/`);check('ended race added no player',await B.js(`!document.body.textContent.includes('After end')`));
 await A.go(`/s/${ids.chips}/`);const chipsPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(chipsPath);await A.js(`document.querySelector('[name=names]').value='Chip newcomer'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
 check('chips late join keeps native unit and no money',await A.js(`!document.body.textContent.includes('₱')&&[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer')).textContent.includes('0 chips')`));
-await A.js(`window.row=[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer'));row.querySelector('details').open=true;row.querySelector('input[name=amount]').value='1000'`);await A.click(`row.querySelector('form button')`);
+// The native form: without JavaScript, Buy-in is a disclosure in the row.
+await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);await A.go(`/s/${ids.chips}/`);
+await A.js(`window.row=[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer'));window.buy=[...row.querySelectorAll('details')].find(d=>d.querySelector('summary').textContent.trim()==='Buy-in');buy.open=true;buy.querySelector('input[name=amount]').value='1000'`);await A.click(`buy.querySelector('[type=submit]')`);
 check('native manual buy-in after late arrival',await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Chip newcomer')).textContent.includes('1,000 chips')`));
+await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
 await B.go(chipsPath);check('new group identity appears in other set picker',await B.js(`document.body.textContent.includes('Late arrival')`));
 await P.go(`/s/${ids.running}/`);check('player sees arrival without host add action',await P.js(`document.body.textContent.includes('Late arrival')&&!document.querySelector('.section-heading a')`));
 await A.go('/s/3/');const existingPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(existingPath);
