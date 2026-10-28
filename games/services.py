@@ -22,7 +22,7 @@ from groups.services import clean_name, add_roster_player, lock_group
 
 from . import chips, clock, rsvp
 from .models import (
-    ChipValueChange, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
+    ChipPreset, ChipValueChange, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
     SettingsVersion, StakesFields, Table, Unit,
 )
 
@@ -1278,8 +1278,11 @@ def rsvp_member_removed(member, actor_user) -> None:
 
 
 @transaction.atomic
-def set_chip_values(night_id, actor: Member, values, request_id, *, revision) -> GameNight:
-    """Replace one session's denomination table before its first chip-based count."""
+def set_chip_values(night_id, actor: Member, values, request_id, *, revision, preset=None) -> GameNight:
+    """Replace one session's denomination table before its first chip-based count.
+
+    ``preset`` names the group preset the form was filled from, for the record only: the values are a copy.
+    """
     require_host(actor)
     night = lock_night(night_id, actor.group_id)
     if ChipValueChange.objects.filter(night=night, request_id=request_id).exists():
@@ -1300,7 +1303,66 @@ def set_chip_values(night_id, actor: Member, values, request_id, *, revision) ->
     audit.record(
         "night.chip_values", actor=actor.user, group_id=night.group_id,
         target=change, summary=f"Saved chip values for {night}",
-        data={"revision": night.chip_values_revision, "values": night.chip_values},
+        data={"revision": night.chip_values_revision, "values": night.chip_values, **({"preset": preset} if preset else {})},
     )
     _bump_sets(night)
     return night
+
+
+def chip_presets_for(group, unit=None):
+    """A group's active chip presets, of one unit when given. Nothing converts between units."""
+    presets = ChipPreset.objects.filter(group=group, archived_at__isnull=True)
+    return presets.filter(unit=unit) if unit else presets
+
+
+def _own_chip_preset(group, preset_id) -> ChipPreset:
+    preset = ChipPreset.objects.filter(group=group, pk=preset_id, archived_at__isnull=True).first()
+    if preset is None:
+        raise RuleError("That chip preset is not in this group.")
+    return preset
+
+
+@transaction.atomic
+def save_chip_preset(actor: Member, data: dict, request_id, *, preset_id=None) -> ChipPreset:
+    """Create a chip preset, or replace one. Sessions keep their own copy, so no session changes."""
+    require_host(actor)
+    group = lock_group(actor.group_id)
+    done = ChipPreset.objects.filter(group=group, request_id=request_id).first()
+    if done is not None:
+        return done
+    fields = {
+        "name": clean_name(data.get("name"), "Preset name"),
+        "unit": _unit(data.get("unit")),
+        "values": chips.denominations(data.get("values")),
+    }
+    if ChipPreset.objects.filter(group=group, name=fields["name"], archived_at__isnull=True).exclude(pk=preset_id).exists():
+        raise RuleError(f"A chip preset named {fields['name']} already exists.")
+    if preset_id is None:
+        preset = ChipPreset.objects.create(group=group, request_id=request_id, **fields)
+        action = "chip_preset.created"
+    else:
+        preset = _own_chip_preset(group, preset_id)
+        for name, value in {**fields, "request_id": request_id}.items():
+            setattr(preset, name, value)
+        preset.save()
+        action = "chip_preset.updated"
+    audit.record(action, actor=actor.user, group_id=group.pk, target=preset,
+                 summary=f"Saved chip preset {preset.name}", data={"unit": preset.unit, "values": preset.values})
+    return preset
+
+
+@transaction.atomic
+def archive_chip_preset(actor: Member, preset_id, request_id) -> ChipPreset:
+    """Hide a chip preset from new choices. Sessions that copied it keep their values."""
+    require_host(actor)
+    group = lock_group(actor.group_id)
+    done = ChipPreset.objects.filter(group=group, request_id=request_id).first()
+    if done is not None:
+        return done
+    preset = _own_chip_preset(group, preset_id)
+    preset.archived_at = timezone.now()
+    preset.request_id = request_id
+    preset.save(update_fields=["archived_at", "request_id"])
+    audit.record("chip_preset.archived", actor=actor.user, group_id=group.pk, target=preset,
+                 summary=f"Archived chip preset {preset.name}")
+    return preset

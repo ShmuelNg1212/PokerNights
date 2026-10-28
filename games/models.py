@@ -187,6 +187,30 @@ class ChipValueChange(models.Model):
         ]
 
 
+class ChipPreset(models.Model):
+    """A group's reusable chip values. A session copies them when the host saves; later edits change no session."""
+
+    group = models.ForeignKey(GameGroup, on_delete=models.CASCADE, related_name="chip_presets")
+    name = models.CharField(max_length=60)
+    unit = models.CharField(max_length=8, choices=Unit.choices, default=Unit.PHP)
+    values = models.JSONField()
+    archived_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # The last save's id: the same tap sent twice is saved once.
+    request_id = models.UUIDField(null=True, blank=True, unique=True)
+
+    class Meta:
+        ordering = ["name", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["group", "name"], condition=Q(archived_at__isnull=True), name="chip_preset_active_name_unique"
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class Rsvp(models.Model):
     """One member's answer for one announced session. Each answer changes the row; the audit log keeps the history.
 
