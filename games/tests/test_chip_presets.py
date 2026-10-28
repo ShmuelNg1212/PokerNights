@@ -42,6 +42,34 @@ class ChipPresetTests(TestCase):
         self.assertEqual(ChipPreset.objects.count(), 1)
         self.assertEqual(ChipPreset.objects.get().name, 'Home set')
 
+    def test_a_late_retry_of_an_older_edit_does_not_undo_a_newer_one(self):
+        preset = self.save()
+        first, second = uuid.uuid4(), uuid.uuid4()
+        self.save(preset_id=preset.pk, request_id=first, name='First')
+        self.save(preset_id=preset.pk, request_id=second, name='Second')
+        self.save(preset_id=preset.pk, request_id=first, name='First')
+        preset.refresh_from_db()
+        self.assertEqual(preset.name, 'Second')
+
+    def test_archive_after_an_edit_archives(self):
+        preset = self.save()
+        self.save(preset_id=preset.pk, request_id=uuid.uuid4(), name='Edited')
+        services.archive_chip_preset(self.host, preset.pk, uuid.uuid4())
+        preset.refresh_from_db()
+        self.assertIsNotNone(preset.archived_at)
+
+    def test_another_groups_request_id_is_not_replayed(self):
+        rid = uuid.uuid4()
+        self.save(request_id=rid)
+        _, other_host = make_group('olga', 'Other')
+        with self.assertRaises(RuleError):
+            services.save_chip_preset(other_host, {'name': 'Theirs', 'unit': 'php', 'values': RED}, rid)
+
+    def test_names_that_differ_only_in_capitals_are_refused(self):
+        self.save()
+        with self.assertRaisesRegex(RuleError, 'already'):
+            self.save(name='HOME SET')
+
     def test_invalid_presets_are_refused(self):
         for data in [{'name': ''}, {'unit': 'usd'}, {'values': []}, {'values': [{'colour': 'red', 'value': 0}]},
                      {'values': [{'colour': 'red', 'value': 1}, {'colour': 'red', 'value': 2}]},

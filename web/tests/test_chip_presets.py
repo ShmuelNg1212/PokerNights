@@ -62,6 +62,16 @@ class FillFromPresetTests(TestCase):
         self.night.refresh_from_db()
         self.assertEqual(self.night.chip_values[0]["value"], 2500)
 
+    def test_an_edited_fill_is_not_recorded_as_the_preset(self):
+        self.client.post(self.url, rows(("red", "Small", "50"), ("green", "", "100"),
+                                        revision="0", request_id=uuid.uuid4(), from_preset=str(self.preset.pk)))
+        self.assertNotIn("preset", AuditEvent.objects.get(action="night.chip_values").data)
+
+    def test_save_as_preset_with_a_bad_row_says_so_beside_the_button(self):
+        page = self.client.post(self.url, rows(("blue", "", ""), intent="save_preset", preset_name="Blues", revision="0"))
+        self.assertContains(page, "Check the chip values above, then save them as a preset.")
+        self.assertContains(page, '<details class="chip-save-preset" open>')
+
     def test_wrong_unit_other_group_and_archived_presets_are_refused(self):
         chips = games.save_chip_preset(self.host, {"name": "Chip set", "unit": "chips", "values": RED}, uuid.uuid4())
         _, other_host = make_group("olga", "Other")
@@ -83,6 +93,7 @@ class FillFromPresetTests(TestCase):
         page = self.fill(self.preset.pk, revision="1")
         self.assertNotContains(page, "Filled from")
         self.assertNotContains(page, "Start from a preset")
+        self.assertContains(page, "Chip values are locked, so a preset cannot fill them.")
         self.night.refresh_from_db()
         self.assertEqual(self.night.chip_values[0]["colour"], "blue")
 
@@ -102,8 +113,12 @@ class FillFromPresetTests(TestCase):
         self.night.chip_values_locked_at = self.night.created_at
         self.night.save(update_fields=["chip_values_locked_at"])
         self.client.post(self.url, {"intent": "save_preset", "preset_name": "Last night", "request_id": uuid.uuid4(),
-                                    "chips-TOTAL_FORMS": "0", "chips-INITIAL_FORMS": "0"})
+                                    "chips-TOTAL_FORMS": "1", "chips-INITIAL_FORMS": "1"})
         self.assertEqual(ChipPreset.objects.get(name="Last night").values[0]["colour"], "blue")
+        page = self.client.post(self.url, {"intent": "save_preset", "preset_name": "", "request_id": uuid.uuid4(),
+                                           "chips-TOTAL_FORMS": "1", "chips-INITIAL_FORMS": "1"})
+        self.assertContains(page, '<option value="blue" selected>')  # the saved rows, not blank ones
+        self.assertContains(page, 'value="5"')
 
     def test_save_as_preset_needs_a_name(self):
         page = self.client.post(self.url, rows(("blue", "", "5"), intent="save_preset", preset_name="", revision="0"))

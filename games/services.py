@@ -22,7 +22,7 @@ from groups.services import clean_name, add_roster_player, lock_group
 
 from . import chips, clock, rsvp
 from .models import (
-    ChipPreset, ChipValueChange, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
+    ChipPreset, ChipPresetChange, ChipValueChange, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
     SettingsVersion, StakesFields, Table, Unit,
 )
 
@@ -1322,12 +1322,20 @@ def _own_chip_preset(group, preset_id) -> ChipPreset:
     return preset
 
 
+def _replayed_chip_preset(group, request_id):
+    """The preset an earlier write with this request ID touched: a repeated tap, or a late retry, writes nothing."""
+    change = ChipPresetChange.objects.filter(request_id=request_id, preset__group=group).select_related("preset").first()
+    if change is None and ChipPresetChange.objects.filter(request_id=request_id).exists():
+        raise RuleError("That chip preset is not in this group.")
+    return change and change.preset
+
+
 @transaction.atomic
 def save_chip_preset(actor: Member, data: dict, request_id, *, preset_id=None) -> ChipPreset:
     """Create a chip preset, or replace one. Sessions keep their own copy, so no session changes."""
     require_host(actor)
     group = lock_group(actor.group_id)
-    done = ChipPreset.objects.filter(group=group, request_id=request_id).first()
+    done = _replayed_chip_preset(group, request_id)
     if done is not None:
         return done
     fields = {
@@ -1335,18 +1343,21 @@ def save_chip_preset(actor: Member, data: dict, request_id, *, preset_id=None) -
         "unit": _unit(data.get("unit")),
         "values": chips.denominations(data.get("values")),
     }
-    if ChipPreset.objects.filter(group=group, name=fields["name"], archived_at__isnull=True).exclude(pk=preset_id).exists():
+    # Names that differ only in capitals look the same in the picker.
+    taken = ChipPreset.objects.filter(group=group, name__iexact=fields["name"], archived_at__isnull=True).exclude(pk=preset_id)
+    if taken.exists():
         raise RuleError(f"A chip preset named {fields['name']} already exists.")
     if preset_id is None:
-        preset = ChipPreset.objects.create(group=group, request_id=request_id, **fields)
-        action = "chip_preset.created"
+        preset = ChipPreset.objects.create(group=group, **fields)
+        action = "created"
     else:
         preset = _own_chip_preset(group, preset_id)
-        for name, value in {**fields, "request_id": request_id}.items():
+        for name, value in fields.items():
             setattr(preset, name, value)
         preset.save()
-        action = "chip_preset.updated"
-    audit.record(action, actor=actor.user, group_id=group.pk, target=preset,
+        action = "updated"
+    ChipPresetChange.objects.create(preset=preset, request_id=request_id, action=action, created_by=actor.user)
+    audit.record(f"chip_preset.{action}", actor=actor.user, group_id=group.pk, target=preset,
                  summary=f"Saved chip preset {preset.name}", data={"unit": preset.unit, "values": preset.values})
     return preset
 
@@ -1356,13 +1367,13 @@ def archive_chip_preset(actor: Member, preset_id, request_id) -> ChipPreset:
     """Hide a chip preset from new choices. Sessions that copied it keep their values."""
     require_host(actor)
     group = lock_group(actor.group_id)
-    done = ChipPreset.objects.filter(group=group, request_id=request_id).first()
+    done = _replayed_chip_preset(group, request_id)
     if done is not None:
         return done
     preset = _own_chip_preset(group, preset_id)
     preset.archived_at = timezone.now()
-    preset.request_id = request_id
-    preset.save(update_fields=["archived_at", "request_id"])
+    preset.save(update_fields=["archived_at"])
+    ChipPresetChange.objects.create(preset=preset, request_id=request_id, action="archived", created_by=actor.user)
     audit.record("chip_preset.archived", actor=actor.user, group_id=group.pk, target=preset,
                  summary=f"Archived chip preset {preset.name}")
     return preset

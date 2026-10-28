@@ -196,8 +196,6 @@ class ChipPreset(models.Model):
     values = models.JSONField()
     archived_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    # The last save's id: the same tap sent twice is saved once.
-    request_id = models.UUIDField(null=True, blank=True, unique=True)
 
     class Meta:
         ordering = ["name", "id"]
@@ -209,6 +207,16 @@ class ChipPreset(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ChipPresetChange(models.Model):
+    """One write to a chip preset. Its unique request ID makes every earlier write replayable, not repeatable."""
+
+    preset = models.ForeignKey(ChipPreset, on_delete=models.CASCADE, related_name="changes")
+    request_id = models.UUIDField(unique=True)
+    action = models.CharField(max_length=10)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Rsvp(models.Model):

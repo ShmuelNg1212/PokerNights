@@ -23,7 +23,7 @@
 </form>
 {% if preset %}
 <form method="post" class="form-section chip-preset-archive">
-  {% csrf_token %}<input type="hidden" name="request_id" value="{{ request_id }}">
+  {% csrf_token %}<input type="hidden" name="request_id" value="{{ archive_id }}">
   <p class="small muted">Archiving removes this preset from new choices. Sessions keep their chip values.</p>
   <button type="submit" name="intent" value="archive" class="btn btn-quiet btn-block">Archive chip preset</button>
 </form>

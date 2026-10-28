@@ -70,6 +70,10 @@ def _with_row(rows):
     return rows + [{}] if len(rows) < 12 else rows
 
 
+def _palette():
+    return [{"key": key, "hex": colour} for key, _, colour in chips.COLOURS]
+
+
 def values(request, night_id):
     night, actor = night_for(request.user, night_id)
     require_host(actor)
@@ -77,7 +81,9 @@ def values(request, night_id):
     post = request.POST if request.method == "POST" else None
     intent = post.get("intent", "") if post else ""
     kwargs = {"prefix": "chips", "form_kwargs": {"unit": night.unit}}
-    formset = ChipValueForms(post, initial=_initial(night.chip_values, night.unit), **kwargs)
+    saved_rows = _initial(night.chip_values, night.unit)
+    # Only a post of the rows form carries rows; Fill posts from its own form, and a locked fieldset posts none.
+    formset = ChipValueForms(post if post and intent != "preset" and not locked else None, initial=saved_rows, **kwargs)
     revision = request.POST.get("revision", str(night.chip_values_revision))
     request_id = request_id_from(request) if post else uuid.uuid4()
     presets = [] if locked else list(services.chip_presets_for(actor.group, night.unit))
@@ -90,14 +96,17 @@ def values(request, night_id):
     elif intent == "preset":
         # Filling saves nothing: the host checks the rows, then saves them as this session's copy.
         from_preset = next((p for p in presets if str(p.pk) == post.get("preset")), None)
-        if from_preset is None:
+        if locked:
+            preset_error = "Chip values are locked, so a preset cannot fill them."
+        elif from_preset is None:
             preset_error = "Choose a preset from this group with this session's unit."
-            formset = ChipValueForms(initial=_initial(night.chip_values, night.unit), **kwargs)
         else:
             formset = ChipValueForms(initial=_initial(from_preset.values, night.unit), **kwargs)
     elif intent == "save_preset":
         rows = night.chip_values if locked else _cleaned(formset) if formset.is_valid() else None
-        if rows is not None:
+        if rows is None:
+            preset_error = "Check the chip values above, then save them as a preset."
+        else:
             try:
                 saved = services.save_chip_preset(actor, {"name": preset_name, "unit": night.unit, "values": rows}, request_id)
             except RuleError as refused:
@@ -106,10 +115,13 @@ def values(request, night_id):
                 saved_preset, preset_name, request_id = saved.name, "", uuid.uuid4()
                 presets = [] if locked else list(services.chip_presets_for(actor.group, night.unit))
     elif post and formset.is_valid():
+        rows = _cleaned(formset)
+        # The record names the preset only while the rows are still exactly its values.
+        same = from_preset and chips.denominations(rows) == from_preset.values
         try:
-            services.set_chip_values(night.pk, actor, _cleaned(formset), request_id,
+            services.set_chip_values(night.pk, actor, rows, request_id,
                 revision=int(revision) if str(revision).isdecimal() else -1,
-                preset=from_preset.name if from_preset else None)
+                preset=from_preset.name if same else None)
         except RuleError as refused:
             error = str(refused)
         else:
@@ -121,7 +133,7 @@ def values(request, night_id):
         "presets": presets, "from_preset": from_preset, "preset_error": preset_error,
         "preset_name": preset_name, "saved_preset": saved_preset,
         "preset_fill": {p.pk: {"name": p.name, "rows": _initial(p.values, night.unit)} for p in presets},
-        "colours": [{"key": key, "hex": colour} for key, _, colour in chips.COLOURS],
+        "colours": _palette(),
     })
 
 
@@ -140,6 +152,7 @@ def preset(request, group_id, preset_id=None):
     post = request.POST if request.method == "POST" else None
     intent = post.get("intent", "") if post else ""
     request_id = request_id_from(request) if post else uuid.uuid4()
+    archive_id = uuid.uuid4()  # its own write: never the id a save on this page may already have used
     if current and intent == "archive":
         try:
             services.archive_chip_preset(actor, current.pk, request_id)
@@ -168,5 +181,5 @@ def preset(request, group_id, preset_id=None):
             return group_settings(group_id, "chip-presets")
     return render(request, "games/chip_preset.html", {
         "group": actor.group, "preset": current, "form": meta, "formset": formset, "error": error,
-        "request_id": request_id, "colours": [{"key": key, "hex": colour} for key, _, colour in chips.COLOURS],
+        "request_id": request_id, "archive_id": archive_id, "colours": _palette(),
     })
