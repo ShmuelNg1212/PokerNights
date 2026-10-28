@@ -14,6 +14,7 @@
       <label class="small" for="own-count">Your count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
       <input type="text" name="amount" id="own-count" data-keep="own-count" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}"{% if line.chip_form %} data-chip-sheet="{{ line.chip_form.key }}" data-sheet-return="{{ line.chip_form.key }}"{% endif %} inputmode="decimal" autocomplete="off" required aria-describedby="own-count-help">
     </div>
+    {% if line.chip_form %}<input type="hidden" name="chips" value="" data-chip-carry="{{ line.chip_form.key }}" data-keep="own-chips">{% endif %}
     <button type="submit" class="btn btn-primary">Send to host</button>
   </form>
   <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.{% if line.chip_form %}<span class="chip-key-hint"> Tap Chips on the keys to count by colour.</span>{% endif %}</p>

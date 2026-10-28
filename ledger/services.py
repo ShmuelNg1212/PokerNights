@@ -342,7 +342,7 @@ def confirm_count(session_id, actor: Member, participant_id, amount: int, reques
 
 
 @transaction.atomic
-def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entries=None) -> list:
+def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entries=None, chips=None) -> list:
     """Confirm several players' final counts in one action: all of them, or none.
 
     ``amounts`` maps a participant id to an integer amount the host typed. ``entries`` maps a
@@ -353,27 +353,34 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entr
 
     An entry is accepted only while it is still the player's current one, so the host confirms
     the number that was on their screen or nothing at all.
+
+    ``chips`` maps a participant id to ``{"quantities", "revision", "empty_stack"}`` from a chip
+    sheet. The server calculates the total and keeps the breakdown. A chip count is never skipped,
+    because a new breakdown is new evidence. A typed amount for the same player must equal the total.
     """
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
-    entries = {pid: entry_id for pid, entry_id in (entries or {}).items() if pid not in amounts}
+    chips = chips or {}
+    entries = {pid: entry_id for pid, entry_id in (entries or {}).items() if pid not in amounts and pid not in chips}
     if not settings.PLAYER_ENTRIES:
         entries = {}
-    if not amounts and not entries:
+    if not amounts and not entries and not chips:
         raise RuleError("Type at least one final count. Type 0 for a player who has nothing left.")
     # One submission writes several rows; each gets its own id derived from the form's.
-    ids = {participant_id: uuid.uuid5(request_id, str(participant_id)) for participant_id in [*amounts, *entries]}
+    ids = {participant_id: uuid.uuid5(request_id, str(participant_id)) for participant_id in [*amounts, *entries, *chips]}
     if FinalCount.objects.filter(session=session, request_id__in=ids.values()).exists():
         return list(FinalCount.objects.filter(session=session, request_id__in=ids.values()))  # a repeated submission
     if session.state != State.RECONCILIATION:
         raise RuleError("Final counts are confirmed after play has ended.")
     checked = []
     for participant_id, amount in amounts.items():
+        if participant_id in chips:
+            continue  # checked against the chip total below
         participant = _participant(session, participant_id)
         _check_countable(session, participant, amount)
         current = FinalCount.objects.filter(participant=participant, is_current=True).first()
         if current is None or current.amount != amount:
-            checked.append((participant, amount, ids[participant_id], None))
+            checked.append((participant, amount, ids[participant_id], None, None))
     for participant_id, entry_id in entries.items():
         participant = _participant(session, participant_id)
         if FinalCount.objects.filter(participant=participant, is_current=True).exists() or _final_cash_outs(participant).exists():
@@ -385,9 +392,23 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entr
         if str(entry.pk) != str(entry_id):
             raise RuleError(f"{name} changed their count to {money.format_amount(entry.amount, session.unit)}.")
         _check_countable(session, participant, entry.amount)
-        checked.append((participant, entry.amount, ids[participant_id], entry))
+        checked.append((participant, entry.amount, ids[participant_id], entry, None))
+    for participant_id, chip in chips.items():
+        participant = _participant(session, participant_id)
+        amount, breakdown = _chip_amount(session, chip.get("quantities"), chip.get("revision"), chip.get("empty_stack", False))
+        typed = amounts.get(participant_id)
+        if typed is not None and typed != amount:
+            raise RuleError(
+                f"{participant.member.display_name}'s count is {money.format_amount(typed, session.unit)}, but the chips add up "
+                f"to {money.format_amount(amount, session.unit)}. Count by chips again, or type the count without chips."
+            )
+        _check_countable(session, participant, amount)
+        checked.append((participant, amount, ids[participant_id], None, breakdown))
     # Every value passed. Only now is anything written.
-    written = [_write_count(session, actor, participant, amount, rid, entry) for participant, amount, rid, entry in checked]
+    written = [_write_count(session, actor, participant, amount, rid, entry, chip_breakdown=breakdown)
+               for participant, amount, rid, entry, breakdown in checked]
+    if chips:
+        _lock_chip_values(session, actor)
     if written:
         games.touch(session)
     return written

@@ -1,9 +1,11 @@
 from django.contrib import messages
+import json
 import uuid
 
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from games import chips as chip_math
 from games.access import session_for
 from groups.access import require_host
 from groups.http import attempt, request_id_from
@@ -83,6 +85,25 @@ def override_void(request, session_id):
 
 
 DRAFTS_KEY = "count_drafts"
+CHIP_FIELD_LIMIT = 4000  # twelve colours of twelve-digit quantities fit with room to spare
+
+
+def _chip_field(text):
+    """A chip sheet's quantities as the page wrote them into a hidden field, or None when it is empty.
+
+    The sheet writes ``{"quantities": [[id, text], ...], "revision": int, "empty_stack": bool}``.
+    Anything else raises ValueError; the service still checks every quantity and the revision.
+    """
+    if not text.strip():
+        return None
+    if len(text) > CHIP_FIELD_LIMIT:
+        raise ValueError(text)
+    data = json.loads(text)
+    quantities, revision, empty = data.get("quantities"), data.get("revision"), data.get("empty_stack", False)
+    if (not isinstance(quantities, list) or type(revision) is not int or type(empty) is not bool
+            or not all(isinstance(pair, list) and len(pair) == 2 and all(isinstance(part, str) for part in pair) for pair in quantities)):
+        raise ValueError(text)
+    return {"quantities": [tuple(pair) for pair in quantities], "revision": revision, "empty_stack": empty}
 
 
 def _typed_counts(request) -> dict:
@@ -113,8 +134,20 @@ def count_confirm(request, session_id):
         if name.startswith("entry_") and name[6:].isdecimal() and value.isdecimal() and int(name[6:]) not in typed
     }
     names = dict(session.participants.values_list("pk", "member__display_name"))
-    amounts, error = {}, ""
-    if not typed and not entries:
+    amounts, chips, error = {}, {}, ""
+    # A chip sheet's quantities, written into the row's hidden field: the server calculates that total.
+    raw_chips = {
+        int(name[6:]): value for name, value in request.POST.items()
+        if name.startswith("chips_") and name[6:].isdecimal() and value.strip()
+    }
+    for participant_id, raw in raw_chips.items():
+        try:
+            chips[participant_id] = _chip_field(raw)
+        except (ValueError, AttributeError):
+            error = f"{names.get(participant_id, 'A player')}: the chip count could not be read. Count by chips again. Nothing was saved."
+            break
+    entries = {pid: value for pid, value in entries.items() if pid not in chips}
+    if not typed and not entries and not chips and not error:
         # An empty field is never read as zero.
         error = "Enter the final count. Type 0 for a player who has nothing left."
     for participant_id, text in typed.items():
@@ -125,13 +158,14 @@ def count_confirm(request, session_id):
             break
     if not error:
         try:
-            written = services.confirm_counts(session.pk, actor, amounts, request_id_from(request), entries=entries)
+            written = services.confirm_counts(session.pk, actor, amounts, request_id_from(request), entries=entries, chips=chips)
         except RuleError as refused:
             error = f"{refused} Nothing was saved."
     drafts = request.session.get(DRAFTS_KEY, {})
     if error:
         messages.error(request, error)
         drafts[str(session.pk)] = {str(pid): text for pid, text in typed.items()}
+        drafts[str(session.pk)]["chips"] = {str(pid): raw for pid, raw in raw_chips.items()}
     else:
         drafts.pop(str(session.pk), None)
         count = len(written)
@@ -146,8 +180,28 @@ def count_enter(request, session_id):
     """A player sends their own final count to the host. Whose count it is comes from the login."""
     session, actor = session_for(request.user, session_id)
     amount = _amount(request, session)
-    if amount is not None:
+    if amount is None:
+        return redirect("session", session_id=session.pk)
+    try:
+        chips = _chip_field(request.POST.get("chips", ""))
+    except (ValueError, AttributeError):
+        messages.error(request, "Your chip count could not be read. Count by chips again.")
+        return redirect("session", session_id=session.pk)
+    if chips is None:
         attempt(request, services.enter_count, session.pk, actor, amount, request_id_from(request), success="Count sent to the host.")
+        return redirect("session", session_id=session.pk)
+    # The card's field shows the sheet's total. If it was changed since, the two must not disagree.
+    try:
+        total, _ = chip_math.calculate(session.night.chip_values, chips["quantities"], empty_stack=chips["empty_stack"])
+    except RuleError as refused:
+        messages.error(request, str(refused))
+        return redirect("session", session_id=session.pk)
+    if total != amount:
+        messages.error(request, f"Your count is {money.format_amount(amount, session.unit)}, but the chips add up to "
+                                f"{money.format_amount(total, session.unit)}. Count by chips again, or type the count without chips.")
+        return redirect("session", session_id=session.pk)
+    attempt(request, services.enter_count, session.pk, actor, None, request_id_from(request), success="Count sent to the host.",
+            chips=chips["quantities"], chip_revision=chips["revision"], empty_stack=chips["empty_stack"])
     return redirect("session", session_id=session.pk)
 
 

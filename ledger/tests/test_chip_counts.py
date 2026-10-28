@@ -107,3 +107,86 @@ class ChipCountTests(TestCase):
         entered = services.confirm_count(other.session.pk, other.host, other.players['A'].pk, None, uuid.uuid4(),
                                          chips=[('red', '7')], chip_revision=1)
         self.assertEqual(entered.amount, 175)
+
+
+@override_settings(PLAYER_ENTRIES=True)
+class BatchChipCountTests(TestCase):
+    """"Confirm all counts" carries chip counts with the typed ones: all of them, or none."""
+
+    def setUp(self):
+        self.night = night_with_logins('reconciliation')
+        self.sid = self.night.session.pk
+        self.maria = self.night.players['maria'].pk
+        self.ben = self.night.players['ben'].pk
+        self.lolo = self.night.players['Lolo'].pk
+        games.set_chip_values(self.night.session.night_id, self.night.host, [
+            {'colour': 'white', 'value': 550}, {'colour': 'red', 'value': 2500, 'label': 'Twenty five'},
+        ], uuid.uuid4(), revision=0)
+
+    def chips(self, quantities, revision=1, empty_stack=False):
+        return {'quantities': quantities, 'revision': revision, 'empty_stack': empty_stack}
+
+    def batch(self, amounts=None, chips=None, request_id=None, **kwargs):
+        return services.confirm_counts(self.sid, self.night.host, amounts or {}, request_id or uuid.uuid4(),
+                                       chips=chips, **kwargs)
+
+    def current(self, pid):
+        return FinalCount.objects.filter(participant_id=pid, is_current=True).first()
+
+    def test_typed_and_chip_counts_are_written_together_with_the_breakdown(self):
+        before = self.night.refresh().version
+        written = self.batch({self.lolo: 80000}, {self.maria: self.chips([('white', '12'), ('red', '20')])})
+        self.assertEqual(len(written), 2)
+        self.assertEqual(self.current(self.lolo).amount, 80000)
+        self.assertEqual(self.current(self.lolo).chip_breakdown, [])
+        maria = self.current(self.maria)
+        self.assertEqual(maria.amount, 56600)
+        self.assertEqual([row['quantity'] for row in maria.chip_breakdown], [12, 20])
+        self.assertEqual(self.night.refresh().version, before + 1)
+        self.night.session.night.refresh_from_db()
+        self.assertIsNotNone(self.night.session.night.chip_values_locked_at)
+
+    def test_a_refused_chip_count_saves_nothing_and_does_not_lock(self):
+        for chips in [{self.maria: self.chips([('red', '-1')])}, {self.maria: self.chips([('red', '1')], revision=0)},
+                      {self.maria: self.chips([])}]:
+            with self.subTest(chips=chips), self.assertRaises(RuleError):
+                self.batch({self.lolo: 80000}, chips)
+        self.assertIsNone(self.current(self.lolo))
+        self.assertIsNone(self.current(self.maria))
+        self.night.session.night.refresh_from_db()
+        self.assertIsNone(self.night.session.night.chip_values_locked_at)
+
+    def test_a_typed_amount_that_differs_from_the_chip_total_is_refused_by_name(self):
+        with self.assertRaisesRegex(RuleError, 'maria'):
+            self.batch({self.maria: 1000}, {self.maria: self.chips([('red', '4')])})
+        self.assertIsNone(self.current(self.maria))
+        written, = self.batch({self.maria: 10000}, {self.maria: self.chips([('red', '4')])})
+        self.assertEqual(written.amount, 10000)
+        self.assertEqual(written.chip_breakdown[1]['quantity'], 4)
+
+    def test_empty_stack_is_a_zero_count_with_no_chips(self):
+        written, = self.batch(chips={self.ben: self.chips([], empty_stack=True)})
+        self.assertEqual(written.amount, 0)
+
+    def test_a_chip_recount_with_the_same_total_writes_the_next_version(self):
+        self.batch(chips={self.maria: self.chips([('red', '4')])})
+        written, = self.batch(chips={self.maria: self.chips([('white', '0'), ('red', '4')])})
+        self.assertEqual(written.version, 2)
+        self.assertEqual(self.batch({self.maria: 10000}), [])  # a typed amount equal to the count is still skipped
+
+    def test_a_chip_count_replaces_the_players_entry_in_the_same_batch(self):
+        entry = services.enter_count(self.sid, self.night.maria, 30000, uuid.uuid4())
+        written, = self.batch(chips={self.maria: self.chips([('red', '4')])}, entries={self.maria: entry.pk})
+        self.assertEqual(written.amount, 10000)
+        self.assertIsNone(written.entry)
+
+    def test_a_repeated_batch_returns_the_first_write(self):
+        rid = uuid.uuid4()
+        first = self.batch(chips={self.maria: self.chips([('red', '4')])}, request_id=rid)
+        again = self.batch(chips={self.maria: self.chips([('red', '9')], revision=0)}, request_id=rid)
+        self.assertEqual([c.pk for c in again], [c.pk for c in first])
+
+    def test_chip_counts_alone_satisfy_the_need_for_one_count(self):
+        with self.assertRaisesRegex(RuleError, 'at least one'):
+            self.batch()
+        self.assertEqual(len(self.batch(chips={self.maria: self.chips([('red', '1')])})), 1)

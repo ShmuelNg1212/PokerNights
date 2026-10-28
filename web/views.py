@@ -376,8 +376,10 @@ def session(request, session_id):
     typed = drafts.pop(str(session.pk), None)
     if typed is not None:
         request.session["count_drafts"] = drafts
+        chip_drafts = typed.get("chips", {})
         for line in context["summary"].lines:
             line.count_draft = typed.get(str(line.participant.pk), "")
+            line.chip_draft = chip_drafts.get(str(line.participant.pk), "")
     return render(request, "web/session.html", context)
 
 

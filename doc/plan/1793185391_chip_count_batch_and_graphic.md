@@ -28,14 +28,14 @@ None. The human approved the defaults on 2026-10-28:
 
 ## Tasks
 
-- [ ] **1. Batch confirm takes chip counts. `tests: first`.**
+- [x] **1. Batch confirm takes chip counts. `tests: first`.**
   - `confirm_counts()` gains `chips={participant_id: {"quantities": pairs, "revision": int, "empty_stack": bool}}`.
   - For each chip entry: `_chip_amount()`, then `_check_countable()`, under the existing lock. Write with `chip_breakdown`. Call `_lock_chip_values()` once if any chip count is written.
   - Refuse when a typed amount and a chip total differ for one player. Do not skip a chip count with an unchanged total (question 2).
   - Tests: mixed typed and chip batch; refusal saves nothing; stale revision; empty stack; mismatch; repeated request; values lock once; breakdown stored.
   - **Complete when:** service tests pass.
 
-- [ ] **2. The count form carries chip quantities. `tests: first`.**
+- [x] **2. The count form carries chip quantities. `tests: first`.**
   - `count_confirm` reads hidden `chips_{pid}` fields (quantities, revision, empty stack) and passes them on. A refusal keeps them as drafts.
   - View tests: posted chip fields reach the service; a refusal redraws them.
   - **Complete when:** view tests pass.
