@@ -1,6 +1,6 @@
 # Chip count: one batch confirm and a graphic chip sheet: plan
 
-Date: 2026-10-28. Mode: mixed. Status: waiting for approval.
+Date: 2026-10-28. Mode: mixed. Status: approved 2026-10-28; executing on `feat/chip-batch-rack`.
 
 Study: [chip count batch and graphic sheet](../study/1793185391_chip_count_batch_and_graphic.md).
 
@@ -8,11 +8,13 @@ Stack the branch on `feat/count-chip-flow` (unreleased). Part 1 (batch) and part
 
 ## OPEN QUESTIONS
 
-1. **Player sheet.** Should the player's chip sheet also fill "Your count" and let the player send from the card? Default: yes, the same as the host. The sheet becomes a calculator; sending always happens from the card.
-2. **A chip count with an unchanged total.** Today the batch skips a typed amount equal to the current count. Default: a chip count is never skipped; it writes the next version with its breakdown.
-3. **Direction.** A (chip rack, recommended), B (steppers) or C (one colour at a time). See the study.
-4. **Stack size.** Default: 20 chips for every colour. Alternative: the host sets a stack size per colour on Chip values (a schema change to chip values and presets).
-5. **Vibration** on a full stack, where the browser allows it. Default: no.
+None. The human approved the defaults on 2026-10-28:
+
+1. The player's chip sheet also fills "Your count". The player sends from the card.
+2. A chip count is never skipped. It writes the next version with its breakdown.
+3. Direction A, the chip rack.
+4. A stack is 20 chips for every colour.
+5. No vibration.
 
 ## Acceptance criteria
 
@@ -43,11 +45,11 @@ Stack the branch on `feat/count-chip-flow` (unreleased). Part 1 (batch) and part
   - The row says "by chips" and shows the breakdown under the field.
   - Editing the field by hand clears the chip fields and the marker.
   - The native chip page keeps its direct confirm.
-  - Player card: the same, if question 1 is yes.
+  - Player card: the same. The sheet fills "Your count"; the card sends it.
   - Browser probe: fill by chips, type another player, confirm all: both counts are saved and the chip breakdown shows. Edit after filling: the chip data goes.
   - **Complete when:** the probe passes at 390 and 320 px.
 
-- [ ] **4. The chip rack. `tests: alongside`.** (Direction A, if chosen.)
+- [ ] **4. The chip rack. `tests: alongside`.**
   - Drawn chip per colour: real colour, striped edge, value on the face. Tap: +1.
   - Side-view stack drawn with CSS; full stacks as columns with "×N". "+ stack" control.
   - A thin make-up bar in the dock. The total rolls only changed digits.
