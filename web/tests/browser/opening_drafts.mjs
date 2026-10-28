@@ -29,7 +29,7 @@ try {
  check('unchecked opening option survives live redraw',await A.js(`!document.querySelector('[name=opening_buy_ins]').checked`));
  await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);
  await A.click(`document.querySelector('button[value=start]')`);
- check('retained opt-out submits with existing-only total',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent==='₱1,000'`));
+ check('retained opt-out submits with existing-only total',await A.js(`document.querySelector('.pot-main .display-amount').textContent==='₱1,000'`));
  writeFileSync(`${OUT}/opening-drafts.json`,JSON.stringify(results,null,2));
 }finally {await send('Browser.close');ws.close();chrome.kill()}
 if(results.some(x=>!x.ok))process.exitCode=1;

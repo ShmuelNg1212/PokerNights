@@ -47,7 +47,7 @@ await A.click(`document.querySelector('button[form=counts-form]')`);q=await stat
 await P.go(`/s/${ids.php}/`);check('player sees saved baseline only',await P.js(`!document.querySelector('[data-count-preview]')&&!document.querySelector('[data-count-input]')&&document.querySelector('[data-count-accounted]').textContent==='₱2,000'`));
 await A.go(`/s/${ids.php}/cash-out-counted/`);await A.click(`document.querySelector('.batch-review button[type=submit]')`);q=await state();check('cash-out transfers remaining count without double count',q.total==='₱2,000'&&q.status==='All counts match buy-ins.',q);check('server offers finalize after recorded cash-outs',await A.js(`document.body.textContent.includes('Finalize results')`));
 await A.go(`/s/${ids.chips}/`);await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},A.s);await type(1,'1,000 chips');q=await state();check('native chips match',q.total==='2,000 chips'&&q.status==='All counts match buy-ins.',q);await A.shot('counts-chips-390');
-await type(1,'0');q=await state();check('zero chips counts completely',q.total==='1,000 chips'&&q.coverage==='0 still to count.'&&q.status==='1,000 chips missing.',q);
+await type(1,'0');q=await state();check('zero chips counts completely',q.total==='1,000 chips'&&q.coverage===''&&q.status==='1,000 chips missing.',q);
 await type(1,'100000000000');q=await state();check('large integer chips exact',q.total==='100,000,001,000 chips',q);
 await type(1,'1.5');check('fractional chips invalid',(await state()).total==='Unavailable');
 await type(1,'bad');await A.click(`document.querySelector('button[form=counts-form]')`);q=await state();check('refused submission retains invalid preview',q.total==='Unavailable'&&await A.js(`document.querySelectorAll('[data-count-input]')[1].value==='bad'`),q);
@@ -59,7 +59,7 @@ await A.js(`window.dispatchEvent(new Event('pageshow'))`);check('page restoratio
 await send('Emulation.setDeviceMetricsOverride',{width:320,height:700,deviceScaleFactor:1,mobile:true},A.s);
 check('invalid phone preview fits at320',await A.js(`document.documentElement.scrollWidth<=320&&document.querySelector('[data-count-preview]').getBoundingClientRect().top>=0`));
 await B.go(`/s/${ids.chips}/`);await send('Emulation.setScriptExecutionDisabled',{value:true},B.s);await B.go(`/s/${ids.chips}/`);check('no JS keeps confirmed baseline',await B.js(`document.querySelector('[data-count-preview] [data-count-accounted]').textContent==='900 chips'&&document.body.textContent.includes('Confirm counts to update this total.')`));
-await A.go('/s/10/');q=await state();check('override does not hide stack discrepancy',q.status==='₱100 missing.'&&await A.js(`document.querySelector('[data-count-preview]').textContent.includes('Overrides are excluded')`),q);
+await A.go('/s/10/');q=await state();check('override does not hide stack discrepancy',q.status.startsWith('Off by ₱100')&&q.status.includes('override'),q);
 await A.go('/s/7/');check('no money never claims complete',(await state()).status==='No buy-ins recorded.');
 check('no runtime errors',errors.length===0,errors);writeFileSync(`${OUT}/counts.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill();}

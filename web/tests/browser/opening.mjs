@@ -35,20 +35,20 @@ try {
  const data=await A.js(`Object.fromEntries(new FormData(document.querySelector('[name=opening_buy_ins]').form))`);
  await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);
  await A.click(`document.querySelector('button[value=start]')`);
- check('native start total',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('1,500')`));
+ check('native start total',await A.js(`document.querySelector('.pot-main .display-amount').textContent.includes('1,500')`));
  // Re-submit the exact native request; inspect observable totals after the redirect.
  await A.js(`const f=document.createElement('form');f.method='post';f.action='/s/${M.default.set}/transition/';for(const [k,v] of Object.entries(${JSON.stringify({...data,action:'start'})})){const i=document.createElement('input');i.name=k;i.value=v;f.append(i)}document.body.append(f);f.submit()`);await sleep(700);
- check('retry keeps total',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('1,500')`));
+ check('retry keeps total',await A.js(`document.querySelector('.pot-main .display-amount').textContent.includes('1,500')`));
  await A.go('/s/'+M.default.set+'/log/');check('ordinary host records in log',await A.js(`document.querySelector('#buy-ins').nextElementSibling.textContent.includes('₱500')&&document.querySelector('#buy-ins').nextElementSibling.textContent.includes('₱1,000')&&document.querySelector('#buy-ins').nextElementSibling.textContent.includes('hana')`));
  await A.go('/s/'+M.default.set+'/');await A.click(`document.querySelector('button[value=end]')`);
  await A.go('/n/'+M.default.night+'/');await A.click(`document.querySelector('form[action$="/next-set/"] button')`);
- check('next set still money-free',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('₱0')`));
+ check('next set still money-free',await A.js(`!!document.querySelector('.prep') && document.querySelector('h1 small').textContent.includes('Set 2') && !document.querySelector('.prep-money')`));
  await A.click(`document.querySelector('button[value=start]')`);
- check('next set fresh opening total',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('2,000')`));
+ check('next set fresh opening total',await A.js(`document.querySelector('.pot-main .display-amount').textContent.includes('2,000')`));
  await A.go('/s/'+M.opt_out.set+'/');await A.js(`document.querySelector('[name=opening_buy_ins]').checked=false`);await A.click(`document.querySelector('button[value=start]')`);
- check('unchecked native start no money',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('₱0')`));
+ check('unchecked native start no money',await A.js(`document.querySelector('.pot-main .display-amount').textContent.includes('₱0')`));
  await A.go('/s/'+M.chips.set+'/');await A.click(`document.querySelector('button[value=start]')`);
- check('chips opening total exact',await A.js(`document.querySelector('.split-labels > span:first-child b').textContent.includes('2,000 chips')`));
+ check('chips opening total exact',await A.js(`document.querySelector('.pot-main .display-amount').textContent.includes('2,000 chips')`));
  writeFileSync(`${OUT}/opening.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}
 if(results.some(x=>!x.ok))process.exitCode=1;

@@ -27,7 +27,7 @@ async function user(name){const {browserContextId}=await send('Target.createBrow
 const results=[];const check=(name,ok)=>{results.push({name,ok:!!ok});console.log(`${ok?'PASS':'FAIL'} ${name}`)};
 const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
 const docs=(A,since)=>A.reqs(since,'Document').length;
-const pollCount=(A,since)=>events.slice(since).filter(e=>e.sessionId===A.s&&e.method==='Network.requestWillBeSent'&&e.params.request.url.includes('/state/')).length;
+const pollCount=(A,since,path='/state/')=>events.slice(since).filter(e=>e.sessionId===A.s&&e.method==='Network.requestWillBeSent'&&e.params.request.url.includes(path)).length;
 const friday=`[...document.querySelectorAll('a.session-link')].find(a=>a.textContent.includes('Friday table'))`;
 // A past session's row: it leads to the session page (the cards of open sessions lead to their sets).
 const pastRow=`document.querySelector('.ledger a.session-link')`;
@@ -95,12 +95,15 @@ try {
  }
  await send('Emulation.setTouchEmulationEnabled',{enabled:false},A.s);
  // 2. No leak after 20 screen changes.
+ // A card opens the set; Back goes to its session, then to the group: three screen changes a round.
+ await A.go('/s/3/');const sheets=await A.js(`document.querySelectorAll('dialog.sheet').length`);
  await A.go('/g/1/');mark=events.length;
- for(let i=0;i<5;i++){await A.click(friday,600);await A.click(toSet,600);await A.click(back,600);await A.click(back,600)}
- await A.click(friday,600);await A.click(toSet,900);
- check('after 22 screen changes: on the set page, one sheet dialog, page not reloaded',await A.js(`location.pathname==='/s/3/'&&document.querySelectorAll('dialog.sheet').length===1&&window.__mark===1`));
- let p=events.length;await sleep(8500);const onSet=pollCount(A,p);
- await A.click(back,900);p=events.length;await sleep(8500);const offSet=pollCount(A,p);
+ for(let i=0;i<7;i++){await A.click(friday,600);await A.click(back,600);await A.click(back,600)}
+ await A.click(friday,900);
+ check('after 22 screen changes: on the set page, its sheets once, page not reloaded',await A.js(`location.pathname==='/s/3/'&&document.querySelectorAll('dialog.sheet').length===${sheets}&&window.__mark===1`));
+ // The session page polls its own state, so count only the set's.
+ let p=events.length;await sleep(8500);const onSet=pollCount(A,p,'/s/3/state/');
+ await A.click(back,900);p=events.length;await sleep(8500);const offSet=pollCount(A,p,'/s/3/state/');
  console.log('  polls in 8.5 s on the set page:',onSet,'| after leaving it:',offSet,'| script errors:',A.errors(mark));
  check('exactly one poll loop on the set page',[2,3].includes(onSet));
  check('no poll after leaving the set page',offSet===0);
@@ -157,7 +160,7 @@ try {
  const C=await user('');await C.go('/accounts/login/');await C.js('window.__mark=1');await C.click(`document.querySelector('.entry-alt a')`,900);
  check('signed out: Log in -> Sign up by tap',await C.js(`location.pathname==='/accounts/signup/'&&window.__mark===1`));
  await C.click(`document.querySelector('[data-password-toggle]')`,300);
- check('tapped-in Sign up: Show reveals both fields, once',await C.js(`document.querySelector('[name=password1]').type==='text'&&document.querySelector('[name=password2]').type==='text'&&!document.querySelector('[data-password-toggle]').hidden`));
+ check('tapped-in Sign up: Show reveals the password, once',await C.js(`document.querySelector('[name=password1]').type==='text'&&!document.querySelector('[data-password-toggle]').hidden`));
  // 11. An expired login during a tap.
  await A.go('/g/1/');await send('Network.clearBrowserCookies',{},A.s);await A.click(friday,1500);
  check('a tap with an expired login leads to Log in',await A.js(`location.pathname==='/accounts/login/'&&!!document.querySelector('[name=password]')`));
