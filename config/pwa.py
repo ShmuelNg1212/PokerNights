@@ -31,7 +31,7 @@ self.addEventListener("activate", (event) => {
 });
 // The front door is left to the browser: a request the worker makes carries the worker's user agent,
 // not a chat app's, and the page needs the chat app's to ask the person to leave it (config/chat_browser.py).
-const FRONT_DOOR = /^\/(accounts|join|claim)\//;
+const FRONT_DOOR = /^\\/(accounts|join|claim)\\//;
 self.addEventListener("fetch", (event) => {
   if (event.request.mode !== "navigate" || FRONT_DOOR.test(new URL(event.request.url).pathname)) return;
   event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE)));
