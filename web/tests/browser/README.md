@@ -12,7 +12,7 @@ The 34 checks cover session isolation, shared sets, both units, exact previews, 
 
 Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_numpad.py`. Start the local server with the same database. Run `node web/tests/browser/chip_numpad.mjs`.
 
-The fixture makes a twelve-colour chip count for player `ben` and an empty setup page for host `hana`. It writes `/private/tmp/pn-chip-numpad-manifest.json`. The 22 checks tap with emulated touch at 390 × 844 and 320 × 568. They cover the setup value field, the count sheet's keys, the dock that keeps the total and keys in view, and a sent count. The probe consumes the count fixture. Captures are in `/private/tmp/pn-chip-numpad-review/`, or `PN_REVIEW_DIR`.
+The fixture makes a twelve-colour chip count for player `ben` and an empty setup page for host `hana`. It writes `/private/tmp/pn-chip-numpad-manifest.json`. The 24 checks tap with emulated touch at 390 × 844 and 320 × 568. They cover the setup value field, the count sheet's keys, the dock that keeps the total and keys in view, and a sent count. The probe consumes the count fixture. Captures are in `/private/tmp/pn-chip-numpad-review/`, or `PN_REVIEW_DIR`.
 
 ## Chip rack
 

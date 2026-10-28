@@ -1,10 +1,8 @@
 # TODO
 
-## Phone checks (unreleased: feat/count-chip-flow)
-
-- [ ] Chip entry: at count-up as host, the list shows one line per player with no Count by chips buttons. Tap a count field: the keys' strip shows **Chips**. Tap it: that player's chip sheet opens. The total and **Confirm count** sit side by side above the keys; type quantities and confirm without scrolling. Close the sheet: you are back in the count field. As a player, do the same from **Your count**. **No chips left** sends zero.
-
 ## Phone checks (released)
+
+- [ ] Chip count: as host at count-up, tap a count field, then **Chips** on the number keys. Tap a drawn chip (+1), hold it (-1), tap **+20**, then set an exact quantity with the keys. Check the rack and Preview. Tap **Use**: the field fills and says **by chips**. Type another player’s count and **Confirm all counts**: both save with the chip breakdown in Details. Edit a filled amount: **by chips** clears. As a player, use the same sheet, then send from **Your count**. Try **No chips left**, twelve colours on a small phone, and reduced motion.
 
 - [ ] Chip keys: on Chip values, tap a Value field. The app's number keys rise, not the phone keyboard; a pesos value has a decimal point. Tap Label: the keys go and the phone keyboard comes. Tap **Count by chips**: the keys are in the sheet with **00**, not a point. Scroll a long list: the total and the keys stay at the foot. Send a count and check the total.
 - [ ] Chip presets: Group settings → **New chip preset**. Name it, add two colours with the number keys, save: it is listed with its values. On a new session's Chip values, pick it under **Start from a preset** and tap **Fill**: the rows fill in place. Save, then count by chips with those values. Edit the preset: the session keeps its values. Try **Save as a group preset**. As a player, you see presets but no edit link.

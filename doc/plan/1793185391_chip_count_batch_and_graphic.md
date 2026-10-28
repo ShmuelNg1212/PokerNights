@@ -1,6 +1,6 @@
 # Chip count: one batch confirm and a graphic chip sheet: plan
 
-Date: 2026-10-28. Mode: mixed. Status: approved 2026-10-28; executing on `feat/chip-batch-rack`.
+Date: 2026-10-28. Mode: mixed. Status: verified 2026-10-28 on `feat/chip-batch-rack`. Frozen after rendezvous.
 
 Study: [chip count batch and graphic sheet](../study/1793185391_chip_count_batch_and_graphic.md).
 
@@ -60,8 +60,20 @@ None. The human approved the defaults on 2026-10-28:
   - Done 2026-10-28. `chip_rack.mjs`, 30 checks at 390 and 320 px. The critique (single-context, see Checks) found no way to take a chip off; holding a chip now takes one off. It also found that the first drawn chip took the sheet's opening focus, so the keys did not appear; the first quantity field now has `data-sheet-focus`.
   - Deviations: the total changes at once and does not roll its digits. The pot's roll in `pot.js` is not shared; sharing it is a separate refactor. The rack sits on its own line under the name, with the subtotal at its right end, because the name column is about 88 px at 320 px.
 
-- [ ] **5. Sync docs.** spec.md (batch rule: an intent change, so add an ADR), features.md, DESIGN.md, TODO.md phone checks.
+- [x] **5. Sync docs.** spec.md (batch rule: an intent change, so add an ADR), features.md, DESIGN.md, TODO.md phone checks.
 
 ## Checks
 
-Recorded at rendezvous.
+Verified 2026-10-28 before release. Code at `52f09fa`.
+
+- SQLite: 1,478 tests passed. The 17 PostgreSQL-only tests were skipped.
+- PostgreSQL: 1,478 tests passed. No skips.
+- Signed-in host and player writes: `chip_batch.mjs`, 17 of 17 checks passed against a fresh temporary database. A chip count and typed count saved in one batch. The saved breakdown matched. Editing a filled amount removed its chip draft.
+- Rack: `chip_rack.mjs`, 30 of 30 checks passed at 390 and 320 px. Taps, holds, stacks, exact keys, twelve colours, 48 px targets, reduced motion and no sideways scroll passed. The 320 px capture was inspected.
+- Number keys: `chip_numpad.mjs`, 24 of 24 checks passed, including the fill-and-send path at 320 px. No script errors in any of the three probes.
+- Independent read-only standards review: passed. Atomic locking, membership, host checks, request uniqueness, audit, versions and integer amounts were checked.
+- Independent read-only spec review: passed. No implementation blocker. The documented visual deviations in tasks 3 and 4 remain.
+- Documentation: spec, features, DESIGN and phone checks match the built flow. ADR 0006 records the approved batch rule.
+- `git diff --check`: passed. No code fixes were needed in this release check.
+
+Phone acceptance remains in TODO.md. Release authorization: the human said “if so go ship” on 2026-10-28.
