@@ -93,7 +93,8 @@ if (field) { field.setAttribute("aria-invalid", "true"); field.setAttribute("ari
 // Listeners for the whole tab. Each does nothing on a page without a sheet.
 document.addEventListener("click", function (event) {
 var trigger = event.target.closest("[data-sheet-open]");
-if (trigger && S) open(trigger.dataset.sheetOpen, trigger);
+// A trigger outside the page (the number keys' Chips key) hands focus back to the field that names the sheet.
+if (trigger && S) open(trigger.dataset.sheetOpen, S.region.contains(trigger) ? trigger : S.region.querySelector('[data-sheet-return="' + trigger.dataset.sheetOpen + '"]') || trigger);
 var next = event.target.closest("[data-sheet-swap]");
 if (next && S && S.dialog.contains(next)) swap(next.dataset.sheetSwap);
 if (S && event.target.closest("[data-sheet-close]") && S.dialog.contains(event.target)) close();

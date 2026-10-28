@@ -68,13 +68,14 @@ try {
  check('session: saved values show on the session',await H.js(`location.pathname==='/n/${ids.night}/'&&(t=>t.includes('₱25')&&t.includes('₱100'))(document.querySelector('.session-chip-values').textContent)`));
  // The player counts with the preset's values.
  await P.go(`/s/${ids.set}/`);
- await P.tap(`document.querySelector('.own-count [data-sheet-open="chip-count-${ids.player}"]')`);await sleep(800);
+ await P.tap(`document.querySelector('#own-count')`);await sleep(500);
+ await P.tap(`document.querySelector('.numpad-panel [data-numpad-chips]:not([hidden])')`);await sleep(800);
  const D=`document.querySelector('dialog[open]')`;
  check('count: the sheet uses the preset values',await P.js(`${D}.textContent.includes('₱25 each')&&${D}.textContent.includes('₱100 each')`));
  await P.tap(`${D}.querySelector('[name=qty_red]')`);await P.tap(key('dialog[open]','4'),80);
  check('count: total from preset values',await P.js(`${D}.querySelector('[data-chip-total]').textContent==='₱100'`));
- await P.js(`${D}.querySelector('.chip-count-actions [type=submit]:not([name])').scrollIntoView({block:'center'})`);
- await P.tap(`document.querySelector('dialog[open] .chip-count-actions [type=submit]:not([name])')`);await sleep(1500);
+ await P.js(`${D}.querySelector('.chip-count-send [type=submit]:not([name])').scrollIntoView({block:'center'})`);
+ await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(1500);
  check('count: the count reaches the server',await P.js(`document.querySelector('.own-count').textContent.includes('You entered ₱100')`));
  // A chips session is not offered a pesos preset.
  await H.go(`/n/${ids.chips}/chip-values/`);

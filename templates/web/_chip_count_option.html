@@ -1,7 +1,8 @@
 {% if line.chip_form %}
+{# Where the number keys serve the device, their Chips key opens this sheet and this line stays hidden. #}
 <div class="chip-count-option">
-  <a class="btn chip-count-fallback" href="{% url 'chip_count' session.pk line.participant.pk %}">Count by chips</a>
-  <button hidden type="button" class="btn chip-count-opener" data-sheet-open="{{ line.chip_form.key }}">Count by chips</button>
+  <a class="link-button chip-count-fallback" href="{% url 'chip_count' session.pk line.participant.pk %}">Count by chips</a>
+  <button hidden type="button" class="link-button chip-count-opener" data-sheet-open="{{ line.chip_form.key }}">Count by chips</button>
 </div>
 <section hidden class="sheet-source" data-sheet-source="{{ line.chip_form.key }}" data-title="{{ line.participant.member.display_name }} · count by chips"><div class="sheet-content">{% include "ledger/_chip_count_form.html" with chip_form=line.chip_form %}</div></section>
 {% endif %}

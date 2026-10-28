@@ -47,6 +47,7 @@
     var box = document.createElement("div");
     box.className = "numpad-panel"; box.setAttribute("role", "group"); box.setAttribute("aria-label", "Number keys");
     box.innerHTML = '<div class="numpad-strip"><div class="numpad-about"><strong data-numpad-label></strong><span class="numpad-note" data-numpad-note aria-live="polite"></span></div>' +
+      '<button type="button" class="btn btn-small" data-numpad-chips tabindex="-1" hidden>Chips</button>' +
       '<button type="button" class="btn btn-small" data-numpad-next tabindex="-1">Next</button><button type="button" class="btn btn-small btn-primary" data-numpad-done tabindex="-1">Done</button></div>';
     return box;
   }
@@ -204,6 +205,10 @@
     // Next: the keys now belong to another field, and its name comes in from below.
     if (moved) go(label.parentNode, { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "fade", { duration: 0.16 });
     panel.querySelector("[data-numpad-next]").hidden = !following(field);
+    // Chips: a count with session chip values opens that player's chip sheet (sheets.js acts on the click).
+    var chips = panel.querySelector("[data-numpad-chips]"), sheet = field.dataset.chipSheet;
+    chips.hidden = !(sheet && root.classList.contains("sheets-enabled") && document.querySelector('[data-sheet-source="' + sheet + '"]'));
+    if (chips.hidden) delete chips.dataset.sheetOpen; else chips.dataset.sheetOpen = sheet;
     var arriving = !panel.isConnected;
     if (arriving) {
       document.body.appendChild(panel);
@@ -262,6 +267,7 @@
   // Something failed: stop, and give every field its keyboard back.
   function giveUp(error) {
     broken = true;
+    root.classList.remove("numpad-live");
     hide(true);
     if (pad) pad.remove();
     document.querySelectorAll('input[data-numpad][inputmode="none"]').forEach(unmark);
@@ -325,6 +331,8 @@
     if (field) mark(field); // before the focus that would call the phone's keyboard
     var step = panel && event.target.closest && event.target.closest("[data-numpad-next], [data-numpad-done]");
     if (step && panel.contains(step)) { event.preventDefault(); downAt = Date.now(); downKey = step; move(step); return; }
+    var chips = panel && event.target.closest && event.target.closest("[data-numpad-chips]");
+    if (chips && panel.contains(chips)) { event.preventDefault(); return; } // the field keeps focus until the sheet takes it
     var key = event.target.closest && event.target.closest(".numpad-key");
     if (!key || !pad.contains(key)) return;
     event.preventDefault();
@@ -390,7 +398,7 @@
   document.addEventListener("close", function (event) { if (pad && event.target.contains && event.target.contains(pad)) hide(); }, true);
   document.addEventListener("live:updated", refreshed);
   document.addEventListener("inplace:updated", refreshed);
-  function changed() { if (!pad) return; if (on()) markAll(); else { hide(); document.querySelectorAll('input[data-numpad][inputmode="none"]').forEach(unmark); } }
+  function changed() { if (!pad) return; root.classList.toggle("numpad-live", on()); if (on()) markAll(); else { hide(); document.querySelectorAll('input[data-numpad][inputmode="none"]').forEach(unmark); } }
   if (coarse.addEventListener) coarse.addEventListener("change", changed);
 
   // sheets.js calls this once a sheet holds its form and before it rises, so the sheet opens at its full height.
@@ -407,8 +415,11 @@
   window.pokerPage.register(function () {
     if (broken || root.dataset.numpad !== "on") return;
     pad = build(); panel = buildPanel();
+    // numpad-live: these keys serve this device, so the page can rely on their Chips key.
+    root.classList.toggle("numpad-live", on());
     markAll();
     return function () {
+      root.classList.remove("numpad-live");
       hide(true);
       pad.remove();
       pad = panel = null;

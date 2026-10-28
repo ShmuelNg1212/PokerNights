@@ -49,7 +49,10 @@ try {
  // Count: twelve colours in a sheet. The keys and the total stay in view.
  for(const [w,h] of [[390,844],[320,568]]) {
   await P.phone(w,h);await P.go(`/s/${ids.set}/`);
-  await P.tap(`document.querySelector('.own-count [data-sheet-open="chip-count-${ids.player}"]')`);await sleep(800);
+  // Where the keys serve the phone, their Chips key is the way into the sheet; the card's own link stays hidden.
+  check(`count ${w}: the card's chip link is hidden`,await P.js(`!document.querySelector('.own-count .chip-count-option').getClientRects().length`));
+  await P.tap(`document.querySelector('#own-count')`);await sleep(500);
+  await P.tap(`document.querySelector('.numpad-panel [data-numpad-chips]:not([hidden])')`);await sleep(800);
   const D=`document.querySelector('dialog[open]')`,Q=n=>`${D}.querySelector('[name=qty_${n}]')`;
   check(`count ${w}: the sheet holds the keys`,await P.js(`!!${D}?.querySelector('form [data-numpad-slot] .numpad')`));
   check(`count ${w}: the phone keyboard is off for quantities`,await P.js(`${Q('white')}.getAttribute('inputmode')==='none'`));
@@ -62,8 +65,8 @@ try {
   check(`count ${w}: no sideways scroll`,await P.js(`document.documentElement.scrollWidth<=${w}&&${D}.scrollWidth<=${D}.clientWidth`));
   await P.shot(`count-sheet-${w}`);
   if(w===320){
-   await P.js(`${D}.querySelector('.chip-count-actions [type=submit]:not([name])').scrollIntoView({block:'center'})`);await sleep(200);
-   await P.tap(`document.querySelector('dialog[open] .chip-count-actions [type=submit]:not([name])')`);await sleep(1500);
+   await P.js(`${D}.querySelector('.chip-count-send [type=submit]:not([name])').scrollIntoView({block:'center'})`);await sleep(200);
+   await P.tap(`document.querySelector('dialog[open] .chip-count-send [type=submit]:not([name])')`);await sleep(1500);
    check('count: the keyed count reaches the server',await P.js(`!document.querySelector('dialog[open]')&&document.querySelector('.own-count').textContent.includes('₱28')`),await P.js(`document.querySelector('.own-count')?.textContent.replace(/\\s+/g,' ').slice(0,200)`));
   } else { await P.js(`${D}.close()`);await sleep(400); }
  }

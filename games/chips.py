@@ -76,7 +76,7 @@ def calculate(values, quantities, *, empty_stack=False):
     if empty_stack and any(entered.values()):
         raise RuleError('An empty stack cannot contain chips. Clear the quantities first.')
     if not explicit and not empty_stack:
-        raise RuleError('Enter at least one quantity, or choose Empty stack.')
+        raise RuleError('Enter at least one quantity, or choose No chips left.')
     total, breakdown = 0, []
     for row in values:
         quantity = entered.get(row['id'], 0)

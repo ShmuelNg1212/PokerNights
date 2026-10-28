@@ -12,11 +12,11 @@
   <form method="post" data-turbo="true" action="{% url 'count_enter' session.pk %}" class="form-row" data-once>{% csrf_token %}{% request_id_field %}
     <div class="grow">
       <label class="small" for="own-count">Your count{% if unit == 'chips' %} (chips){% else %} (₱){% endif %}</label>
-      <input type="text" name="amount" id="own-count" data-keep="own-count" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}" inputmode="decimal" autocomplete="off" required aria-describedby="own-count-help">
+      <input type="text" name="amount" id="own-count" data-keep="own-count" data-numpad="{% if unit == 'chips' %}chips{% else %}pesos{% endif %}"{% if line.chip_form %} data-chip-sheet="{{ line.chip_form.key }}" data-sheet-return="{{ line.chip_form.key }}"{% endif %} inputmode="decimal" autocomplete="off" required aria-describedby="own-count-help">
     </div>
     <button type="submit" class="btn btn-primary">Send to host</button>
   </form>
-  <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.</p>
+  <p class="small muted" id="own-count-help">Type what you have left; 0 for an empty stack. The host confirms it.{% if line.chip_form %}<span class="chip-key-hint"> Tap Chips on the keys to count by colour.</span>{% endif %}</p>
   {% include "web/_chip_count_option.html" %}
   {% include "ledger/_chip_breakdown.html" with record=line.entered suffix="own-entered" %}
   {% if line.entered %}</details>{% endif %}

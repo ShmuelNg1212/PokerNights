@@ -2238,18 +2238,28 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .chip-remove { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; grid-column: 1 / -1; justify-self: start; }
 .chip-remove input { width: 20px; height: 20px; }
 .chip-values-form [data-chip-add] { margin: 4px 0 12px; }
-.chip-count-intro { margin: 0 0 16px; color: var(--bone-dim); }
-.chip-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px; column-gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+.chip-count-form { display: flex; flex-direction: column; }
+.chip-count-intro { order: -2; margin: 0; color: var(--bone-dim); }
+.chip-count-empty { order: -1; align-self: flex-start; margin: 0 0 var(--s-2) calc(var(--s-1) * -1); color: var(--bone-dim); }
+.chip-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 88px; column-gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule); align-items: center; }
 .chip-quantity-row label { display: flex; align-items: center; gap: 12px; min-height: 48px; min-width: 0; margin: 0; cursor: pointer; }
 .chip-denomination { min-width: 0; overflow-wrap: anywhere; }
 .chip-denomination strong, .chip-denomination .small { display: block; }
 .chip-quantity-row input { width: 100%; min-width: 0; height: 48px; text-align: right; font-size: 20px; font-variant-numeric: tabular-nums; }
-.chip-subtotal { grid-column: 1 / -1; justify-self: end; margin-top: 4px; overflow-wrap: anywhere; }
-.chip-count-total { padding: 20px 0 8px; display: flex; flex-direction: column; gap: 4px; }
-.chip-count-total output { display: block; font-size: clamp(28px, 8vw, 40px); font-weight: 750; font-stretch: 80%; line-height: 1.2; overflow-wrap: anywhere; }
-.chip-count-actions { display: grid; gap: 4px; margin-top: 16px; }
-.chip-count-option { margin: 8px 0 0; }
-.count-row > .chip-count-option { display: flex; justify-content: flex-end; }
+.chip-subtotal { color: var(--muted); text-align: right; white-space: nowrap; }
+.chip-subtotal:empty, .chip-quantity-row:has(input:placeholder-shown) .chip-subtotal { visibility: hidden; }
+.chip-count-send { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) 0 var(--s-2); }
+.chip-count-send .btn { flex: none; }
+.chip-count-dock [data-chip-hint] { margin: var(--s-2) 0 0; }
+.chip-count-total { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chip-count-total output { display: block; font-size: clamp(24px, 7vw, 32px); font-weight: 750; font-stretch: 80%; line-height: 1.2; overflow-wrap: anywhere; }
+/* Count by chips: a quiet link under the field. Where the number keys serve the device, their Chips key replaces it. */
+.chip-count-option { margin: 0; }
+.chip-count-option .link-button { padding: 0; font-size: .875rem; color: var(--muted); }
+.count-row > .chip-count-option { display: flex; justify-content: flex-end; margin-top: -4px; }
+.numpad-live.sheets-enabled .chip-count-option { display: none; }
+.chip-key-hint { display: none; }
+.numpad-live.sheets-enabled .chip-key-hint { display: inline; }
 .chip-count-opener { display: none; }
 .sheets-enabled .chip-count-opener { display: inline-flex !important; }
 .sheets-enabled .chip-count-fallback { display: none; }
@@ -2266,8 +2276,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
   .chip-colour-field, .chip-value-field { grid-column: 1 / -1; }
 }
 /* A chip count can list twelve colours. While the keys are in its form, the total and keys stay at the foot of the sheet or page. */
-.chip-count-dock:has(.numpad) { position: sticky; bottom: 0; z-index: 1; display: grid; gap: var(--s-3); padding-bottom: var(--s-3); background: var(--rail); box-shadow: 0 -12px 16px -12px oklch(0 0 0 / .6); }
-.chip-count-dock:has(.numpad) .chip-count-total { padding-top: var(--s-3); }
+.chip-count-dock:has(.numpad) { position: sticky; bottom: 0; z-index: 1; display: grid; padding-bottom: var(--s-3); background: var(--rail); box-shadow: 0 -12px 16px -12px oklch(0 0 0 / .6); }
 .chip-count-form:has(.numpad) .chip-quantity-row input { scroll-margin-bottom: 340px; }
 /* Group chip presets: a picker above a session's chip values, a quiet save below, and a compact list in group settings. */
 .chip-preset-pick { margin: 0 0 var(--s-4); padding: 16px; background: var(--rail); border-radius: var(--radius); }

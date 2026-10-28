@@ -1,26 +1,27 @@
 {% load money_tags %}
 <form method="post" action="{% url 'chip_count' session.pk chip_form.participant.pk %}"{% if chip_form.inline %} data-turbo="true"{% endif %} data-once class="chip-count-form" data-chip-count data-chip-key="{{ chip_form.key }}" data-chip-current-revision="{{ session.night.chip_values_revision }}" data-unit="{{ unit }}">
   {% csrf_token %}<input type="hidden" name="request_id" value="{{ chip_form.request_id }}"><input type="hidden" name="chip_revision" value="{{ chip_form.revision }}">
-  <p class="chip-count-intro">{% if chip_form.host %}{{ chip_form.participant.member.display_name }}’s ending stack.{% else %}Your ending stack. The host confirms your total.{% endif %} Count each colour, then enter its quantity.</p>
+  <p class="chip-count-intro">{% if chip_form.host %}{{ chip_form.participant.member.display_name }}’s ending stack.{% else %}Your ending stack. The host confirms your total.{% endif %} Enter how many of each colour; leave unused colours blank.</p>
   {% if chip_form.error %}<p class="sheet-error" role="alert">{{ chip_form.error }}</p>{% endif %}
   <p class="notice" data-chip-stale hidden role="alert">Chip values changed. <a href="{% url 'chip_count' session.pk chip_form.participant.pk %}">Load current values and recount</a> before sending.</p>
   <div class="chip-quantity-list">
   {% for row in chip_form.rows %}
     <div class="chip-quantity-row" data-chip-quantity-row data-value="{{ row.value }}">
       <label for="{{ chip_form.key }}-{{ row.id }}"><span class="denomination-swatch denomination-{{ row.colour }}" aria-hidden="true"></span><span class="chip-denomination"><strong>{{ row.name }}</strong><span class="small muted">{{ row.value|amount:unit }} each{% if row.label %} · {{ row.colour_name }}{% endif %}</span></span></label>
-      <input type="text" id="{{ chip_form.key }}-{{ row.id }}" name="qty_{{ row.id }}" value="{{ row.quantity }}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" placeholder="0" data-numpad="count" data-chip-quantity data-keep="{{ chip_form.key }}-{{ row.id }}" aria-describedby="{{ chip_form.key }}-{{ row.id }}-subtotal">
       <span class="chip-subtotal small num" id="{{ chip_form.key }}-{{ row.id }}-subtotal" data-chip-subtotal>—</span>
+      <input type="text" id="{{ chip_form.key }}-{{ row.id }}" name="qty_{{ row.id }}" value="{{ row.quantity }}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" placeholder="0" data-numpad="count" data-chip-quantity data-keep="{{ chip_form.key }}-{{ row.id }}" aria-describedby="{{ chip_form.key }}-{{ row.id }}-subtotal">
     </div>
   {% endfor %}
   </div>
-  <p class="small muted" data-chip-hint>Leave unused colours blank. Use Empty stack if there are no chips left.</p>
-  {# The total and the keys stay at the foot of a long sheet while its rows scroll. #}
+  {# The total, Confirm and the keys stay at the foot of a long sheet while its rows scroll. #}
   <div class="chip-count-dock">
-    <div class="chip-count-total"><span class="small muted">Total <span data-chip-preview-label>· calculated when sent</span></span><output class="num" data-chip-total aria-live="polite" aria-atomic="true">—</output></div>
+    <p class="small error" data-chip-hint hidden role="alert"></p>
+    <div class="chip-count-send">
+      <div class="chip-count-total"><span class="small muted">Total <span data-chip-preview-label>· calculated when sent</span></span><output class="num" data-chip-total aria-live="polite" aria-atomic="true">—</output></div>
+      <button type="submit" class="btn btn-primary">{% if chip_form.host %}Confirm count{% else %}Send to host{% endif %}</button>
+    </div>
     <div data-numpad-slot></div>
   </div>
-  <div class="chip-count-actions">
-    <button type="submit" class="btn btn-primary btn-block">{% if chip_form.host %}Confirm count{% else %}Send to host{% endif %}</button>
-    <button type="submit" name="empty_stack" value="1" formnovalidate class="btn btn-quiet btn-block" data-chip-empty>Empty stack</button>
-  </div>
+  {# Last in the form, so Enter in a quantity confirms the count and never sends an empty stack. The stylesheet shows it under the intro. #}
+  <button type="submit" name="empty_stack" value="1" formnovalidate class="link-button chip-count-empty" data-chip-empty>No chips left</button>
 </form>

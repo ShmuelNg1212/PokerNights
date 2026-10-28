@@ -44,9 +44,9 @@
     invalid = invalid || total > LIMIT;
     form.querySelector("[data-chip-preview-label]").textContent = "· preview";
     form.querySelector("[data-chip-total]").textContent = stale ? "Recount needed" : invalid ? "Check quantities" : typed ? amount(total, form.dataset.unit) : "—";
-    form.querySelector("[data-chip-hint]").textContent = invalid
-      ? "Use whole quantities. The total must be within the allowed amount."
-      : "Leave unused colours blank. Use Empty stack if there are no chips left.";
+    var hint = form.querySelector("[data-chip-hint]");
+    hint.textContent = invalid ? "Use whole quantities. The total must be within the allowed amount." : "";
+    hint.hidden = !invalid;
   }
   function update(root) {
     root.querySelectorAll("[data-chip-count]").forEach(function (form) {
