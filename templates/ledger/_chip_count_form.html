@@ -8,13 +8,17 @@
   {% for row in chip_form.rows %}
     <div class="chip-quantity-row" data-chip-quantity-row data-value="{{ row.value }}">
       <label for="{{ chip_form.key }}-{{ row.id }}"><span class="denomination-swatch denomination-{{ row.colour }}" aria-hidden="true"></span><span class="chip-denomination"><strong>{{ row.name }}</strong><span class="small muted">{{ row.value|amount:unit }} each{% if row.label %} · {{ row.colour_name }}{% endif %}</span></span></label>
-      <input type="text" id="{{ chip_form.key }}-{{ row.id }}" name="qty_{{ row.id }}" value="{{ row.quantity }}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" placeholder="0" data-chip-quantity data-keep="{{ chip_form.key }}-{{ row.id }}" aria-describedby="{{ chip_form.key }}-{{ row.id }}-subtotal">
+      <input type="text" id="{{ chip_form.key }}-{{ row.id }}" name="qty_{{ row.id }}" value="{{ row.quantity }}" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" placeholder="0" data-numpad="count" data-chip-quantity data-keep="{{ chip_form.key }}-{{ row.id }}" aria-describedby="{{ chip_form.key }}-{{ row.id }}-subtotal">
       <span class="chip-subtotal small num" id="{{ chip_form.key }}-{{ row.id }}-subtotal" data-chip-subtotal>—</span>
     </div>
   {% endfor %}
   </div>
-  <div class="chip-count-total"><span class="small muted">Total <span data-chip-preview-label>· calculated when sent</span></span><output class="num" data-chip-total aria-live="polite" aria-atomic="true">—</output></div>
   <p class="small muted" data-chip-hint>Leave unused colours blank. Use Empty stack if there are no chips left.</p>
+  {# The total and the keys stay at the foot of a long sheet while its rows scroll. #}
+  <div class="chip-count-dock">
+    <div class="chip-count-total"><span class="small muted">Total <span data-chip-preview-label>· calculated when sent</span></span><output class="num" data-chip-total aria-live="polite" aria-atomic="true">—</output></div>
+    <div data-numpad-slot></div>
+  </div>
   <div class="chip-count-actions">
     <button type="submit" class="btn btn-primary btn-block">{% if chip_form.host %}Confirm count{% else %}Send to host{% endif %}</button>
     <button type="submit" name="empty_stack" value="1" formnovalidate class="btn btn-quiet btn-block" data-chip-empty>Empty stack</button>

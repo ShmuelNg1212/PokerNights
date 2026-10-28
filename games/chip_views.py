@@ -19,7 +19,7 @@ class ChipValueForm(forms.Form):
     colour = forms.ChoiceField(label="Colour", choices=())
     label = forms.CharField(label="Label (optional)", max_length=40, required=False)
     value = forms.CharField(label="Value", widget=forms.TextInput(attrs={
-        "inputmode": "decimal", "autocomplete": "off",
+        "inputmode": "decimal", "autocomplete": "off", "data-numpad": "pesos",
     }))
 
     def __init__(self, *args, unit="php", **kwargs):
@@ -28,7 +28,7 @@ class ChipValueForm(forms.Form):
         self.fields["colour"].choices = [("", "Choose a colour")] + [(key, name) for key, name, _ in chips.COLOURS]
         self.fields["value"].label = "Value (₱)" if unit == "php" else "Value (chip units)"
         if unit == "chips":
-            self.fields["value"].widget.attrs["inputmode"] = "numeric"
+            self.fields["value"].widget.attrs.update({"inputmode": "numeric", "data-numpad": "chips"})
 
     def clean_value(self):
         try:

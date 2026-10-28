@@ -1,9 +1,11 @@
 """The in-app numpad: what the server gives the script, and what stays when the script is absent."""
 import re
+import uuid
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from games import services as games
 from ledger.tests.helpers import Night
 
 
@@ -92,3 +94,33 @@ class SetupFormTests(TestCase):
         tag = field(page, 'name="seat_count"')
         self.assertIn('data-numpad="whole"', tag)
         self.assertIn('type="number"', tag)
+
+
+class ChipFieldTests(TestCase):
+    """Chip values and chip quantities use the app's keys. The phone keyboard stays until the script runs."""
+
+    def page(self, unit="php"):
+        night = Night("Ben", "Bea", unit=unit)
+        night.buy("Ben", 1000)
+        night.go("reconciliation")
+        games.set_chip_values(night.session.night_id, night.host, [
+            {"colour": "red", "label": "", "value": 2500}], uuid.uuid4(), revision=0)
+        self.client.force_login(night.host.user)
+        return night
+
+    def test_setup_values_follow_the_session_unit(self):
+        for unit, kind in (("php", "pesos"), ("chips", "chips")):
+            night = self.page(unit)
+            page = self.client.get(reverse("chip_values", args=[night.session.night_id]))
+            tag = field(page, 'name="chips-0-value"')
+            self.assertIn(f'data-numpad="{kind}"', tag, unit)
+            self.assertIn("inputmode=", tag, unit)
+
+    def test_quantities_take_whole_counts_and_the_form_holds_the_keys(self):
+        night = self.page()
+        page = self.client.get(reverse("chip_count", args=[night.session.pk, night.players["Ben"].pk]))
+        tag = field(page, "data-chip-quantity")
+        self.assertIn('data-numpad="count"', tag)
+        self.assertIn('inputmode="numeric"', tag)
+        form = re.search(r"<form[^>]*data-chip-count.*?</form>", page.content.decode(), re.S).group(0)
+        self.assertIn("data-numpad-slot", form)

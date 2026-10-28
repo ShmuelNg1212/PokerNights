@@ -1,4 +1,4 @@
-// The app's own number keys. A marked field (data-numpad="pesos|chips|percent|whole") stays a real
+// The app's own number keys. A marked field (data-numpad="pesos|chips|count|percent|whole") stays a real
 // text field: the keys write into it and send "input", so forms, the count preview and live updates
 // see ordinary typing. The phone's keyboard is switched off (inputmode="none") only for a field
 // these keys can serve, and only once they exist. Anything going wrong gives the keyboard back.
@@ -14,7 +14,8 @@
     pesos: { point: true, shape: /^\d{0,10}(\.\d{0,2})?$/, fits: function (v) { return Math.round(Number(v || 0) * 100) <= MAX; } },
     chips: { point: false, shape: /^\d{0,12}$/, fits: function (v) { return Number(v || 0) <= MAX; } },
     percent: { point: true, shape: /^\d{0,2}(\.\d{0,2})?$/, fits: function () { return true; } },
-    whole: { point: false, shape: /^\d{0,2}$/, fits: function () { return true; } }
+    whole: { point: false, shape: /^\d{0,2}$/, fits: function () { return true; } },
+    count: { point: false, shape: /^\d{0,12}$/, fits: function (v) { return Number(v || 0) <= MAX; } } // chips of one colour: games/chips.py takes the same limit
   };
   var DELETE = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 0 0-1.34.52l-6.33 5.74a1 1 0 0 0 0 1.48l6.33 5.74A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/><path d="m12 9 6 6m0-6-6 6"/></svg>';
 
