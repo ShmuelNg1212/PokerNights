@@ -1,13 +1,13 @@
 # TODO
 
-## Phone checks (released 2026-10-28: session chip values)
+## Phone checks (unreleased: `feat/chip-numpad`)
 
-- [ ] Set chip values on a session. Add and remove colours. Check the numeric keyboard and colour names on your phone. End a set and tap **Count by chips**. Enter quantities, check the preview and send. Confirm on the host phone and inspect **Chip breakdown**. The values now lock. Check another set shares them, another session can use different values, and reduced motion keeps the sheet still.
+- [ ] Chip keys: on Chip values, tap a Value field. The app's number keys rise, not the phone keyboard; a pesos value has a decimal point. Tap Label: the keys go and the phone keyboard comes. Tap **Count by chips**: the keys are in the sheet with **00**, not a point. Scroll a long list: the total and the keys stay at the foot. Send a count and check the total.
 
 ## Phone checks (released)
 
+- [ ] **2026-10-28.** Set chip values on a session. Add and remove colours. Check the colour names on your phone. End a set and tap **Count by chips**. Enter quantities, check the preview and send. Confirm on the host phone and inspect **Chip breakdown**. The values now lock. Check another set shares them, another session can use different values, and reduced motion keeps the sheet still.
 - [ ] **2026-10-27.** Host RSVP row: on an announced session, open Not answered and tap a player's row. The pill stays at the right and reads **Cancel**; one panel opens under the row and the rows below slide down. Tap another row: the first closes. Tap **Mark … in**: the page does not jump, Not answered stays open, the player glides to Coming or the Waitlist and carries the brass mark. Try **Mark out** and **Seat now** too.
-
 - [ ] **2026-10-27.** RSVP ([plan](doc/plan/1793109970_rsvp_waitlist.md)): as a host, create a session and tap **Announce to the group** with a time and 3 seats. Another phone gets "… is getting a game together. Are you in?" and sees "Are you in?" on Your groups. On the Sessions tab under Coming up, tap **I'm in**. Fill the seats; the next phone reads **Join the waitlist**, then "Waitlist · 1st in line". One confirmed player taps **Can't make it**: the waiting phone gets "A seat opened. You're in." On the session page, as host: **Seat now**, **Mark out**, change the seats. Open set 1, then **Add players**: the confirmed are ticked.
 
 - [ ] **2026-10-26.** Paid at the table ([plan](doc/plan/1793020848_payments_before_close.md)): in a running set, cash out a winner with **Leaving the set**. Tap their name: “Up ₱… in this set. Did someone pay …?” and **Paid at the table?**. It opens the form with them as Who received and the amount in. Choose who paid; with the number keys, record it: you are back on the set. On the session page the payment is under “Paid at the table”; that player's phone says “… paid you ₱… at the table.” **Undo** asks for a reason, then strikes the row. Finish and close: the list does not ask for that amount again.
