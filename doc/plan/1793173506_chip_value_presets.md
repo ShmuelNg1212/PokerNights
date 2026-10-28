@@ -1,6 +1,6 @@
 # Chip value presets: plan
 
-Date: 2026-10-28. Mode: mixed. Status: awaiting approval.
+Date: 2026-10-28. Mode: mixed. Status: approved 2026-10-28; executing on `feat/chip-presets`.
 
 Study: [chip value presets and in-app keys](../study/1793173506_chip_value_presets.md).
 
@@ -8,12 +8,12 @@ The in-app keys for chip fields fit one commit. They run separately on `feat/chi
 
 ## OPEN QUESTIONS
 
-1. **How does a preset reach a session?** Recommended: the host chooses it on the session's Chip values page. It fills the form, and the host saves. Alternatives: also choose it when creating a session; or let a group default fill every new session automatically. The automatic option changes ADR 0004 ("a new session starts without assignments").
-2. **Save the session's values as a preset?** Recommended: yes, as a quiet action on the Chip values page.
-3. **Who manages presets?** Recommended: hosts only, the same as stakes presets. All members can read them.
-4. **Link to stakes presets?** Recommended: no, not in this scope. A stakes preset could later name a chip preset.
+None. The human approved the defaults on 2026-10-28:
 
-Defaults if you approve without changes: 1 recommended, 2 yes, 3 hosts only, 4 no.
+1. The host chooses a preset on the session's Chip values page. It fills the form. The host saves. No automatic default; ADR 0004's empty start stays.
+2. The Chip values page has "Save as a group preset".
+3. Hosts manage presets. All members can read them.
+4. Chip presets are not linked to stakes presets.
 
 ## Acceptance criteria
 
