@@ -48,6 +48,7 @@ try {
  await H.shot('host-sheet');
  await H.tap(`${D}.querySelector('.chip-count-send .btn-primary')`);await sleep(900);
  check('host: Use closes the sheet without a write',await H.js(`!document.querySelector('dialog[open]')&&!document.querySelector('.message-success')`));
+ check('host: an unsaved chip count has no confirmation tick',await H.js(`getComputedStyle(document.querySelector('#count-row-${ids.a} .count-tick')).opacity==='0'`));
  check('host: the field shows the total',await H.js(`document.querySelector('#count-${ids.a}').value`)==='320');
  check('host: focus is back in the field',await H.js(`document.activeElement?.id`)===`count-${ids.a}`);
  check('host: the row says by chips',await H.js(`!document.querySelector('#count-row-${ids.a} [data-chip-note]').hidden`));
@@ -67,6 +68,12 @@ try {
  await H.tap(`document.querySelector('[data-confirm-typed]:not([hidden])')`);await sleep(1800);
  const page=await H.js(`document.body.innerText`);
  check('host: one confirm saves both counts',page.includes('2 counts confirmed'),page.match(/\d+ counts? confirmed|Nothing was saved[^\n]*/)?.[0]);
+ check('host: confirmed chip and typed counts show their drawn checks',await H.js(`[${ids.a},${ids.player}].every(id=>{const r=document.querySelector('#count-row-'+id),tick=r.querySelector('.count-tick');return r.classList.contains('just-changed')&&getComputedStyle(tick).opacity==='1'&&getComputedStyle(tick.querySelector('path')).animationName==='tick-draw'})`));
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},H.s);
+ check('host: reduced motion keeps confirmed checks still and visible',await H.js(`[${ids.a},${ids.player}].every(id=>{const tick=document.querySelector('#count-row-'+id+' .count-tick');return getComputedStyle(tick).opacity==='1'&&getComputedStyle(tick.querySelector('path')).animationName==='none'})`));
+ await send('Emulation.setEmulatedMedia',{features:[]},H.s);
+ await H.js(`const count=document.querySelector('#count-${ids.a}');count.value='321';count.dispatchEvent(new Event('input',{bubbles:true}))`);
+ check('host: editing a confirmed count hides its check',await H.js(`getComputedStyle(document.querySelector('#count-row-${ids.a} .count-tick')).opacity==='0'`));
  check('host: A is counted with a chip breakdown',await H.js(`(()=>{const r=document.querySelector('#count-row-${ids.a}');return r.textContent.includes('₱320')&&!!r.querySelector('.chip-breakdown')})()`));
  check('host: no chip note after the save',await H.js(`[...document.querySelectorAll('[data-chip-note]')].every(n=>n.hidden)`));
  // Host, second set: typing over a filled total drops the chips.

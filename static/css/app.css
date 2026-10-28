@@ -1593,7 +1593,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-v2 .count-entry { display: contents; }
 .count-v2 .count-entry input[data-count-input] { grid-column: 3; grid-row: 1; min-width: 0; min-height: var(--tap); padding-left: 34px; }
 .count-tick { grid-column: 3; grid-row: 1; justify-self: start; width: 18px; height: 18px; margin-left: 10px; fill: none; stroke: var(--up); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; opacity: 0; }
-.count-entry input:placeholder-shown:not([data-saved=""]) + .count-tick { opacity: 1; }
+/* Chip drafts can sit between the amount field and its confirmation mark. */
+.count-entry input[data-count-input]:placeholder-shown:not([data-saved=""]) ~ .count-tick { opacity: 1; }
 .count-v2 .count-entry .error { grid-column: 1 / -1; grid-row: 2; margin-top: var(--s-1); }
 .count-outcome { grid-column: 3; display: flex; flex-direction: column; align-items: flex-end; min-width: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .count-outcome small { font-weight: 500; font-size: .75rem; color: var(--muted); }

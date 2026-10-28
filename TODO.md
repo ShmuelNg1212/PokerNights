@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks (unreleased: fix/count-confirm-tick)
+
+- [ ] Confirm a chip count and a typed count together. The green checks draw in the saved fields. Edit a count: its check disappears. With reduced motion, saved checks show without drawing.
+
 ## Phone checks (released)
 
 - [ ] Chip count: as host at count-up, tap a count field, then **Chips** on the number keys. Tap a drawn chip (+1), hold it (-1), tap **+20**, then set an exact quantity with the keys. Check the rack and Preview. Tap **Use**: the field fills and says **by chips**. Type another player’s count and **Confirm all counts**: both save with the chip breakdown in Details. Edit a filled amount: **by chips** clears. As a player, use the same sheet, then send from **Your count**. Try **No chips left**, twelve colours on a small phone, and reduced motion.
