@@ -103,7 +103,7 @@ For the rake control fix, migrate a fresh temporary database and seed `seed_rake
 
 For the collapsible host dock, seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_remaining.py`, `seed_opening.py` and `seed_counts.py`, then run `dock.mjs` (178 checks since 2026-10-05, the last three for a keyboard that shortens the page itself, as Chrome on an iPhone does; including the slide, reduced motion, the button-styled options and the iPhone keyboard, which is a stand-in `visualViewport` reporting a 336px keyboard; `__pan` slides its visible frame as a scroll with the keyboard open does, and the checks cover the bar staying a bar, the page keeping its length, the bar following without an event, a single frame watcher, focus-only scrolling and the `?kb=1` readout). It reads both manifests in `/private/tmp` and uses its own Chrome profile (`/private/tmp/pn-dock-chrome`); delete that profile before a run so cached scripts are not reused. The checks at 320, 390 and 1280 px cover both dock states in draft, open, in-play and count-up sets, clearance of the last link, overflow against the requested width, reload, a live update from a second session with focus kept, the choice carried from open to count-up, the typed verdict in the collapsed bar, desktop, refused storage, no JavaScript and a player. The run starts and ends the `default` opening set and records one buy-in on set 3, so use a fresh database for a repeat.
 
-Since 2026-10-28 these scripts pass on `main` again: `rack.mjs` (20), `end_set.mjs` (47), `opening.mjs` (16), `opening_drafts.mjs` (3), `counts.mjs` (35), `remaining.mjs` (108), `remaining_supplement.mjs` (10), `remaining_actions.mjs` (12), `navigate.mjs` (53) and `home.mjs` (60). The checks follow these changes:
+Since 2026-10-28 these scripts pass on `main` again: `rack.mjs` (20), `end_set.mjs` (47), `opening.mjs` (16), `opening_drafts.mjs` (3), `counts.mjs` (35), `remaining.mjs` (108), `remaining_supplement.mjs` (10), `remaining_actions.mjs` (12), `navigate.mjs` (53), `home.mjs` (60), `table.mjs` (60), `late_player.mjs` (21), `rake.mjs` (36), `rake_extra.mjs` (12) and `flow.mjs` (52). The checks follow these changes:
 
 - A player has a Rebuy on their own row only. Row actions show their words at every width.
 - The count-up text contrast is measured on `--rail` and `--rail-2`.
@@ -114,6 +114,11 @@ Since 2026-10-28 these scripts pass on `main` again: `rack.mjs` (20), `end_set.m
 - An invite link can be used more than once; its row reads "Used 1 of …".
 - The session page polls its own state, so `navigate.mjs` counts only the set's polls. Its walk is seven rounds of card, Back, Back, then a card: 22 screen changes. A set page has the same number of sheets as after a fresh load.
 - Hidden elements are not measured for 48 px targets.
+- `table.mjs` reads its open sets from `/private/tmp/pn-opening-manifest.json`. An open set has five steps: players, stakes, open, seats and start.
+- Without JavaScript, a row's Buy-in and the Finalize results action are disclosures. The rake scripts open the finalize disclosure and send its form.
+- The books read "… cashed out + … rake" and "The books balance." Each final result row names its rake. The rake account is on the settings tab.
+- A confirmed count row draws its green tick; its status words are for screen readers only. Each count row has its status twice, so `rake.mjs` counts `li[data-status]`.
+- `flow.mjs` waits up to one more second for the rows to come to rest after a cash-out.
 
 For archive and delete, seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py` and `seed_archive.py`, delete `/private/tmp/pn-archive-chrome`, then run `archive.mjs` (85 checks). The fixture writes `/private/tmp/pn-archive-manifest.json`: a closed session with unpaid transfers, two canceled sessions without money, a session in play, an empty group and a group with a long unbroken name. The script archives and restores the session and compares the Stats tab before, during and after; deletes one empty session with JavaScript and one without; and archives, restores and deletes the empty group. It consumes its fixtures.
 
@@ -186,7 +191,6 @@ Since 2026-10-09:
 - `welcome.mjs` has 54 checks for the arrival after login and on every app open (DESIGN.md, "Arrival into the app"). Seed a fresh temporary database with `seed_home.py` alone and serve it on port 8765; for the switches, serve the same database again with `DOOR_MOTION=False` (named in `PN_OFF_URL`) and with `LAUNCH_ARRIVAL=False` (named in `PN_LAUNCH_OFF_URL`). An app open is a second window in the same browser context: the log-in is shared and the window's `sessionStorage` is new. It logs in through the form each time, because only the page after a login is the arrival, and it creates one account named `newcomer` followed by digits.
 - `table.mjs` has 63 checks for the set page while a set is prepared and in play (DESIGN.md, "Set page"). Seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py` and `seed_opening.py` and serve it on port 8765. It measures the panel and the rows at 320, 390 and 1280px, walks draft → add players → open → start, and covers the sheet swap, a player's view, a live update, reduced motion, no JavaScript and Motion blocked. It writes to the database.
 - Since the set page revamp: `motion.mjs` unfolds the host menu first (it starts folded in play); `dock.mjs` expects the stored choice `open` and a folded start in play; `numpad.mjs` reaches the cash-out form through the player's sheet; `flow.mjs` expects a player's own row first, in the place of the join line; `rake_controls.mjs` reads the rake rule from the checklist's stakes step and presses Open by its value.
-- On 2026-10-09 `opening.mjs`, `opening_drafts.mjs`, `rake.mjs` and `late_player.mjs` gave the same failures with the earlier set page (removed 2026-10-12) as with the new page (each names a selector or a page that changed in an earlier release), so they say nothing about this change. `table.mjs` covers opening buy-ins and the start.
 
 Since the count-up and settle-up revamp (2026-10-10, [plan](../../../doc/plan/1791630963_count_up_and_settle_up_revamp.md)):
 
@@ -199,7 +203,6 @@ Since the count-up and settle-up revamp (2026-10-10, [plan](../../../doc/plan/17
 
 For the pot's figure (2026-10-11), seed a fresh temporary database with `seed.py` and `seed_pot.py`, serve it, then run `pot.mjs` (53 checks). `PN_DB` names the SQLite file (default `/private/tmp/pn-pot-check.sqlite3`); the fixture writes `/private/tmp/pn-pot-manifest.json`. The "grow" set allows buy-ins up to ₱1,000,000 so the figure can reach its long size. Waits after a redraw are measured from the redraw, not from the previous check.
 
-Seen on `main` on 2026-10-11, before this change: `flow.mjs` passes 50 of 52 ("1280px cash-out: rows end at rest" and "count confirmed: the status badge springs"), and `table.mjs` stops at "a player on an open set" with seeds `seed_end_set.py`, `seed_night.py`, `seed_opening.py`. Neither was looked into.
 
 For reopening, seed a fresh temporary database with `seed_reopen.py` alone (it needs no other seed), serve it, then:
 
@@ -249,7 +252,6 @@ PN_DB=/private/tmp/pn-seat-draw-check.sqlite3 node web/tests/browser/seat_draw.m
 
 `PN_DB` is the served SQLite file. A host and two players sit side by side; the script clicks through the draw, the seat and the seating and plays some host actions through the services. The dealer is drawn at random, so one check runs only when Ben or Cara wins (45 or 46 checks). It takes about a minute and a half and uses up the fixture.
 
-`table.mjs`'s last failure, "a player on an open set", opens `/s/19/`; with today's seeds that set is not the open one it expects. It predates the seat draw.
 
 For carried transfers, seed a fresh temporary database with `seed_carried.py` alone, serve it, then:
 
@@ -265,7 +267,7 @@ Since the table's new look (2026-10-12) `seat_draw.mjs` has 49 or 50 checks. It 
 
 For several new names at once on Add players, seed a fresh temporary database with `seed.py` and `seed_new_names.py` (an open set at a 12-seat table with Miguel seated, and a removed player named Gone; the set's id goes to `/private/tmp/pn-new-names-manifest.json`), then run `new_names.mjs 390`, `new_names.mjs 1280` and `new_names.mjs 390 reduce` (18 checks each, a fresh database for each run). It checks one form and one button, the preview of each typed name and its first frame, every clash the preview names, "Tick … instead", the seats counted for ticks and names together, a mixed send, the arrivals' mark and rise on the set page (or the mark alone under reduced motion), that they are brought into sight above the dock, and that the next view marks no one.
 
-`late_player.mjs`, `rake.mjs` and `rake_controls.mjs` type into the names box since 2026-10-14. `late_player.mjs` passes 19 and fails the same 2 checks as before the change ("new identity saved to group roster", "native manual buy-in after late arrival"); both look at screens that changed before this cycle.
+`late_player.mjs`, `rake.mjs` and `rake_controls.mjs` type into the names box since 2026-10-14.
 
 For the session setup polish, seed a fresh temporary database with `seed.py` and `seed_setup.py`, then run `session_setup.mjs 390`, `session_setup.mjs 1280` and `session_setup.mjs 390 reduce` (21, 20 and 19 checks; each run wants its own fresh database, because it creates two sessions). It checks the group titles' weight and rhythm on New session, that a preset fills the stakes and keeps the typed fields, that only the chosen rake rule's amount is on the page, the draft set's step line and buttons, the "More host controls" flyout (it opens with motion, stays drawn while it closes, turns round on a second tap, and does nothing under reduced motion), and the Add players page.
 
@@ -279,7 +281,6 @@ PN_DB=/private/tmp/pn-arrivals.sqlite3 node web/tests/browser/arrivals.mjs
 
 For table alerts in the header (2026-10-16), seed another fresh temporary database with `seed_arrivals.py`, serve it the same way, then run `PN_DB=/private/tmp/pn-arrivals.sqlite3 node web/tests/browser/alerts_bell.mjs` (45 checks). Each browser context is a new window, so a new app session. It covers the reminder after a login (once per window, Not now, the swing, the announcement), the bell by hand (Escape, the outside tap, Turn on and off, the server's subscription), a refresh of Your groups while the panel is open (it opens the "Quiet room" draft, so it consumes that fixture), a new window, the set page, blocked and on, an Android phone's browser (the home-screen sheet goes first), an iPhone's browser (no PushManager; the panel opens the home-screen sheet), the header at 320 and 1280px and reduced motion.
 
-Seen on 2026-10-15 with this change: `flow.mjs` 51 of 52 and `home.mjs` 57 of 60, the same failures as `main` ("count confirmed: the status badge springs"; "every link and button in a card is at least 48px tall", with an empty list of offenders); `hub_live.mjs` 19 of 19; `table.mjs` stops at "a player on an open set" on both.
 
 For the header (2026-10-17), seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py` and `seed_opening.py`, serve it, then run `node web/tests/browser/header.mjs` (103 checks at 320, 390 and 1280; `PN_WIDTHS=390` for one width). It covers one 69px row on Your groups, a group, a session, a set and Cash out counted players; the way back and the token as 48px targets; the set's live status; a long name's ellipsis; the account panel (inside the screen, caret on the token, Escape, the outside tap, the token, a tap during the close, a refresh of the set page, another screen); the way back's words moving in deeper and back changes while the header stays; Log out; reduced motion; and no JavaScript. With the alerts fixtures (`seed_arrivals.py`, VAPID keys set), `PN_BELL=cal node web/tests/browser/header.mjs` runs only the three checks of the bell and the token together at 320.
 

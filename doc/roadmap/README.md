@@ -61,7 +61,7 @@ These used the plan's defaults in Stage 1. They can still change.
 
 - **Feature switches.** The three switches that kept an earlier copy of a screen (`COUNT_REVAMP`, `TABLE_REVAMP`, `STATS_PAGES`) were removed with those copies on 2026-10-12 ([plan](../plan/1791788388_switch_cleanup.md)). The 13 switches that turn a feature off stay; look at them again after each feature has been through a few game nights.
 - **Left behind by that cleanup.** `settlement.queries.group_stats` has no page calling it; the tests use it as a second sum. Styles written for the earlier set page may remain in `static/css/app.css` where they share a class name with the new one.
-- **Stale browser scripts.** Ten were repaired on 2026-10-28. `table.mjs`, `late_player.mjs`, `rake.mjs` and `flow.mjs` still fail; see the [browser checks README](../../web/tests/browser/README.md).
+- **Stale browser scripts.** Fifteen were repaired on 2026-10-28; see the [browser checks README](../../web/tests/browser/README.md).
 
 ## Later (from `spec.md`, not planned)
 
