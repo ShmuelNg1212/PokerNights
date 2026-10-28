@@ -186,6 +186,18 @@ class BatchChipCountTests(TestCase):
         again = self.batch(chips={self.maria: self.chips([('red', '9')], revision=0)}, request_id=rid)
         self.assertEqual([c.pk for c in again], [c.pk for c in first])
 
+    def test_stale_chip_values_name_the_player(self):
+        with self.assertRaisesRegex(RuleError, "^maria: Chip values changed"):
+            self.batch({self.lolo: 80000}, {self.maria: self.chips([('red', '4')], revision=0)})
+
+    def test_a_players_typed_amount_must_equal_the_chip_total(self):
+        with self.assertRaisesRegex(RuleError, 'but the chips add up to ₱100'):
+            services.enter_count(self.sid, self.night.maria, None, uuid.uuid4(), chips=[('red', '4')], chip_revision=1, typed=1000)
+        with self.assertRaisesRegex(RuleError, 'Chip values changed'):  # the revision is checked first
+            services.enter_count(self.sid, self.night.maria, None, uuid.uuid4(), chips=[('red', '4')], chip_revision=0, typed=1000)
+        entry = services.enter_count(self.sid, self.night.maria, None, uuid.uuid4(), chips=[('red', '4')], chip_revision=1, typed=10000)
+        self.assertEqual(entry.amount, 10000)
+
     def test_chip_counts_alone_satisfy_the_need_for_one_count(self):
         with self.assertRaisesRegex(RuleError, 'at least one'):
             self.batch()

@@ -182,6 +182,11 @@ class BatchChipFormTests(TestCase):
                 self.assertContains(response, "ben: the chip count could not be read")
         self.assertIsNone(self.current(self.ben))
 
+    def test_an_unreadable_chip_field_is_reported_before_a_bad_typed_count(self):
+        response = self.client.post(self.url, {f"chips_{self.ben}": "{", f"count_{self.a}": "12.345",
+                                               "request_id": uuid.uuid4()}, follow=True)
+        self.assertContains(response, "ben: the chip count could not be read")
+
     def test_count_rows_carry_an_empty_chip_field(self):
         response = self.client.get(reverse("session", args=[self.n.session.pk]))
         self.assertContains(response, f'name="chips_{self.ben}" value=""', html=False)

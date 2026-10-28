@@ -5,7 +5,6 @@ import uuid
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
-from games import chips as chip_math
 from games.access import session_for
 from groups.access import require_host
 from groups.http import attempt, request_id_from
@@ -151,6 +150,8 @@ def count_confirm(request, session_id):
         # An empty field is never read as zero.
         error = "Enter the final count. Type 0 for a player who has nothing left."
     for participant_id, text in typed.items():
+        if error:
+            break  # the first problem is the one reported
         try:
             amounts[participant_id] = money.parse_amount(text, session.unit)
         except money.MoneyError as refused:
@@ -190,18 +191,9 @@ def count_enter(request, session_id):
     if chips is None:
         attempt(request, services.enter_count, session.pk, actor, amount, request_id_from(request), success="Count sent to the host.")
         return redirect("session", session_id=session.pk)
-    # The card's field shows the sheet's total. If it was changed since, the two must not disagree.
-    try:
-        total, _ = chip_math.calculate(session.night.chip_values, chips["quantities"], empty_stack=chips["empty_stack"])
-    except RuleError as refused:
-        messages.error(request, str(refused))
-        return redirect("session", session_id=session.pk)
-    if total != amount:
-        messages.error(request, f"Your count is {money.format_amount(amount, session.unit)}, but the chips add up to "
-                                f"{money.format_amount(total, session.unit)}. Count by chips again, or type the count without chips.")
-        return redirect("session", session_id=session.pk)
+    # The card's field shows the sheet's total; the service checks that the two still agree.
     attempt(request, services.enter_count, session.pk, actor, None, request_id_from(request), success="Count sent to the host.",
-            chips=chips["quantities"], chip_revision=chips["revision"], empty_stack=chips["empty_stack"])
+            chips=chips["quantities"], chip_revision=chips["revision"], empty_stack=chips["empty_stack"], typed=amount)
     return redirect("session", session_id=session.pk)
 
 

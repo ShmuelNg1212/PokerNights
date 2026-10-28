@@ -10,6 +10,7 @@ COLOURS = (
     ('pink', 'Pink', '#dd86a1'), ('brown', 'Brown', '#916743'),
     ('grey', 'Grey', '#b4b1a6'), ('teal', 'Teal', '#70b9bd'),
 )
+LIGHT = {'white', 'yellow', 'orange', 'pink', 'grey', 'teal'}  # faces that need dark text
 
 
 def denominations(rows):
@@ -35,10 +36,10 @@ def denominations(rows):
 
 
 def named(values):
-    """Saved rows with what a screen shows: the label or colour name, the colour name and its swatch."""
+    """Saved rows with what a screen shows: the label or colour name, the colour name, its swatch and whether it is light."""
     palette = {key: (name, colour) for key, name, colour in COLOURS}
     return [{**row, "name": row["label"] or palette[row["colour"]][0],
-             "colour_name": palette[row["colour"]][0], "hex": palette[row["colour"]][1]}
+             "colour_name": palette[row["colour"]][0], "hex": palette[row["colour"]][1], "light": row["colour"] in LIGHT}
             for row in values]
 
 

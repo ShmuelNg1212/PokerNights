@@ -395,7 +395,10 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entr
         checked.append((participant, entry.amount, ids[participant_id], entry, None))
     for participant_id, chip in chips.items():
         participant = _participant(session, participant_id)
-        amount, breakdown = _chip_amount(session, chip.get("quantities"), chip.get("revision"), chip.get("empty_stack", False))
+        try:
+            amount, breakdown = _chip_amount(session, chip.get("quantities"), chip.get("revision"), chip.get("empty_stack", False))
+        except RuleError as refused:
+            raise RuleError(f"{participant.member.display_name}: {refused}") from refused  # which row to recount
         typed = amounts.get(participant_id)
         if typed is not None and typed != amount:
             raise RuleError(
@@ -416,11 +419,12 @@ def confirm_counts(session_id, actor: Member, amounts: dict, request_id, *, entr
 
 @transaction.atomic
 def enter_count(session_id, actor: Member, amount: int, request_id, *,
-                chips=None, chip_revision=None, empty_stack=False) -> CountEntry:
+                chips=None, chip_revision=None, empty_stack=False, typed=None) -> CountEntry:
     """A player states what they have left at the end of the set. The host confirms it, or types another number.
 
     This is not a count: nothing is cashed out and no total changes. Entering again replaces
     the statement with the next version, until the host has confirmed a count for the player.
+    ``typed`` is the amount the player's card showed beside chip quantities; it must equal their total.
     """
     if not settings.PLAYER_ENTRIES:
         raise NotAllowed("Only a host can do this.")
@@ -434,6 +438,9 @@ def enter_count(session_id, actor: Member, amount: int, request_id, *,
     breakdown = []
     if chips is not None:
         amount, breakdown = _chip_amount(session, chips, chip_revision, empty_stack)
+        if typed is not None and typed != amount:
+            raise RuleError(f"Your count is {money.format_amount(typed, session.unit)}, but the chips add up to "
+                            f"{money.format_amount(amount, session.unit)}. Count by chips again, or type the count without chips.")
     if not _is_amount(amount) or amount < 0:
         raise RuleError("Enter your count, 0 or more.")
     if not _accepted_buy_ins(session).filter(participant=participant).exists():

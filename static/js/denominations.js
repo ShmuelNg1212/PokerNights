@@ -93,7 +93,8 @@
     input.dispatchEvent(new Event("input", {bubbles: true}));
     if (step < 0) return;
     var box = row.querySelector("[data-chip-rack]");
-    land(step === 1 && box.querySelector(".rack-disc:last-of-type") || box.querySelector(".rack-more") || box.querySelector(".rack-stack:last-of-type"));
+    var discs = box.querySelectorAll(".rack-disc"), stacks = box.querySelectorAll(".rack-stack");
+    land(step === 1 && discs[discs.length - 1] || box.querySelector(".rack-more") || stacks[stacks.length - 1]);
   }
   // The newest disc or stack drops into place. Without Motion, or under reduced motion, it is simply there.
   function land(el) {
@@ -133,6 +134,7 @@
     var cents = value % 100n;
     return String(value / 100n) + (cents ? "." + String(cents).padStart(2, "0") : "");
   }
+  var stored = null; // the chip fields as last written to this tab's storage
   function shownBy(carry) { try { return carry.value ? JSON.parse(carry.value).shown : null; } catch (_) { return null; } }
   function storeKey() { var region = document.getElementById("live"); return region && region.dataset.url ? "rack-chips:" + region.dataset.url : null; }
   // A chip field holds only while its count field still shows the sheet's total: typing over it drops the chips.
@@ -146,7 +148,10 @@
       if (note) note.hidden = !carry.value;
     });
     // Kept for this tab, as counts.js keeps the typed counts, so leaving the page does not lose the breakdown.
-    try { var at = storeKey(); if (at) { if (Object.keys(kept).length) sessionStorage.setItem(at, JSON.stringify(kept)); else sessionStorage.removeItem(at); } } catch (_) {}
+    var text = JSON.stringify(kept);
+    if (text === stored) return;
+    stored = text;
+    try { var at = storeKey(); if (at) { if (Object.keys(kept).length) sessionStorage.setItem(at, text); else sessionStorage.removeItem(at); } } catch (_) {}
   }
   function recall() {
     var kept;
@@ -160,9 +165,10 @@
   function fill(form, empty) {
     var carry = carrier(form), field = carry && document.querySelector('[data-sheet-return="' + form.dataset.chipKey + '"]');
     if (!field) return false;
+    if (form.closest("dialog.closing")) return true; // a second tap while the sheet leaves: the first one already filled
     if (empty) form.querySelectorAll("[data-chip-quantity]").forEach(function (input) { input.value = ""; });
     var sum = preview(form);
-    if (sum.stale) return true;
+    if (!sum || sum.stale) return true;
     if (!empty && (sum.invalid || !sum.typed)) {
       var hint = form.querySelector("[data-chip-hint]");
       if (!sum.invalid) { hint.textContent = "Enter a quantity, or choose No chips left."; hint.hidden = false; }
@@ -171,8 +177,7 @@
     var shown = plain(empty ? 0n : sum.total, form.dataset.unit);
     carry.value = JSON.stringify({quantities: empty ? [] : sum.pairs, revision: sum.revision, empty_stack: !!empty, shown: shown});
     field.value = shown;
-    // A key typed next goes after the total. Focus comes back when the sheet closes, and moves the caret to the start.
-    field.addEventListener("focus", function () { try { field.setSelectionRange(field.value.length, field.value.length); } catch (_) {} }, {once: true});
+    field.dataset.chipCaret = ""; // focus comes back when the sheet closes; see the focusin listener
     field.dispatchEvent(new Event("input", {bubbles: true})); // the host dock's preview follows
     remember(form);
     holdChips();
@@ -213,15 +218,24 @@
   document.addEventListener("submit", function (event) {
     var form = event.target;
     if (!form.matches || !form.matches("[data-chip-count]")) return;
-    var empty = !!event.submitter?.matches("[data-chip-empty]");
-    if (fill(form, empty)) { event.preventDefault(); event.stopPropagation(); }
+    if (!carrier(form)) return;
+    // Cancelled first, so an error below can never fall through to a direct write.
+    event.preventDefault(); event.stopPropagation();
+    try { fill(form, !!event.submitter?.matches("[data-chip-empty]")); } catch (error) { setTimeout(function () { throw error; }, 0); }
   }, true);
   document.addEventListener("input", function (event) {
     if (event.target.matches && event.target.matches("[data-sheet-return]")) holdChips();
   });
+  // Focus coming back to a filled field moves its caret to the start; a key typed next goes after the total.
+  document.addEventListener("focusin", function (event) {
+    var field = event.target;
+    if (!field.dataset || !("chipCaret" in field.dataset)) return;
+    delete field.dataset.chipCaret;
+    try { field.setSelectionRange(field.value.length, field.value.length); } catch (_) {}
+  });
   document.addEventListener("submit", function (event) {
     var form = event.target;
-    if (!form.matches("[data-chip-count]") || !event.submitter?.matches("[data-chip-empty]")) return;
+    if (!form.matches("[data-chip-count]") || !event.submitter?.matches("[data-chip-empty]") || carrier(form)) return; // fill() handled it
     // Empty stack is an explicit zero, not an inference from untouched fields.
     form.querySelectorAll("[data-chip-quantity]").forEach(function (input) { input.value = ""; });
     preview(form);
