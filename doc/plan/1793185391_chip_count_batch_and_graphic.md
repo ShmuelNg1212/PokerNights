@@ -50,13 +50,15 @@ None. The human approved the defaults on 2026-10-28:
   - **Complete when:** the probe passes at 390 and 320 px.
   - Done 2026-10-28. Deviations: before the save, the row says "by chips" without the breakdown; the breakdown shows in Details after the save. `chip_batch.mjs` (17 checks) runs at 390 px; `chip_numpad.mjs` covers the fill-and-send path at 320 px.
 
-- [ ] **4. The chip rack. `tests: alongside`.**
+- [x] **4. The chip rack. `tests: alongside`.**
   - Drawn chip per colour: real colour, striped edge, value on the face. Tap: +1.
   - Side-view stack drawn with CSS; full stacks as columns with "×N". "+ stack" control.
   - A thin make-up bar in the dock. The total rolls only changed digits.
   - Motion: disc drop with `press`/`release`; no queued drops; reduced motion still.
   - Browser probe: taps, stacks, keys, 12 colours at 320 px, reduced motion, no script errors.
   - **Complete when:** the probe passes and the `/impeccable critique` finds no major issue.
+  - Done 2026-10-28. `chip_rack.mjs`, 30 checks at 390 and 320 px. The critique (single-context, see Checks) found no way to take a chip off; holding a chip now takes one off. It also found that the first drawn chip took the sheet's opening focus, so the keys did not appear; the first quantity field now has `data-sheet-focus`.
+  - Deviations: the total changes at once and does not roll its digits. The pot's roll in `pot.js` is not shared; sharing it is a separate refactor. The rack sits on its own line under the name, with the subtotal at its right end, because the name column is about 88 px at 320 px.
 
 - [ ] **5. Sync docs.** spec.md (batch rule: an intent change, so add an ADR), features.md, DESIGN.md, TODO.md phone checks.
 

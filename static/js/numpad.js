@@ -406,7 +406,7 @@
     prepare: function (container) {
       if (!pad) return;
       try {
-        var first = container.querySelector("input:not([type=hidden]), button");
+        var first = container.querySelector("[data-sheet-focus]") || container.querySelector("input:not([type=hidden]), button"); // where sheets.js puts focus
         if (first && served(first)) show(first);
       } catch (error) { giveUp(error); }
     }

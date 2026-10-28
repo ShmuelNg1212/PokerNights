@@ -14,14 +14,28 @@ from groups.http import request_id_from
 from . import queries, services
 
 
+LIGHT_COLOURS = {"white", "yellow", "orange", "pink", "grey", "teal"}  # dark text reads better on these faces
+
+
 def denominations(night):
     return chips.named(night.chip_values)
+
+
+def face(value, unit):
+    """The short value printed on a drawn chip: 25, 2.5, 1K. The written value stays beside it."""
+    whole, cents = (value, 0) if unit == "chips" else divmod(value, 100)
+    if cents:
+        return f"{whole}.{cents:02d}".rstrip("0")
+    if whole >= 1000 and whole % 1000 == 0:
+        return f"{whole // 1000}K"
+    return str(whole)
 
 
 def form_context(session, participant, actor, draft=None):
     draft = draft or {}
     typed = draft.get("quantities", {})
-    rows = [{**row, "quantity": typed.get(row["id"], "")} for row in denominations(session.night)]
+    rows = [{**row, "quantity": typed.get(row["id"], ""), "face": face(row["value"], session.unit),
+             "light": row["colour"] in LIGHT_COLOURS} for row in denominations(session.night)]
     return {"rows": rows, "participant": participant, "key": f"chip-count-{participant.pk}",
             "revision": draft.get("revision", session.night.chip_values_revision),
             "request_id": uuid.uuid4(), "host": actor.is_host, "inline": True,

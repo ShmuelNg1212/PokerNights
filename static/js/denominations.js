@@ -2,6 +2,7 @@
 (function () {
   "use strict";
   var LIMIT = 100000000000n;
+  var STACK = 20, SHOWN_STACKS = 4; // a stack is 20 chips of a colour; past four stacks the rack shows one column and ×N
   var drafts = Object.create(null);
   function remember(form) {
     if (form.closest('dialog.closing')) return;
@@ -30,7 +31,7 @@
     form.querySelector('[data-chip-stale]').hidden = !stale;
     form.querySelector('.btn-primary').disabled = stale;
     form.querySelector('[data-chip-empty]').disabled = stale;
-    var total = 0n, typed = false, invalid = false, pairs = [];
+    var total = 0n, typed = false, invalid = false, pairs = [], shares = [];
     form.querySelectorAll("[data-chip-quantity-row]").forEach(function (row) {
       var input = row.querySelector("[data-chip-quantity]"), text = input.value.trim(), subtotal = 0n;
       var bad = !!text && !/^[0-9]{1,12}$/.test(text);
@@ -40,16 +41,86 @@
       total += subtotal; invalid = invalid || bad;
       input.setAttribute("aria-invalid", bad ? "true" : "false");
       row.querySelector("[data-chip-subtotal]").textContent = bad ? "Check quantity" : amount(subtotal, form.dataset.unit);
+      rack(row, bad || !text ? 0 : Number(text));
+      shares.push([row, bad ? 0n : subtotal]);
     });
     invalid = invalid || total > LIMIT;
     form.querySelector("[data-chip-preview-label]").textContent = "· preview";
     form.querySelector("[data-chip-total]").textContent = stale ? "Recount needed" : invalid ? "Check quantities" : typed ? amount(total, form.dataset.unit) : "—";
+    makeup(form, invalid || stale ? 0n : total, shares);
     var hint = form.querySelector("[data-chip-hint]");
     hint.textContent = invalid ? "Use whole quantities. The total must be within the allowed amount." : "";
     hint.hidden = !invalid;
     if (carrier(form)) form.querySelector('.btn-primary').textContent = typed && !invalid && !stale ? "Use " + amount(total, form.dataset.unit) : "Use count";
     return {total: total, typed: typed, invalid: invalid, stale: stale, pairs: pairs, revision: Number(revision)};
   }
+
+  // --- The rack. The quantity field is the record; the drawing follows it and is hidden from screen readers.
+  // Full stacks stand as ridged columns, loose chips lie as discs beside them.
+  function rack(row, n) {
+    var box = row.querySelector("[data-chip-rack]");
+    if (!box) return;
+    var stacks = Math.floor(n / STACK), loose = n % STACK, html = "";
+    if (box.dataset.n === String(n)) return;
+    box.dataset.n = String(n);
+    for (var i = 0; i < (stacks > SHOWN_STACKS ? 1 : stacks); i++) html += '<i class="rack-stack"></i>';
+    if (stacks > SHOWN_STACKS) html += '<b class="rack-more">×' + stacks + "</b>"; // one column and its count, never more columns than stacks
+    for (var j = 0; j < loose; j++) html += '<i class="rack-disc"></i>';
+    box.innerHTML = html;
+  }
+  // The make-up bar: each colour's share of the total, in its colour.
+  function makeup(form, total, shares) {
+    var bar = form.querySelector("[data-chip-makeup]");
+    if (!bar) return;
+    bar.replaceChildren();
+    if (total <= 0n) return;
+    shares.forEach(function (share) {
+      if (share[1] <= 0n) return;
+      var part = document.createElement("i");
+      part.style.background = share[0].style.getPropertyValue("--c");
+      part.style.flexGrow = String(Number(share[1] * 10000n / total) || 1);
+      bar.appendChild(part);
+    });
+  }
+  // A tap on the drawn chip adds one, holding it takes one off, and +20 adds a stack.
+  // The row's field takes focus, so the keys serve it next. Taking the last chip off leaves the field blank.
+  function add(row, step) {
+    var input = row.querySelector("[data-chip-quantity]"), text = input.value.trim();
+    var now = /^[0-9]{1,12}$/.test(text) ? Number(text) : 0, next = now + step;
+    if (next < 0 || String(next).length > 12) return;
+    if (document.activeElement !== input) input.focus({preventScroll: true});
+    input.value = next ? String(next) : "";
+    input.dispatchEvent(new Event("input", {bubbles: true}));
+    if (step < 0) return;
+    var box = row.querySelector("[data-chip-rack]");
+    land(step === 1 && box.querySelector(".rack-disc:last-of-type") || box.querySelector(".rack-more") || box.querySelector(".rack-stack:last-of-type"));
+  }
+  // The newest disc or stack drops into place. Without Motion, or under reduced motion, it is simply there.
+  function land(el) {
+    var M = window.pokerMotion;
+    if (!el || !M || !M.on()) return;
+    el.style.opacity = "0"; el.style.transform = "translateY(-8px)"; // Motion starts a frame late (footgun)
+    var moving = M.run(el, { opacity: [0, 1], transform: ["translateY(-8px)", "translateY(0px)"] }, "drop");
+    if (moving) M.settle(el, moving, ["opacity", "transform"]); else { el.style.opacity = ""; el.style.transform = ""; }
+  }
+  var HOLD = 500, holding = null, held = null; // the same hold as the number keys' Delete
+  document.addEventListener("pointerdown", function (event) {
+    var tap = event.target.closest && event.target.closest("[data-chip-tap], [data-chip-stack]");
+    if (!tap) return;
+    event.preventDefault(); // the field keeps focus
+    clearTimeout(holding); held = null;
+    if (tap.hasAttribute("data-chip-tap")) holding = setTimeout(function () { held = tap; add(tap.closest("[data-chip-quantity-row]"), -1); }, HOLD);
+  });
+  function lift() { clearTimeout(holding); }
+  window.addEventListener("pointerup", lift);
+  window.addEventListener("pointercancel", lift);
+  document.addEventListener("click", function (event) {
+    var tap = event.target.closest && event.target.closest("[data-chip-tap], [data-chip-stack]");
+    var row = tap && tap.closest("[data-chip-quantity-row]");
+    if (!row) return;
+    if (held === tap) { held = null; return; } // the hold already took one off
+    add(row, tap.hasAttribute("data-chip-stack") ? STACK : 1);
+  });
 
   // --- On the set page the sheet is a calculator. It writes its total into the player's count field and
   // its quantities into the row's chip field; "Confirm all counts", or the card's Send, saves both.
@@ -174,6 +245,7 @@
 
   window.pokerPage.register(function () {
     drafts = Object.create(null);
+    document.documentElement.classList.add("chip-rack-on"); // the rack controls work from here on
     recall();
     setTimeout(holdChips, 0); // after counts.js has put back the typed counts the chip fields belong to
     update(document);

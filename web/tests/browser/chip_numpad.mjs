@@ -49,12 +49,14 @@ try {
  // Count: twelve colours in a sheet. The keys and the total stay in view.
  for(const [w,h] of [[390,844],[320,568]]) {
   await P.phone(w,h);await P.go(`/s/${ids.set}/`);
+  // The install prompt can open on top of the page a moment after load; it is not part of this check.
+  await sleep(500);await P.js(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>/Not now/.test(b.textContent)&&b.getClientRects().length);if(b)b.click()})()`);await sleep(300);
   // Where the keys serve the phone, their Chips key is the way into the sheet; the card's own link stays hidden.
   check(`count ${w}: the card's chip link is hidden`,await P.js(`!document.querySelector('.own-count .chip-count-option').getClientRects().length`));
   await P.tap(`document.querySelector('#own-count')`);await sleep(500);
   await P.tap(`document.querySelector('.numpad-panel [data-numpad-chips]:not([hidden])')`);await sleep(800);
   const D=`document.querySelector('dialog[open]')`,Q=n=>`${D}.querySelector('[name=qty_${n}]')`;
-  check(`count ${w}: the sheet holds the keys`,await P.js(`!!${D}?.querySelector('form [data-numpad-slot] .numpad')`));
+  check(`count ${w}: the sheet holds the keys`,await P.js(`!!${D}?.querySelector('form [data-numpad-slot] .numpad')`),await P.js(`[document.querySelector('dialog[open] h2')?.textContent,document.activeElement?.id,!!document.querySelector('.numpad-panel')?.isConnected].join('|')`));
   check(`count ${w}: the phone keyboard is off for quantities`,await P.js(`${Q('white')}.getAttribute('inputmode')==='none'`));
   check(`count ${w}: whole counts offer 00, not a point`,await P.js(`${key('dialog[open]','alt')}.textContent==='00'`));
   check(`count ${w}: keys and total are on screen`,await P.js(`(()=>{const k=${D}.querySelector('.numpad').getBoundingClientRect(),t=${D}.querySelector('[data-chip-total]').getBoundingClientRect();return k.bottom<=innerHeight+1&&t.top>=0&&t.bottom<=k.top})()`));

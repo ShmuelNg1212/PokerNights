@@ -2241,15 +2241,44 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .chip-count-form { display: flex; flex-direction: column; }
 .chip-count-intro { order: -2; margin: 0; color: var(--bone-dim); }
 .chip-count-empty { order: -1; align-self: flex-start; margin: 0 0 var(--s-2) calc(var(--s-1) * -1); color: var(--bone-dim); }
-.chip-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 88px; column-gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+.chip-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px; column-gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule); align-items: center; }
 .chip-quantity-row label { display: flex; align-items: center; gap: 12px; min-height: 48px; min-width: 0; margin: 0; cursor: pointer; }
 .chip-denomination { min-width: 0; overflow-wrap: anywhere; }
 .chip-denomination strong, .chip-denomination .small { display: block; }
 .chip-quantity-row input { width: 100%; min-width: 0; height: 48px; text-align: right; font-size: 20px; font-variant-numeric: tabular-nums; }
-.chip-subtotal { color: var(--muted); text-align: right; white-space: nowrap; }
-.chip-subtotal:empty, .chip-quantity-row:has(input:placeholder-shown) .chip-subtotal { visibility: hidden; }
+.chip-subtotal { grid-column: 2; grid-row: 2; justify-self: end; align-self: center; margin-top: 4px; color: var(--bone); font-weight: 650; white-space: nowrap; }
+.chip-subtotal:empty, .chip-quantity-row:has(input:placeholder-shown) .chip-subtotal { display: none; }
+.chip-rack-on .chip-subtotal { grid-column: 3 / -1; margin-top: 6px; }
+/* The rack (denominations.js): a drawn chip adds one, +20 adds a stack, and the stack follows the quantity.
+   Without the script the row stays a swatch, a name and a field. */
+.chip-rack-hint { display: none; }
+.chip-rack-on .chip-rack-hint { display: inline; }
+.chip-rack-on .chip-quantity-row { grid-template-columns: 48px minmax(0, 1fr) auto 64px; column-gap: 8px; }
+.chip-rack-on .chip-tap { display: grid !important; grid-column: 1; grid-row: 1; }
+.chip-rack-on .chip-quantity-row label { grid-column: 2; grid-row: 1; }
+.chip-rack-on .chip-quantity-row .denomination-swatch { display: none; }
+.chip-rack-on .chip-stack-add { display: inline-flex !important; grid-column: 3; grid-row: 1; }
+.chip-rack-on .chip-quantity-row input { grid-column: 4; grid-row: 1; }
+.chip-tap { place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; color: #fff; font: inherit; font-size: .875rem; font-weight: 800; font-variant-numeric: tabular-nums; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle, var(--c) 0 56%, oklch(0 0 0 / .28) 57% 60%, transparent 61%), repeating-conic-gradient(from -12deg, var(--bone) 0 24deg, var(--c) 24deg 60deg);
+  box-shadow: 0 3px 0 oklch(0 0 0 / .5); transition: transform var(--t-press) var(--ease-out), box-shadow var(--t-press) var(--ease-out); }
+.chip-tap.is-light { color: var(--ink); }
+.chip-tap.is-long { font-size: .6875rem; letter-spacing: -.02em; }
+.chip-tap:active { transform: translateY(3px); box-shadow: 0 0 0 oklch(0 0 0 / .5); }
+.chip-tap:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.chip-stack-add { min-width: 48px; padding: 0 10px; font-size: .875rem; font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.chip-rack { grid-column: 2; grid-row: 2; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px 3px; min-height: 16px; margin-top: 6px; }
+.chip-rack:empty { display: none; }
+.rack-stack { width: 8px; height: 16px; margin-right: 2px; border-radius: 2px; background: repeating-linear-gradient(to top, var(--c) 0 2px, oklch(0 0 0 / .4) 2px 3px); box-shadow: inset 0 0 0 1px oklch(1 0 0 / .12); }
+.rack-more { align-self: center; margin-right: 6px; font-size: .8125rem; font-weight: 750; color: var(--bone); font-variant-numeric: tabular-nums; }
+.rack-disc { width: 4px; height: 8px; border-radius: 1px; background: var(--c); box-shadow: inset 0 -2px 0 oklch(0 0 0 / .3); }
+.chip-makeup { display: flex; gap: 2px; height: 4px; margin-top: 6px; border-radius: var(--r-bar); overflow: hidden; }
+.chip-makeup:empty { display: none; }
+.chip-makeup i { flex-basis: 0; min-width: 3px; }
+@media (prefers-reduced-motion: reduce) { .chip-tap, .chip-tap:active { transition: none; transform: none; } }
 .chip-count-send { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) 0 var(--s-2); }
 .chip-count-send .btn { flex: none; }
+.chip-count-send .chip-count-total { flex: 1; }
 .chip-count-dock [data-chip-hint] { margin: var(--s-2) 0 0; }
 .chip-count-total { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .chip-count-total output { display: block; font-size: clamp(24px, 7vw, 32px); font-weight: 750; font-stretch: 80%; line-height: 1.2; overflow-wrap: anywhere; }

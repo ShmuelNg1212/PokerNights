@@ -14,6 +14,12 @@ Use a fresh temporary database. Migrate it, then run `manage.py shell < web/test
 
 The fixture makes a twelve-colour chip count for player `ben` and an empty setup page for host `hana`. It writes `/private/tmp/pn-chip-numpad-manifest.json`. The 22 checks tap with emulated touch at 390 × 844 and 320 × 568. They cover the setup value field, the count sheet's keys, the dock that keeps the total and keys in view, and a sent count. The probe consumes the count fixture. Captures are in `/private/tmp/pn-chip-numpad-review/`, or `PN_REVIEW_DIR`.
 
+## Chip rack
+
+Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_numpad.py`. Start the local server with the same database. Run `node web/tests/browser/chip_rack.mjs`. It writes nothing, so `chip_numpad.mjs` can run next on the same database.
+
+The 30 checks tap with emulated touch at 390 × 844 and 320 × 568. They cover the opening focus and keys, the drawn chips and +20 controls, 48 px targets, a tap that adds one, a hold that takes one off, stacks and loose discs, ×N past four stacks, the keys editing a tapped colour, the total, the make-up bar, sideways scroll, reduced motion and script errors. Captures are in `/private/tmp/pn-chip-rack-review/`, or `PN_REVIEW_DIR`.
+
 ## Chip sheet as a calculator
 
 Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py`. Start the local server with the same database. Run `node web/tests/browser/chip_batch.mjs`.

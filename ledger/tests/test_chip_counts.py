@@ -190,3 +190,13 @@ class BatchChipCountTests(TestCase):
         with self.assertRaisesRegex(RuleError, 'at least one'):
             self.batch()
         self.assertEqual(len(self.batch(chips={self.maria: self.chips([('red', '1')])})), 1)
+
+
+class ChipFaceTests(TestCase):
+    def test_the_face_is_short_and_exact(self):
+        from ledger.chip_views import face
+        cases = [(500, "pesos", "5"), (2550, "pesos", "25.5"), (2505, "pesos", "25.05"), (100000, "pesos", "1K"),
+                 (150000, "pesos", "1500"), (25, "chips", "25"), (5000, "chips", "5K")]
+        for value, unit, text in cases:
+            with self.subTest(value=value, unit=unit):
+                self.assertEqual(face(value, unit), text)
