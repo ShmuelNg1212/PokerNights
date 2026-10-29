@@ -449,6 +449,27 @@ class PlayInterval(models.Model):
         return f"Play interval of participant {self.participant_id}"
 
 
+class EndTimeCorrection(models.Model):
+    """A host moved a set's end of play earlier, after a late "End play" tap. One row per correction."""
+
+    session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name="end_time_corrections")
+    old_ended_at = models.DateTimeField()
+    new_ended_at = models.DateTimeField()
+    reason = models.CharField(max_length=255, blank=True)
+    corrected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    request_id = models.UUIDField(unique=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.CheckConstraint(condition=Q(new_ended_at__lt=F("old_ended_at")), name="end_time_correction_earlier"),
+        ]
+
+    def __str__(self):
+        return f"End time correction of set {self.session_id}"
+
+
 class ParticipantBatch(models.Model):
     """One "add several players" action by a host.
 

@@ -3,6 +3,7 @@ import datetime
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from groups.access import member_for, require_host
@@ -97,6 +98,23 @@ def session_transition(request, session_id):
     action = request.POST.get("action", "")
     options = {"request_id": request_id_from(request), "opening_buy_ins": request.POST.get("opening_buy_ins") == "on"} if action == "start" else {}
     attempt(request, services.transition, session.pk, actor, action, request.POST.get("reason", ""), **options)
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
+def session_end_time(request, session_id):
+    """A host moves the end of play earlier while the set is counting up. The time is local (Asia/Manila)."""
+    session, actor = session_for(request.user, session_id)
+    try:
+        typed = datetime.datetime.strptime(request.POST.get("ended_at", ""), "%Y-%m-%dT%H:%M")
+    except ValueError:
+        messages.error(request, "Enter the date and time play ended.")
+        return redirect("session", session_id=session.pk)
+    ended_at = timezone.make_aware(typed)
+    saved = attempt(request, services.correct_end_time, session.pk, actor, ended_at, request.POST.get("reason", ""),
+                    request_id=request_id_from(request))
+    if saved is not None:
+        messages.success(request, f"End time set to {services.clock_time(ended_at)}.")
     return redirect("session", session_id=session.pk)
 
 

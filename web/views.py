@@ -1,6 +1,7 @@
 """Pages that compose several apps. They only read; each write is a POST view in its own app."""
 
 from datetime import datetime
+import uuid
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -257,6 +258,7 @@ def session_context(session, me, *, later=UNSET) -> dict:
         "unit": session.unit,
         "summary": summary,
         "participants": participants,
+        "end_time_request_id": uuid.uuid4(),
         "count_complete": len(summary.ready_lines) + len(summary.cashed_out_lines),
         "count_total": ledger_queries.count_total(summary) if session.state == GameSession.State.RECONCILIATION else None,
         "my_participant": next((p for p in participants if p.member_id == me.pk), None),

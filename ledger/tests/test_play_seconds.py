@@ -1,6 +1,7 @@
 """Playing time is frozen with each result as it stood when play ended, not when the set was finalized."""
 
 import datetime
+import uuid
 from unittest import mock
 
 from django.test import TestCase
@@ -41,6 +42,14 @@ class PlaySecondsTests(TestCase):
             settlement.finalize(night.session.pk, night.host)
         seconds = dict(PlayerResult.objects.values_list("participant__member__display_name", "play_seconds"))
         self.assertEqual(seconds, {"A": 180 * 60, "B": 40 * 60})
+
+    def test_a_corrected_end_time_is_what_the_result_stores(self):
+        night = self.play()
+        with at(200):
+            games.correct_end_time(night.session.pk, night.host, BASE + datetime.timedelta(minutes=150), request_id=uuid.uuid4())
+        settlement.finalize(night.session.pk, night.host)
+        seconds = dict(PlayerResult.objects.values_list("participant__member__display_name", "play_seconds"))
+        self.assertEqual(seconds, {"A": 150 * 60, "B": 40 * 60})
 
     def test_results_and_session_page_show_it(self):
         night = self.play()
