@@ -112,7 +112,7 @@ p { margin: 0.5rem 0; }
 /* Forms */
 label { display: block; font-weight: 600; margin-bottom: 4px; }
 input[type="text"], input[type="password"], input[type="number"], input[type="date"],
-input[type="email"], select, textarea {
+input[type="datetime-local"], input[type="email"], select, textarea {
   width: 100%; min-height: var(--tap); padding: 8px 12px; border-radius: var(--r-field);
   border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit;
 }
@@ -944,14 +944,14 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 
 /* One field box for every form: text, date and select share edges, height and text inset on every engine. */
 input[type="text"], input[type="password"], input[type="number"], input[type="date"],
-input[type="email"], select, textarea {
+input[type="datetime-local"], input[type="email"], select, textarea {
   -webkit-appearance: none; appearance: none; display: block; min-width: 0; margin: 0;
   line-height: 1.4; text-align: left;
 }
 /* iOS draws a date input at its own width with a centred value, and shorter when empty. */
-input[type="date"] { height: var(--tap); }
-input[type="date"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; margin: 0; }
-input[type="date"]::-webkit-datetime-edit { padding: 0; }
+input[type="date"], input[type="datetime-local"] { height: var(--tap); }
+input[type="date"]::-webkit-date-and-time-value, input[type="datetime-local"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; margin: 0; }
+input[type="date"]::-webkit-datetime-edit, input[type="datetime-local"]::-webkit-datetime-edit { padding: 0; }
 select {
   padding-right: 44px; text-overflow: ellipsis;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b4a997' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");

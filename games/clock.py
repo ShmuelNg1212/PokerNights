@@ -6,6 +6,7 @@ Call the writing functions with the session locked.
 """
 
 from django.utils import timezone
+from django.utils.formats import date_format
 
 from .models import Participant, PlayInterval, PlayPeriod
 
@@ -41,6 +42,18 @@ def stop(session, now) -> None:
     """Stop the set's timer and every running player time of this set, all at one timestamp."""
     PlayPeriod.objects.filter(session=session, ended_at__isnull=True).update(ended_at=now)
     PlayInterval.objects.filter(session=session, ended_at__isnull=True).update(ended_at=now)
+
+
+def trim(session, period, ended_at) -> None:
+    """End the set's last play period earlier, at ``ended_at``, and every player time of the set with it.
+
+    A player time that started after ``ended_at`` keeps zero length there.
+    """
+    period.ended_at = ended_at
+    period.save(update_fields=["ended_at"])
+    intervals = PlayInterval.objects.filter(session=session)
+    intervals.filter(started_at__gt=ended_at).update(started_at=ended_at, ended_at=ended_at)
+    intervals.filter(ended_at__gt=ended_at).update(ended_at=ended_at)
 
 
 def _total(rows, now) -> int:
@@ -102,6 +115,15 @@ def player_clocks(session, now=None) -> tuple[dict, set]:
         if ended is None:
             running.add(participant_id)
     return totals, running
+
+
+def whole_minute(moment):
+    return moment.replace(second=0, microsecond=0)
+
+
+def clock_time(moment) -> str:
+    """``10:42 PM`` in the app's time zone."""
+    return date_format(timezone.localtime(moment), "g:i A")
 
 
 def format_duration(seconds) -> str:

@@ -77,8 +77,8 @@
       <form method="post" data-turbo="true" action="{% url 'session_end_time' session.pk %}" class="stack">{% csrf_token %}
         <input type="hidden" name="request_id" value="{{ end_time_request_id }}">
         <p class="small muted">Play ended at {{ session.ended_at|time:"g:i A" }}. Set the time it really ended. Everyone's playing time stops there.</p>
-        <div class="field"><label for="end-time">Play ended at</label><input id="end-time" type="datetime-local" name="ended_at" step="60" required value="{{ session.ended_at|date:'Y-m-d\TH:i' }}" max="{{ session.ended_at|date:'Y-m-d\TH:i' }}"></div>
-        <div class="field"><label for="end-time-reason">Reason <span class="muted">(optional)</span></label><input id="end-time-reason" type="text" name="reason" maxlength="255"></div>
+        <div class="field"><label for="end-time">Play ended at</label><input id="end-time" type="datetime-local" name="ended_at" step="60" required data-keep="end-time" value="{{ session.ended_at|date:'Y-m-d\TH:i' }}" max="{{ session.ended_at|date:'Y-m-d\TH:i' }}"></div>
+        <div class="field"><label for="end-time-reason">Reason <span class="muted">(optional)</span></label><input id="end-time-reason" type="text" name="reason" data-keep="end-time-reason" maxlength="255"></div>
         <button class="btn btn-block" type="submit">Set the end time</button>
       </form>
     </details>

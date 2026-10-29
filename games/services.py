@@ -10,7 +10,6 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.formats import date_format
 
 from audit import services as audit
 from notify import services as notify
@@ -23,7 +22,7 @@ from groups.services import clean_name, add_roster_player, lock_group
 
 from . import chips, clock, rsvp
 from .models import (
-    ChipPreset, ChipPresetChange, ChipValueChange, EndTimeCorrection, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, PlayInterval, PlayPeriod, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
+    ChipPreset, ChipPresetChange, ChipValueChange, EndTimeCorrection, GameNight, GameSession, GameType, RakeMode, Participant, ParticipantBatch, PlayPeriod, Rsvp, SeatDraw, SeatPlace, SettingsPreset,
     SettingsVersion, StakesFields, Table, Unit,
 )
 
@@ -365,18 +364,13 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
     return session
 
 
-def clock_time(moment) -> str:
-    """``10:42 PM`` in the app's time zone."""
-    return date_format(timezone.localtime(moment), "g:i A")
-
-
 @transaction.atomic
 def correct_end_time(session_id, actor: Member, ended_at, reason: str = "", *, request_id) -> GameSession:
     """Move a counting set's end of play earlier, for the set's timer and every player's time.
 
-    Only the last play period changes. Time after the new end is removed: an
-    interval that started after it keeps zero length. Finalization then stores
-    the corrected times. Replaying the request changes nothing.
+    The form works in whole minutes: the new end is a minute before the recorded
+    end's minute and after the last start. Only the last play period changes.
+    Finalization then stores the corrected times. Replaying the request changes nothing.
     """
     require_host(actor)
     session = lock_session(session_id, actor.group_id)
@@ -388,16 +382,13 @@ def correct_end_time(session_id, actor: Member, ended_at, reason: str = "", *, r
     period = PlayPeriod.objects.filter(session=session).order_by("-started_at", "-id").first()
     if period is None or period.ended_at is None:
         raise RuleError("This set has no recorded end of play.")
-    if ended_at >= period.ended_at:
-        raise RuleError(f"Choose a time earlier than {clock_time(period.ended_at)}, when play was ended.")
-    if ended_at <= period.started_at:
-        raise RuleError(f"Choose a time later than {clock_time(period.started_at)}, when play last started.")
     old = period.ended_at
-    period.ended_at = ended_at
-    period.save(update_fields=["ended_at"])
-    intervals = PlayInterval.objects.filter(session=session)
-    intervals.filter(started_at__gt=ended_at).update(started_at=ended_at, ended_at=ended_at)
-    intervals.filter(ended_at__gt=ended_at).update(ended_at=ended_at)
+    if ended_at >= clock.whole_minute(old):
+        raise RuleError(f"Choose a time before {clock.clock_time(old)}, when play was ended.")
+    earliest = clock.whole_minute(period.started_at) + datetime.timedelta(minutes=1)
+    if ended_at < earliest:
+        raise RuleError(f"Choose {clock.clock_time(earliest)} or later. Play last started at {clock.clock_time(period.started_at)}.")
+    clock.trim(session, period, ended_at)
     session.ended_at = ended_at
     session.save(update_fields=["ended_at"])
     reason = (reason or "").strip()[:255]
@@ -407,7 +398,7 @@ def correct_end_time(session_id, actor: Member, ended_at, reason: str = "", *, r
     )
     audit.record(
         "session.end_time", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
-        summary=f"Corrected the end of play from {clock_time(old)} to {clock_time(ended_at)}", reason=reason,
+        summary=f"Corrected the end of play from {clock.clock_time(old)} to {clock.clock_time(ended_at)}", reason=reason,
     )
     touch(session)
     return session

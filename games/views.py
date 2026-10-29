@@ -21,7 +21,7 @@ from groups import services as groups
 from groups.models import Member
 from ledger import money
 
-from . import rsvp, services
+from . import clock, rsvp, services
 from .access import night_for, session_for
 from .forms import PresetForm, SessionForm, SettingsForm, TableForm
 from .models import Participant, SettingsPreset, Table
@@ -106,15 +106,17 @@ def session_end_time(request, session_id):
     """A host moves the end of play earlier while the set is counting up. The time is local (Asia/Manila)."""
     session, actor = session_for(request.user, session_id)
     try:
-        typed = datetime.datetime.strptime(request.POST.get("ended_at", ""), "%Y-%m-%dT%H:%M")
+        typed = datetime.datetime.fromisoformat(request.POST.get("ended_at", ""))
     except ValueError:
+        typed = None
+    if typed is None or typed.tzinfo is not None:
         messages.error(request, "Enter the date and time play ended.")
         return redirect("session", session_id=session.pk)
-    ended_at = timezone.make_aware(typed)
+    ended_at = clock.whole_minute(timezone.make_aware(typed))
     saved = attempt(request, services.correct_end_time, session.pk, actor, ended_at, request.POST.get("reason", ""),
                     request_id=request_id_from(request))
     if saved is not None:
-        messages.success(request, f"End time set to {services.clock_time(ended_at)}.")
+        messages.success(request, f"End time set to {clock.clock_time(ended_at)}.")
     return redirect("session", session_id=session.pk)
 
 

@@ -1,5 +1,6 @@
 """A host corrects a set's end time while it is counting up: earlier only, for the set and every player."""
 
+import datetime
 import uuid
 
 from django.test import TestCase
@@ -93,7 +94,7 @@ class CorrectEndTimeTests(TestCase):
     def test_refuses_a_time_at_or_after_the_recorded_end(self):
         self.ended(180)
         for when in (180, 200):
-            with self.assertRaisesMessage(RuleError, "earlier than"):
+            with self.assertRaisesMessage(RuleError, "Choose a time before 11:00 PM"):
                 correct(self.table, when)
 
     def test_refuses_a_time_at_or_before_the_last_start(self):
@@ -101,8 +102,17 @@ class CorrectEndTimeTests(TestCase):
         self.table.do("resume", 120)
         self.ended(200)
         for when in (120, 110):
-            with self.assertRaisesMessage(RuleError, "later than"):
+            with self.assertRaisesMessage(RuleError, "Choose 10:01 PM or later."):
                 correct(self.table, when)
+        correct(self.table, 121)
+        self.assertEqual(self.table.set_minutes(300), 101)
+
+    def test_the_recorded_ends_minute_counts_as_unchanged(self):
+        self.ended(180)
+        PlayPeriod.objects.update(ended_at=minute(180) + datetime.timedelta(seconds=35))
+        with self.assertRaisesMessage(RuleError, "Choose a time before 11:00 PM"):
+            correct(self.table, 180)
+        self.assertFalse(EndTimeCorrection.objects.exists())
 
     def test_refuses_while_the_set_is_in_play(self):
         with self.assertRaisesMessage(RuleError, "counting up"):
@@ -139,10 +149,24 @@ class EndTimeFormTests(TestCase):
         self.assertEqual(self.table.game.ended_at, minute(150))
         self.assertContains(response, "End time set to 10:30 PM.")
 
+    def test_a_time_with_seconds_is_taken_to_the_minute(self):
+        self.client.force_login(self.table.host.user)
+        with at(300):
+            self.client.post(self.url, {"ended_at": "2026-10-09T22:30:45.000", "request_id": str(uuid.uuid4())})
+        self.table.game.refresh_from_db()
+        self.assertEqual(self.table.game.ended_at, minute(150))
+
+    def test_the_fields_keep_what_the_host_typed_through_a_live_redraw(self):
+        self.client.force_login(self.table.host.user)
+        page = self.client.get(reverse("session", args=[self.table.game.pk]))
+        self.assertContains(page, 'data-keep="end-time"')
+        self.assertContains(page, 'data-keep="end-time-reason"')
+
     def test_a_time_that_is_not_a_date_is_refused(self):
         self.client.force_login(self.table.host.user)
-        response = self.client.post(self.url, {"ended_at": "late"}, follow=True)
-        self.assertContains(response, "Enter the date and time play ended.")
+        for typed in ("late", "2026-10-09T22:30+00:00"):
+            response = self.client.post(self.url, {"ended_at": typed}, follow=True)
+            self.assertContains(response, "Enter the date and time play ended.")
         self.assertFalse(EndTimeCorrection.objects.exists())
 
     def test_a_player_cannot_post_it(self):
