@@ -216,3 +216,52 @@ class SessionsPageTests(Played, TestCase):
         self.assertIn("+6 chips", row)
         self.assertIn("Carlo pays you <b>6 chips</b>", row)
         self.assertNotIn("₱", row)
+
+
+class PastFilterTests(Played, TestCase):
+    """Chips above the past list show only the unsettled sessions or the viewer's own."""
+
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("group", args=[self.group.pk])
+        self.settled = self.played(datetime.date(2026, 9, 4), {self.ben: 200, self.carlo: -200})
+        settlement.mark_paid(self.settled.pk, self.host, Transfer.objects.get(plan__night=self.settled).pk, uuid.uuid4())
+        self.owing = self.played(datetime.date(2026, 9, 11), {self.ben: -300, self.dina: 300})
+        self.away = self.played(datetime.date(2025, 9, 18), {self.carlo: 100, self.dina: -100})
+
+    def shown(self, past):
+        context = sessions_context(self.ben, past)
+        return [n.pk for y in context["past_years"] for m in y.months for n in m.nights]
+
+    def test_not_settled_keeps_the_sessions_with_money_still_to_pay(self):
+        self.assertEqual(self.shown("unsettled"), [self.owing.pk, self.away.pk])
+
+    def test_i_played_keeps_the_viewers_sessions(self):
+        self.assertEqual(self.shown("mine"), [self.owing.pk, self.settled.pk])
+
+    def test_an_unknown_filter_shows_everything(self):
+        self.assertEqual(self.shown("nonsense"), self.shown(None))
+        self.assertEqual(len(self.shown(None)), 3)
+
+    def test_counts_come_from_every_row_and_a_filter_opens_every_year(self):
+        context = sessions_context(self.ben, "unsettled")
+        self.assertEqual((context["not_settled"], context["played"]), (2, 2))
+        self.assertTrue(all(y.open for y in context["past_years"]))
+
+    def test_the_page_marks_the_chosen_chip_and_says_when_nothing_matches(self):
+        self.client.force_login(self.ben.user)
+        page = self.client.get(self.url + "?past=unsettled")
+        self.assertContains(page, '?past=unsettled#past-sessions" aria-current="true"')
+        self.assertContains(page, 'Not settled <span class="pill-count">2</span>')
+        settlement.mark_paid(self.owing.pk, self.host, Transfer.objects.get(plan__night=self.owing).pk, uuid.uuid4())
+        settlement.mark_paid(self.away.pk, self.host, Transfer.objects.get(plan__night=self.away).pk, uuid.uuid4())
+        self.assertContains(self.client.get(self.url + "?past=unsettled"), "No sessions match.")
+
+    def test_a_filter_adds_no_query(self):
+        self.client.force_login(self.ben.user)
+        counts = []
+        for query in ("", "?past=unsettled", "?past=mine"):
+            with CaptureQueriesContext(connection) as seen:
+                self.client.get(self.url + query)
+            counts.append(len(seen))
+        self.assertEqual(len(set(counts)), 1, counts)

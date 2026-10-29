@@ -75,7 +75,7 @@ def group(request, group_id):
     elif context["view"] == "stats":
         context.update(stats_pages.board_context(request, me, periods))
     else:
-        context.update(sessions_tab.sessions_context(me))
+        context.update(sessions_tab.sessions_context(me, request.GET.get("past")))
     return render(request, "web/group.html", context)
 
 

@@ -586,6 +586,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .pills a { flex:none; display:inline-flex; align-items:center; min-height:var(--tap); padding:0 var(--s-4); border:1px solid var(--line); border-radius:var(--r-pill); color:var(--muted); font-weight:600; font-size:.9rem; text-decoration:none; white-space:nowrap; }
 .pills a[aria-current] { background:var(--bone); border-color:var(--bone); color:var(--ink); }
 .pills a:focus-visible { outline-offset:-3px; }
+.pill-count { margin-left:var(--s-2); font-variant-numeric:tabular-nums; opacity:.75; }
 .stat-list { list-style:none; margin:var(--s-3) 0; padding:0; }
 .stat-row { display:flex; align-items:center; gap:var(--s-3); padding:var(--s-3) 0; border-top:1px solid var(--rule); min-width:0; }
 .stat-row:first-child { border-top:0; }

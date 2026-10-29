@@ -131,11 +131,8 @@ class Year:
         return sum(len(month.nights) for month in self.months)
 
 
-def past_years(me, nights) -> list:
-    """The closed sessions, newest first, by month inside years, with the viewer's net and debts.
-
-    The current year is open; earlier years are closed. With nothing this year, the newest year is open.
-    """
+def past_rows(me, nights) -> list:
+    """The closed sessions, newest first, each with its settle state, the viewer's net and the viewer's debts."""
     nights = sorted((n for n in nights if n.is_closed and n.shown_sets), key=lambda n: (n.game_date, n.pk), reverse=True)
     if not nights:
         return []
@@ -146,9 +143,26 @@ def past_years(me, nights) -> list:
     for t in settlement_queries.unpaid_transfers([me.pk]):
         i_pay = t.payer_id == me.pk
         debts.setdefault(t.plan.night_id, []).append(Debt(t.payee if i_pay else t.payer, i_pay, t.amount))
-    years = []
     for night in nights:
         night.settle, night.my_net, night.debts = states[night.pk], nets.get((night.pk, me.pk)), debts.get(night.pk, [])
+    return nights
+
+
+# The filters of the past list: ``?past=<slug>`` on the Sessions tab. Without one, every row shows.
+PAST_FILTERS = {
+    "unsettled": lambda night: night.settle.status != "settled",
+    "mine": lambda night: night.my_net is not None,
+}
+
+
+def past_years(rows, *, filtered=False) -> list:
+    """The rows by month inside years, as they come (newest first).
+
+    The current year is open; earlier years are closed. With nothing this year, the newest year is open.
+    With a filter, every year is open: the rows it kept are the ones asked for.
+    """
+    years = []
+    for night in rows:
         if not years or years[-1].year != night.game_date.year:
             years.append(Year(night.game_date.year))
         months = years[-1].months
@@ -158,19 +172,25 @@ def past_years(me, nights) -> list:
         months[-1].nights.append(night)
     this_year = timezone.localdate().year
     for year in years:
-        year.open = year.year == this_year
-    if not any(year.open for year in years):
+        year.open = filtered or year.year == this_year
+    if years and not any(year.open for year in years):
         years[0].open = True
     return years
 
 
-def sessions_context(me) -> dict:
+def sessions_context(me, past=None) -> dict:
+    """``past`` is a key of PAST_FILTERS; any other value shows every past session."""
     nights = list(visible_nights(me))
-    years = past_years(me, nights)
+    rows = past_rows(me, nights)
+    past = past if past in PAST_FILTERS else None
+    shown = [n for n in rows if PAST_FILTERS[past](n)] if past else rows
     return {
         "coming": coming_cards(me, nights),
         "cards": current_cards(me, nights),
-        "past_years": years,
-        "not_settled": sum(1 for y in years for m in y.months for n in m.nights if n.settle.status != "settled"),
+        "past_years": past_years(shown, filtered=past is not None),
+        "past_any": bool(rows),
+        "past_filter": past,
+        "not_settled": sum(1 for n in rows if PAST_FILTERS["unsettled"](n)),
+        "played": sum(1 for n in rows if PAST_FILTERS["mine"](n)),
         "archived_nights": list(visible_nights(me, archived=True)) if me.is_host else [],
     }

@@ -22,9 +22,16 @@
 <ul class="table-cards">{% for card in coming %}{% include "web/_coming_card.html" %}{% endfor %}</ul>
 </section>
 {% endif %}
-{% if past_years %}
+{% if past_any %}
 <section class="group-sessions ledger" aria-labelledby="past-sessions">
 <h2 id="past-sessions">Past sessions{% if not_settled %} <span class="muted small heading-count">{{ not_settled }} not settled</span>{% endif %}</h2>
+{% url 'group' group.pk as group_url %}
+<nav class="pills past-filters" aria-label="Show">
+  <a data-turbo-action="replace" href="{{ group_url }}#past-sessions" {% if not past_filter %}aria-current="true"{% endif %}>{% if not past_filter %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}All</a>
+  <a data-turbo-action="replace" href="{{ group_url }}?past=unsettled#past-sessions" {% if past_filter == 'unsettled' %}aria-current="true"{% endif %}>{% if past_filter == 'unsettled' %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}Not settled <span class="pill-count">{{ not_settled }}</span></a>
+  <a data-turbo-action="replace" href="{{ group_url }}?past=mine#past-sessions" {% if past_filter == 'mine' %}aria-current="true"{% endif %}>{% if past_filter == 'mine' %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}I played <span class="pill-count">{{ played }}</span></a>
+</nav>
+{% if not past_years %}<p class="muted past-empty">No sessions match. <a href="{{ group_url }}#past-sessions" data-turbo-action="replace">Show all</a></p>{% endif %}
 {% for year in past_years %}
   {% if year.open %}
     {% for month in year.months %}{% include "web/_past_month.html" %}{% endfor %}
