@@ -6,30 +6,31 @@ Status: waiting for approval. Two parts on one branch, `feat/table-rake-and-mult
 
 ## OPEN QUESTIONS
 
-Approving accepts the **bold** answer unless you say otherwise.
+Answers from the human on 2026-10-30 are folded in. Approving accepts the **bold** answer where one remains.
 
-1. **Who receives the rake in settle-up?** Settle-up can match the standings only if someone receives the rake money. Example: A and B buy in ₱1,000 each at 5% (₱100 rake). A cashes out ₱1,400 (+₱400), B ₱500 (−₱500). Today B pays A ₱450.
-   - **a. One member holds the rake.** B pays A ₱400 and pays the holder ₱100. The holder is the host who started the session, and a host can change it before close. Each figure in settle-up equals the standings.
-   - b. The rake is already in someone's hands and is not in settle-up at all. Then tell me how B's extra ₱100 is handled at your table, and I will model that.
-   - c. Keep today's rule (each player gets back their own fee), and change only the words so the two figures are not confusing.
-2. **Old sessions.** **Closed sessions keep their transfers.** A session reopened and closed again uses the new rule.
-3. **Rake per group or per session?** **Per group setting**, "Rake in settle-up: paid to a holder" (new default) or "returned to each player" (today's rule), so another group can keep the old way.
-4. **Which screens lagged?** If you remember, name them: count-up fields, the review page, Finalize, Start next set, the session page after close. Task 3 finds them by test either way.
-5. **Move people to the next step?** When a host finalizes or starts the next set, other phones show a notice and a button today. **Keep the notice, but move other hosts (not players) to the new set by themselves.** Alternative: move everyone, or move nobody.
-6. **How fast?** **About 2 seconds on a set that is in play or counting up**, 4 seconds otherwise. A push service (under 1 second) is a new paid dependency; I recommend it only if 2 seconds still feels slow.
+1. **Who receives the rake in settle-up?** Answer: the rake is a separate entity, and each group chooses how it is settled. Example: A and B buy in ₱1,000 each at 5% (₱100 rake). A cashes out ₱1,400 (+₱400), B ₱500 (−₱500).
+   - "Returned to each player" (today's rule): B pays A ₱450.
+   - "Paid into the rake fund" (new): B pays A ₱400 and pays the **Rake fund** ₱100. Each player's figure equals the standings. The Rake fund is the group's existing rake account, shown as its own line in settle-up. It is not a member. A host marks its transfers paid when the money goes into the fund.
+   - **Default: today's rule for every group, so nothing changes until a host switches the option in Group settings.**
+2. **Old sessions.** **Closed sessions keep their transfers.** The option applies at the next close, also after a reopen.
+3. **Carried debts.** **A transfer to the Rake fund is never carried into a later session.** It stays open until a host marks it paid.
+4. **Which screens lagged?** Answer: the count-up page. Task 2 measures it first; the other steps are measured too.
+5. **Move people to the next step?** Answer: ok. Keep the notice, and move other hosts (not players) to the new set by themselves.
+6. **How fast?** Answer: ok, about 2 seconds on a set that is in play or counting up, 4 seconds otherwise. Task 3 measures the server cost of one poll and records the monthly estimate against the Vercel Hobby limits (deployment.md, "Limits to know"). Polling still stops on a hidden tab, and slows to 4 seconds after one quiet minute.
 
 ## Part 1: rake in settle-up
 
 ### Task 1: settle-up follows the standings — `tests: first`
 
-- [ ] ADR `0007-rake-paid-to-a-holder.md` and GLOSSARY entry "rake holder" (domain-modeling).
-- [ ] Group setting for the rake rule (question 3), migration with a default. Session field `rake_holder` (a Member, nullable), set by the service at session start to the starting host.
-- [ ] `settlement_balances()`: under the holder rule, each player's balance is `net`; the holder's balance gains the session's total rake. Under the old rule, unchanged.
-- [ ] Settle-up shows the holder's line as "Rake · ₱100" so it is clear why they receive money. A host can change the holder before close (service, audit, version bump, `request_id`).
-- [ ] Tests first: the example above; a holder who also played and won or lost; several sets; chips game; zero rake; old rule unchanged; a closed session keeps its plan; reopen and close uses the new rule; carried transfers still balance.
-- [ ] Replace the footgun `rake_results_and_settlement.md`; update spec.md lines 46 and 67 after approval.
+- [ ] ADR `0007-rake-settled-per-group.md` and GLOSSARY entry "Rake fund" (domain-modeling).
+- [ ] Group setting `rake_settlement`: `returned` (default) or `fund`. Migration with the default. Host-only edit in Group settings (service, audit, `request_id`).
+- [ ] `Transfer` gains `to_rake_fund` (boolean). `payee` becomes nullable. Check constraint: exactly one of `payee` and `to_rake_fund` is set. Existing rows are unchanged.
+- [ ] `settlement_balances()`: under `fund`, each player's balance is `net`, and the Rake fund is one more party with the session's total rake. Under `returned`, unchanged. The plan records which option it used.
+- [ ] Settle-up shows "Rake fund" as a payee line with the rake mark. Marking it paid works as for any transfer. Carry excludes it.
+- [ ] Tests first: the example above; several sets; a chips game; zero rake (no fund line); `returned` unchanged; a closed session keeps its plan; reopen and close uses the current option; carried debts skip fund transfers; mark paid and Undo on a fund transfer.
+- [ ] Replace the footgun `rake_results_and_settlement.md`. Update spec.md lines 46 and 67.
 
-**Done when:** on the live site, a closed session's settle-up shows each player's amount equal to their standing, and the holder's rake line equals the set's rake total.
+**Done when:** on the live site, with the option on "Paid into the rake fund", a closed session's settle-up shows each player's amount equal to their standing, and the Rake fund line equals the session's rake total.
 
 ## Part 2: live screens with several hosts
 
@@ -49,7 +50,8 @@ Expected from the study; confirmed or dropped by Task 2.
 - [ ] Focus: apply an update while a field has focus. Keep the focused field and its typed value; replace the rest. Hold only while a sheet is open with typing in it.
 - [ ] Review, chip count and add-players pages: poll the set's version. On a change, show "Another host changed this set" with Reload. On finalize or next set, go to the set page.
 - [ ] Next step (question 5): other hosts go to the new set by themselves; players keep the notice.
-- [ ] Poll every 2 seconds while the set is in play or counting up (question 6).
+- [ ] Poll every 2 seconds while the set is in play or counting up (question 6). Slow to 4 seconds after one quiet minute.
+- [ ] Measure one unchanged poll (time and queries) locally. Record the monthly estimate against the Hobby limits in deployment.md.
 - [ ] Query count tests stay within their limits.
 
 **Done when:** the Task 2 probe passes for every step, with each change on the other screens within 3 seconds.
