@@ -1608,6 +1608,10 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-row.count-wide .count-entry input[data-count-input], .count-row.count-wide .count-tick, .count-row.count-wide .count-outcome { grid-column: 1 / -1; grid-row: 2; margin-top: var(--s-2); }
 .count-row.count-wide .count-tick { margin-top: var(--s-2); }
 .count-row.count-wide .count-entry .error { grid-row: 3; }
+/* Another host's different count, under the field that holds this host's unsent one. */
+.count-entry .count-clash { grid-column: 1 / -1; margin-top: var(--s-1); color: var(--warn); }
+.count-v2 .count-entry .count-clash { grid-row: 3; }
+.count-row.count-wide .count-entry .count-clash { grid-row: 4; }
 .count-v2 .count-row > .sheet-source > summary { display: flex; align-items: center; min-height: var(--tap); cursor: pointer; color: var(--muted); }
 .count-v2 .count-help { margin: 0; }
 .count-v2 .count-after { margin: var(--s-3) 0 0; }

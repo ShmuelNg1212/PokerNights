@@ -194,8 +194,17 @@
     if (el.type === "checkbox") return el.checked !== el.defaultChecked;
     return el.hasAttribute("data-count-input") ? el.value.trim() !== "" : el.value !== el.defaultValue;
   }
+  // What the server says about a typed field still arrives: a count another host saved since.
+  var SERVER_SIDE = ["placeholder", "data-saved", "data-saved-by", "data-saved-shown", "data-entered"];
   document.addEventListener("turbo:before-morph-element", function (event) {
-    if (typed(event.target)) event.preventDefault();
+    if (!typed(event.target)) return;
+    event.preventDefault();
+    var fresh = event.detail && event.detail.newElement;
+    if (!fresh || !fresh.getAttribute || !event.target.hasAttribute("data-count-input")) return;
+    SERVER_SIDE.forEach(function (name) {
+      if (fresh.hasAttribute(name)) event.target.setAttribute(name, fresh.getAttribute(name));
+      else event.target.removeAttribute(name);
+    });
   });
   document.addEventListener("turbo:before-morph-attribute", function (event) {
     if (event.detail.attributeName === "open" && event.target.matches("details[data-key]")) event.preventDefault();

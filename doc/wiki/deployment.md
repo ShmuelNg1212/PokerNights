@@ -135,7 +135,7 @@ DATABASE_URL='postgresql://…' DEBUG=False SECRET_KEY=any-long-local-value-for-
 
 | Limit | Value | Effect |
 |---|---|---|
-| Vercel Hobby | 1,000,000 function invocations, 4 h active CPU, 100 GB transfer a month; non-commercial use | A set page polls every 4 s. Eight phones for five hours are about 36,000 requests. Past a limit the feature pauses until 30 days pass; nothing is billed |
+| Vercel Hobby | 1,000,000 function invocations, 4 h active CPU, 100 GB transfer a month; non-commercial use | A set page polls every 2 s while in play, counting up or just finalized, and every 4 s after a quiet minute or otherwise; a hidden tab does not poll. Eight phones for five hours are at most about 72,000 requests (36,000 at 4 s). An unchanged poll is a 204 that took about 2–3 ms of server time locally (2026-10-30). Past a limit the feature pauses until 30 days pass; nothing is billed |
 | Neon Free | 0.5 GB storage, 100 compute-hours a month; sleeps after 5 idle minutes | The first request after idle waits about half a second. Short restore window; no off-site copy |
 | Runtime logs (Hobby) | 1 hour | Look soon after a problem |
 

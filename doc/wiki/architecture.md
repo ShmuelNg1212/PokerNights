@@ -248,13 +248,16 @@ Two things now replace content on the set page without a reload: the 4-second po
 
 ## Live updates
 
-- `static/js/live.js` polls `GET /s/<id>/state/?v=<version>` each 4 seconds while the tab is visible.
-- The endpoint returns HTTP 204 when the version is unchanged. Otherwise it returns the new version and the rendered live region, which the script swaps in.
+- `static/js/live.js` polls `GET /s/<id>/state/?v=<version>` while the tab is visible: every 2 seconds while the set is in play, counting up or just finalized, and every 4 seconds otherwise or after one minute with no change ([plan](../plan/1793299490_table_rake_and_multi_host_live.md)). 1.5 seconds while a seat draw waits (`data-poll-fast`).
+- The endpoint returns HTTP 204 when the version is unchanged. Otherwise it returns the new version and the rendered live region.
 - Each response is a full snapshot. A missed poll needs no replay.
 - A hidden tab stops polling. It polls at once when it becomes visible or the browser comes back online.
 - After two failures the page shows "Reconnecting… last updated …", marks the figures as stale, and backs off to 8, 16, then 30 seconds.
-- An update waits while the user types in a field of the live region, and applies when the field loses focus.
-- A refresh replaces the whole region. Fields with a `data-keep` key keep their typed, unsaved value across it: the script reads them before the swap and puts them back after it. Nonblank count inputs are also retained when their value equals the rendered default, because refused submissions render unsaved drafts as defaults. `live:updated` fires after typed values and open details are restored, so derived previews read the restored fields.
+- The snapshot is **morphed** into the region with `Turbo.morphChildren(region, …, {ignoreActiveValue: true})`, not swapped. The focused field keeps its node, its value and its focus, so an update lands while a host types (several hosts count up together). Without Turbo the script falls back to `innerHTML`.
+- The morph uses the hooks in `turbo-setup.js` that a form sent in place already uses: a typed `data-keep` field is not morphed, but its server-side attributes (`placeholder`, `data-saved`, `data-saved-by`, `data-saved-shown`, `data-entered`) are copied; `details[data-key]` keep their open state; `numpad.js` keeps its keys. The script still reads typed values before and restores them after. `live:updated` fires after that, so derived previews read the restored fields.
+- **Another host's count.** A count field carries `data-saved-by` and `data-saved-shown` when someone other than the viewer confirmed it (`ledger.queries.summary` annotates `confirmed_name` on the same query). When the field holds a different unsent value, `counts.js` shows "Ivy saved ₱800. Send to replace it, or clear the field." under it.
+- **Next set.** The next-set notice carries `data-host-go` for a host. When it arrives on a finalized or canceled set (it was not there before), `live.js` takes the host to the new set with `Turbo.visit`, unless a sheet is open. A player keeps the notice.
+- Browser check: `multi_host.mjs` with `seed_multi_host.py`.
 - `static/js/forms.js` disables a form's buttons after the first submit. The server-side `request_id` check is the real protection.
 
 ## Front end

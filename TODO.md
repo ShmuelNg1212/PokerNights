@@ -8,11 +8,13 @@
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
 
-## Phone checks (unreleased: `feat/past-filters-and-end-time`)
+## Phone checks (unreleased: `feat/table-rake-and-multi-host-live`)
 
-- [ ] Group → Sessions: tap "Not settled" and "I played". The list and the counts are right.
-- [ ] Counting set → More host controls → "Wrong end time?": the date-and-time field is full width on the iPhone and the picker opens.
-- [ ] Set the end 30 minutes earlier, finalize, open a player page: per hour uses the shorter time.
+- [ ] Group settings → Group rake account → Rake in settle-up: choose "Paid into the rake fund" and save.
+- [ ] Close a session with rake: each player's settle-up figure equals their standing; a "Rake fund" line with a brass R chip takes the rake; mark it paid.
+- [ ] Two hosts count up one set on two phones: one host's saved count shows on the other phone within about 2 seconds, also while that phone's numpad is open.
+- [ ] Both hosts type a count for the same player: the second phone says "… saved ₱…".
+- [ ] One host finalizes and starts the next set: the other host's phone goes to the new set; a player's phone shows the notice.
 
 ## Waiting for the human
 

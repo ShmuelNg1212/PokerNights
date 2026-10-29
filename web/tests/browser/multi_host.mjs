@@ -72,7 +72,10 @@ try{
  arrive('3. the other host\'s count for the same player arrives',await H.until(ready('Dino')));
  check('3. …this host\'s unsent value is kept, not lost',await H.js(`${field('Dino')}.value==='700'`),await H.js(`${field('Dino')}.value`));
  check('3. …and the page says the other host saved a different count',await H.js(`/Ivy/.test(${row('Dino')}.textContent)&&/800/.test(${row('Dino')}.textContent)`),await H.js(`${row('Dino')}.textContent.replace(/\\s+/g,' ').trim().slice(0,160)`));
+ await H.js(`${row('Dino')}.scrollIntoView({block:'center'})`);await H.shot('multi-host-390-1b-clash');
+ check('3. …the note does not widen the page',await H.js(`document.documentElement.scrollWidth<=390`));
  await H.js(`(()=>{const f=${field('Dino')};f.value='';f.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+ check('3. …and clearing the field removes the note',await H.js(`${row('Dino')}.querySelector('[data-count-clash]').hidden`));
 
  // 4. Ivy confirms the last count and cashes everyone out.
  ivy(`from ledger.models import FinalCount
@@ -93,6 +96,16 @@ ledger.cash_out_counted(S, ivy, list(FinalCount.objects.filter(session_id=S, is_
  arrive('6. the player sees the notice for the next set',await B.until(`!!document.querySelector('[data-next-set="${next}"]')`));
  check('6. the player stays on the set they were looking at',await B.js(`location.pathname==='/s/${M.set}/'`));
  await H.shot('multi-host-390-3-next');
+
+ // Usage: every 2 seconds on a busy set, every 4 after a quiet minute, nothing while hidden.
+ const asks=async(u,ms)=>{const n=await u.js('__asked.length');await sleep(ms);return await u.js('__asked.length')-n};
+ const busy=await asks(B,8200);
+ check('a finalized set just ended asks about every 2 seconds',busy>=3&&busy<=5,busy);
+ await B.js(`const _n=Date.now;Date.now=()=>_n()+70000`);await sleep(2500);
+ const quiet=await asks(B,8200);
+ check('…and about every 4 seconds after a quiet minute',quiet>=1&&quiet<=3,quiet);
+ await B.js(`Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new Event('visibilitychange'))`);
+ check('…and not at all while the tab is hidden',await asks(B,6000)===0);
 
  // Cost: one unchanged poll, timed from the page.
  const cost=await H.js(`(async()=>{const r=document.getElementById('live');const t=[];for(let i=0;i<10;i++){const t0=performance.now();const x=await fetch(r.dataset.url+'?v='+encodeURIComponent(r.dataset.version),{headers:{'X-Requested-With':'fetch'},cache:'no-store'});t.push([x.status,performance.now()-t0])}return t})()`);

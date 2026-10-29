@@ -49,6 +49,13 @@
       if (bad) input.setAttribute("aria-invalid", "true");
       error.hidden = !bad;
       error.textContent = bad ? (chips ? "Use whole chips within the allowed amount." : "Use pesos with at most two decimal places within the allowed amount.") : "";
+      // Another host saved a different count while this one was typed and not sent.
+      var clash = input.parentElement.querySelector("[data-count-clash]");
+      var other = !!text && !bad && !!input.dataset.savedBy && value !== BigInt(input.dataset.saved);
+      if (clash) {
+        clash.hidden = !other;
+        clash.textContent = other ? input.dataset.savedBy + " saved " + input.dataset.savedShown + ". Send to replace it, or clear the field." : "";
+      }
       if (value !== null) remaining += value;
     });
     var cash = BigInt(box.dataset.cash), bought = BigInt(box.dataset.bought);

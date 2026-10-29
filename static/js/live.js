@@ -1,6 +1,9 @@
 // Keeps the session screen fresh by polling. The server is the only source of
 // truth: each response is a full snapshot of the live region, so a missed poll
 // needs no replay. Polling stops while the tab is hidden.
+//
+// The snapshot is morphed into the region, so a field being typed in keeps its node, its
+// value and its focus, and another host's change lands while this host types.
 (function () {
   "use strict";
 
@@ -13,6 +16,11 @@
 
   var statusLine = document.getElementById("live-status");
   var BASE_MS = 4000;
+  // In play, while counting up and just after a set ends, hosts and players act at once: ask every 2 seconds, back to
+  // 4 after a minute with no change. Each unchanged answer is a 204 (deployment.md, "Limits to know").
+  var BUSY_MS = 2000;
+  var QUIET_AFTER_MS = 60000;
+  var BUSY_STATES = { running: true, reconciliation: true, finalized: true };
   var FAST_MS = 1500;
   var MAX_MS = 30000;
   var version = region.dataset.version;
@@ -20,7 +28,7 @@
   var failures = 0;
   var timer = null;
   var lastOk = new Date();
-  var pending = null; // a snapshot that waits until the user stops typing
+  var lastChange = Date.now();
 
   function clock(date) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
@@ -32,11 +40,6 @@
     statusLine.classList.toggle("stale", stale);
     region.classList.toggle("is-stale", stale);
     statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · ") + clock(lastOk);
-  }
-
-  function userIsTyping() {
-    var active = document.activeElement;
-    return !!active && region.contains(active) && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName);
   }
 
   // Typed values that are not saved yet. A refresh replaces the whole region,
@@ -65,8 +68,16 @@
     var focusKey = active && region.contains(active) ? active.dataset.focusKey : null;
     region.querySelectorAll("details[open][data-key]").forEach(function (el) { open.push(el.dataset.key); });
     // Before and after: flow.js compares the two to show what moved.
+    var hadNext = !!region.querySelector("[data-next-set]");
     region.dispatchEvent(new Event("live:updating", {bubbles: true}));
-    region.innerHTML = snapshot.html;
+    if (window.Turbo && Turbo.morphChildren) {
+      var next = document.createElement("div");
+      next.innerHTML = snapshot.html;
+      // turbo-setup.js keeps typed fields and open disclosures; the focused field keeps its value.
+      Turbo.morphChildren(region, next, { ignoreActiveValue: true });
+    } else {
+      region.innerHTML = snapshot.html;
+    }
     if (snapshot.state) region.dataset.state = snapshot.state;
     restore(typed);
     version = String(snapshot.version);
@@ -78,15 +89,32 @@
     // A poll says so: someone else's change, which arrivals.js may announce.
     region.dispatchEvent(new CustomEvent("live:updated", {bubbles: true, detail: {poll: true}}));
     // A focused control that the redraw replaced gets keyboard focus again, once listeners have shown it.
-    var again = focusKey && region.querySelector('[data-focus-key="' + focusKey + '"]');
+    var again = focusKey && !region.contains(active) && region.querySelector('[data-focus-key="' + focusKey + '"]');
     if (again) again.focus();
+    goToNextSet(hadNext);
+  }
+
+  // Another host started the next set after this set ended: a host goes there; a player keeps the notice.
+  function goToNextSet(hadNext) {
+    var notice = region.querySelector("[data-next-set][data-host-go]");
+    if (hadNext || !notice || !/^(finalized|canceled)$/.test(region.dataset.state || "")) return;
+    if (document.querySelector("dialog[open]")) return;
+    var link = notice.querySelector("a[href]");
+    if (!link) return;
+    if (window.Turbo && Turbo.visit) Turbo.visit(link.href); else window.location.assign(link.href);
+  }
+
+  function pace() {
+    if (!BUSY_STATES[region.dataset.state] || Date.now() - lastChange > QUIET_AFTER_MS) return BASE_MS;
+    return BUSY_MS;
   }
 
   function schedule() {
     clearTimeout(timer);
     // While a seat draw waits for the dealer's seat the page asks more often, so every phone seats together.
     var soon = delay === BASE_MS && region.querySelector("[data-poll-fast]");
-    if (!stopped && !document.hidden) timer = setTimeout(poll, soon ? FAST_MS : delay);
+    var wait = soon ? FAST_MS : delay === BASE_MS ? pace() : delay;
+    if (!stopped && !document.hidden) timer = setTimeout(poll, wait);
   }
 
   function poll() {
@@ -113,7 +141,8 @@
         delay = BASE_MS;
         lastOk = new Date();
         if (snapshot) {
-          if (userIsTyping()) pending = snapshot; else apply(snapshot);
+          lastChange = Date.now();
+          apply(snapshot);
         }
       })
       .catch(function () {
@@ -128,15 +157,6 @@
       });
   }
 
-  region.addEventListener("focusout", function () {
-    setTimeout(function () {
-      if (pending && !userIsTyping()) {
-        apply(pending);
-        pending = null;
-      }
-    }, 0);
-  });
-
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) clearTimeout(timer); else poll();
   }, { signal: life.signal });
@@ -145,8 +165,8 @@
   // A form sent in the background has already brought this page up to date (turbo-setup.js).
   document.addEventListener("inplace:updated", function () {
     version = region.dataset.version;
-    pending = null;
     lastOk = new Date();
+    lastChange = Date.now();
     showStatus();
   }, { signal: life.signal });
 

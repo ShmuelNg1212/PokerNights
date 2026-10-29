@@ -6,8 +6,10 @@ Every amount is in the session's unit (pesos or chips).
 from dataclasses import dataclass, field
 
 from django.conf import settings
+from django.db.models import OuterRef, Subquery
 
 from games.models import GameSession, Participant
+from groups.models import Member
 
 from . import money
 from .models import BalanceAdjustment, BuyIn, CashOut, CountEntry, FinalCount, RakeEntry
@@ -179,7 +181,10 @@ def summary(session: GameSession) -> Summary:
             line.reversed_cash_outs.append(cash_out)
         else:
             line.cash_outs.append(cash_out)
-    for count in FinalCount.objects.filter(session=session, is_current=True).select_related("confirmed_by"):
+    # The group name of whoever confirmed it rides on the same query, so another host's count can be named.
+    confirmer = Member.objects.filter(group_id=session.group_id, user_id=OuterRef("confirmed_by_id")).values("display_name")[:1]
+    for count in (FinalCount.objects.filter(session=session, is_current=True).select_related("confirmed_by")
+                  .annotate(confirmed_name=Subquery(confirmer))):
         lines[count.participant_id].count = count
     if settings.PLAYER_ENTRIES and session.state == GameSession.State.RECONCILIATION:
         for entry in CountEntry.objects.filter(session=session, is_current=True):

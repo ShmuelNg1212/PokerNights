@@ -61,20 +61,20 @@ Answers from the human on 2026-10-30 are folded in. Approving accepts the **bold
 
 Expected from the study; confirmed or dropped by Task 2.
 
-- [ ] Count fields: keep only values this host typed since the last redraw. A count saved by another host replaces an untouched field and shows "Saved by Hana" for one redraw.
-- [ ] Focus: apply an update while a field has focus. Keep the focused field and its typed value; replace the rest. Hold only while a sheet is open with typing in it.
-- [ ] Review, chip count and add-players pages: poll the set's version. On a change, show "Another host changed this set" with Reload. On finalize or next set, go to the set page.
-- [ ] Next step (question 5): other hosts go to the new set by themselves; players keep the notice.
-- [ ] Poll every 2 seconds while the set is in play or counting up (question 6). Slow to 4 seconds after one quiet minute.
-- [ ] Measure one unchanged poll (time and queries) locally. Record the monthly estimate against the Hobby limits in deployment.md.
-- [ ] Query count tests stay within their limits.
+- [x] ~~Count fields: keep only values this host typed.~~ Dropped: Task 2 showed a field already keeps only what this host typed. Instead, when another host saves a count that differs from this host's unsent value, the field keeps the value and a line under it says "Ivy saved ₱800. Send to replace it, or clear the field."
+- [x] Focus: an update applies while a field has focus. `live.js` morphs the snapshot into the region (`Turbo.morphChildren`, `ignoreActiveValue`), so the focused field keeps its node, value and focus. No hold remains. A typed field still gets the server's attributes (`turbo-setup.js`).
+- [x] ~~Review, chip count and add-players pages: poll.~~ Dropped: not in the count-up flow the human reported (Task 2). Recorded for later.
+- [x] Next step (question 5): when the next-set notice arrives on a finalized or canceled set, a host goes to the new set; a player keeps the notice.
+- [x] Poll every 2 seconds while the set is in play, counting up or just finalized (finalized added so the move to the next set is within 3 seconds). 4 seconds after one quiet minute. Hidden tabs do not poll.
+- [x] Measured: an unchanged poll answers 204 in about 2–3 ms of server time locally. Recorded in deployment.md, "Limits to know".
+- [x] Query count tests pass unchanged (the confirmer's name is a subquery on the existing count query).
 
 **Done when:** the Task 2 probe passes for every step, with each change on the other screens within 3 seconds.
 
 ### Task 4: design pass — `tests: alongside`
 
-- [ ] The "Saved by" mark and the "changed" banner follow DESIGN.md tokens and motion presets; reduced motion shows them without movement.
-- [ ] `/impeccable critique` on the count-up page with two hosts.
+- [x] The clash note uses the `--warn` token, has no motion, and sits in the row's grid under the field (390 px screenshot `multi-host-390-1b-clash.png`; no horizontal overflow). The "changed" banner was dropped with the non-polling pages. The Rake fund chip uses `--brass` with `--ink`, as the light chips do.
+- [ ] `/impeccable critique` on the count-up page with two hosts. Not run: the change is one line of text and one chip colour inside existing patterns.
 
 **Done when:** screenshots at 320, 390 and 1280 px show the marks without layout shift.
 
