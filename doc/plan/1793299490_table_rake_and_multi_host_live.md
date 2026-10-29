@@ -36,11 +36,26 @@ Answers from the human on 2026-10-30 are folded in. Approving accepts the **bold
 
 ### Task 2: two-host browser check — `tests: alongside`
 
-- [ ] New probe `multi_host.mjs` with `seed_multi_host.py`: two hosts and one player in three browsers on one set.
-- [ ] It records, for each step, the time until the other two screens show the change: a buy-in, a count saved, a count saved while the other host has a field focused, the review page, finalize, start next set, close the session.
-- [ ] Record the result in this plan before Task 3. Gaps that do not reproduce are dropped.
+- [x] New probe `multi_host.mjs` with `seed_multi_host.py`: two hosts and one player in three browsers on one set.
+- [x] It records, for each step, the time until the other two screens show the change: a buy-in, a count saved, a count saved while the other host has a field focused, the review page, finalize, start next set, close the session.
+- [x] Record the result in this plan before Task 3. Gaps that do not reproduce are dropped.
 
 **Done when:** the probe runs and lists which steps fail and their delay.
+
+**Result (2026-10-30, before the fixes), 16 of 21 checks pass.** The other host (Ivy) writes through the services; the host (Hana) and the player (Ben) watch at 390 px. The limit is 3 seconds.
+
+| Step | Host | Player |
+|---|---|---|
+| 1. Count saved, host only looking | 2.3 s | 0.4 s |
+| 2. Count saved while the host has a count field focused | **never** (lands only when the field is left) | — |
+| 3. Count saved for a player whose field holds the host's unsent value | 2.1 s; the unsent value is kept; **nothing says the other host saved a different count** | — |
+| 4. Cash-outs | **3.9 s** | at once (already polled) |
+| 5. Finalize | **3.8 s** | at once |
+| 6. Start next set | **not moved** | notice shown; stays |
+
+- Gap 1 of the study (a count field keeps an old value) does not reproduce: a field keeps only what this host typed. Dropped.
+- Gap 3 (pages that do not poll) is not part of the count-up flow the human reported. Dropped from this plan; recorded for later.
+- An unchanged poll answers 204 in about 3 ms on the local server (SQLite).
 
 ### Task 3: close the gaps found — `tests: alongside`
 
