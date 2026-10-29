@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from ledger import money
+from settlement.models import RAKE_FUND
 
 from .templatetags.table_tags import token
 
@@ -17,6 +18,8 @@ def card(night, outcome, recap) -> dict:
     tokens = {s.member.pk: token(s, outcome.standings) for s in outcome.standings}
 
     def who(member) -> dict:
+        if member is None:  # the rake fund
+            return {"name": RAKE_FUND, "chip": "R", "k": 0}
         label, colour = tokens[member.pk]
         return {"name": member.display_name, "chip": label, "k": colour}
 

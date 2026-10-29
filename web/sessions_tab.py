@@ -142,7 +142,7 @@ def past_rows(me, nights) -> list:
     debts = {}
     for t in settlement_queries.unpaid_transfers([me.pk]):
         i_pay = t.payer_id == me.pk
-        debts.setdefault(t.plan.night_id, []).append(Debt(t.payee if i_pay else t.payer, i_pay, t.amount))
+        debts.setdefault(t.plan.night_id, []).append(Debt(t.payee_party if i_pay else t.payer, i_pay, t.amount))
     for night in nights:
         night.settle, night.my_net, night.debts = states[night.pk], nets.get((night.pk, me.pk)), debts.get(night.pk, [])
     return nights

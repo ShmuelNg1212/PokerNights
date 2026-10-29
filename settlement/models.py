@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
@@ -21,6 +23,8 @@ class SettlementPlan(models.Model):
     is_current = models.BooleanField(default=True)
     # False only if the exact search was skipped (more parties than a table can seat).
     proven_minimal = models.BooleanField(default=True)
+    # The group's rake rule when the list was made: True when the rake was paid into the rake fund.
+    rake_to_fund = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     # Filled when the host reopens the session: who, when and why this list stopped being current.
     voided_at = models.DateTimeField(null=True, blank=True)
@@ -39,13 +43,22 @@ class SettlementPlan(models.Model):
         return f"Settlement plan of {self.night}"
 
 
+RAKE_FUND = "Rake fund"
+# Stands in for a member where a page names the other side of a transfer into the rake fund.
+RAKE_FUND_PARTY = SimpleNamespace(pk=None, display_name=RAKE_FUND)
+
+
 class Transfer(models.Model):
-    """One instruction: ``payer`` pays ``payee`` this amount. Never edited."""
+    """One instruction: ``payer`` pays ``payee`` this amount. Never edited.
+
+    A transfer into the group's rake fund has no payee and ``to_rake_fund`` set.
+    """
 
     plan = models.ForeignKey(SettlementPlan, on_delete=models.PROTECT, related_name="transfers")
     position = models.PositiveIntegerField()
     payer = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="transfers_to_pay")
-    payee = models.ForeignKey(Member, on_delete=models.PROTECT, related_name="transfers_to_receive")
+    payee = models.ForeignKey(Member, null=True, blank=True, on_delete=models.PROTECT, related_name="transfers_to_receive")
+    to_rake_fund = models.BooleanField(default=False)
     amount = models.BigIntegerField()
 
     class Meta:
@@ -54,10 +67,23 @@ class Transfer(models.Model):
             models.UniqueConstraint(fields=["plan", "position"], name="transfer_position_unique"),
             models.CheckConstraint(condition=Q(amount__gt=0), name="transfer_amount_positive"),
             models.CheckConstraint(condition=~Q(payer=F("payee")), name="transfer_payer_is_not_payee"),
+            models.CheckConstraint(
+                condition=Q(payee__isnull=False, to_rake_fund=False) | Q(payee__isnull=True, to_rake_fund=True),
+                name="transfer_one_payee",
+            ),
         ]
 
     def __str__(self):
-        return f"Transfer {self.amount} from {self.payer_id} to {self.payee_id}"
+        return f"Transfer {self.amount} from {self.payer_id} to {self.payee_id or RAKE_FUND}"
+
+    @property
+    def payee_label(self):
+        return RAKE_FUND if self.to_rake_fund else self.payee.display_name
+
+    @property
+    def payee_party(self):
+        """The payee, or the rake fund in a member's place."""
+        return RAKE_FUND_PARTY if self.to_rake_fund else self.payee
 
 
 class CarriedTransfer(models.Model):
@@ -118,7 +144,12 @@ class Payment(models.Model):
         indexes = [models.Index(fields=["night"], name="payment_night")]
 
     def __str__(self):
-        return f"Payment {self.amount} from {self.payer_id} to {self.payee_id}"
+        return f"Payment {self.amount} from {self.payer_id} to {self.payee_id or RAKE_FUND}"
+
+    @property
+    def payee_label(self):
+        """A payment of a transfer into the rake fund has no payee."""
+        return self.payee.display_name if self.payee_id else RAKE_FUND
 
 
 class PaymentReversal(models.Model):

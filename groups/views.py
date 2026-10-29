@@ -36,6 +36,14 @@ def set_role(request, group_id, member_id):
 
 
 @require_POST
+def set_rake_settlement(request, group_id):
+    actor = member_for(request.user, group_id)
+    attempt(request, services.set_rake_settlement, actor, request.POST.get("settlement", ""),
+            success="Saved. It applies the next time a session is closed.")
+    return group_settings(group_id, "rake")
+
+
+@require_POST
 def restore_member(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     restored = attempt(request, services.restore_member, actor, member_id)

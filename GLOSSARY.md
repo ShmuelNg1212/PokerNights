@@ -12,3 +12,4 @@ Words of the product, as screens and docs use them. The code names are in bracke
 - **Seat limit** (`GameNight.seat_limit`): how many players an announced session confirms. Not a set's seat count, which grows to it.
 - **Confirmed**: an In that has a seat. Screens say "Coming" and "You're in".
 - **Waitlist**: the Ins without a seat, in the order of their answers. Screens say "Waitlist · 2nd in line".
+- **Rake fund** (`GroupRakeAccount`, `Transfer.to_rake_fund`): the group's collected rake as a party in settle-up. It only receives. Used when the group's rake rule is "Paid into the rake fund" (ADR 0007); otherwise settle-up returns each player's own fee.

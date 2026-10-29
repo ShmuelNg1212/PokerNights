@@ -26,7 +26,7 @@
 {% if unpaid %}
 <section class="panel stack" aria-labelledby="unpaid-title">
   <h2 id="unpaid-title">{{ unpaid|length }} transfer{{ unpaid|length|pluralize }} not marked paid</h2>
-  <ul class="list">{% for t in unpaid %}<li class="row"><span class="grow"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee.display_name }}</strong></span><span class="amount">{{ t.amount|amount:unit }}</span></li>{% endfor %}</ul>
+  <ul class="list">{% for t in unpaid %}<li class="row"><span class="grow"><strong>{{ t.payer.display_name }}</strong> pays <strong>{{ t.payee_label }}</strong></span><span class="amount">{{ t.amount|amount:unit }}</span></li>{% endfor %}</ul>
   <p class="small muted">While the session is archived, these no longer appear under “To settle” for either player.</p>
 </section>
 {% endif %}

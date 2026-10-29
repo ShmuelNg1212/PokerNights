@@ -14,7 +14,7 @@ from games import services as games
 from games.models import GameNight, GameSession
 from groups.access import require_host
 from groups.errors import RuleError
-from groups.models import Member
+from groups.models import GroupRakeAccount, Member
 from ledger import money
 from ledger import services as ledger
 from ledger.models import Finalization, PlayerResult
@@ -163,12 +163,30 @@ def session_standings(night: GameNight, rows=None) -> list:
     return [(member_id, net, played[member_id], seconds.get(member_id)) for member_id, net in totals.items()]
 
 
-def settlement_balances(night, rows=None):
-    """Remaining player balances: add back the fee already collected at buy-in."""
-    totals = {}
+# The rake fund's key among the parties of a settle-up. No member has this key.
+RAKE_FUND = 0
+
+
+def rake_to_fund(night) -> bool:
+    """Whether the group settles collected rake into its rake fund (the group's current choice)."""
+    choice = GroupRakeAccount.objects.filter(group_id=night.group_id).values_list("settlement", flat=True).first()
+    return choice == GroupRakeAccount.Settlement.FUND
+
+
+def settlement_balances(night, rows=None, *, to_fund=False):
+    """Remaining balances. By default each player gets back the fee already collected at buy-in.
+
+    With ``to_fund`` each player settles their result as it stands, and the rake fund (key
+    ``RAKE_FUND``, last) receives the session's collected rake.
+    """
+    totals, rake = {}, 0
     for row in result_rows(night) if rows is None else rows:
-        totals[row.member_id] = totals.get(row.member_id, 0) + row.net + row.rake_total
-    return list(totals.items())
+        totals[row.member_id] = totals.get(row.member_id, 0) + row.net + (0 if to_fund else row.rake_total)
+        rake += row.rake_total
+    parties = list(totals.items())
+    if to_fund and rake:
+        parties.append((RAKE_FUND, rake))
+    return parties
 
 
 def _night_day(night) -> str:
@@ -242,7 +260,8 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     if not any(s.state == State.FINALIZED for s in sets):
         raise RuleError("No set of this session is finalized, so there is nothing to settle.")
 
-    parties = settlement_balances(night)
+    to_fund = rake_to_fund(night)
+    parties = settlement_balances(night, to_fund=to_fund)
     if sum(net for _, net in parties) != 0:
         raise ledger.LedgerInvariantError(f"Session {night.pk}: the results of its sets do not sum to zero.")
     carried = _transfers_to_carry(night, parties, carry_ids)
@@ -267,10 +286,15 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
         if sum(net for _, net in parties) != 0:
             raise ledger.LedgerInvariantError(f"Session {night.pk}: the balances with table payments do not sum to zero.")
     transfers = algorithm.settle(parties)
-    plan = SettlementPlan.objects.create(night=night, proven_minimal=algorithm.is_proven_minimal(parties))
+    plan = SettlementPlan.objects.create(
+        night=night, proven_minimal=algorithm.is_proven_minimal(parties), rake_to_fund=to_fund
+    )
     CarriedTransfer.objects.bulk_create(CarriedTransfer(transfer=old, plan=plan, created_by=actor.user) for old in carried)
     Transfer.objects.bulk_create(
-        Transfer(plan=plan, position=position, payer_id=payer, payee_id=payee, amount=amount)
+        Transfer(
+            plan=plan, position=position, payer_id=payer, amount=amount,
+            payee_id=None if payee == RAKE_FUND else payee, to_rake_fund=payee == RAKE_FUND,
+        )
         for position, (payer, payee, amount) in enumerate(transfers, start=1)
     )
     left = dict(parties)
@@ -310,7 +334,7 @@ def _transfer(night, transfer_id) -> Transfer:
 
 
 def _describe(transfer, unit) -> str:
-    return f"{transfer.payer.display_name} → {transfer.payee.display_name} {money.format_amount(transfer.amount, unit)}"
+    return f"{transfer.payer.display_name} → {transfer.payee_label} {money.format_amount(transfer.amount, unit)}"
 
 
 def _latest_set_id(night):

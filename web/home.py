@@ -141,7 +141,7 @@ def home_cards(user) -> list:
         card = cards[night.group_id]
         owes = transfer.payer_id == card.me.pk
         if len(card.dues) < DUES_SHOWN:
-            card.dues.append(Due(owes, transfer.payee if owes else transfer.payer, transfer.amount, night.unit, night))
+            card.dues.append(Due(owes, transfer.payee_party if owes else transfer.payer, transfer.amount, night.unit, night))
         else:
             card.more_dues += 1
 

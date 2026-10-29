@@ -2,7 +2,7 @@
 
 Study: [1793299490_table_rake_and_multi_host_live.md](../study/1793299490_table_rake_and_multi_host_live.md).
 
-Status: waiting for approval. Two parts on one branch, `feat/table-rake-and-multi-host-live`, from `main`. Part 1 is one commit. Part 2 is several commits, one per task.
+Status: approved 2026-10-30 ("approved"), with the answers folded in. Part 1 built. Two parts on one branch, `feat/table-rake-and-multi-host-live`, from `main`. Part 1 is one commit. Part 2 is several commits, one per task.
 
 ## OPEN QUESTIONS
 
@@ -22,13 +22,13 @@ Answers from the human on 2026-10-30 are folded in. Approving accepts the **bold
 
 ### Task 1: settle-up follows the standings — `tests: first`
 
-- [ ] ADR `0007-rake-settled-per-group.md` and GLOSSARY entry "Rake fund" (domain-modeling).
-- [ ] Group setting `rake_settlement`: `returned` (default) or `fund`. Migration with the default. Host-only edit in Group settings (service, audit, `request_id`).
-- [ ] `Transfer` gains `to_rake_fund` (boolean). `payee` becomes nullable. Check constraint: exactly one of `payee` and `to_rake_fund` is set. Existing rows are unchanged.
-- [ ] `settlement_balances()`: under `fund`, each player's balance is `net`, and the Rake fund is one more party with the session's total rake. Under `returned`, unchanged. The plan records which option it used.
-- [ ] Settle-up shows "Rake fund" as a payee line with the rake mark. Marking it paid works as for any transfer. Carry excludes it.
-- [ ] Tests first: the example above; several sets; a chips game; zero rake (no fund line); `returned` unchanged; a closed session keeps its plan; reopen and close uses the current option; carried debts skip fund transfers; mark paid and Undo on a fund transfer.
-- [ ] Replace the footgun `rake_results_and_settlement.md`. Update spec.md lines 46 and 67.
+- [x] ADR `0007-rake-settled-per-group.md` and GLOSSARY entry "Rake fund" (domain-modeling).
+- [x] Group setting `rake_settlement`: `returned` (default) or `fund`. Migration with the default. Host-only edit in Group settings (service, audit, `request_id`).
+- [x] `Transfer` gains `to_rake_fund` (boolean). `payee` becomes nullable. Check constraint: exactly one of `payee` and `to_rake_fund` is set. Existing rows are unchanged.
+- [x] `settlement_balances()`: under `fund`, each player's balance is `net`, and the Rake fund is one more party with the session's total rake. Under `returned`, unchanged. The plan records which option it used.
+- [x] Settle-up shows "Rake fund" as a payee line with the rake mark. Marking it paid works as for any transfer. Carry excludes it.
+- [x] Tests first: the example above; several sets; a chips game; zero rake (no fund line); `returned` unchanged; a closed session keeps its plan; reopen and close uses the current option; carried debts skip fund transfers; mark paid and Undo on a fund transfer.
+- [x] Replace the footgun `rake_results_and_settlement.md`. Update spec.md lines 46 and 67.
 
 **Done when:** on the live site, with the option on "Paid into the rake fund", a closed session's settle-up shows each player's amount equal to their standing, and the Rake fund line equals the session's rake total.
 

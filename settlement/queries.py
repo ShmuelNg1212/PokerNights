@@ -42,10 +42,12 @@ class Standing:
     play_seconds: object = None
     join_order: int = 0
     rake_total: int = 0
+    # False when the session's rake is paid into the rake fund: the player then settles their result.
+    rake_returned: bool = True
 
     @property
     def settlement_balance(self):
-        return self.net + self.rake_total
+        return self.net + (self.rake_total if self.rake_returned else 0)
 
     @property
     def pk(self):
@@ -186,6 +188,7 @@ class NightOutcome:
     replaced: list = field(default_factory=list)  # earlier plans, retired when the session was reopened
     carried_in: list = field(default_factory=list)  # earlier transfers this session's list took over
     table_payments: list = field(default_factory=list)  # paid at the table before closing (ADR 0002), undone ones too
+    rake_to_fund: bool = False  # the session's rake is paid into the rake fund, not returned to each player
 
     @property
     def total_to_pay(self):
@@ -252,10 +255,12 @@ def night_outcome(night) -> NightOutcome:
     members = Member.objects.in_bulk([row[0] for row in rows])
     found = NightOutcome(standings=[Standing(members[m], net, played, seconds) for m, net, played, seconds in rows])
     found.results = results
-    balances = dict(services.settlement_balances(night, results))
+    rake = {}
+    for row in results:
+        rake[row.member_id] = rake.get(row.member_id, 0) + row.rake_total
     for order, standing in enumerate(found.standings, 1):
         standing.join_order = order
-        standing.rake_total = balances[standing.pk] - standing.net
+        standing.rake_total = rake[standing.pk]
     identities = {s.member.pk: s for s in found.standings}
     # One read for the current list and for any that a reopening replaced.
     from django.db.models import Exists, OuterRef, Q
@@ -268,6 +273,10 @@ def night_outcome(night) -> NightOutcome:
     )
     found.plan = next((plan for plan in plans if plan.is_current), None)
     found.replaced = [plan for plan in plans if not plan.is_current]
+    # A closed session keeps the rule its list was made with; an open one shows the group's current rule.
+    found.rake_to_fund = found.plan.rake_to_fund if found.plan else (any(rake.values()) and services.rake_to_fund(night))
+    for standing in found.standings:
+        standing.rake_returned = not found.rake_to_fund
     if found.replaced:
         from django.db.models import prefetch_related_objects
 
@@ -295,7 +304,7 @@ def night_outcome(night) -> NightOutcome:
             transfer.paid = paid.get(transfer.pk)
             transfer.carried = away.get(transfer.pk)
             transfer.payer_token = identities[transfer.payer_id]
-            transfer.payee_token = identities[transfer.payee_id]
+            transfer.payee_token = identities.get(transfer.payee_id)
     return found
 
 

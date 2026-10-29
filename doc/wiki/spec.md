@@ -43,7 +43,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Log each buy-in and rebuy per player with a timestamp and amount. Every player has a running total. Starting a set can record the usual buy-in for everyone at the table.
 - The host records any buy-in. A player with a login records their own rebuy from their phone; the host can reverse it. One rebuy sent from two phones is recorded once.
 - Each set has its own timer.
-- **Rake (optional):** off, a flat amount or a percentage, taken from every buy-in and rebuy. It is chosen before a set accepts money and is locked after that. The group keeps a running total of rake collected, with pesos and chips separate.
+- **Rake (optional):** off, a flat amount or a percentage, taken from every buy-in and rebuy. It is chosen before a set accepts money and is locked after that. The group keeps a running total of rake collected, with pesos and chips separate. Each group chooses how settle-up treats the rake: returned to each player who paid it (default), or paid into the group's Rake fund (ADR 0007).
 - **Seat draw (optional):** before a set starts the host can draw the dealer and the seats. Every phone shows the same draw.
 - On a phone, numbers are typed with the app's own number keys.
 - **RSVP** ([ADR 0003](../adr/0003-rsvp-with-a-waitlist.md)): a host announces a session with an optional start time and a seat limit (the table's seats by default). Players answer In or Out. Players past the limit wait in line; when a seat opens, the first in line gets it and is told. A host can answer for any player, seat a waiting player over the limit, or mark a player out. Answers count until set 1 is in play. Set 1's Add players starts with the confirmed players ticked.
@@ -64,7 +64,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Money records are never edited or removed. A correction is a reversal or a new record with a reason.
 
 ### 3. Settle-up calculator
-- Compute each player's net result over all sets of the session (cash-outs minus buy-ins; rake counts as part of the loss and is not charged again).
+- Compute each player's net result over all sets of the session (cash-outs minus buy-ins; rake counts as part of the loss). Under the default rake rule the fee is not charged again: settle-up returns each player's own fee. Under the Rake fund rule each player settles their result as the standings show it, and the Rake fund receives the session's rake.
 - Produce the **minimum number of transfers** to settle all debts (who pays whom, how much).
 - Show each player their own net result and what they owe or are owed, clearly.
 - Mark each transfer as paid. Unpaid transfers stay visible, and each session reads Settled, Partly settled or Unsettled.

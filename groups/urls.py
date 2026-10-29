@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("g/new/", views.create_group, name="group_create"),
     path("g/<int:group_id>/name/", views.rename_group, name="group_rename"),
+    path("g/<int:group_id>/rake/", views.set_rake_settlement, name="group_rake_settlement"),
     path("me/name/", views.rename_everywhere, name="profile_name"),
     path("g/<int:group_id>/members/<int:member_id>/role/", views.set_role, name="member_role"),
     path("g/<int:group_id>/members/<int:member_id>/restore/", views.restore_member, name="member_restore"),

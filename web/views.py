@@ -25,7 +25,7 @@ from games import services as games
 from games.access import night_for, read_only, session_for
 from games.models import GameNight, GameSession, Participant, SettingsPreset, Table
 from groups import services as groups
-from groups.models import Invite, Member
+from groups.models import GroupRakeAccount, Invite, Member
 from ledger import money
 from ledger import chip_views
 from ledger import queries as ledger_queries
@@ -158,6 +158,9 @@ def group_settings_context(request, me) -> dict:
         "roster_left": request.session.pop("roster_left", False),
         "rake_totals": rake_totals,
         "rake_sets": rake_sets,
+        "rake_settlement": GroupRakeAccount.objects.filter(group=me.group).values_list("settlement", flat=True).first()
+        or GroupRakeAccount.Settlement.RETURNED,
+        "rake_settlement_choices": GroupRakeAccount.Settlement.choices,
         "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
         "chip_presets": [{"preset": preset, "rows": chips.named(preset.values)} for preset in games.chip_presets_for(me.group)],
     }

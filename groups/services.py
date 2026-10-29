@@ -117,6 +117,26 @@ def rename_group(actor: Member, name: str) -> GameGroup:
 
 
 @transaction.atomic
+def set_rake_settlement(actor: Member, choice: str) -> GroupRakeAccount:
+    """A host chooses how settle-up treats collected rake. It applies at the next close of a session.
+
+    Nothing is written when the choice is the same.
+    """
+    require_host(actor)
+    if choice not in GroupRakeAccount.Settlement.values:
+        raise RuleError("Choose how the rake is settled.")
+    group = lock_group(actor.group_id)
+    account, _ = GroupRakeAccount.objects.get_or_create(group=group)
+    if account.settlement == choice:
+        return account  # a repeated tap
+    account.settlement = choice
+    account.save(update_fields=["settlement"])
+    label = GroupRakeAccount.Settlement(choice).label
+    audit.record("group.rake_settlement", actor=actor.user, group_id=group.pk, target=group, summary=f"Rake in settle-up: {label.lower()}")
+    return account
+
+
+@transaction.atomic
 def create_group(user, name: str) -> Member:
     """Create a group. Its creator is the first host."""
     group = GameGroup.objects.create(name=clean_name(name, "Group name"), created_by=user)

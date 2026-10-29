@@ -30,7 +30,7 @@
       <div class="night-mine">
         <h2 class="stat-label">Your result in this session so far</h2>
         <div class="night-result {{ my_standing.net|sign_class }}">{% if my_standing.net > 0 %}{% icon 'arrow-up-right' %}{% elif my_standing.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ my_standing.net|signed_amount:unit }}</div>
-        {% if my_standing.rake_total %}<p class="small">After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.</p>{% endif %}
+        {% if my_standing.rake_total %}<p class="small">{% if my_standing.rake_returned %}After rake: {{ my_standing.rake_total|amount:unit }} already collected. Balance for settle-up: {{ my_standing.settlement_balance|signed_amount:unit }}.{% else %}Includes {{ my_standing.rake_total|amount:unit }} rake, paid into the rake fund.{% endif %}</p>{% endif %}
         {% include "web/_my_table_payments.html" %}
         <p class="felt-hint">Not final.</p>
       </div>
@@ -55,7 +55,7 @@
       <ul class="transfer-list">
         {% for t in outcome.transfers %}
         {% with figure=t.amount|amount:unit %}<li class="transfer-row transfer-line{% if figure|length > 10 %} is-wide{% endif %}{% if t.paid %} is-paid{% elif t.carried %} is-paid is-carried{% endif %}{% if t.payer_id == me.pk or t.payee_id == me.pk %} is-mine{% endif %}{% if me.is_host and not t.carried %} has-action{% endif %}" data-transfer="{{ t.pk }}" data-paid="{% if t.paid %}1{% elif t.carried %}c{% else %}0{% endif %}">
-          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee.display_name }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong>{% if t.payer_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span><span class="transfer-direction">{% icon 'arrow-right' %}<span class="visually-hidden">pays</span></span><span class="transfer-party">{% player_token t.payee_token outcome.standings %}<strong>{{ t.payee.display_name }}</strong>{% if t.payee_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span></div>
+          <div class="transfer-parties" role="group" aria-label="{{ t.payer.display_name }} pays {{ t.payee_label }}"><span class="transfer-party">{% player_token t.payer_token outcome.standings %}<strong>{{ t.payer.display_name }}</strong>{% if t.payer_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span><span class="transfer-direction">{% icon 'arrow-right' %}<span class="visually-hidden">pays</span></span><span class="transfer-party">{% if t.to_rake_fund %}<span class="chip chip-fund" aria-hidden="true">R</span>{% else %}{% player_token t.payee_token outcome.standings %}{% endif %}<strong>{{ t.payee_label }}</strong>{% if t.payee_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span></div>
           <span class="transfer-amount amount{% if figure|length > 17 %} amount-long{% elif figure|length > 10 %} amount-compact{% endif %}">{{ figure }}</span>
           <span class="small transfer-state">{% if t.paid %}<span class="transfer-mark">{% icon 'check' %}</span><span class="paid-word">Paid</span> · {{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% elif t.carried %}<span class="transfer-mark carried-mark">{% icon 'arrow-up-right' %}</span><span class="carried-word">Carried</span> to <a href="{% url 'night' t.carried.plan.night_id %}">{{ t.carried.plan.night.table.name }}, {{ t.carried.plan.night.game_date|date:"M j" }}</a>{% else %}<span class="unpaid-word">Not paid</span>{% endif %}</span>
           {% if me.is_host and not t.carried %}{% if t.paid %}
@@ -127,7 +127,7 @@
     {% if outcome.payments %}
     <section aria-labelledby="payments-title">
       <details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">{{ outcome.payments|length }}</span></h2>{% icon 'chevron-down' %}</summary>
-      <ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} {% if p.transfer_id %}pays{% else %}paid{% endif %} {{ p.payee.display_name }} {{ p.amount|amount:unit }}</span><br><span class="muted">{% if p.transfer_id %}Marked paid{% else %}At the table{% endif %} · recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul>
+      <ul class="list small payment-records">{% for p in outcome.payments %}<li><span class="{% if not p.active %}struck{% endif %}">{{ p.created_at|date:"M j, H:i" }} · {{ p.payer.display_name }} {% if p.transfer_id %}pays{% else %}paid{% endif %} {{ p.payee_label }} {{ p.amount|amount:unit }}</span><br><span class="muted">{% if p.transfer_id %}Marked paid{% else %}At the table{% endif %} · recorded by {{ p.recorded_by.username }}{% if not p.active %} · undone{% endif %}</span></li>{% endfor %}</ul>
       </details>
     </section>
     {% endif %}
@@ -136,7 +136,7 @@
       <details class="night-records" data-key="replaced-lists"><summary><h2 id="replaced-title">Earlier transfer lists <span class="muted small">{{ replaced_plans|length }}</span></h2>{% icon 'chevron-down' %}</summary>
       {% for plan in replaced_plans %}
       <p class="small replaced-head"><span class="badge">Replaced</span> Listed {{ plan.created_at|date:"M j, H:i" }} · reopened {{ plan.voided_at|date:"M j, H:i" }} by {{ plan.voided_by.username }}<br><span class="muted">Reason: {{ plan.void_reason }}</span></p>
-      <ul class="list small payment-records">{% for t in plan.transfers.all %}<li><span class="struck">{{ t.payer.display_name }} pays {{ t.payee.display_name }} {{ t.amount|amount:unit }}</span></li>{% empty %}<li class="muted">No transfer was needed.</li>{% endfor %}</ul>
+      <ul class="list small payment-records">{% for t in plan.transfers.all %}<li><span class="struck">{{ t.payer.display_name }} pays {{ t.payee_label }} {{ t.amount|amount:unit }}</span></li>{% empty %}<li class="muted">No transfer was needed.</li>{% endfor %}</ul>
       {% endfor %}
       </details>
     </section>
