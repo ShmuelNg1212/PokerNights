@@ -10,7 +10,7 @@ On an iPhone (every browser there uses Safari's engine) the date field keeps an 
 
 ## Remedy
 
-The shared field rule in `static/css/app.css` ("One field box for every form") sets `appearance: none`, `display: block`, `min-width: 0`, a fixed line height and `text-align: left` on text, date and select controls, gives the date input a fixed height, and left-aligns `::-webkit-date-and-time-value`. The native date picker still opens.
+The shared field rule in `static/css/app.css` ("One field box for every form") sets `appearance: none`, `display: block`, `min-width: 0`, a fixed line height and `text-align: left` on text, date, date-and-time and select controls, gives the date and date-and-time inputs a fixed height, and left-aligns `::-webkit-date-and-time-value`. The native date picker still opens.
 
 Selects also lose their native look there and get the app's own chevron as a background image.
 

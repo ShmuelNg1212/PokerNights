@@ -188,7 +188,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 ## Settle status of a session
 
 - A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
-- Group → Sessions → Past sessions states the status in words on each row: "Settled" with a check, "₱500 still to pay", or "Partly paid, ₱200 still to pay". The heading counts the sessions not settled. `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
+- Group → Sessions → Past sessions states the status in words on each row: "Settled" with a check, "₱500 still to pay", or "Partly paid, ₱200 still to pay". The heading counts the sessions not settled. The "Not settled" chip shows only those (see "Filters on past sessions"). `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
 - The session page shows the same status in its top bar and in its overview.
 - Hosts and players see the same settlement facts. Hosts have Mark paid and Undo actions; player and archived views have no action column.
 - Who pays whom cards adapt to their available width. Below 440px, payer and payee each have a full-width row; wider cards show them side by side. Chips align with the first name line. Amount, payment state and action have explicit grid positions, so a paid timestamp grows below the badge. Complete amounts and units stay on one line.
@@ -246,7 +246,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The app records who owes what. It does not move money.
 - The transfer list excludes rake already collected at buy-in. It subtracts the payments made at the table before closing (see “Paid at the table”).
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
-- No breaks: "Left" is the way to stop a player's time. The end time of a set cannot be edited.
+- No breaks: "Left" is the way to stop a player's time. The end time of a set can be moved earlier while it counts up, never later (see "Correct the end time").
 - A group's Stats and Group settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.
 - No banker mode and no seasons. Seating is the optional seat draw (see “Seat draw”); the app does not follow the dealer button hand by hand. Stats have no minimum-session threshold, average result or ROI yet.
 - No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
@@ -748,3 +748,24 @@ The group's Sessions tab leads with the viewer's own table, then lists their pas
 - **Past sessions.** Grouped by month, newest first. This year's months are open; each earlier year is one closed disclosure ("2025 · 48 sessions"). With nothing this year, the newest year is open. Each row: the table, "date · N sets · status", the viewer's net in the session's unit ("Even" for zero, "Did not play" if absent), and one line for each transfer the viewer still pays or receives ("You pay Carlo ₱500", "Dina pays you ₱200").
 - From 700 px of content width the cards are in two columns. A single card takes the full width.
 
+
+## Filters on past sessions (2026-10-29)
+
+Chips above Group → Sessions → Past sessions choose which closed sessions show. [Plan](../plan/1793266411_past_filters_and_end_time.md).
+
+- **All** (the default), **Not settled** (money still to pay: Unsettled or Partly settled), **I played** (sessions where the viewer has a result). Each chip shows its count over all past sessions.
+- The filter is a link: `?past=unsettled` or `?past=mine`. It works without JavaScript, and the live redraw keeps it. An unknown value shows all.
+- With a filter, every year is open. With no match, the list says "No sessions match." and links back to All.
+- `web.sessions_tab.PAST_FILTERS` holds the rules. A filter adds no query.
+- Check: `web/tests/browser/past_filters.mjs` with `seed_past_filters.py`.
+
+## Correct the end time (2026-10-29)
+
+A late "End play" tap adds playing time for everyone. A host can move the end of play earlier while the set counts up. [Plan](../plan/1793266411_past_filters_and_end_time.md).
+
+- **Where.** On the counting set: More host controls → "Wrong end time?". The field opens at the recorded end, in Manila time, with the date (a set can cross midnight). The reason is optional.
+- **Rules.** Hosts only. Only while the set counts up; for a finalized set, reopen it first. Whole minutes: the new end is before the recorded end's minute and from the minute after the last start (or resume) on.
+- **Effect.** The set's last play period and every player time of the set stop at the new end (`games.clock.trim`). A player who left earlier keeps their time; a player who joined after the new end has none. Finalization stores the corrected times, so stats such as per hour use them.
+- **Record.** Each correction is an `EndTimeCorrection` row (old and new end, reason, who, `request_id`) and a log line "Corrected the end of play from 11:00 PM to 10:30 PM".
+- Buy-ins and cash-outs after the new end stay as they are (see [footgun](footguns/end_time_before_money.md)).
+- Check: `games/tests/test_end_time.py`; `web/tests/browser/past_filters.mjs`.

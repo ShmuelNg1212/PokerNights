@@ -5,7 +5,7 @@ Each stage needs its own study, plan and approval. The design for all stages is 
 | Stage | Outcome | `spec.md` step | Status |
 |---|---|---|---|
 | 1. Game night | Buy-ins and rebuys, cash-outs with balance check, settle-up with paid marks | 1, 2, 3 | Done, 2026-10-03 |
-| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). Reopening a set or a session built 2026-10-11. Past sessions are listed on the group page with their settled state, without filters. Payments at the table before a session closes built 2026-10-26 ([ADR 0002](../adr/0002-payments-at-the-table.md)). The banker and history filters remain |
+| 2. Roster, history, banker, corrections | Roster management, history list with filters, optional banker for the night, payments recorded before finalization (early leavers), reopen a finalized game as a new revision | 4 | Roster management built 2026-10-09 (safe remove and restore, own names, contact notes, sessions played, several names). Reopening a set or a session built 2026-10-11. Past sessions are listed on the group page with their settled state. Filters (Not settled, I played) built 2026-10-29. Payments at the table before a session closes built 2026-10-26 ([ADR 0002](../adr/0002-payments-at-the-table.md)). The banker remains |
 | 3. Leaderboard and stats | Seasons; month, season, year and all-time filters; profit/loss, sessions, average result, win rate, ROI | 5 | Built 2026-10-09: board with five orders, four kinds of period and a minimum to be ranked; a page per player with a running profit chart, average, return, per hour, rebuys, rake and runs. Seasons remain |
 | 4. Seating | Manual seats and random draws with history | First request, item 10 | Built 2026-10-11 as an optional seat draw before a set starts: the server draws the dealer and the order, every phone plays it back, and a late player is seated by hand. The app does not follow the dealer button hand by hand |
 | 5. Shared use | Deployment, password reset, claim links for roster players | — | Deployed 2026-10-04 at https://pokernights-five.vercel.app (Vercel and Neon, invite-only sign-up). Password reset by a host-issued link built 2026-10-06. Claim links built 2026-10-09 |
@@ -49,7 +49,7 @@ These used the plan's defaults in Stage 1. They can still change.
 ## Possible follow-ups
 
 - **Breaks.** A player steps away and comes back without leaving the set. Today "Left" does this, and a host brings the player back.
-- **Correcting a set's end time.** The end time is the moment the host taps "End play". A late tap adds playing time for everyone. No edit exists.
+- **Correcting a set's end time.** Built 2026-10-29 ([plan](../plan/1793266411_past_filters_and_end_time.md)): earlier only, while the set counts up.
 - **A live session page.** Built 2026-10-11: the session page, Your groups and a group's Sessions tab update by themselves.
 - **Reopening a finalized set or a closed session.** Built 2026-10-11.
 
