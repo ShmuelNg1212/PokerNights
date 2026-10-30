@@ -3,6 +3,7 @@
     DATABASE_URL=postgres://localhost:5432/pokernights manage.py test web.tests.test_concurrency
 """
 
+import datetime
 import threading
 import uuid
 
@@ -10,10 +11,11 @@ from django.db import connection
 from django.test import TransactionTestCase
 
 from games import services as games
-from games.models import Participant, ParticipantBatch
+from games.models import GameNight, Participant, ParticipantBatch
+from games.tests.helpers import make_table
 from games.tests.test_add_players import Roster
 from groups.errors import RuleError
-from groups.tests.helpers import add_player
+from groups.tests.helpers import add_player, make_group
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from games.models import PlayInterval, PlayPeriod
@@ -539,3 +541,16 @@ class ConcurrentRsvpTests(TransactionTestCase):
                 lambda: group_services.remove_member(other_host, bob.pk),
             )
             self.assertNotIn("error", kinds(outcomes), outcomes)
+
+
+class ConcurrentCreateSessionTests(TransactionTestCase):
+    def test_a_double_tap_makes_one_session(self):
+        _, host = make_group()
+        table = make_table(host)
+        data = {"table_id": table.pk, "game_date": datetime.date(2026, 10, 9), "game_type": "nlh", "unit": "php",
+                "small_blind": 1000, "big_blind": 2000, "min_buy_in": 50000, "max_buy_in": 200000,
+                "default_buy_in": 100000, "request_id": uuid.uuid4()}
+        outcomes = race(lambda: games.create_session(host, data).pk, lambda: games.create_session(host, data).pk)
+        self.assertEqual([kind for kind, _ in outcomes], ["ok", "ok"], outcomes)
+        self.assertEqual(outcomes[0][1], outcomes[1][1])
+        self.assertEqual(GameNight.objects.count(), 1)

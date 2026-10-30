@@ -65,16 +65,17 @@ def session_new(request, group_id):
         preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
     initial = {"game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else {}
     form = SessionForm(request.POST or None, initial=initial, tables=tables)
+    request_id = request_id_from(request) if request.method == "POST" else uuid.uuid4()
     # What choosing each preset writes into the form, as the form shows it (static/js/setup.js).
     presets = list(presets)
     for p in presets:
         p.fill = json.dumps({"game_type": p.game_type, "unit": p.unit, **{name: money.plain_amount(value, p.unit) for name, value in p.stakes().items()}})
     if request.method == "POST" and form.is_valid():
-        data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
+        data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None, "request_id": request_id}
         session = attempt_bound(request, form, services.create_session, actor, data)
         if session is not None:
             return redirect("night", night_id=session.night_id)
-    context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset}
+    context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset, "request_id": request_id}
     return render(request, "games/session_form.html", context)
 
 

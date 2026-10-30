@@ -146,11 +146,14 @@ class GameNight(models.Model):
     chip_values = models.JSONField(default=list, blank=True)
     chip_values_revision = models.PositiveIntegerField(default=0)
     chip_values_locked_at = models.DateTimeField(null=True, blank=True)
+    # The New session request that made this session. Empty on sessions older than the field.
+    create_request_id = models.UUIDField(null=True, blank=True)
 
     class Meta:
         ordering = ["-game_date", "-id"]
         constraints = [
             models.CheckConstraint(condition=Q(status__in=["open", "closed"]), name="night_status_valid"),
+            models.UniqueConstraint(fields=["group", "create_request_id"], name="night_create_request_once"),
             models.CheckConstraint(
                 condition=Q(seat_limit__isnull=True) | Q(seat_limit__gte=MIN_SEATS, seat_limit__lte=MAX_SEATS),
                 name="night_seat_limit_valid",

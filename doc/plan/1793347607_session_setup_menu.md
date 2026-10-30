@@ -39,9 +39,9 @@ Complete when: the suite passes and a signed-in browser probe lands on the sessi
 
 `tests: first`
 
-- [ ] Add nullable `GameNight.create_request_id` with a unique constraint on group and request ID. The migration adds a nullable field only.
-- [ ] `create_session` returns the first set of the existing session when the request ID repeats.
-- [ ] The form carries a `request_id` and `data-once`. A refused form keeps its ID.
+- [x] Add nullable `GameNight.create_request_id` with a unique constraint on group and request ID. The migration adds a nullable field only.
+- [x] `create_session` returns the first set of the existing session when the request ID repeats.
+- [x] The form carries a `request_id` and `data-once`. A refused form keeps its ID.
 
 Acceptance: Two posts with one request ID make one session. Two different request IDs make two sessions.
 

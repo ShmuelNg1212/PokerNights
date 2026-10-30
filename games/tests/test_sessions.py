@@ -1,11 +1,12 @@
 import datetime
+import uuid
 
 from django.test import TestCase
 from django.urls import reverse
 
 from audit.models import AuditEvent
 from games import services
-from games.models import GameSession, SettingsVersion
+from games.models import GameNight, GameSession, SettingsVersion
 from groups.errors import NotAllowed, RuleError
 from groups.tests.helpers import add_player, make_group, make_user
 
@@ -222,3 +223,64 @@ class SessionViewTests(TestCase):
         self.client.force_login(self.host.user)
         response = self.client.post(reverse("session_transition", args=[session.pk]), {"action": "end"}, follow=True)
         self.assertContains(response, "not available")
+
+
+class CreateSessionOnceTests(TestCase):
+    """A repeated New session request, such as a double tap, makes one session."""
+
+    def setUp(self):
+        self.group, self.host = make_group()
+        self.table = make_table(self.host)
+
+    def create(self, request_id):
+        return services.create_session(self.host, {
+            "table_id": self.table.pk, "game_date": datetime.date(2026, 10, 9), "game_type": "nlh", "unit": "php",
+            "small_blind": 1000, "big_blind": 2000, "min_buy_in": 50000, "max_buy_in": 200000, "default_buy_in": 100000,
+            "request_id": request_id,
+        })
+
+    def test_the_same_request_makes_one_session(self):
+        request_id = uuid.uuid4()
+        first = self.create(request_id)
+        again = self.create(request_id)
+        self.assertEqual(again.pk, first.pk)
+        self.assertEqual(GameNight.objects.count(), 1)
+        self.assertEqual(AuditEvent.objects.filter(action="session.created").count(), 1)
+
+    def test_two_requests_make_two_sessions(self):
+        self.create(uuid.uuid4())
+        self.create(uuid.uuid4())
+        self.assertEqual(GameNight.objects.count(), 2)
+
+    def test_the_same_id_in_another_group_is_its_own_request(self):
+        request_id = uuid.uuid4()
+        self.create(request_id)
+        group, host = make_group("other-host", "Other group")
+        table = make_table(host)
+        services.create_session(host, {
+            "table_id": table.pk, "game_date": datetime.date(2026, 10, 9), "game_type": "nlh", "unit": "php",
+            "small_blind": 1000, "big_blind": 2000, "min_buy_in": 50000, "max_buy_in": 200000, "default_buy_in": 100000,
+            "request_id": request_id,
+        })
+        self.assertEqual(GameNight.objects.count(), 2)
+
+    def test_the_form_sends_one_id_and_a_repeat_lands_on_the_same_session(self):
+        self.client.force_login(self.host.user)
+        url = reverse("session_create", args=[self.group.pk])
+        page = self.client.get(url)
+        request_id = page.context["request_id"]
+        self.assertContains(page, f'name="request_id" value="{request_id}"')
+        data = {"table_id": self.table.pk, "game_date": "2026-10-09", "game_type": "nlh", "unit": "php", "small_blind": "10",
+                "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000", "request_id": request_id}
+        first = self.client.post(url, data)
+        again = self.client.post(url, data)
+        self.assertEqual(GameNight.objects.count(), 1)
+        self.assertEqual(again["Location"], first["Location"])
+
+    def test_a_refused_form_keeps_its_id(self):
+        self.client.force_login(self.host.user)
+        request_id = str(uuid.uuid4())
+        page = self.client.post(reverse("session_create", args=[self.group.pk]), {
+            "table_id": self.table.pk, "game_date": "", "game_type": "nlh", "unit": "php", "small_blind": "10", "big_blind": "20",
+            "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000", "request_id": request_id})
+        self.assertContains(page, f'name="request_id" value="{request_id}"')

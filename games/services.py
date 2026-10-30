@@ -190,9 +190,14 @@ def _clean_date(value) -> datetime.date:
 
 @transaction.atomic
 def create_session(actor: Member, data: dict) -> GameSession:
-    """Create a session with its first set. The set is in setup, with settings version 1."""
+    """Create a session with its first set. The set is in setup, with settings version 1. A repeated request changes nothing."""
     require_host(actor)
     lock_group(actor.group_id)  # so a new session and archiving the group cannot pass each other
+    request_id = data.get("request_id")
+    if request_id:
+        night = GameNight.objects.filter(group=actor.group, create_request_id=request_id).first()
+        if night is not None:
+            return night.sets.get(set_number=1)
     table = Table.objects.filter(group=actor.group, pk=data.get("table_id"), archived_at__isnull=True).first()
     if table is None:
         raise RuleError("Select a table of this group.")
@@ -209,7 +214,7 @@ def create_session(actor: Member, data: dict) -> GameSession:
         "created_by": actor.user,
     }
     settings = {**validated_stakes(data), **validated_rake(data)}
-    night = GameNight.objects.create(**shared)
+    night = GameNight.objects.create(**shared, create_request_id=request_id)
     session = GameSession.objects.create(night=night, set_number=1, seat_count=table.seat_count, **shared)
     SettingsVersion.objects.create(
         session=session, number=1, preset=preset, created_by=actor.user, **settings
