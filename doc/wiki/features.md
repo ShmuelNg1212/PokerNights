@@ -99,7 +99,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 
 [Plan](../plan/1793347607_session_setup_menu.md). [ADR 0008](../adr/0008-new-session-options.md).
 
-- **After Create session.** The app goes to the session page. It has the Announce and Chip values cards, and **Open set 1**. Before set 1 opens, **Announce to the group** is the primary button until the session is announced. Then **Open set 1** is primary.
+- **After Create session.** The screen moves deeper to the session page, without a page load. It has the Announce and Chip values cards, and **Open set 1**. Before set 1 opens, **Announce to the group** is the primary button until the session is announced. Then **Open set 1** is primary.
 - **When it is created.** The last group on New session has two options. Both are off by default.
   - **Chip values** lists "Set later" and the group's chip presets of the chosen unit. `static/js/setup.js` changes the list when the unit changes. The field is not on the page when the group has no chip presets. Without JavaScript, all presets show, and the server refuses a preset of the other unit.
   - **Announce to the group** tells each member with a login. A start time shows when the box is ticked (CSS only). Seats come from the table.

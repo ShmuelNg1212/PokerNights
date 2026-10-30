@@ -213,7 +213,7 @@ The migration adds zero snapshot defaults and changes only finalization conserva
 
 ## Screen changes
 
-Links change the screen without unloading the page (Turbo navigation). Forms do so only when marked `data-turbo="true"`; every other form posts natively and loads a page.
+Links change the screen without unloading the page (Turbo navigation). Forms do so only when marked `data-turbo="true"`; every other form posts natively and loads a page. A marked form that goes to another page loads that page, unless it also has `data-go`. Then Turbo follows the redirect and the screen moves in that direction. Its view must answer a refusal with 422, so Turbo draws the form again with what was typed. New session is the one such form.
 
 - **Script lifetime.** Every script loads once from the head and registers a start and a stop with `static/js/page.js`. `turbo-setup.js` calls stop before a page is swapped out and start after the next one is in. See the footgun [scripts run once per tab](footguns/scripts_run_once_per_tab.md). This is a rule for every future script.
 - **No page cache.** `turbo-cache-control: no-cache` on every page. Back and Forward fetch the page again; scroll position is still restored.

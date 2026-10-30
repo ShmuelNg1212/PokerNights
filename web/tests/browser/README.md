@@ -303,3 +303,7 @@ Seed a fresh temporary database with `seed_past_filters.py` alone, serve it on 1
 ## New session options
 
 Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_options.mjs`. It has 28 checks: the options at 320, 390 and 1280 px, the list that follows the unit, a refusal, a session a player cannot see, and an announced session that the player sees. It creates sessions, so reset the database before a repeat.
+
+## Create session movement
+
+Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_arrival.mjs`. It has 32 checks at 390 and 1280 px: the same page stays loaded, the screen moves deeper, the top bar stays still, the announced notice arrives, a double tap makes one session, Back and create makes a second, a refusal keeps the typed text and does not move, a corrected form is accepted, and reduced motion. Session numbers must start at 1, so reset the database before a repeat. A capture of the movement is in `/private/tmp/pn-session-arrival-review/`, or `PN_REVIEW_DIR`.

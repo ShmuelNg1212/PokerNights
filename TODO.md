@@ -8,6 +8,10 @@
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
 
+## Phone checks (not released: `fix/session-create-motion`)
+
+- [ ] New session → Create session: the screen shifts to the session page, as when you tap into a session, with no blank load.
+
 ## Phone checks (released 2026-10-30 as `5a207e2`)
 
 - [ ] Group settings → Group rake account → When players pay the rake: choose "At settle-up, into the rake fund" and save.
