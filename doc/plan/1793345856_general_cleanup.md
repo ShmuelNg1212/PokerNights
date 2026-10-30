@@ -43,9 +43,9 @@ Done when: ruff F401 and F841 report nothing; the suite passes with the same tes
 
 ### 4. Repository hygiene — `chore:` — no tests
 
-- [ ] Add `.obsidian/workspace.json` to `.gitignore` and run `git rm --cached` on it (as answered in question 2).
-- [ ] Delete the local `test_db_*.sqlite3-wal` and `-shm` files in the repo root. Not a commit; git ignores them.
-- [ ] Delete the merged branches (as answered in question 1). Not a commit.
+- [x] Add `.obsidian/workspace.json` to `.gitignore` and run `git rm --cached` on it (as answered in question 2).
+- [x] Delete the local `test_db_*.sqlite3-wal` and `-shm` files in the repo root. Not a commit; git ignores them.
+- [x] Delete the merged branches (as answered in question 1). Not a commit.
 
 Done when: `git status` is clean after Obsidian opens the vault; `ls test_db_*` finds nothing.
 

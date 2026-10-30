@@ -24,6 +24,8 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+# Obsidian rewrites its open-pane state each time the vault opens
+.obsidian/workspace.json
 
 # Design review captures and temporary build evidence
 .impeccable/review/
