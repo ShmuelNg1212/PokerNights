@@ -29,8 +29,8 @@ Done when: `grep -rw` finds none of the three names outside `doc/`; ruff F finds
 
 ### 2. Remove dead CSS rules — `refactor:` — tests: alongside
 
-- [ ] Remove the rules for `.discrepancy-label`, `.hub-list`, `.hub-link`, `.night-action`, `.stat-value` and `.stat-wide` from `static/css/app.css`.
-- [ ] Before each removal, search again in templates, scripts, Python and browser tests.
+- [x] Remove the rules for `.discrepancy-label`, `.hub-list`, `.hub-link`, `.night-action`, `.stat-value` and `.stat-wide` from `static/css/app.css`.
+- [x] Before each removal, search again in templates, scripts, Python and browser tests.
 
 Done when: the six class names occur nowhere in the repo outside `doc/`; the suite passes; `collectstatic` succeeds.
 
