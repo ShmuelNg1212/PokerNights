@@ -78,7 +78,7 @@ Each kind of knowledge has one home. Look there first; write there only.
 - Batch features: build each on its own local branch, stacked on the last unreleased one. Keep TODO.md's phone checks current for everything unreleased. On "ship", merge the stack to main and push.
 - Run the PostgreSQL suite locally before a release; the Vercel build skips the PostgreSQL-only tests.
 - The human tests on the live build on their phone. Do not offer a preview deployment. Design a risky change to fail safe: fail at build time, or degrade to current behaviour.
-- After a push, wait about four minutes, then make one or two requests to the live site. Never poll. On a 403 Vercel challenge, stop and ask the human to check in their browser.
+- After a push, wait about two minutes, then make one or two requests to the live site. Never poll. On a 403 Vercel challenge, stop and ask the human to check in their browser.
 - After a release, list what the human should check on their phone.
 
 ## Writing
