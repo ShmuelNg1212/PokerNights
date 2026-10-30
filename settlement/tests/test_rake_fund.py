@@ -210,7 +210,7 @@ class RakeFundPageTests(TestCase):
         self.client.post(url, {"settlement": "fund"})
         self.assertEqual(GroupRakeAccount.objects.get(group=n.group).settlement, "returned")
         page = self.client.get(f"/g/{n.group.pk}/?view=settings")
-        self.assertContains(page, "Rake in settle-up: returned to each player.")
+        self.assertContains(page, "Players pay the rake in cash at buy-in.")
         self.client.force_login(n.host.user)
         self.client.post(url, {"settlement": "fund"})
         self.assertEqual(GroupRakeAccount.objects.get(group=n.group).settlement, "fund")

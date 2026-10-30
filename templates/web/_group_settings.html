@@ -274,13 +274,13 @@
   <form method="post" action="{% url 'group_rake_settlement' group.pk %}" class="stack" data-once>
     {% csrf_token %}
     <fieldset class="stack" aria-describedby="rake-settlement-help">
-      <legend>Rake in settle-up</legend>
-      <p id="rake-settlement-help" class="hint">Returned: settle-up gives each player back their own fee. Rake fund: settle-up matches the standings, and the rake is paid into the fund. A change applies at the next close.</p>
+      <legend>When players pay the rake</legend>
+      <p id="rake-settlement-help" class="hint">In cash at buy-in: the fee is paid when a player buys in, so settle-up does not charge it again. At settle-up: buy-ins are paid after the game, so each player's settle-up includes their fee, paid into the rake fund. A change applies at the next close.</p>
       {% for value, label in rake_settlement_choices %}<label class="check" for="rake-settlement-{{ value }}"><input id="rake-settlement-{{ value }}" type="radio" name="settlement" value="{{ value }}"{% if value == rake_settlement %} checked{% endif %}><span class="grow">{{ label }}</span></label>{% endfor %}
     </fieldset>
     <button class="btn btn-block" type="submit">Save rake rule</button>
   </form>
-  {% else %}<p class="small">Rake in settle-up: {% for value, label in rake_settlement_choices %}{% if value == rake_settlement %}{{ label|lower }}{% endif %}{% endfor %}.</p>{% endif %}
+  {% else %}<p class="small">Players pay the rake {% for value, label in rake_settlement_choices %}{% if value == rake_settlement %}{{ label|lower }}{% endif %}{% endfor %}.</p>{% endif %}
 </div>
 </section>
 {% if me.is_host %}

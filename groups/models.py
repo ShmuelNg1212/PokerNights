@@ -27,13 +27,13 @@ class GameGroup(models.Model):
 class GroupRakeAccount(models.Model):
     """The group’s collected rake identity. Its totals are ledger queries.
 
-    ``settlement`` says how settle-up treats the rake: returned to each player who paid it
-    (each pays their fee at buy-in), or paid into the rake fund, so each player settles their result.
+    ``settlement`` says when players pay the rake: in cash at buy-in, so settle-up returns each
+    player's own fee, or at settle-up, into the rake fund, so each player settles their result.
     """
 
     class Settlement(models.TextChoices):
-        RETURNED = "returned", "Returned to each player"
-        FUND = "fund", "Paid into the rake fund"
+        RETURNED = "returned", "In cash at buy-in"
+        FUND = "fund", "At settle-up, into the rake fund"
 
     group = models.OneToOneField(GameGroup, on_delete=models.PROTECT, related_name="rake_account")
     settlement = models.CharField(max_length=8, choices=Settlement.choices, default=Settlement.RETURNED)

@@ -10,7 +10,7 @@
 
 ## Phone checks (released 2026-10-30 as `5a207e2`)
 
-- [ ] Group settings → Group rake account → Rake in settle-up: choose "Paid into the rake fund" and save.
+- [ ] Group settings → Group rake account → When players pay the rake: choose "At settle-up, into the rake fund" and save.
 - [ ] Close a session with rake: each player's settle-up figure equals their standing; a "Rake fund" line with a brass R chip takes the rake; mark it paid.
 - [ ] Two hosts count up one set on two phones: one host's saved count shows on the other phone within about 2 seconds, also while that phone's numpad is open.
 - [ ] Both hosts type a count for the same player: the second phone says "… saved ₱…".
