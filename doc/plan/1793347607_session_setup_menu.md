@@ -1,6 +1,6 @@
 # Session setup menu: plan
 
-Date: 2026-10-30. Mode: mixed. Status: approved 2026-10-30; in execution.
+Date: 2026-10-30. Mode: mixed. Status: verified 2026-10-30 on `feat/session-setup-menu`; awaiting ship. Frozen after rendezvous.
 
 Study: [session setup menu](../study/1793347607_session_setup_menu.md). Branch: `feat/session-setup-menu`.
 
@@ -91,4 +91,25 @@ All tasks are ticked. Both test suites pass. The rendezvous checks are recorded 
 
 ## Rendezvous checks
 
-Not run yet.
+**Test suites.** After the fixes, 1,554 tests pass on SQLite (17 PostgreSQL-only skips) and 1,554 on PostgreSQL.
+
+**First use, signed in.** `session_options.mjs` passes 28 of 28 checks against a real server, as a host and a player. It creates a session with each option, and it can fail for each claim: a session without the options must be hidden from the player, and an announced session must reach the player's home page.
+
+**Scripts that follow this flow.** `session_setup.mjs` 390 (22) and 1280 (21), `session_form.mjs` (69), `rsvp.mjs` (33), `rake_controls.mjs` (26) and `chip_presets.mjs` (35) pass after the fixes. `remaining_actions.mjs` (12) passed before the fixes.
+
+**Known failure, not from this work.** `navigate.mjs` passes 52 checks and fails "exactly one poll loop on the set page". The same check fails on `main`. It ran before the fixes.
+
+**Code review, round 1 of 2.** The `code-review` skill made 8 findings. All are fixed, and the tests failed before the fix where a test applies:
+
+1. A repeated request could show a false "Announced" message. The message now reads the session.
+2. Back reused a request ID, so a second session was dropped. The page now sends `no-store`.
+3. A refused form forgot its stakes preset. It now keeps the posted preset.
+4. A hidden start time with `step` could block the button. The `step` rule is removed. See the [footgun](../wiki/footguns/hidden_field_rule_blocks_submit.md).
+5. `spec.md` still stated the old chip rule. It is corrected.
+6. A lost chip preset had two refusal paths. The service is now the only one.
+7. A helper returned a value that it did not need. It is removed.
+8. `data-once` has no reader in `static/js`, so T2 does not use it. `forms.js` disables the button, and the request ID is the guard.
+
+**Design.** The screens at 320, 390 and 1280 px were inspected by eye, not through a formal `/impeccable critique` run. This found the unstyled time field, which also affected the Announce card. It is fixed. A 60-character preset name fits at 320 px.
+
+**Not run.** `security-review`: the change adds no new role or money rule, and the host check is unchanged. Real phones: see the phone checks in TODO.md.

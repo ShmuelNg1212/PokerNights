@@ -92,7 +92,7 @@ AuditEvent (group_id, session_id as plain integers)
 
 ### Session chip values
 
-`GameNight.chip_values` holds one optional denomination table for all its sets. Each row has a fixed colour ID, an optional label and a positive integer value in the session unit. A new session starts without assignments. Colours have no assumed value. This is an input method for stack values, not an exchange rate.
+`GameNight.chip_values` holds one optional denomination table for all its sets. Each row has a fixed colour ID, an optional label and a positive integer value in the session unit. A new session starts without assignments, unless the host selects a chip preset on New session. Colours have no assumed value. This is an input method for stack values, not an exchange rate.
 
 `games.services.set_chip_values()` replaces the table under the session lock. It checks the posted `chip_values_revision`. Each successful save increments that revision and creates a `ChipValueChange` row. Unique constraints on the session and request ID make prior saves safe to repeat. The service audits the save and increments every set's live version. The session page's stamp includes the revision and lock state.
 

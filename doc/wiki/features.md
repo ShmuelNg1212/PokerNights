@@ -67,7 +67,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 
 [Plan](../plan/1793117581_session_chip_values.md).
 
-- **Setup.** On the session page, a host selects **Set chip values**. Add 1 to 12 different colours. Give each colour a positive value and an optional label of up to 40 characters. Values use the session's unit: pesos or whole chip units. All sets in that session share the table. Each new session starts without assignments.
+- **Setup.** On the session page, a host selects **Set chip values**. Add 1 to 12 different colours. Give each colour a positive value and an optional label of up to 40 characters. Values use the session's unit: pesos or whole chip units. All sets in that session share the table. Each new session starts without assignments, unless the host selects a chip preset on New session.
 - **Read and edit.** All members can read the saved chip values on the session page. A host can edit them until the first successful chip-based count is sent or confirmed. A player's unconfirmed submission also locks the values. Clearing a count or reopening a set does not unlock them. A session with chip values cannot change its unit.
 - **Count a stack.** At count-up, a host taps a player's count field. On a phone, the number keys show a **Chips** key; tap it to open that player's chip sheet. With a mouse, or where the number keys are off, a quiet **Count by chips** link sits under the field. A player with a login has the same choices under **Your count**. The sheet shows one line per colour: the colour and written label, the value of one chip, the subtotal and a quantity field. The total and **Confirm count** (or **Send to host**) stay together above the keys. The total updates as a labelled preview. Enter whole quantities. Leave unused colours blank. Closing the sheet returns focus to the count field.
 - **An empty stack.** Select **No chips left** to submit zero. An untouched form is not a zero count.
@@ -79,7 +79,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 
 ## A game night (one set)
 
-1. **Create.** The host picks a table, date, location, game type, unit and stakes. The game starts as a draft that only hosts see.
+1. **Create.** The host picks a table, date, location, game type, unit and stakes. The app then goes to the session page. The game starts as a draft that only hosts see, unless the host ticks **Announce to the group** on New session.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment. Add players stays available during play even when every roster member is seated. The same page offers Add new player: enter a name to save a no-login roster identity and join them to the current set in one action. The new player’s timer starts when they join; record their buy-in separately. Duplicate names direct the host to roster selection, or back to the set if that player is already seated, and a full or ended set adds nobody.
 3. **Start play and opening buy-ins.** Start the set includes a checked option to add the set’s usual buy-in for each player at the table without an accepted buy-in. Existing buy-ins are kept, even at a different amount. Uncheck the option to start without automatic entries. Records and timers commit together; repeated confirmation creates nothing twice. Each new set uses its own current settings. Resume and late joining add no automatic buy-in. A reversed-only player qualifies again before first start; uncheck when that is intentional.
@@ -94,6 +94,18 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 12. **Set log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
+
+## New session options (2026-10-30)
+
+[Plan](../plan/1793347607_session_setup_menu.md). [ADR 0008](../adr/0008-new-session-options.md).
+
+- **After Create session.** The app goes to the session page. It has the Announce and Chip values cards, and **Open set 1**. Before set 1 opens, **Announce to the group** is the primary button until the session is announced. Then **Open set 1** is primary.
+- **When it is created.** The last group on New session has two options. Both are off by default.
+  - **Chip values** lists "Set later" and the group's chip presets of the chosen unit. `static/js/setup.js` changes the list when the unit changes. The field is not on the page when the group has no chip presets. Without JavaScript, all presets show, and the server refuses a preset of the other unit.
+  - **Announce to the group** tells each member with a login. A start time shows when the box is ticked (CSS only). Seats come from the table.
+- **Refusals.** A preset of the other unit, or one that is archived, creates nothing and tells nobody. The form keeps what the host typed, including the stakes preset.
+- **Repeats.** The form carries a request ID. A repeated request lands on the same session and tells nobody again. The page sends `no-store`, so Back gets a new ID and a second session can be made.
+- **Browser check.** `session_options.mjs`, 28 checks. See `web/tests/browser/README.md`.
 
 ## Session setup (polish of 2026-10-13)
 
@@ -165,7 +177,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 
 [ADR 0003](../adr/0003-rsvp-with-a-waitlist.md); [plan](../plan/1793109970_rsvp_waitlist.md).
 
-- A host creates a session as before. On its page, the **Announce to the group** card takes an optional start time and the seats (the table's by default). Announcing tells each member with a login.
+- A host creates a session as before. On New session, **Announce to the group** announces it at creation (see [New session options](#new-session-options-2026-10-30)). Otherwise, on its page, the **Announce to the group** card takes an optional start time and the seats (the table's by default). Announcing tells each member with a login.
 - Players see the session under **Coming up** on the Sessions tab, and "Are you in?" on Your groups until they answer. They tap **I'm in** or **Can't make it**. When the seats are full, the button reads **Join the waitlist**.
 - The card then reads "You're in", "Waitlist · 2nd in line" or "You said you can't make it", with one quiet button to change it.
 - When a confirmed player drops out, the first in line gets the seat and a notice: "A seat opened. You're in."

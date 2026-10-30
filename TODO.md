@@ -20,6 +20,14 @@
 
 - [ ] Session → Chip values → choose a preset → Fill: the rows fill, and Fill goes back to its normal look and works again.
 
+## Phone checks (unreleased: `feat/session-setup-menu`)
+
+- [ ] New session → fill it in → Create session: you land on the session page, with Announce to the group and Chip values on it.
+- [ ] New session → Chip values: pick a preset, change Unit: the list changes. Create: the chip values are already there, and you can edit them.
+- [ ] New session → tick Announce to the group: the start time appears. Create: a player's phone gets the notice once and shows "Are you in?".
+- [ ] Double-tap Create session with Announce ticked: one session and one notice. Then press Back and create again: a second session.
+- [ ] On the session page, the start time field is the same height as Seats.
+
 ## Waiting for the human
 
 - [ ] Create your superuser against production (command in [deployment](doc/wiki/deployment.md)), add the first host in `/admin/` → Users, and play a game on the live site.
