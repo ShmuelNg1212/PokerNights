@@ -53,6 +53,7 @@ await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
 await fillNew('chips');await choose('flat','1.5','0');await A.click(`document.querySelector('form.form-section button')`);
 check('chips active flat rejects fractions with scripts enabled',await A.js(`document.querySelector('#id_rake_flat_error')!==null&&document.querySelector('[name=rake_flat]').value==='1.5'`));
 await choose('percent','oops','5');await A.click(`document.querySelector('form.form-section button')`);
+await A.go(await A.js(`document.querySelector('a.set-link').getAttribute('href')`));
 check('chips creation percentage with scripts enabled',await A.js(`document.body.textContent.includes('5% rake')&&document.body.textContent.includes('chips')`));
 await A.go(await A.js('location.pathname')+'settings/');
 await A.js(`document.querySelector('[name=rake_mode][value=off]').focus()`);await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40},A.s);await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40},A.s);

@@ -302,4 +302,4 @@ Seed a fresh temporary database with `seed_past_filters.py` alone, serve it on 1
 
 ## New session options
 
-Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_options.mjs`. It has 25 checks: the options at 320, 390 and 1280 px, the list that follows the unit, a refusal, a session a player cannot see, and an announced session that the player sees. It creates sessions, so reset the database before a repeat.
+Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_options.mjs`. It has 26 checks: the options at 320, 390 and 1280 px, the list that follows the unit, a refusal, a session a player cannot see, and an announced session that the player sees. It creates sessions, so reset the database before a repeat.

@@ -36,6 +36,9 @@ try{
   check('fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}`));
   check('48px targets '+width,await A.js(`document.querySelector('.session-options .check').getBoundingClientRect().height>=48&&${CHOOSER}.getBoundingClientRect().height>=48`));
   await A.js(`document.querySelector('[name=announce]').checked=true`);check('the start time is a 48px field '+width,await A.js(`(()=>{const t=document.querySelector('[name=start_time]').getBoundingClientRect(),c=${CHOOSER}.getBoundingClientRect();return t.height>=48&&Math.round(t.width)===Math.round(c.width)})()`));await A.shot('form-'+width);await A.js(`document.querySelector('[name=announce]').checked=false`);}
+ await A.size(320);await A.js(`${CHOOSER}.options[1].textContent='${'Tournament preset with a very long name for a small phone x'.slice(0,60)}';${CHOOSER}.selectedIndex=1`);
+ check('a 60-character preset name fits 320',await A.js(`document.documentElement.scrollWidth<=320&&${CHOOSER}.getBoundingClientRect().right<=320`));
+ await A.js(`${CHOOSER}.options[1].textContent='Home set';${CHOOSER}.selectedIndex=0`);
  await A.size(390);
  check('the list starts with the pesos presets',JSON.stringify(await A.js(names))==='["Set later","Home set"]',await A.js(names));
  await A.js(`${CHOOSER}.selectedIndex=1`);await A.js(setUnit('chips'));
