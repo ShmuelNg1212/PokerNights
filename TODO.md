@@ -8,7 +8,7 @@
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
 
-## Phone checks (unreleased: `feat/table-rake-and-multi-host-live`)
+## Phone checks (released 2026-10-30 as `5a207e2`)
 
 - [ ] Group settings → Group rake account → Rake in settle-up: choose "Paid into the rake fund" and save.
 - [ ] Close a session with rake: each player's settle-up figure equals their standing; a "Rake fund" line with a brass R chip takes the rake; mark it paid.
