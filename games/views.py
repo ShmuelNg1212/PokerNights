@@ -82,7 +82,8 @@ def session_new(request, group_id):
             return redirect("night", night_id=session.night_id)
     context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset, "request_id": request_id,
                "told": services.announce_audience(actor.group_id, request.user.pk).count()}
-    response = render(request, "games/session_form.html", context)
+    # A refused form is a 422: Turbo draws only that over the form (static/js/turbo-setup.js).
+    response = render(request, "games/session_form.html", context, status=422 if request.method == "POST" else 200)
     response["Cache-Control"] = "no-store"  # Back must not bring the request ID of a session already made
     return response
 

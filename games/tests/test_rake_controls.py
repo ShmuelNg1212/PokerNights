@@ -53,7 +53,7 @@ class RakeControlsTests(TestCase):
     def test_active_errors_preserve_values_and_selected_mode_without_creating_session(self):
         for rate in ('', '0', '100', '5.001', 'NaN', 'oops'):
             page = self.client.post(self.create_url, {**self.data, 'rake_mode': 'percent', 'rake_percentage': rate})
-            self.assertEqual(page.status_code, 200)
+            self.assertEqual(page.status_code, 422)
             self.assertIn('rake_percentage', page.context['form'].errors)
             self.assertEqual(page.context['form']['rake_percentage'].value(), rate)
             self.assertEqual(page.context['form']['rake_mode'].value(), 'percent')

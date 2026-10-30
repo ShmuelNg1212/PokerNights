@@ -283,4 +283,4 @@ class CreateSessionOnceTests(TestCase):
         page = self.client.post(reverse("session_create", args=[self.group.pk]), {
             "table_id": self.table.pk, "game_date": "", "game_type": "nlh", "unit": "php", "small_blind": "10", "big_blind": "20",
             "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000", "request_id": request_id})
-        self.assertContains(page, f'name="request_id" value="{request_id}"')
+        self.assertContains(page, f'name="request_id" value="{request_id}"', status_code=422)

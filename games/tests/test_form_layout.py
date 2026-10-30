@@ -19,7 +19,7 @@ RAKE_NAMES = ["rake_mode", "rake_mode", "rake_mode", "rake_flat", "rake_percenta
 def control_names(page):
     """The names of the visible controls of the POST form, in document order."""
     html = page.content.decode()
-    form = html[html.index('<form method="post" class="form-section form-groups"'):]
+    form = html[re.search(r'<form method="post"[^>]*class="form-section form-groups"', html).start():]
     form = form[:form.index("</form>")]
     return [name for name in re.findall(r'<(?:input|select)[^>]*\bname="([^"]+)"', form)
             if name not in ("csrfmiddlewaretoken", "preset_id", "request_id")]

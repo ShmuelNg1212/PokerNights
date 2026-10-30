@@ -13,6 +13,7 @@
   // on <html>. The phone's own Back and Forward set nothing, so they keep the plain cross-fade.
   var root = document.documentElement, still = matchMedia("(prefers-reduced-motion: reduce)");
   var tapped = null, action = "advance", leaving = "", carried = [], change = 0;
+  var onward = ""; // the direction of the form that was accepted and is leaving this screen (data-go)
   document.addEventListener("turbo:click", function (event) { tapped = event.target.closest ? event.target.closest("a[href]") : null; going(tapped); });
   // The tapped link keeps its pressed look until its screen is drawn (app.css, "is-going"). A
   // link that is a button shows the busy line that a sent form shows.
@@ -81,12 +82,12 @@
   }
   function direct(newBody) {
     settle(); change += 1;
-    var link = tapped, from = document.getElementById("main"), to = newBody.querySelector("#main");
-    tapped = null;
+    var link = tapped, from = document.getElementById("main"), to = newBody.querySelector("#main"), told = onward;
+    tapped = null; onward = "";
     if (!document.startViewTransition || still.matches || action === "restore" || !from || !to) return;
     var a = depth(from), b = depth(to), go = null;
     if (a === null || b === null) return;
-    if (b > a) go = "deeper"; else if (b < a) go = "back";
+    if (told) go = told; else if (b > a) go = "deeper"; else if (b < a) go = "back";
     else if (from.dataset.tab && to.dataset.tab && from.dataset.tab !== to.dataset.tab) go = Number(to.dataset.tab) > Number(from.dataset.tab) ? "next" : "prev";
     // The same stats screen with another period, unit or order is not a change of screen. It is
     // swapped at once and stats.js moves what changed.
@@ -261,6 +262,12 @@
       return;
     }
     if (!sent) return;
+    // A form that says where it goes (data-go) leaves in the app. Turbo follows the redirect, and
+    // a refusal (422) is drawn over the form with what was typed. Anything else goes on below.
+    if (sent.dataset.go && (response.statusCode === 422 || (response.succeeded && response.redirected))) {
+      if (response.succeeded) onward = sent.dataset.go;
+      return;
+    }
     var samePage = new URL(response.location).pathname === window.location.pathname;
     if (response.succeeded && samePage) return;
     event.preventDefault();

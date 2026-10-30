@@ -18,7 +18,7 @@
   </div>
 </form>
 {% endif %}
-<form method="post" class="form-section form-groups" data-preset-target>
+<form method="post" data-turbo="true" data-go="deeper" class="form-section form-groups" data-preset-target>
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
   {% if preset %}<input type="hidden" name="preset_id" value="{{ preset.pk }}">{% endif %}

@@ -57,7 +57,7 @@ class InPlaceMarksTests(TestCase):
         # (nightlive.js), so they declare it; their forms still load a page.
         redrawn = (reverse("home"), reverse("group", args=[group.pk]))
         for url in (*redrawn, reverse("group", args=[group.pk]) + "?view=settings",
-                    reverse("session_create", args=[group.pk]), reverse("login")):
+                    reverse("login")):
             page = self.client.get(url, follow=True)
             self.assertEqual(self.marked(page), [], url)
             if url in redrawn:

@@ -165,8 +165,8 @@ class NewSessionOptionFormTests(TestCase):
 
     def test_a_preset_of_the_other_unit_is_refused_and_the_form_stays(self):
         page = self.post(chip_preset_id=self.preset("Chip set", "chips").pk, location="Kept place", announce="on")
-        self.assertContains(page, "uses another unit")
-        self.assertContains(page, 'value="Kept place"')
+        self.assertContains(page, "uses another unit", status_code=422)
+        self.assertContains(page, 'value="Kept place"', status_code=422)
         self.assertFalse(GameNight.objects.exists())
         self.assertFalse(Notice.objects.exists())
 
@@ -174,16 +174,24 @@ class NewSessionOptionFormTests(TestCase):
         preset = self.preset()
         services.archive_chip_preset(self.host, preset.pk, uuid.uuid4())
         page = self.post(chip_preset_id=preset.pk)
-        self.assertContains(page, "no longer available")
+        self.assertContains(page, "no longer available", status_code=422)
         self.assertFalse(GameNight.objects.exists())
 
     def test_a_bad_start_time_blocks_only_when_announcing(self):
         self.assertFalse(GameNight.objects.exists())
         page = self.post(announce="on", start_time="late")
-        self.assertContains(page, "Enter a valid time")
+        self.assertContains(page, "Enter a valid time", status_code=422)
         self.assertFalse(GameNight.objects.exists())
         self.post(start_time="late")
         self.assertIsNone(GameNight.objects.get().start_time)
+
+    def test_a_refused_form_is_a_422_and_an_accepted_one_redirects(self):
+        # Turbo draws a refusal over the form only when it is a 422, and follows the redirect.
+        self.assertEqual(self.post(announce="on", start_time="late").status_code, 422)
+        self.assertRedirects(self.post(), reverse("night", args=[GameNight.objects.get().pk]))
+
+    def test_the_form_leaves_in_the_app_and_goes_deeper(self):
+        self.assertContains(self.client.get(self.url), '<form method="post" data-turbo="true" data-go="deeper" class="form-section form-groups"')
 
     def test_a_double_tap_tells_nobody_twice(self):
         request_id = uuid.uuid4()
@@ -256,13 +264,13 @@ class NewSessionRetryTests(TestCase):
         first = make_preset(self.host, name="A first")
         chosen = make_preset(self.host, name="Z chosen")
         page = self.post(preset_id=chosen.pk, announce="on", start_time="late")
-        self.assertContains(page, f'name="preset_id" value="{chosen.pk}"')
-        self.assertNotContains(page, f'name="preset_id" value="{first.pk}"')
+        self.assertContains(page, f'name="preset_id" value="{chosen.pk}"', status_code=422)
+        self.assertNotContains(page, f'name="preset_id" value="{first.pk}"', status_code=422)
 
     def test_the_start_time_has_no_step_that_could_block_the_form_while_hidden(self):
         self.assertNotRegex(self.client.get(self.url).content.decode(), r'name="start_time"[^>]*step=')
 
     def test_a_chip_preset_field_is_refused_with_one_reason_for_a_bad_or_lost_preset(self):
         for value in ("9999", "not-a-number"):
-            self.assertContains(self.post(chip_preset_id=value), "no longer available")
+            self.assertContains(self.post(chip_preset_id=value), "no longer available", status_code=422)
         self.assertFalse(GameNight.objects.exists())
