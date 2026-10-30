@@ -16,7 +16,7 @@
 - [ ] Both hosts type a count for the same player: the second phone says "… saved ₱…".
 - [ ] One host finalizes and starts the next set: the other host's phone goes to the new set; a player's phone shows the notice.
 
-## Phone checks (not released: `fix/preset-fill-busy`)
+## Phone checks (released 2026-10-30 as `3889fce`)
 
 - [ ] Session → Chip values → choose a preset → Fill: the rows fill, and Fill goes back to its normal look and works again.
 
