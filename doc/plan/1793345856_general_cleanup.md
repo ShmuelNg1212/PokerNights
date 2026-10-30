@@ -20,7 +20,7 @@ One branch, `chore/general-cleanup`, from `main`. One commit per task.
 
 ### 1. Remove dead application code — `refactor:` — tests: alongside
 
-- [x] Delete `SettingsForm.general_fields` ([games/forms.py:101](../../games/forms.py#L101)).
+- [x] Delete `RakeForm.general_fields` (`SettingsForm` inherits it) ([games/forms.py:101](../../games/forms.py#L101)).
 - [x] Delete `playable_total` ([ledger/queries.py:53](../../ledger/queries.py#L53)).
 - [x] Delete `session_results` ([settlement/services.py:126](../../settlement/services.py#L126)).
 - [x] Remove the unused `NameForm` import from [games/views.py:18](../../games/views.py#L18).
@@ -51,9 +51,12 @@ Done when: `git status` is clean after Obsidian opens the vault; `ls test_db_*` 
 
 ## Rendezvous
 
-- [ ] SQLite suite passes; PostgreSQL suite passes before any release.
-- [ ] `/code-review` on the branch diff.
-- [ ] Render a set in play, a finalized session and the Stats tab before and after task 2; the HTML is the same and the CSS differs only by the removed rules.
+- [x] SQLite suite passes; PostgreSQL suite passes before any release. (2026-10-30: 1519 tests pass on both.)
+- [x] `/code-review` on the branch diff. (No bugs. Three small findings: a stray blank line in `web/tests/test_roster.py`, fixed; the wrong class name for `general_fields`, fixed here and in a study addendum; a possible gap in the seat-draw test after `other` went, not a gap, because `test_a_player_who_is_not_the_dealer_is_refused` checks it.)
+- [x] Task 2 changed no template, so the HTML cannot change. The check that could fail instead: each of the six class names occurs nowhere outside `app.css` and `doc/` (templates, scripts, Python, browser tests), and `git diff` of `app.css` holds only the ten removed lines.
+- [x] `uvx ruff check --select F` passes on the whole repo.
+
+Verified feature branch: `chore/general-cleanup`. The plan is frozen.
 
 ## Release
 

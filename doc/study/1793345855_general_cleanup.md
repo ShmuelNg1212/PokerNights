@@ -45,3 +45,7 @@ The `denomination-*` and `k1`–`k10` classes look unused to a plain search, but
 - `CashOutLine.initial_buy_in` is used only by a test. It is a small read property; it stays.
 - All file paths in the docs exist (template paths are relative to `templates/`).
 - The 20 feature switches in `config/settings.py` all default to on. The [switch cleanup plan](../plan/1791788388_switch_cleanup.md) decided on 2026-10-12 that switches which turn a feature off stay. This study does not change that; the plan asks the human again.
+
+## Addendum, 2026-10-30
+
+`general_fields` was defined on `RakeForm`, not on `SettingsForm`. `SettingsForm` inherits it. The finding is otherwise the same.
