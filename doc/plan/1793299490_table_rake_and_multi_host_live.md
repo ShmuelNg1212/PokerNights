@@ -80,8 +80,15 @@ Expected from the study; confirmed or dropped by Task 2.
 
 ## Rendezvous
 
-- Both test suites (SQLite, PostgreSQL), `code-review`, `security-review` (money logic changes).
-- On the local server: two hosts and one player count up, finalize and close one session. Settle-up equals the standings.
+Checks recorded 2026-10-30. The plan is frozen after this.
+
+- [x] Django suite: SQLite 1,519 tests OK (17 skipped); PostgreSQL 1,519 OK.
+- [x] `settlement/tests/test_rake_fund.py` (15, written first): the example from question 1, fee-only losses, several sets, chips, no rake, a closed list keeps its rule, mark paid and Undo, no carry, the database constraint, the settings form (a player is refused), the page names the Rake fund.
+- [x] Browser `multi_host.mjs`: 29/29. Before the fixes 16/21. Each change by the other host reaches this host in 0.6–1.9 s, also while a count field has focus. The absorber check fails (28/29) with the earlier `turbo-setup.js`, so it tests the fix.
+- [x] Regression browser checks on fresh seeds: `end_set.mjs` 47/47 (same as on the committed code), `rack_accessibility.mjs` 13/13.
+- [x] `code-review` (medium): 9 findings. Fixed: a changed select reset by a poll (money: the override absorber), the move to the next set over a form in use, a repeated screen-reader announcement, the fund's colour on the share card, an unlocked read of the rake rule on close, two constants with one name. Kept, with reasons: no `request_id` on the rule change (an absolute, idempotent setting, as `rename_group` and `set_role`); one extra query on an open session page with rake (query-count limits hold); the note also shows for an older count (its words stay true).
+- [x] `security-review`: no finding at confidence 8 or more. Writes are host-gated in the service and resolved through membership; the new form carries CSRF; new text reaches the page autoescaped or by `textContent`.
+- [ ] Not done here: a real phone. See TODO.md.
 
 ## Release
 
