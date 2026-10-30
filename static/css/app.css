@@ -111,7 +111,7 @@ p { margin: 0.5rem 0; }
 
 /* Forms */
 label { display: block; font-weight: 600; margin-bottom: 4px; }
-input[type="text"], input[type="password"], input[type="number"], input[type="date"],
+input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"],
 input[type="datetime-local"], input[type="email"], select, textarea {
   width: 100%; min-height: var(--tap); padding: 8px 12px; border-radius: var(--r-field);
   border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit;
@@ -935,15 +935,15 @@ body:has(.site-header) .entry-page { min-height: calc(100dvh - 69px); }
 .heading-count { margin-left: var(--s-2); font-weight: 500; white-space: nowrap; }
 
 /* One field box for every form: text, date and select share edges, height and text inset on every engine. */
-input[type="text"], input[type="password"], input[type="number"], input[type="date"],
+input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"],
 input[type="datetime-local"], input[type="email"], select, textarea {
   -webkit-appearance: none; appearance: none; display: block; min-width: 0; margin: 0;
   line-height: 1.4; text-align: left;
 }
 /* iOS draws a date input at its own width with a centred value, and shorter when empty. */
-input[type="date"], input[type="datetime-local"] { height: var(--tap); }
-input[type="date"]::-webkit-date-and-time-value, input[type="datetime-local"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; margin: 0; }
-input[type="date"]::-webkit-datetime-edit, input[type="datetime-local"]::-webkit-datetime-edit { padding: 0; }
+input[type="date"], input[type="time"], input[type="datetime-local"] { height: var(--tap); }
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value, input[type="datetime-local"]::-webkit-date-and-time-value { text-align: left; min-height: 1.4em; margin: 0; }
+input[type="date"]::-webkit-datetime-edit, input[type="time"]::-webkit-datetime-edit, input[type="datetime-local"]::-webkit-datetime-edit { padding: 0; }
 select {
   padding-right: 44px; text-overflow: ellipsis;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b4a997' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -971,6 +971,12 @@ legend { padding: 0; }
 .rake-settings:has([name="rake_mode"][value="off"]:checked) .field,
 .rake-settings:has([name="rake_mode"][value="flat"]:checked) .field:has([name="rake_percentage"]),
 .rake-settings:has([name="rake_mode"][value="percent"]:checked) .field:has([name="rake_flat"]) { display: none; }
+/* New session: the start time belongs to the announcement, so it is on the page only with the box ticked. Both stay in the form. */
+.session-options > .check { margin-top: 12px; }
+.session-options > .group-title + .check { margin-top: 0; }
+.form-group.session-options > .check + .hint { margin: 0; }
+.session-options > .hint + .field { margin-top: 12px; }
+.session-options:has([name="announce"]:not(:checked)) .field:has([name="start_time"]) { display: none; }
 /* New session: the preset is a group like the ones under it. With setup.js a choice fills the stakes at once and "Use" goes. */
 .form-page .preset-group { margin-bottom: 0; padding-bottom: 0; }
 .form-page .preset-group + .form-groups { margin-top: 0; padding-top: 0; }

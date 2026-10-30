@@ -24,7 +24,7 @@
       {% if reopening %}{% include "web/_correction.html" with record=reopening lead="Reopened." %}{% endif %}
       {% if board and before_play %}{% if night.start_time %}<p class="felt-hint">Starts {{ night.start_time|time:"g:i A" }}.</p>{% endif %}
       {% elif not me.is_host %}<p class="felt-hint">Who pays whom comes when the host settles up.</p>{% endif %}
-      {% if latest_set %}<p><a class="btn btn-primary btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
+      {% if latest_set %}<p><a class="btn{% if not announce or latest_set.state != 'setup' %} btn-primary{% endif %} btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
       {% if total_rake %}<dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>{% endif %}
       {% if my_standing %}
       <div class="night-mine">

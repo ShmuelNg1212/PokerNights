@@ -299,3 +299,7 @@ Since the front door second pass (2026-10-17, [plan](../../../doc/plan/179225053
 ## Past-session filters and a corrected end time
 
 Seed a fresh temporary database with `seed_past_filters.py` alone, serve it on 127.0.0.1:8765, then run `node web/tests/browser/past_filters.mjs`. The seed writes `/private/tmp/pn-past-filters-manifest.json`. Player `ben` has a settled night, a night with money still to pay and a night he missed. Host `hana` has a set counting up. The script checks the three chips at 320, 390 and 1280 px: counts, 48 px targets, no overflow, the rows each chip keeps, the URL and a filtered address without JavaScript. Then the host opens "Wrong end time?", moves the end 30 minutes earlier, and the script checks the toast, the new value, the log line and that a player does not see the control. The correction is a real write. Reset the database before a repeat. Expected: 39 checks.
+
+## New session options
+
+Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_options.mjs`. It has 25 checks: the options at 320, 390 and 1280 px, the list that follows the unit, a refusal, a session a player cannot see, and an announced session that the player sees. It creates sessions, so reset the database before a repeat.

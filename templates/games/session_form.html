@@ -32,6 +32,13 @@
   {% include "games/_game_fields.html" %}
   {% include "games/_stakes_fields.html" %}
   {% include "games/_rake_fields.html" %}
+  <section class="form-group session-options" aria-labelledby="group-options">
+    <h2 class="group-title" id="group-options">When it is created</h2>
+    {% if form.offers_chip_presets %}{% include "partials/field.html" with field=form.chip_preset_id %}{% endif %}
+    <label class="check" for="{{ form.announce.id_for_label }}">{{ form.announce }}<span class="grow">{{ form.announce.label }}</span></label>
+    <p class="hint">{{ told }} player{{ told|pluralize }} with a login get{{ told|pluralize:"s," }} a notice. Seats come from the table.</p>
+    {% include "partials/field.html" with field=form.start_time %}
+  </section>
   <button type="submit" class="btn btn-primary btn-block">Create session</button>
 </form>
 {% endblock %}

@@ -150,19 +150,60 @@ class SettingsForm(RakeForm):
             self.fields["rake_mode"].help_text = "Rake is locked because buy-ins or cash-outs are recorded. Default opening buy-ins also lock the rule. Choose rake before starting the next set."
 
 
+class ChipPresetSelect(forms.Select):
+    """Each option names its preset's unit, so the list can follow the Unit field (static/js/setup.js)."""
+
+    units = {}
+
+    def create_option(self, name, value, *args, **kwargs):
+        option = super().create_option(name, value, *args, **kwargs)
+        if str(value) in self.units:
+            option["attrs"]["data-unit"] = self.units[str(value)]
+        return option
+
+
 class SessionForm(RakeForm):
     table_id = forms.ChoiceField(label="Table")
     game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
     location = forms.CharField(label="Location", max_length=120, required=False)
     game_type = forms.ChoiceField(label="Poker variant", choices=GameType.choices)
     unit = unit_field()
+    chip_preset_id = forms.ChoiceField(
+        label="Chip values", required=False, widget=ChipPresetSelect,
+        error_messages={"invalid_choice": "That chip preset is no longer available. Choose another."},
+    )
+    announce = forms.BooleanField(label="Announce to the group", required=False)
+    start_time = forms.TimeField(
+        label="Start time (optional)", required=False,
+        widget=forms.TimeInput(format="%H:%M", attrs={"type": "time", "step": 300}),
+    )
 
     field_order = ["table_id", "game_date", "location", "game_type", "unit"]
 
-    def __init__(self, *args, tables=(), **kwargs):
+    def __init__(self, *args, tables=(), chip_presets=(), **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["table_id"].choices = [(table.pk, f"{table.name} ({table.seat_count} seats)") for table in tables]
         self.fields["game_date"].initial = timezone.localdate
+        # The field stays without presets: a preset archived after the page loaded is refused, not dropped.
+        self.offers_chip_presets = bool(chip_presets)
+        self.fields["chip_preset_id"].choices = [("", "Set later")] + [
+            (preset.pk, f"{preset.name} (Chips)" if preset.unit == Unit.CHIPS else preset.name) for preset in chip_presets
+        ]
+        self.fields["chip_preset_id"].widget.units = {str(preset.pk): preset.unit for preset in chip_presets}
 
     def clean_table_id(self):
         return int(self.cleaned_data["table_id"])
+
+    def clean_chip_preset_id(self):
+        return int(self.cleaned_data["chip_preset_id"]) if self.cleaned_data["chip_preset_id"] else None
+
+    def clean(self):
+        cleaned = super().clean()
+        # At the top of the form, like the service's refusal: the field is off the page when no preset is left.
+        for error in self.errors.pop("chip_preset_id", []):
+            self.add_error(None, error)
+        # A start time belongs to the announcement. Without one it is off the page, so it cannot block a save.
+        if not cleaned.get("announce"):
+            cleaned["start_time"] = None
+            self.errors.pop("start_time", None)
+        return cleaned

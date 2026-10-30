@@ -27,4 +27,21 @@
     root.classList.add("preset-fills");
     return function () { select.removeEventListener("change", fill); root.classList.remove("preset-fills"); };
   });
+
+  // The chip preset list shows only the presets of the chosen unit. Options leave the list, because iOS shows a hidden one.
+  window.pokerPage.register(function () {
+    var form = document.querySelector("[data-preset-target]");
+    var chooser = form && form.elements.chip_preset_id, unit = form && form.elements.unit;
+    if (!chooser || !unit) return;
+    var all = Array.prototype.slice.call(chooser.options);
+    function follow() {
+      var chosen = chooser.value, fitting = all.filter(function (option) { return !option.dataset.unit || option.dataset.unit === unit.value; });
+      chooser.replaceChildren.apply(chooser, fitting);
+      chooser.value = fitting.some(function (option) { return option.value === chosen; }) ? chosen : "";
+      chooser.closest(".field").hidden = fitting.length < 2;
+    }
+    unit.addEventListener("change", follow);
+    follow();
+    return function () { unit.removeEventListener("change", follow); chooser.replaceChildren.apply(chooser, all); };
+  });
 })();

@@ -1178,6 +1178,11 @@ def _fill_seats(night, actor_user, first) -> None:
         _seat_rsvp(night, row, actor_user, first)
 
 
+def announce_audience(group_id, user_id):
+    """Who an announcement by this user tells: each other active member with a login."""
+    return Member.objects.filter(group_id=group_id, status=Member.Status.ACTIVE, user__isnull=False).exclude(user_id=user_id)
+
+
 @transaction.atomic
 def announce_night(night_id, actor: Member, *, start_time=None, seat_limit=None) -> GameNight:
     """Make a draft session visible to players and tell each member with a login. A repeated tap changes nothing."""
@@ -1197,9 +1202,7 @@ def announce_night(night_id, actor: Member, *, start_time=None, seat_limit=None)
         "night.announced", actor=actor.user, group_id=night.group_id, session_id=first.pk, target=night,
         summary=f"Announced {night} with {night.seat_limit} seats",
     )
-    users = Member.objects.filter(
-        group_id=night.group_id, status=Member.Status.ACTIVE, user__isnull=False
-    ).exclude(user_id=actor.user_id).values_list("user_id", flat=True)
+    users = announce_audience(night.group_id, actor.user_id).values_list("user_id", flat=True)
     notify.tell_night(
         list(users), group_id=night.group_id, night_id=night.pk, session_id=first.pk, kind="announced",
         title=f"{night.table.name} · {_rsvp_when(night)}", body=f"{actor.display_name} is getting a game together. Are you in?",

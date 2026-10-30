@@ -34,10 +34,10 @@ class FormLayoutTests(TestCase):
 
     def test_new_session_groups_and_order(self):
         page = self.client.get(self.new_url)
-        self.assertEqual(control_names(page), ["table_id", "game_date", "location", "game_type", "unit", *STAKES_NAMES, *RAKE_NAMES])
+        self.assertEqual(control_names(page), ["table_id", "game_date", "location", "game_type", "unit", *STAKES_NAMES, *RAKE_NAMES, "announce", "start_time"])
         html = page.content.decode()
         titles = re.findall(r'class="group-title"[^>]*>([^<]+)<', html)
-        self.assertEqual(titles, ["Start from a preset", "When and where", "Game", "Stakes", "Rake per buy-in"])
+        self.assertEqual(titles, ["Start from a preset", "When and where", "Game", "Stakes", "Rake per buy-in", "When it is created"])
         self.assertEqual(html.count('class="field-pair'), 3)
         # The Unit help already says what an amount is; the Stakes group does not repeat it.
         self.assertNotContains(page, "Type each amount")
