@@ -95,9 +95,9 @@ class ChipPresetTests(TestCase):
         with self.assertRaises(NotAllowed):
             services.archive_chip_preset(player, preset.pk, uuid.uuid4())
         _, other_host = make_group('olga', 'Other')
-        with self.assertRaisesRegex(RuleError, 'not in this group'):
+        with self.assertRaisesRegex(RuleError, 'no longer available'):
             self.save(actor=other_host, preset_id=preset.pk, name='Taken')
-        with self.assertRaisesRegex(RuleError, 'not in this group'):
+        with self.assertRaisesRegex(RuleError, 'no longer available'):
             services.archive_chip_preset(other_host, preset.pk, uuid.uuid4())
         preset.refresh_from_db()
         self.assertEqual((preset.name, preset.archived_at), ('Home set', None))

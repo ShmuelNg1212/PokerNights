@@ -168,14 +168,11 @@ class SessionForm(RakeForm):
     location = forms.CharField(label="Location", max_length=120, required=False)
     game_type = forms.ChoiceField(label="Poker variant", choices=GameType.choices)
     unit = unit_field()
-    chip_preset_id = forms.ChoiceField(
-        label="Chip values", required=False, widget=ChipPresetSelect,
-        error_messages={"invalid_choice": "That chip preset is no longer available. Choose another."},
-    )
+    chip_preset_id = forms.CharField(label="Chip values", required=False, widget=ChipPresetSelect)
     announce = forms.BooleanField(label="Announce to the group", required=False)
     start_time = forms.TimeField(
         label="Start time (optional)", required=False,
-        widget=forms.TimeInput(format="%H:%M", attrs={"type": "time", "step": 300}),
+        widget=forms.TimeInput(format="%H:%M", attrs={"type": "time"}),
     )
 
     field_order = ["table_id", "game_date", "location", "game_type", "unit"]
@@ -184,9 +181,8 @@ class SessionForm(RakeForm):
         super().__init__(*args, **kwargs)
         self.fields["table_id"].choices = [(table.pk, f"{table.name} ({table.seat_count} seats)") for table in tables]
         self.fields["game_date"].initial = timezone.localdate
-        # The field stays without presets: a preset archived after the page loaded is refused, not dropped.
         self.offers_chip_presets = bool(chip_presets)
-        self.fields["chip_preset_id"].choices = [("", "Set later")] + [
+        self.fields["chip_preset_id"].widget.choices = [("", "Set later")] + [
             (preset.pk, f"{preset.name} (Chips)" if preset.unit == Unit.CHIPS else preset.name) for preset in chip_presets
         ]
         self.fields["chip_preset_id"].widget.units = {str(preset.pk): preset.unit for preset in chip_presets}
@@ -195,13 +191,12 @@ class SessionForm(RakeForm):
         return int(self.cleaned_data["table_id"])
 
     def clean_chip_preset_id(self):
-        return int(self.cleaned_data["chip_preset_id"]) if self.cleaned_data["chip_preset_id"] else None
+        # The service alone refuses a preset, so one archived after the page loaded is refused, not dropped.
+        value = self.cleaned_data["chip_preset_id"]
+        return None if not value else int(value) if value.isdecimal() else -1
 
     def clean(self):
         cleaned = super().clean()
-        # At the top of the form, like the service's refusal: the field is off the page when no preset is left.
-        for error in self.errors.pop("chip_preset_id", []):
-            self.add_error(None, error)
         # A start time belongs to the announcement. Without one it is off the page, so it cannot block a save.
         if not cleaned.get("announce"):
             cleaned["start_time"] = None

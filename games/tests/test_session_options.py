@@ -8,7 +8,7 @@ from django.urls import reverse
 from audit.models import AuditEvent
 from games import services
 from games.models import GameNight
-from games.tests.helpers import make_session, make_table
+from games.tests.helpers import make_preset, make_session, make_table
 from groups.errors import NotAllowed, RuleError
 from groups.tests.helpers import add_player, make_group
 from notify.models import Notice
@@ -222,3 +222,47 @@ class SessionPageLeadTests(TestCase):
     def test_an_open_set_keeps_its_primary_button(self):
         session = make_session(self.host, state="open")
         self.assertIn(self.lead(session).format(" btn-primary"), self.page(session))
+
+
+class NewSessionRetryTests(TestCase):
+    """What a host meets on going back to the form, or after a refusal."""
+
+    def setUp(self):
+        self.group, self.host = make_group()
+        add_player(self.group, "ben")
+        self.table = make_table(self.host)
+        self.url = reverse("session_create", args=[self.group.pk])
+        self.client.force_login(self.host.user)
+
+    def post(self, **options):
+        return self.client.post(self.url, {
+            "table_id": self.table.pk, "game_date": "2026-10-09", "game_type": "nlh", "unit": "php", "small_blind": "10",
+            "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000", **options,
+        })
+
+    def test_the_form_is_never_restored_with_a_used_request_id(self):
+        page = self.client.get(self.url)
+        self.assertIn("no-store", page["Cache-Control"])
+        self.assertNotEqual(page.context["request_id"], self.client.get(self.url).context["request_id"])
+
+    def test_a_repeat_says_announced_only_when_the_session_is_announced(self):
+        request_id = uuid.uuid4()
+        self.post(request_id=request_id)
+        response = self.post(request_id=request_id, announce="on")
+        self.assertIsNone(GameNight.objects.get().announced_at)
+        self.assertNotContains(self.client.get(response["Location"]), "Announced. Players can answer now.")
+
+    def test_a_refused_form_keeps_the_stakes_preset_it_was_filled_from(self):
+        first = make_preset(self.host, name="A first")
+        chosen = make_preset(self.host, name="Z chosen")
+        page = self.post(preset_id=chosen.pk, announce="on", start_time="late")
+        self.assertContains(page, f'name="preset_id" value="{chosen.pk}"')
+        self.assertNotContains(page, f'name="preset_id" value="{first.pk}"')
+
+    def test_the_start_time_has_no_step_that_could_block_the_form_while_hidden(self):
+        self.assertNotRegex(self.client.get(self.url).content.decode(), r'name="start_time"[^>]*step=')
+
+    def test_a_chip_preset_field_is_refused_with_one_reason_for_a_bad_or_lost_preset(self):
+        for value in ("9999", "not-a-number"):
+            self.assertContains(self.post(chip_preset_id=value), "no longer available")
+        self.assertFalse(GameNight.objects.exists())

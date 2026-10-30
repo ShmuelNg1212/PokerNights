@@ -46,11 +46,19 @@ try{
  await A.js(setUnit('php'));await A.js(`document.querySelector('[name=preset]').selectedIndex=0;document.querySelector('[name=preset]').dispatchEvent(new Event('change',{bubbles:true}))`);
  check('a stakes preset does not choose a chip preset',await A.js(`${CHOOSER}.value===''`));
  // Without the options: hidden from the player
- await A.js(submit);await A.settle();
+ const usedId=await A.js(`${FORM}.elements.request_id.value`);
+ await A.js(`(()=>{const a=document.querySelector('[name=announce]'),t=document.querySelector('[name=start_time]');a.checked=true;t.value='20:33';a.checked=false})()`);
+ await A.js(`${FORM}.querySelector('[type=submit]').click()`);await A.settle();
  const plain=await A.js('location.pathname');
+ check('a start time left behind does not block the button',/^\/n\/\d+\/$/.test(plain),plain);
  check('creating lands on the session page with both cards',/^\/n\/\d+\/$/.test(plain)&&await A.js(`!!document.querySelector('#announce')&&!!document.querySelector('.session-chip-values')`),plain);
  check('Announce is the one primary action',await A.js(`document.querySelectorAll('main .btn-primary').length===1&&document.querySelector('main .btn-primary').textContent.trim()==='Announce to the group'`),await A.js(`[...document.querySelectorAll('main .btn-primary')].map(b=>b.textContent.trim())`));
  check('the Announce card start time is a 48px field',await A.js(`document.querySelector('#announce-time').getBoundingClientRect().height>=48`));await A.shot('session-page');
+ await send('Page.navigate',{url:BASE+'/'},A.s);await A.settle();
+ await A.go(NEW);const freshId=await A.js(`${FORM}.elements.request_id.value`);
+ const hist=await send('Page.getNavigationHistory',{},A.s);await send('Page.navigateToHistoryEntry',{entryId:hist.entries[hist.currentIndex-1].id},A.s);await A.settle();
+ await send('Page.navigateToHistoryEntry',{entryId:hist.entries[hist.currentIndex].id},A.s);await A.settle();
+ check('going back to the form gives a new request ID',await A.js(`${FORM}.elements.request_id.value`)!==freshId&&freshId!==usedId);
  await B.go(plain);check('a session without the options stays hidden from the player',await B.js(`document.title.includes('Not found')||!document.querySelector('.night-layout')`));
  // A refusal: the chips preset on a pesos game, as a page without the script could send it
  await A.go(NEW);const chipsId=await A.js(`(()=>{const c=document.createElement('option');return fetch(location.href).then(r=>r.text()).then(t=>new DOMParser().parseFromString(t,'text/html').querySelector('option[data-unit=chips]').value)})()`);

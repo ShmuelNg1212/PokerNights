@@ -223,22 +223,20 @@ def create_session(actor: Member, data: dict) -> GameSession:
         "session.created", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=f"Created a session at {table.name} for {session.game_date:%Y-%m-%d} (set 1)",
     )
-    if _apply_new_session_options(night, actor, data):
-        session.refresh_from_db()
+    _apply_new_session_options(night, actor, data)
+    session.refresh_from_db()
     return session
 
 
-def _apply_new_session_options(night, actor: Member, data: dict) -> bool:
+def _apply_new_session_options(night, actor: Member, data: dict) -> None:
     """What the host chose on New session. A refusal undoes the new session, and players are told only after commit."""
-    chip_preset_id, announce = data.get("chip_preset_id"), data.get("announce")
-    if chip_preset_id:
-        preset = _own_chip_preset(actor.group, chip_preset_id)
+    if data.get("chip_preset_id"):
+        preset = _own_chip_preset(actor.group, data["chip_preset_id"])
         if preset.unit != night.unit:
             raise RuleError("That chip preset uses another unit. Choose one for this session's unit.")
         set_chip_values(night.pk, actor, preset.values, uuid.uuid4(), revision=night.chip_values_revision, preset=preset.name)
-    if announce:
+    if data.get("announce"):
         announce_night(night.pk, actor, start_time=data.get("start_time"))
-    return bool(chip_preset_id or announce)
 
 
 @transaction.atomic
@@ -1381,7 +1379,7 @@ def chip_presets_for(group, unit=None):
 def _own_chip_preset(group, preset_id) -> ChipPreset:
     preset = ChipPreset.objects.filter(group=group, pk=preset_id, archived_at__isnull=True).first()
     if preset is None:
-        raise RuleError("That chip preset is not in this group.")
+        raise RuleError("That chip preset is no longer available. Choose another.")
     return preset
 
 

@@ -60,8 +60,10 @@ def session_new(request, group_id):
     require_host(actor)
     tables = Table.objects.filter(group=actor.group, archived_at__isnull=True).select_related("default_preset")
     presets = SettingsPreset.objects.filter(group=actor.group, archived_at__isnull=True)
-    preset = presets.filter(pk=request.GET.get("preset") or 0).first()
-    if preset is None and not request.GET.get("preset"):
+    # A refused form keeps the preset it was filled from: the script chose it without a reload.
+    asked = request.POST.get("preset_id") or request.GET.get("preset")
+    preset = presets.filter(pk=asked or 0).first()
+    if preset is None and not asked:
         preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
     initial = {"game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else {}
     form = SessionForm(request.POST or None, initial=initial, tables=tables, chip_presets=services.chip_presets_for(actor.group))
@@ -72,13 +74,17 @@ def session_new(request, group_id):
         p.fill = json.dumps({"game_type": p.game_type, "unit": p.unit, **{name: money.plain_amount(value, p.unit) for name, value in p.stakes().items()}})
     if request.method == "POST" and form.is_valid():
         data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None, "request_id": request_id}
-        session = attempt_bound(request, form, services.create_session, actor, data,
-                                success="Announced. Players can answer now." if data["announce"] else "")
+        session = attempt_bound(request, form, services.create_session, actor, data)
         if session is not None:
+            # From the session, not the form: a repeated request can carry a tick that changed nothing.
+            if data["announce"] and session.night.announced_at is not None:
+                messages.success(request, "Announced. Players can answer now.")
             return redirect("night", night_id=session.night_id)
     context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset, "request_id": request_id,
                "told": services.announce_audience(actor.group_id, request.user.pk).count()}
-    return render(request, "games/session_form.html", context)
+    response = render(request, "games/session_form.html", context)
+    response["Cache-Control"] = "no-store"  # Back must not bring the request ID of a session already made
+    return response
 
 
 def session_settings(request, session_id):
