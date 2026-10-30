@@ -91,7 +91,7 @@ class FormLayoutTests(TestCase):
         response = self.client.post(self.new_url, data)
         night = GameNight.objects.get()
         session = night.sets.get()
-        self.assertRedirects(response, reverse("session", args=[session.pk]))
+        self.assertRedirects(response, reverse("night", args=[night.pk]))
         settings = session.settings_versions.get()
         self.assertEqual((night.location, night.unit, str(night.game_date)), ("Miguel's place", "php", "2026-10-09"))
         self.assertEqual((settings.rake_mode, settings.rake_basis_points), ("percent", 500))

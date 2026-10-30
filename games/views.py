@@ -73,7 +73,7 @@ def session_new(request, group_id):
         data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None}
         session = attempt_bound(request, form, services.create_session, actor, data)
         if session is not None:
-            return redirect("session", session_id=session.pk)
+            return redirect("night", night_id=session.night_id)
     context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset}
     return render(request, "games/session_form.html", context)
 

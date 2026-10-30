@@ -50,10 +50,13 @@ try {
   check('a refused percentage shows its field and message', await js(`location.pathname==='/g/1/sessions/new/'&&getComputedStyle(document.querySelector('[name=rake_percentage]').closest('.field')).display!=='none'&&!!document.querySelector('[name=rake_percentage]').closest('.field').querySelector('.errors')`));
   await shot('new-session-error');
   await js(`document.querySelector('[name=rake_mode][value=off]').click();document.querySelector('.form-groups [type=submit]').click()`); await settle();
+  const nightPath = await js('location.pathname'); check('creating lands on the session page', /^\/n\/\d+\/$/.test(nightPath) && (await js(`!!document.querySelector('#announce')&&!!document.querySelector('.session-chip-values')`)), nightPath);
+  await go(await js(`document.querySelector('a.set-link').getAttribute('href')`));
   const setPath = await js('location.pathname'); check('the session is created with the chips preset', /^\/s\/\d+\/$/.test(setPath) && (await js(`document.body.textContent.includes('1,000,000 chips')`)), setPath);
   await shot('set-draft-chips');
   // Draft set (pesos one made earlier by the seed is not a draft; make another)
   await go('/g/1/sessions/new/'); await js(`document.querySelector('.form-groups [type=submit]').click()`); await settle();
+  await go(await js(`document.querySelector('a.set-link').getAttribute('href')`));
   const draft = await js('location.pathname'); await shot('set-draft');
   const facts = await js(`[...document.querySelectorAll('.prep-line .fact')].map(e=>{const r=e.getClientRects();return r.length})`);
   check('no fact of the stakes line breaks inside', facts.length === 3 && facts.every(n => n === 1), facts);

@@ -179,9 +179,20 @@ class SessionViewTests(TestCase):
             "preset_id": self.preset.pk,
         })
         session = GameSession.objects.get()
-        self.assertRedirects(response, reverse("session", args=[session.pk]))
+        self.assertRedirects(response, reverse("night", args=[session.night_id]))
         self.assertEqual((session.game_type, session.location, str(session.game_date)), ("plo", "Miguel's place", "2026-10-09"))
         self.assertContains(self.client.get(reverse("session", args=[session.pk])), "Open for players")
+
+    def test_after_creating_the_host_can_announce_and_set_chip_values(self):
+        self.client.force_login(self.host.user)
+        page = self.client.post(reverse("session_create", args=[self.group.pk]), {
+            "table_id": self.table.pk, "game_date": "2026-10-09", "game_type": "nlh", "small_blind": "10",
+            "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000",
+        }, follow=True)
+        session = GameSession.objects.get()
+        self.assertContains(page, reverse("night_announce", args=[session.night_id]))
+        self.assertContains(page, reverse("chip_values", args=[session.night_id]))
+        self.assertContains(page, reverse("session", args=[session.pk]))
 
     def test_draft_is_hidden_from_players_until_opened(self):
         session = make_session(self.host, table=self.table)

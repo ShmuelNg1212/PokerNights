@@ -1,6 +1,6 @@
 # Session setup menu: plan
 
-Date: 2026-10-30. Mode: mixed. Status: awaiting approval.
+Date: 2026-10-30. Mode: mixed. Status: approved 2026-10-30; in execution.
 
 Study: [session setup menu](../study/1793347607_session_setup_menu.md). Branch: `feat/session-setup-menu`.
 
@@ -8,10 +8,12 @@ Skills: `tdd` for T1 to T3. `/impeccable` for T4, with DESIGN.md's tokens. `code
 
 ## OPEN QUESTIONS
 
-1. **Where do the two options live?** Recommended: on New session only, chosen for each session, both off by default. The alternative is also a saved group default.
-2. **What does automatic announce ask for?** Recommended: a tick box, and a start time that shows when the box is ticked. Seats come from the table. The host can change seats on the "Who's coming" card.
-3. **Which button leads on the session page before set 1 opens?** Recommended: "Announce to the group" is primary, and "Open set 1" is neutral until the session is announced. After that, "Open set 1" is primary again.
-4. **ADR change.** ADR 0005 says a new session starts without chip values. Recommended: a new session starts without chip values unless the host selects a chip preset on New session. Approval of this plan approves ADR 0008 and the spec edit in T5.
+None. The human approved each recommendation on 2026-10-30:
+
+1. The two options live on New session only. They are chosen for each session and are off by default.
+2. Automatic announce is a tick box, and a start time that shows when the box is ticked. Seats come from the table. The host can change seats on the "Who's coming" card.
+3. Before set 1 opens, "Announce to the group" is primary and "Open set 1" is neutral until the session is announced. After that, "Open set 1" is primary.
+4. A new session starts without chip values unless the host selects a chip preset on New session. ADR 0008 and the spec edit in T5 record this.
 
 ## Decisions that follow
 
@@ -26,8 +28,8 @@ Skills: `tdd` for T1 to T3. `/impeccable` for T4, with DESIGN.md's tokens. `code
 
 `tests: alongside`
 
-- [ ] `session_new` redirects to `night`.
-- [ ] Update `games/tests/test_sessions.py`, `games/tests/test_form_layout.py` and the browser scripts that continue after creation.
+- [x] `session_new` redirects to `night`.
+- [x] Update `games/tests/test_sessions.py`, `games/tests/test_form_layout.py` and the browser scripts that continue after creation.
 
 Acceptance: A host who selects Create session lands on the session page. The page shows the Announce card and the Chip values card.
 
