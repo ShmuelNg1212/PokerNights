@@ -8,7 +8,7 @@
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
 
-## Phone checks (not released: `fix/session-create-motion`)
+## Phone checks (released 2026-10-30 as `e08693f`)
 
 - [ ] New session → Create session: the screen shifts to the session page, as when you tap into a session, with no blank load.
 
