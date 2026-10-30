@@ -164,12 +164,18 @@ def session_standings(night: GameNight, rows=None) -> list:
 
 
 # The rake fund's key among the parties of a settle-up. No member has this key.
-RAKE_FUND = 0
+RAKE_FUND_KEY = 0
 
 
-def rake_to_fund(night) -> bool:
-    """Whether the group settles collected rake into its rake fund (the group's current choice)."""
-    choice = GroupRakeAccount.objects.filter(group_id=night.group_id).values_list("settlement", flat=True).first()
+def rake_to_fund(night, *, lock=False) -> bool:
+    """Whether the group settles collected rake into its rake fund (the group's current choice).
+
+    ``lock`` holds the account row, so a close and a change of the choice happen one after the other.
+    """
+    accounts = GroupRakeAccount.objects.filter(group_id=night.group_id)
+    if lock:
+        accounts = accounts.select_for_update()
+    choice = accounts.values_list("settlement", flat=True).first()
     return choice == GroupRakeAccount.Settlement.FUND
 
 
@@ -177,7 +183,7 @@ def settlement_balances(night, rows=None, *, to_fund=False):
     """Remaining balances. By default each player gets back the fee already collected at buy-in.
 
     With ``to_fund`` each player settles their result as it stands, and the rake fund (key
-    ``RAKE_FUND``, last) receives the session's collected rake.
+    ``RAKE_FUND_KEY``, last) receives the session's collected rake.
     """
     totals, rake = {}, 0
     for row in result_rows(night) if rows is None else rows:
@@ -185,7 +191,7 @@ def settlement_balances(night, rows=None, *, to_fund=False):
         rake += row.rake_total
     parties = list(totals.items())
     if to_fund and rake:
-        parties.append((RAKE_FUND, rake))
+        parties.append((RAKE_FUND_KEY, rake))
     return parties
 
 
@@ -260,7 +266,7 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     if not any(s.state == State.FINALIZED for s in sets):
         raise RuleError("No set of this session is finalized, so there is nothing to settle.")
 
-    to_fund = rake_to_fund(night)
+    to_fund = rake_to_fund(night, lock=True)
     parties = settlement_balances(night, to_fund=to_fund)
     if sum(net for _, net in parties) != 0:
         raise ledger.LedgerInvariantError(f"Session {night.pk}: the results of its sets do not sum to zero.")
@@ -293,7 +299,7 @@ def close_night(night_id, actor: Member, carry_ids=()) -> SettlementPlan:
     Transfer.objects.bulk_create(
         Transfer(
             plan=plan, position=position, payer_id=payer, amount=amount,
-            payee_id=None if payee == RAKE_FUND else payee, to_rake_fund=payee == RAKE_FUND,
+            payee_id=None if payee == RAKE_FUND_KEY else payee, to_rake_fund=payee == RAKE_FUND_KEY,
         )
         for position, (payer, payee, amount) in enumerate(transfers, start=1)
     )

@@ -42,8 +42,10 @@
     }
     function rule(y, fill) { ctx.fillStyle = fill || C.rule; ctx.fillRect(LEFT, y, RIGHT - LEFT, 2); }
     // The player's chip, as .chip draws it: six bone notches on the rim, a dark ring, the label.
+    // k 0 is the rake fund: brass with dark ink, as .chip-fund.
     function chip(cx, cy, r, who) {
-      var c = C.chips[who.k] || C.chips[1], step = Math.PI / 3, from = -Math.PI / 2 - Math.PI / 15;
+      var fund = who.k === 0;
+      var c = fund ? C.brass : C.chips[who.k] || C.chips[1], step = Math.PI / 3, from = -Math.PI / 2 - Math.PI / 15;
       ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.bone;
       for (var i = 0; i < 6; i++) {
@@ -52,7 +54,7 @@
       ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.arc(cx, cy, r * 0.61, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r * 0.56, 0, Math.PI * 2); ctx.fill();
       font(Math.round(r * (who.chip.length > 1 ? 0.56 : 0.68)), 800);
-      ctx.fillStyle = INK_CHIPS[who.k] ? C.ink : "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = fund || INK_CHIPS[who.k] ? C.ink : "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(who.chip, cx, cy + r * 0.04);
     }
     // The result's mark, as the screens draw it: up-right, down-right or a level stroke.

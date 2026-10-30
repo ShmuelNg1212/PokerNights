@@ -53,6 +53,18 @@ try{
  const base=await H.js('__asked.length');await sleep(4500);
  check('the count-up page asks for changes',await H.js(`__asked.length>${base}`),await H.js(`__asked.length-${base}`));
 
+ // 0. A choice in a select survives another host's change (the override's absorber has no data-keep).
+ await H.go(`/s/${M.books}/`);
+ check('0. the override form is on a set whose books are off',await H.js(`!!document.getElementById('absorber')`));
+ await H.js(`(()=>{const d=document.querySelector('details[data-key=override]');d.open=true;const s=document.getElementById('absorber');s.value='equal';s.dispatchEvent(new Event('change',{bubbles:true}));s.blur()})()`);
+ const v0=await H.js(`document.getElementById('live').dataset.version`);
+ ivy(`from django.db.models import F
+from games.models import GameSession
+GameSession.objects.filter(pk=${M.books}).update(version=F('version') + 1)`);
+ arrive('0. another host\'s change reaches the host',await H.until(`document.getElementById('live').dataset.version!==${JSON.stringify(v0)}`));
+ check('0. …and the absorber chosen is kept',await H.js(`document.getElementById('absorber').value==='equal'&&document.querySelector('details[data-key=override]').open`),await H.js(`document.getElementById('absorber').value`));
+ await H.go(`/s/${M.set}/`);
+
  // 1. Ivy saves a count while Hana only looks.
  ivy(`ledger.confirm_count(S, ivy, ${P.Cara}, 120000, uuid.uuid4())`);
  arrive('1. a count saved by the other host reaches the host',await H.until(ready('Cara')));

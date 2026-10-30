@@ -98,10 +98,21 @@
   function goToNextSet(hadNext) {
     var notice = region.querySelector("[data-next-set][data-host-go]");
     if (hadNext || !notice || !/^(finalized|canceled)$/.test(region.dataset.state || "")) return;
-    if (document.querySelector("dialog[open]")) return;
+    // Not while this host is in the middle of something here: a sheet, a focused field, typed text.
+    if (document.querySelector("dialog[open]") || inUse()) return;
     var link = notice.querySelector("a[href]");
     if (!link) return;
     if (window.Turbo && Turbo.visit) Turbo.visit(link.href); else window.location.assign(link.href);
+  }
+
+  function inUse() {
+    var active = document.activeElement;
+    if (active && region.contains(active) && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName)) return true;
+    return [].some.call(region.querySelectorAll("input:not([type=hidden]), textarea, select"), function (el) {
+      if (el.tagName === "SELECT") return [].some.call(el.options, function (o) { return o.selected !== o.defaultSelected; });
+      if (el.type === "checkbox" || el.type === "radio") return el.checked !== el.defaultChecked;
+      return el.value !== el.defaultValue;
+    });
   }
 
   function pace() {

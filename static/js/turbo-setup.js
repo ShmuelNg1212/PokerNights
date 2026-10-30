@@ -188,10 +188,13 @@
   // An update makes the page match the server. Two things must survive it, as they do
   // across a live poll: text typed in a field that was not part of the form just sent,
   // and a disclosure the person opened.
+  // Any control the person changed counts, kept or not: a choice in a select, such as who absorbs an
+  // override, must survive a poll from another host as typed text does.
   function typed(el) {
-    if (!el.matches || !el.matches("input[data-keep], textarea[data-keep]")) return false;
+    if (!el.matches || !el.matches("input:not([type=hidden]), textarea, select")) return false;
     if (sent && el.form === sent) return false;
-    if (el.type === "checkbox") return el.checked !== el.defaultChecked;
+    if (el.tagName === "SELECT") return [].some.call(el.options, function (o) { return o.selected !== o.defaultSelected; });
+    if (el.type === "checkbox" || el.type === "radio") return el.checked !== el.defaultChecked;
     return el.hasAttribute("data-count-input") ? el.value.trim() !== "" : el.value !== el.defaultValue;
   }
   // What the server says about a typed field still arrives: a count another host saved since.
