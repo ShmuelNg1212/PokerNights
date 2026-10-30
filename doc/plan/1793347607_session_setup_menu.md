@@ -64,11 +64,11 @@ Complete when: the service tests cover each case above, with a check that a refu
 
 `tests: alongside`
 
-- [ ] `SessionForm` gets `announce`, `start_time` and `chip_preset`. Without active chip presets, the chip field does not show.
-- [ ] Add one form group above Create session. The hint names how many players get a notice.
-- [ ] `static/js/setup.js` lists only the presets of the chosen unit and resets a choice that no longer fits. Remove options, because iOS ignores hidden options.
-- [ ] Without JavaScript, all presets show with their unit, and the server refuses a mismatch.
-- [ ] Apply the answer to open question 3 on the session page.
+- [x] `SessionForm` gets `announce`, `start_time` and `chip_preset`. Without active chip presets, the chip field does not show.
+- [x] Add one form group above Create session. The hint names how many players get a notice.
+- [x] `static/js/setup.js` lists only the presets of the chosen unit and resets a choice that no longer fits. Remove options, because iOS ignores hidden options.
+- [x] Without JavaScript, all presets show with their unit, and the server refuses a mismatch.
+- [x] Apply the answer to open question 3 on the session page.
 
 Acceptance: The controls have 48 px targets and fit at 320, 390 and 1280 px. A change of unit, by hand or by stakes preset, updates the list. A player does not see the session until a host announces it.
 
@@ -78,8 +78,8 @@ Complete when: a browser probe creates a session with both options, a player acc
 
 `tests: alongside`
 
-- [ ] Add ADR 0008. It extends ADR 0005.
-- [ ] Update the Chip presets and RSVP lines of `doc/wiki/spec.md`.
+- [x] Add ADR 0008. It extends ADR 0005.
+- [x] Update the Chip presets and RSVP lines of `doc/wiki/spec.md`.
 
 Acceptance: The ADR and spec state the new rule, and nothing states the old one as current.
 
