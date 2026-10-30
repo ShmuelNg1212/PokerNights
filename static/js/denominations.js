@@ -311,7 +311,8 @@
       pick.addEventListener("submit", function (event) {
         var chosen = presets[pick.elements.preset.value];
         if (!chosen) return;
-        event.preventDefault();
+        // Stopped here too, so forms.js does not leave Fill busy for a send that never happens.
+        event.preventDefault(); event.stopPropagation();
         var all = Array.from(list.querySelectorAll("[data-chip-value-row]"));
         chosen.rows.forEach(function (values, at) {
           var row = all[at] || fresh();

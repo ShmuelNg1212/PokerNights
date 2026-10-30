@@ -63,6 +63,7 @@ try {
  check('session: Fill works in place',await H.js(`window.__stay===1`));
  check('session: rows hold the preset',await H.js(`document.querySelector('[name=chips-0-colour]').value==='red'&&${V(0)}.value==='25'&&document.querySelector('[name=chips-1-colour]').value==='green'&&${V(1)}.value==='100'`));
  check('session: the note names the preset',await H.js(`document.querySelector('[data-chip-preset-note]').textContent.startsWith('Filled from Home set')&&!!document.querySelector('[data-chip-from-preset]').value`));
+ check('session: Fill is usable again',await H.js(`(b=>!b.disabled&&b.textContent==='Fill'&&!b.hasAttribute('aria-busy')&&!document.querySelector('[data-chip-preset-form]').dataset.sent)(document.querySelector('[data-chip-preset-form] [type=submit]'))`));
  check('session: row movement settles',await H.js(`new Promise(r=>setTimeout(()=>r([...document.querySelectorAll('[data-chip-value-row]')].every(x=>!x.style.transform)),600))`));
  await H.js(`document.querySelector('[data-chip-values] .btn-primary').click()`);await sleep(900);
  check('session: saved values show on the session',await H.js(`location.pathname==='/n/${ids.night}/'&&(t=>t.includes('₱25')&&t.includes('₱100'))(document.querySelector('.session-chip-values').textContent)`));
