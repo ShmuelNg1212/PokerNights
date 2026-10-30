@@ -20,7 +20,7 @@
 
 - [ ] Session → Chip values → choose a preset → Fill: the rows fill, and Fill goes back to its normal look and works again.
 
-## Phone checks (unreleased: `feat/session-setup-menu`)
+## Phone checks (released 2026-10-30 as `a0f77f5`)
 
 - [ ] New session → fill it in → Create session: you land on the session page, with Announce to the group and Chip values on it.
 - [ ] New session → Chip values: pick a preset, change Unit: the list changes. Create: the chip values are already there, and you can edit them.

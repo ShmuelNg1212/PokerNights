@@ -1,6 +1,6 @@
 # Session setup menu: plan
 
-Date: 2026-10-30. Mode: mixed. Status: verified 2026-10-30 on `feat/session-setup-menu`; awaiting ship. Frozen after rendezvous.
+Date: 2026-10-30. Mode: mixed. Status: released 2026-10-30 as `a0f77f5`. Frozen after rendezvous.
 
 Study: [session setup menu](../study/1793347607_session_setup_menu.md). Branch: `feat/session-setup-menu`.
 
