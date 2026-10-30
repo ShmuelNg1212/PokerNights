@@ -16,6 +16,10 @@
 - [ ] Both hosts type a count for the same player: the second phone says "… saved ₱…".
 - [ ] One host finalizes and starts the next set: the other host's phone goes to the new set; a player's phone shows the notice.
 
+## Phone checks (not released: `fix/preset-fill-busy`)
+
+- [ ] Session → Chip values → choose a preset → Fill: the rows fill, and Fill goes back to its normal look and works again.
+
 ## Waiting for the human
 
 - [ ] Create your superuser against production (command in [deployment](doc/wiki/deployment.md)), add the first host in `/admin/` → Users, and play a game on the live site.
