@@ -123,14 +123,6 @@ def reopen_night(night_id, actor: Member, reason: str = "") -> GameNight:
     return night
 
 
-def session_results(night: GameNight) -> list:
-    """Each member's result over the finalized sets of a session, in the order they first joined it.
-
-    Returns ``[(member_id, net, sets_played)]``. Nets are after rake; add collected rake for settlement balances.
-    """
-    return [(member_id, net, played) for member_id, net, played, _ in session_standings(night)]
-
-
 def result_rows(night: GameNight) -> list:
     """The current results of a session's finalized sets, by set then join order, in one query.
 

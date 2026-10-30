@@ -50,10 +50,6 @@ class PlayerLine:
         return sum(b.rake_amount for b in self.buy_ins)
 
     @property
-    def playable_total(self) -> int:
-        return self.buy_in_total - self.rake_total
-
-    @property
     def has_money(self) -> bool:
         return bool(self.buy_ins)
 

@@ -98,10 +98,6 @@ class RakeForm(StakesForm):
     )
 
     @property
-    def general_fields(self):
-        return [field for field in self if field.name not in ("rake_mode", "rake_percentage", "rake_flat")]
-
-    @property
     def rake_value_fields(self):
         return [self["rake_flat"], self["rake_percentage"]]
 

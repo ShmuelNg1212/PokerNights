@@ -15,7 +15,7 @@ from django.contrib import messages
 from groups.errors import RuleError
 from django.conf import settings
 
-from groups.forms import NameForm, NamesForm
+from groups.forms import NamesForm
 from groups.http import attempt, request_id_from, attempt_bound, group_settings, keep_form
 from groups import services as groups
 from groups.models import Member

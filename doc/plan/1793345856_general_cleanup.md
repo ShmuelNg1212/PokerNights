@@ -2,7 +2,7 @@
 
 Date: 2026-10-30, Asia/Manila. [Study](../study/1793345855_general_cleanup.md).
 
-Status: **waiting for approval**.
+Status: **approved 2026-10-30** ("approved"), with the default answers to all three questions.
 
 ## Outcome
 
@@ -20,10 +20,10 @@ One branch, `chore/general-cleanup`, from `main`. One commit per task.
 
 ### 1. Remove dead application code — `refactor:` — tests: alongside
 
-- [ ] Delete `SettingsForm.general_fields` ([games/forms.py:101](../../games/forms.py#L101)).
-- [ ] Delete `playable_total` ([ledger/queries.py:53](../../ledger/queries.py#L53)).
-- [ ] Delete `session_results` ([settlement/services.py:126](../../settlement/services.py#L126)).
-- [ ] Remove the unused `NameForm` import from [games/views.py:18](../../games/views.py#L18).
+- [x] Delete `SettingsForm.general_fields` ([games/forms.py:101](../../games/forms.py#L101)).
+- [x] Delete `playable_total` ([ledger/queries.py:53](../../ledger/queries.py#L53)).
+- [x] Delete `session_results` ([settlement/services.py:126](../../settlement/services.py#L126)).
+- [x] Remove the unused `NameForm` import from [games/views.py:18](../../games/views.py#L18).
 
 Done when: `grep -rw` finds none of the three names outside `doc/`; ruff F finds nothing outside tests; the full test suite passes with the same test count.
 
