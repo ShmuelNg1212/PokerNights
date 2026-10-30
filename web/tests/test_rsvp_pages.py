@@ -5,7 +5,7 @@ import uuid
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from games import rsvp, services
+from games import services
 from games.models import Rsvp
 from games.tests.helpers import make_session
 from groups.models import Member

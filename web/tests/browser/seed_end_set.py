@@ -1,6 +1,5 @@
 """Add slice 2 states after seed.py, once, on a fresh synthetic database."""
 import uuid
-from django.utils import timezone
 from games import services as games
 from games.tests.helpers import make_session, CHIP_STAKES
 from groups import services as groups

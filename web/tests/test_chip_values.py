@@ -7,7 +7,7 @@ from django.utils.html import escape
 from django.urls import reverse
 
 from games import services as games
-from groups.tests.helpers import add_player, make_group
+from groups.tests.helpers import make_group
 from ledger import services
 from ledger.models import CountEntry, FinalCount
 from ledger.tests.helpers import Night

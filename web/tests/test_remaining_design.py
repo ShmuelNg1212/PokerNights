@@ -20,7 +20,7 @@ class RemainingFormsTests(TestCase):
         self.assertFalse(self.client.get(reverse('home')).context['form'].is_bound)
 
     def test_duplicate_roster_and_rename_keep_local_form(self):
-        first = services.add_roster_player(self.host, 'Ada')
+        services.add_roster_player(self.host, 'Ada')
         second = services.add_roster_player(self.host, 'Bea')
         page = self.client.post(reverse('member_add', args=[self.group.pk]), {'name': 'Ada'}, follow=True)
         self.assertEqual(page.context['add_form']['names'].value(), 'Ada')

@@ -2,7 +2,7 @@
 
 Three open sets of one group: six players (Ben and Cara have logins), two players, and twelve.
 """
-import datetime, json, uuid
+import json, uuid
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from games import services as games

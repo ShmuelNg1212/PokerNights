@@ -5,7 +5,6 @@ from django.utils import timezone
 from groups.models import Member
 from groups import services as groups
 from games import services as games
-from games.models import GameSession
 host = Member.objects.get(user__username='hana', role='host')
 games.save_preset(host, {'name':'Usual pesos', 'game_type':'nlh', 'unit':'php', 'small_blind':1000,'big_blind':2000,'min_buy_in':50000,'max_buy_in':500000,'default_buy_in':100000})
 games.save_preset(host, {'name':'Usual chips', 'game_type':'nlh', 'unit':'chips', 'small_blind':10,'big_blind':20,'min_buy_in':500,'max_buy_in':5000,'default_buy_in':1000})

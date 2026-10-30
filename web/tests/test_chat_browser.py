@@ -2,7 +2,7 @@
 
 from urllib.parse import quote
 
-from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from config.chat_browser import HERE_COOKIE, detect

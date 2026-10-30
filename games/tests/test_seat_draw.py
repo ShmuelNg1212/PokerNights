@@ -158,7 +158,7 @@ class ChooseTests(TestCase):
         self.assertFalse(seating.poll_fast)
 
     def test_the_dealer_chooses_their_own_seat_and_nobody_else_does(self):
-        dealer, other = self.order[0], self.order[1]
+        dealer = self.order[0]
         logins = {self.night.players["Ben"].pk: self.ben, self.night.players["Cara"].pk: self.cara}
         if dealer.pk in logins:
             services.choose_seat(self.night.session.pk, logins[dealer.pk], 2, uuid.uuid4())

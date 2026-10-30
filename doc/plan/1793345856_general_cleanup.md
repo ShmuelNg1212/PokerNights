@@ -36,8 +36,8 @@ Done when: the six class names occur nowhere in the repo outside `doc/`; the sui
 
 ### 3. Clean unused imports and variables in tests — `test:` — tests: alongside
 
-- [ ] Run `uvx ruff check --select F401,F841 --fix --unsafe-fixes` on test files only.
-- [ ] Read each F841 change. Where the right-hand side has a side effect the test needs (for example it creates a row), keep the call and drop only the name.
+- [x] Run `uvx ruff check --select F401 --fix` on test files only. (Done: 17 imports. The five F841 sites were edited by hand, because each right-hand side has a side effect.)
+- [x] Read each F841 change. Where the right-hand side has a side effect the test needs (for example it creates a row), keep the call and drop only the name.
 
 Done when: ruff F401 and F841 report nothing; the suite passes with the same test count.
 

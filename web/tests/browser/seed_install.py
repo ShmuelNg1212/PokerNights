@@ -8,7 +8,7 @@ from django.utils import timezone
 from games import services as games
 from games.models import Participant
 from groups import services as groups
-from groups.models import Invite, Member
+from groups.models import Member
 from ledger import services as ledger
 from settlement import services as settlement
 User = get_user_model()

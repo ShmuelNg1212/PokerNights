@@ -77,7 +77,7 @@ class InviteRowsTests(TestCase):
 
     def test_how_a_past_invite_ended_is_written(self):
         now = timezone.now()
-        a = services.revoke_invite(self.host, services.create_invite(self.host)[0].pk)
+        services.revoke_invite(self.host, services.create_invite(self.host)[0].pk)
         b = services.create_invite(self.host)[0]
         Invite.objects.filter(pk=b.pk).update(expires_at=now - timedelta(days=1))
         c = services.create_invite(self.host)[0]

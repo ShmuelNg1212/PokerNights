@@ -76,7 +76,7 @@ class RakeTests(TestCase):
         request = uuid.uuid4()
         data = {**games.current_settings(n.session).stakes(), 'rake_mode': 'percent', 'rake_basis_points': 500}
         version = games.update_settings(n.session.pk, n.host, data, request_id=request)
-        buy = n.buy('A', 1000)
+        n.buy('A', 1000)
         self.assertEqual(games.update_settings(n.session.pk, n.host, data, request_id=request).pk, version.pk)
         with self.assertRaisesMessage(RuleError, 'rake cannot change'):
             configure(n, rake_mode='off')

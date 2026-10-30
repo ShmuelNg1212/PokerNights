@@ -9,7 +9,6 @@ from pathlib import Path
 
 from games import services as games
 from games.tests.helpers import make_session, make_table
-from groups import services as groups
 from groups.models import Member
 from groups.tests.helpers import make_group, make_user
 from ledger import services as ledger

@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from audit.models import AuditEvent
 from games import services
-from games.models import Participant, ParticipantBatch, PlayInterval
+from games.models import ParticipantBatch, PlayInterval
 from groups import services as groups
 from groups.errors import RuleError
 from groups.models import Member

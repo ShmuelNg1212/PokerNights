@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from games import clock, services
-from games.models import GameSession, Participant, PlayInterval, PlayPeriod
+from games.models import GameSession, PlayInterval, PlayPeriod
 from groups import services as groups
 from groups.tests.helpers import make_group
 

@@ -10,7 +10,7 @@ from groups import services as groups
 from groups.models import Member
 from groups.tests import helpers as groups_helpers
 from ledger.models import PlayerResult
-from settlement import queries, services, stats
+from settlement import queries, stats
 from settlement.stats import Period, PlayerRecord, SessionResult
 
 from .test_stats import OCT_1, SEP_30, Club

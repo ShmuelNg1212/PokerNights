@@ -7,7 +7,6 @@ from django.urls import reverse
 from audit.models import AuditEvent
 from games import services as games
 from games.models import ChipPreset
-from games.tests.helpers import make_session
 from groups.tests.helpers import add_player, make_group
 from ledger.tests.helpers import Night
 

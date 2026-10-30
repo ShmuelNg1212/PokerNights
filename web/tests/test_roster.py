@@ -1,6 +1,5 @@
 """Group settings → Players: the list, your own name, details, removing and bringing back, several names."""
 
-import datetime
 
 from django.test import TestCase, override_settings
 from django.urls import reverse

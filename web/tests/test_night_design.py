@@ -152,8 +152,6 @@ class RecapPageTests(TestCase):
         self.assertNotContains(page, '%')
 
     def test_a_player_sees_their_own_night_and_their_transfer(self):
-        from groups.tests.helpers import add_player
-        from games.models import Participant
         night = Night('A')
         member = night.add_login_player('Ben')
         night.buy('A', 1000)

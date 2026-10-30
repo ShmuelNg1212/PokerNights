@@ -5,7 +5,6 @@ from groups.tests.helpers import make_group, add_player
 from groups.models import Member
 from games import services as games
 from games.tests.helpers import make_session, CHIP_STAKES
-from ledger import services as ledger
 host = make_group()[1]
 ben = add_player(host.group, 'ben', role=Member.Role.HOST)
 ids = {'group':host.group_id}

@@ -43,7 +43,7 @@ def play(day, players, step, **settings):
             ledger.record_buy_in(one.pk, host, seat.pk, 1000 * step, uuid.uuid4())
         bought.append(buys * 1000 * step)
     weights = [rng.uniform(0.1, 1.9) * lean.get(m.pk, 1) for m in players]
-    total, units = sum(bought), sum(bought) // (100 * step)
+    units = sum(bought) // (100 * step)
     shares = [int(units * w / sum(weights)) for w in weights]
     shares[0] += units - sum(shares)
     games.transition(one.pk, host, "end")
