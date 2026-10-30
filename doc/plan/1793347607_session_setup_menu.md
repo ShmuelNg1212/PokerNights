@@ -51,10 +51,10 @@ Complete when: the tests pass on SQLite and PostgreSQL, including a concurrent P
 
 `tests: first`
 
-- [ ] `create_session` takes `chip_preset_id`, `announce` and `start_time`.
-- [ ] A chip preset applies through `set_chip_values`, with the preset's name in the audit record.
-- [ ] The announcement applies through `announce_night`, after the chip values.
-- [ ] Refuse an archived preset, a preset of another group and a preset of the other unit. Each refusal creates no session and sends no notice.
+- [x] `create_session` takes `chip_preset_id`, `announce` and `start_time`.
+- [x] A chip preset applies through `set_chip_values`, with the preset's name in the audit record.
+- [x] The announcement applies through `announce_night`, after the chip values.
+- [x] Refuse an archived preset, a preset of another group and a preset of the other unit. Each refusal creates no session and sends no notice.
 
 Acceptance: Each option works alone and with the other. The replay from T2 sends no second notice.
 

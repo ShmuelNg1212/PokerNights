@@ -223,7 +223,22 @@ def create_session(actor: Member, data: dict) -> GameSession:
         "session.created", actor=actor.user, group_id=actor.group_id, session_id=session.pk, target=session,
         summary=f"Created a session at {table.name} for {session.game_date:%Y-%m-%d} (set 1)",
     )
+    if _apply_new_session_options(night, actor, data):
+        session.refresh_from_db()
     return session
+
+
+def _apply_new_session_options(night, actor: Member, data: dict) -> bool:
+    """What the host chose on New session. A refusal undoes the new session, and players are told only after commit."""
+    chip_preset_id, announce = data.get("chip_preset_id"), data.get("announce")
+    if chip_preset_id:
+        preset = _own_chip_preset(actor.group, chip_preset_id)
+        if preset.unit != night.unit:
+            raise RuleError("That chip preset uses another unit. Choose one for this session's unit.")
+        set_chip_values(night.pk, actor, preset.values, uuid.uuid4(), revision=night.chip_values_revision, preset=preset.name)
+    if announce:
+        announce_night(night.pk, actor, start_time=data.get("start_time"))
+    return bool(chip_preset_id or announce)
 
 
 @transaction.atomic
