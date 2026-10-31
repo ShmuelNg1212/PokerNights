@@ -181,9 +181,10 @@ try {
  await A.js(`document.querySelector('.review-verdict').scrollIntoView({block:'center'})`);await sleep(300);await A.shot('count-flow-review-short-390');
  await A.go(`/s/${M.finish}/`);await confirmCounts([null,'1000']);
  await A.go(`/s/${M.finish}/cash-out-counted/`);
- check('review, balanced: says the books will balance',await A.js(`${verdict}.textContent.trim()==='After this batch the books balance.'&&${verdict}.querySelector('.verdict').dataset.tone==='good'`));
+ check('review, balanced: says the books balance, and its one button finishes the set',await A.js(`${verdict}.textContent.trim()==='The books balance.'&&${verdict}.querySelector('.verdict').dataset.tone==='good'&&document.querySelector('.batch-review button[type=submit]').textContent.trim()==='Finish set 1'`));
  await A.js(`document.querySelector('.review-verdict').scrollIntoView({block:'center'})`);await sleep(300);await A.shot('count-flow-review-balanced-390');
- await A.tap(`${verdict}.nextElementSibling`,2000);
+ // Finish set is walked by journey.mjs. This walks the path that still reaches Finalize: the review's older POST records only the cash-outs.
+ await A.js(`document.querySelector('.batch-review').removeAttribute('action')`);await A.tap(`document.querySelector('.batch-review button[type=submit]')`,2000);
  check('after the cash-outs: the message is above the bar and Finalize is clear of it',await A.js(`!!${TOAST}&&${TOAST}.getBoundingClientRect().bottom<=${DOCK}.getBoundingClientRect().top`)&&await A.js(`JSON.stringify(${primaries})`)==='["Finalize results"]');
  await sleep(300);await A.shot('count-flow-finalize-ready-390');
  await A.tap(`document.querySelector('.finalize-opener')`,800);

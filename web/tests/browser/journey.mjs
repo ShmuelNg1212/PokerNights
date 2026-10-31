@@ -82,12 +82,13 @@ try{
  const tapsBeforeEnd=H.taps;
  await H.tap('^Confirm (4 counts|all counts)',1700);await H.shot('confirmed');
  check('confirm: the rows are not boxed, and the ticks stay',await H.js(`![...document.querySelectorAll('.count-row')].some(r=>getComputedStyle(r,'::before').content!=='none'&&getComputedStyle(r,'::before').borderTopWidth==='2px')`));
- await H.tap('^Cash out counted',1600);await H.tap('^Cash out 4 players',1700);
- await H.tap('^Finalize results',1200);await H.tap('^Finalize set 1',1900);
+ await H.tap('^Review and finish',1600);await H.tap('^Finish set 1',1900);
  await H.tap('^Settle up',900);await H.tap('^Close session and settle up',2000);await sleep(1200);
  check('closing: the recap opens by itself',await H.js(`!!document.querySelector('dialog[open]')`));
  if(await H.js(`!!document.querySelector('dialog[open]')`))await H.tap('^Close',900);
  table.endOfGame=H.taps-tapsBeforeEnd;
+ check('closing the recap: who pays whom on the first screen',await H.js(`(()=>{const t=document.querySelector('#transfers-title').getBoundingClientRect(),r=document.querySelector('.transfer-row').getBoundingClientRect(),h=document.querySelector('header').getBoundingClientRect();return t.top>=h.bottom&&r.bottom<=innerHeight})()`));
+ check('closing the recap: no toast over the list',await H.js(`![...document.querySelectorAll('.toast')].some(t=>t.getClientRects().length)`));
  await H.shot('transfers');
  await H.tap('^Mark paid',1400);
  table.newHostTaps=H.taps;table.newHostFields=H.fields;table.scrolled=H.scrolled;
