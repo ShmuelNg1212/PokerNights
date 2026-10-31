@@ -84,6 +84,9 @@ class PlayersSectionTests(TestCase):
     def page(self):
         return self.client.get(players_url(self.group))
 
+    def player_page(self, member):
+        return self.client.get(reverse("player", args=[self.group.pk, member.pk]), {"from": "players"})
+
     def test_rows_say_how_often_a_player_comes(self):
         response = self.page()
         self.assertContains(response, "1 session · last played Oct 1", count=2)
@@ -97,15 +100,80 @@ class PlayersSectionTests(TestCase):
         self.assertEqual(names, sorted(names, key=str.lower))
         self.assertLess(names.index("Carlo"), names.index("dani"))
 
-    def test_your_own_name(self):
+    def test_a_row_leads_to_the_player_and_holds_no_management(self):
+        ben = self.club.member("Ben")
         response = self.page()
+        self.assertContains(response, f'href="{reverse("player", args=[self.group.pk, ben.pk])}?from=players"')
+        self.assertNotContains(response, reverse("member_remove", args=[self.group.pk, ben.pk]))
+        self.assertNotContains(response, "Manage Ben")
+        self.assertNotContains(response, "Change your name")
+
+    def test_the_way_back_follows_the_way_in(self):
+        ben = self.club.member("Ben")
+        page = self.player_page(ben)
+        self.assertEqual(page.context["back_url"], f"{players_url(self.group)}#member-{ben.pk}")
+        self.assertContains(page, f"{self.group.name} players")
+        page = self.client.get(reverse("player", args=[self.group.pk, ben.pk]))
+        self.assertIn("view=stats", page.context["back_url"])
+        self.assertContains(page, f"{self.group.name} stats")
+
+    def test_a_host_manages_another_player_on_their_page(self):
+        ben = self.club.member("Ben")
+        page = self.player_page(ben)
+        self.assertContains(page, "Manage Ben")
+        for name in ("member_rename", "member_remove"):
+            self.assertContains(page, reverse(name, args=[self.group.pk, ben.pk]))
+
+    def test_a_player_sees_no_management_on_anyone_elses_page(self):
+        ben = self.club.member("Ben")
+        groups.edit_member(self.host, ben.pk, "Ben", "0917 555 0101")
+        self.client.force_login(self.dani.user)
+        for other in (ben, self.host):
+            page = self.player_page(other)
+            self.assertEqual(page.status_code, 200)
+            self.assertNotContains(page, f'action="/g/{self.group.pk}/')
+            self.assertNotContains(page, "player-manage")
+            self.assertNotContains(page, "0917 555 0101")
+            self.assertNotContains(page, reverse("member_remove", args=[self.group.pk, other.pk]))
+
+    def test_a_host_cannot_manage_themselves_or_a_removed_player(self):
+        self.assertNotContains(self.player_page(self.host), "Manage ")
+        self.assertNotContains(self.player_page(self.host), reverse("member_remove", args=[self.group.pk, self.host.pk]))
+        ben = self.club.member("Ben")
+        groups.remove_member(self.host, ben.pk)
+        page = self.player_page(ben)
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, "player-manage")
+
+    def test_a_link_made_for_one_player_waits_on_another_players_page(self):
+        maria = add_player(self.group, "maria")
+        self.client.post(reverse("member_reset_link", args=[self.group.pk, maria.pk]))
+        self.assertNotContains(self.player_page(self.dani), "/accounts/reset/")
+        self.assertContains(self.player_page(maria), "/accounts/reset/")
+        self.assertNotContains(self.player_page(maria), "/accounts/reset/")  # shown once
+
+    def test_a_refused_name_stays_on_the_players_page_with_manage_open(self):
+        ben = self.club.member("Ben")
+        response = self.client.post(reverse("member_rename", args=[self.group.pk, ben.pk]), {"name": "ana", "contact": "note"}, follow=True)
+        self.assertEqual(response.redirect_chain[-1][0], f'{reverse("player", args=[self.group.pk, ben.pk])}?from=players&open=manage#manage')
+        self.assertContains(response, 'class="player-manage" id="manage" open')
+        self.assertContains(response, 'value="ana"')
+        self.assertContains(response, "note")
+
+    def test_a_long_list_gets_a_search(self):
+        self.assertNotContains(self.page(), "data-roster-search")
+        groups.add_roster_players(self.host, [f"P{n}" for n in range(11)])
+        self.assertContains(self.page(), "data-roster-search")
+
+    def test_your_own_name(self):
+        response = self.player_page(self.host)
         self.assertContains(response, "Change your name", count=1)
         self.assertContains(response, f"You still log in as <strong>{self.host.user.username}</strong>", html=False)
         url = reverse("member_rename_self", args=[self.group.pk])
         response = self.client.post(url, {"name": "Hana R"}, follow=True)
         self.assertContains(response, "Your name is now Hana R.")
         self.client.force_login(self.dani.user)
-        self.assertContains(self.page(), "Change your name", count=1)
+        self.assertContains(self.player_page(self.dani), "Change your name", count=1)
         response = self.client.post(url, {"name": "hana r"}, follow=True)
         self.assertContains(response, "A player named hana r is already in this group.")
         self.assertContains(response, 'value="hana r"')  # the typing is kept, in an open disclosure
@@ -119,11 +187,11 @@ class PlayersSectionTests(TestCase):
         self.assertContains(response, "0917 555 0101")
         self.assertContains(response, "Contact (optional)")
         self.client.force_login(self.dani.user)
-        response = self.page()
-        self.assertContains(response, "Benjie")
-        self.assertNotContains(response, "0917 555 0101")
-        self.assertNotContains(response, "Contact (optional)")
-        self.assertNotContains(response, "Removed players")
+        for response in (self.page(), self.player_page(ben)):
+            self.assertContains(response, "Benjie")
+            self.assertNotContains(response, "0917 555 0101")
+            self.assertNotContains(response, "Contact (optional)")
+            self.assertNotContains(response, "Removed players")
 
     def test_removed_players_are_listed_for_a_host_and_come_back(self):
         ben = self.club.member("Ben")
@@ -184,9 +252,12 @@ class PlayersSectionTests(TestCase):
     def test_switch_off_shows_the_section_as_it_was(self):
         groups.remove_member(self.host, self.club.member("Ben").pk)
         response = self.page()
-        for gone in ("Change your name", "Contact (optional)", "Removed players", "last played", "One name per line"):
+        for gone in ("Removed players", "last played", "One name per line"):
             self.assertNotContains(response, gone)
         self.assertContains(response, "Add a player without a login")
+        self.assertNotContains(self.player_page(self.host), "Change your name")
+        response = self.player_page(self.dani)
+        self.assertNotContains(response, "Contact (optional)")
         self.assertContains(response, reverse("member_remove", args=[self.group.pk, self.dani.pk]))
         response = self.client.post(reverse("member_remove", args=[self.group.pk, self.dani.pk]), follow=True)
         self.assertContains(response, "dani was removed.")

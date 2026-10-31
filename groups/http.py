@@ -19,6 +19,11 @@ def group_players(group_id, section=""):
     return redirect(reverse("group", args=[group_id]) + "?view=players" + (f"#{section}" if section else ""))
 
 
+def group_player(group_id, member_id):
+    """Back to a player's page, with its Manage section open. The way back leads to the Players tab."""
+    return redirect(reverse("player", args=[group_id, member_id]) + "?from=players&open=manage#manage")
+
+
 def attempt(request, action, *args, success="", **kwargs):
     """Run a service call. A RuleError becomes an error message; the result is returned on success."""
     try:

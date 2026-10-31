@@ -7,23 +7,13 @@
 {% if invite_links_shown %}
   {# Every active link can be copied or shared again (groups.services.invite_link_token); hosts only. invites.js adds Share and the motion. #}
   {% if invites %}
-  <ul class="invite-list" data-invites>
-    {% for invite in invites %}
-    <li class="invite-row" data-invite="{{ invite.pk }}"{% if invite.arrived %} data-arrived{% endif %}>
-      <p class="invite-who">Created by {{ invite.by }} · {{ invite.created_at|date:"M j" }}{% if invite.arrived %} <span class="invite-new">New</span>{% endif %}</p>
-      <p class="invite-meta">Used {{ invite.use_count }} of {{ invite.max_uses }} · expires {{ invite.expires_at|date:"M j, H:i" }}</p>
-      {% if invite.url %}{% include "web/_copy_field.html" with id=invite.field_id url=invite.url label="Invite link" %}
-      {% else %}<p class="invite-old">This link was made before links could be shown again.</p>{% endif %}
-      <div class="invite-actions">
-        <form method="post" action="{% url 'invite_revoke' group.pk invite.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-small btn-quiet invite-revoke" aria-label="Revoke the link {{ invite.by }} created {{ invite.created_at|date:"M j, H:i" }}">Revoke</button>
-        </form>
-        {% if invite.url %}<button type="button" class="btn btn-small" data-invite-share="{{ invite.url }}" data-invite-text="Join {{ group.name }} on PokerNights" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M7 10H5.500A1.500 1.500 0 0 0 4 11.500v8A1.500 1.500 0 0 0 5.500 21h13a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18.500 10H17"/></svg>Share</button>{% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
+  <ul class="invite-list" data-invites>{% for invite in invites|slice:":1" %}{% include "web/_invite_row.html" %}{% endfor %}</ul>
+  {% if invites|length > 1 %}
+  <details class="invites-more">
+    <summary class="small">Other active links ({{ invites|length|add:"-1" }})</summary>
+    <ul class="invite-list">{% for invite in invites|slice:"1:" %}{% include "web/_invite_row.html" %}{% endfor %}</ul>
+  </details>
+  {% endif %}
   <form method="post" action="{% url 'invite_create' group.pk %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-block" data-busy="Creating…">Create another link</button>
@@ -90,96 +80,22 @@
 {% include "partials/form_fields.html" with form=add_form %}<button type="submit" class="btn btn-block">Add to roster</button></form></details>
 {% endif %}
 {% endif %}
-{% if new_reset_link %}
-<div class="notice notice-good">
-  <p><strong>Reset link for {{ new_reset_link.name }}.</strong> Send it to {{ new_reset_link.name }} only. Whoever opens it can set the password. It works once and expires {{ new_reset_link.expires_at|date:"M j, H:i" }}.</p>
-  {% include "web/_copy_field.html" with id="new-reset-link" url=new_reset_link.url label="Password reset link for "|add:new_reset_link.name %}
-</div>
-{% endif %}
-{% if new_claim_link %}
-<div class="notice notice-good">
-  <p><strong>Claim link for {{ new_claim_link.name }}.</strong> Send it to {{ new_claim_link.name }} only. Whoever opens it becomes {{ new_claim_link.name }} in this group. It works once and expires {{ new_claim_link.expires_at|date:"M j, H:i" }}.</p>
-  {% include "web/_copy_field.html" with id="new-claim-link" url=new_claim_link.url label="Claim link for "|add:new_claim_link.name %}
+{% if roster_search %}
+<div class="field roster-search" data-roster-search hidden>
+  <label for="roster-search">Search players</label>
+  <input id="roster-search" type="text" autocomplete="off" inputmode="search" data-roster-find>
+  <p class="hint" data-roster-none aria-live="polite" hidden></p>
 </div>
 {% endif %}
 <ul class="list roster" data-roster>
   {% for m in members %}
-  <li class="roster-row"{% if m.arrived %} data-arrived{% endif %}>
-    <div class="row">
-      <span class="roster-person grow">{% member_token m members %}<span class="roster-name"><span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>{% if roster_tools %}<span class="roster-activity">{{ m.activity_label }}</span>{% endif %}</span></span>
+  <li class="roster-row" id="member-{{ m.pk }}" data-name="{{ m.display_name|lower }}"{% if m.arrived %} data-arrived{% endif %}>
+    <a class="roster-link" href="{% url 'player' group.pk m.pk %}?from=players">
+      <span class="roster-person grow">{% member_token m members %}<span class="roster-name"><span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>{% if roster_tools %}<span class="roster-activity">{% if not m.has_login %}No login · {% endif %}{{ m.activity_label }}</span>{% endif %}</span></span>
       {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
-      {% if not m.has_login %}<span class="badge">No login</span>{% endif %}
-    </div>
-    {% if roster_tools and m.pk == me.pk %}
-    <details {% if m.own_form.errors %}open{% endif %}>
-      <summary class="small">Change your name</summary>
-      <form method="post" action="{% url 'member_rename_self' group.pk %}" class="stack roster-form" data-once>
-        {% csrf_token %}
-        {% include "partials/form_fields.html" with form=m.own_form %}
-        <p class="hint">This is your name in {{ group.name }}. You still log in as <strong>{{ request.user.get_username }}</strong>.</p>
-        <button type="submit" class="btn btn-block">Save</button>
-      </form>
-    </details>
-    {% elif me.is_host and m.pk != me.pk %}
-    <details {% if m.rename_form.errors %}open{% endif %}>
-      <summary class="small">Manage {{ m.display_name }}</summary>
-      <div class="stack roster-manage">
-        {% if roster_tools %}
-        <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="stack roster-form" data-once>
-          {% csrf_token %}
-          {% include "partials/form_fields.html" with form=m.rename_form %}
-          <button type="submit" class="btn btn-block">Save</button>
-        </form>
-        {% else %}
-        <form method="post" action="{% url 'member_rename' group.pk m.pk %}" class="form-row">
-          {% csrf_token %}
-          <div class="grow">{% include "partials/form_fields.html" with form=m.rename_form %}</div>
-          <button type="submit" class="btn btn-small">Rename</button>
-        </form>
-        {% endif %}
-        {% if m.has_login %}
-        <div class="roster-actions">
-        <form method="post" action="{% url 'member_role' group.pk m.pk %}">
-          {% csrf_token %}
-          <input type="hidden" name="role" value="{% if m.is_host %}player{% else %}host{% endif %}">
-          <button type="submit" class="btn btn-block">{% if m.is_host %}Make player{% else %}Make host{% endif %}</button>
-        </form>
-        {% if reset_links %}
-        {% if m.reset_link %}
-        <p class="small muted">Reset link active until {{ m.reset_link.expires_at|date:"M j, H:i" }}.</p>
-        <form method="post" action="{% url 'member_reset_link_cancel' group.pk m.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-block">Cancel link</button>
-        </form>
-        {% endif %}
-        <form method="post" action="{% url 'member_reset_link' group.pk m.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-block">{% if m.reset_link %}Create a new reset link{% else %}Create password reset link{% endif %}</button>
-        </form>
-        {% endif %}
-        </div>
-        {% endif %}
-        {% if claim_links and not m.has_login %}
-        <div class="roster-actions">
-        {% if m.claim_link %}
-        <p class="small muted">Claim link active until {{ m.claim_link.expires_at|date:"M j, H:i" }}.</p>
-        <form method="post" action="{% url 'member_claim_link_cancel' group.pk m.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-block">Cancel link</button>
-        </form>
-        {% else %}
-        <p class="small muted">Give {{ m.display_name }} a login of their own, with this history.</p>
-        {% endif %}
-        <form method="post" action="{% url 'member_claim_link' group.pk m.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-block">{% if m.claim_link %}Create a new claim link{% else %}Create claim link{% endif %}</button>
-        </form>
-        </div>
-        {% endif %}
-        <p class="roster-leave"><a class="btn btn-quiet btn-danger btn-block" href="{% url 'member_remove' group.pk m.pk %}">Remove from group</a></p>
-      </div>
-    </details>
-    {% endif %}
+      {% if not m.has_login and not roster_tools %}<span class="badge">No login</span>{% endif %}
+      {% icon 'chevron-right' %}
+    </a>
   </li>
   {% endfor %}
 </ul>

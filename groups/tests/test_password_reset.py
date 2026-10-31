@@ -96,34 +96,34 @@ class PasswordResetViewTests(TestCase):
         self.maria = add_player(self.group, "maria")
         self.create = reverse("member_reset_link", args=[self.group.pk, self.maria.pk])
         self.cancel = reverse("member_reset_link_cancel", args=[self.group.pk, self.maria.pk])
-        self.players_url = reverse("group", args=[self.group.pk]) + "?view=players"
+        self.maria_url = reverse("player", args=[self.group.pk, self.maria.pk])
         self.client.force_login(self.host.user)
 
     def test_host_sees_the_link_once(self):
         response = self.client.post(self.create)
-        self.assertRedirects(response, self.players_url + "#players", fetch_redirect_response=False)
-        page = self.client.get(self.players_url)
+        self.assertRedirects(response, self.maria_url + "?from=players&open=manage#manage", fetch_redirect_response=False)
+        page = self.client.get(self.maria_url)
         self.assertContains(page, "<strong>Reset link for maria.</strong> Send it to maria only. Whoever opens it can set the password.")
         self.assertContains(page, "It works once and expires ")
         url = page.context["new_reset_link"]["url"]
         self.assertTrue(url.startswith("http://testserver/accounts/reset/"))
         self.assertContains(page, f'value="{url}"')
         self.assertEqual(self.client.get(url).status_code, 200)
-        again = self.client.get(self.players_url)
+        again = self.client.get(self.maria_url)
         self.assertNotContains(again, "/accounts/reset/")
         self.assertContains(again, "Reset link active until ")
         self.assertContains(again, self.cancel)
 
     def test_a_prefetch_does_not_use_up_the_notice(self):
         self.client.post(self.create)
-        self.client.get(self.players_url, headers={"X-Sec-Purpose": "prefetch"})
-        self.assertContains(self.client.get(self.players_url), "Reset link for maria.")
+        self.client.get(self.maria_url, headers={"X-Sec-Purpose": "prefetch"})
+        self.assertContains(self.client.get(self.maria_url), "Reset link for maria.")
 
     def test_cancel(self):
         self.client.post(self.create)
-        self.client.get(self.players_url)
+        self.client.get(self.maria_url)
         self.client.post(self.cancel)
-        page = self.client.get(self.players_url)
+        page = self.client.get(self.maria_url)
         self.assertContains(page, "Reset link cancelled.")
         self.assertNotContains(page, "Reset link active until")
         self.assertFalse(accounts.live_reset_links([self.maria.user_id]))
@@ -131,7 +131,7 @@ class PasswordResetViewTests(TestCase):
     def test_a_refusal_is_a_message(self):
         roster = services.add_roster_player(self.host, "Lolo")
         self.client.post(reverse("member_reset_link", args=[self.group.pk, roster.pk]))
-        self.assertContains(self.client.get(self.players_url), "Lolo has no login.")
+        self.assertContains(self.client.get(self.maria_url), "Lolo has no login.")
 
     def test_a_player_is_forbidden_and_an_outsider_finds_nothing(self):
         self.client.force_login(self.maria.user)
@@ -146,17 +146,17 @@ class PasswordResetViewTests(TestCase):
 
     def test_action_is_offered_only_to_hosts_for_members_with_a_login(self):
         roster = services.add_roster_player(self.host, "Lolo")
-        page = self.client.get(self.players_url)
+        page = self.client.get(self.maria_url)
         self.assertContains(page, self.create)
         self.assertContains(page, "Create password reset link", count=1)
         self.assertNotContains(page, reverse("member_reset_link", args=[self.group.pk, roster.pk]))
         self.assertNotContains(page, reverse("member_reset_link", args=[self.group.pk, self.host.pk]))
         self.client.force_login(self.maria.user)
-        self.assertNotContains(self.client.get(self.players_url), "reset link")
+        self.assertNotContains(self.client.get(self.maria_url), "reset link")
 
     @override_settings(RESET_LINKS=False)
     def test_switch_off_hides_the_action(self):
-        self.assertNotContains(self.client.get(self.players_url), "reset link")
+        self.assertNotContains(self.client.get(self.maria_url), "reset link")
 
     def test_settings_queries_do_not_grow_with_members(self):
         before = self.count_queries()
@@ -166,5 +166,5 @@ class PasswordResetViewTests(TestCase):
 
     def count_queries(self):
         with CaptureQueriesContext(connection) as queries:
-            self.client.get(self.players_url)
+            self.client.get(self.maria_url)
         return len(queries)

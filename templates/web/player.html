@@ -3,7 +3,7 @@
 {% block title %}{{ member.display_name }} · {{ group.name }}{% endblock %}
 {% block page_class %}hub-page player-page{% endblock %}
 {% block screen %} data-depth="2" data-stats="player"{% endblock %}
-{% block header_start %}<nav class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %}<span class="back-words">{{ group.name }} stats</span></a></nav>{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{{ back_url }}">{% icon 'arrow-left' %}<span class="back-words">{{ back_words }}</span></a></nav>{% endblock %}
 {% block content %}
 <header class="player-head">
   {% member_token member members_one %}
@@ -12,6 +12,7 @@
     <p class="muted small">{{ since|default:"No closed session yet" }}{% if left %} · Left the group{% endif %}</p>
   </div>
 </header>
+{% include "web/_player_manage.html" %}
 {% if stat_months %}{% include "web/_stat_controls.html" with board=False %}{% endif %}
 <div data-stat-body>
 {% if record.sessions %}

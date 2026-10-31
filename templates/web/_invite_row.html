@@ -1,0 +1,14 @@
+{# One active invite link: who made it, its use and expiry, the address, its actions. invites.js adds Share and the motion. #}
+<li class="invite-row" data-invite="{{ invite.pk }}"{% if invite.arrived %} data-arrived{% endif %}>
+  <p class="invite-who">Created by {{ invite.by }} · {{ invite.created_at|date:"M j" }}{% if invite.arrived %} <span class="invite-new">New</span>{% endif %}</p>
+  <p class="invite-meta">Used {{ invite.use_count }} of {{ invite.max_uses }} · expires {{ invite.expires_at|date:"M j, H:i" }}</p>
+  {% if invite.url %}{% include "web/_copy_field.html" with id=invite.field_id url=invite.url label="Invite link" %}
+  {% else %}<p class="invite-old">This link was made before links could be shown again.</p>{% endif %}
+  <div class="invite-actions">
+    <form method="post" action="{% url 'invite_revoke' group.pk invite.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-small btn-quiet invite-revoke" aria-label="Revoke the link {{ invite.by }} created {{ invite.created_at|date:"M j, H:i" }}">Revoke</button>
+    </form>
+    {% if invite.url %}<button type="button" class="btn btn-small" data-invite-share="{{ invite.url }}" data-invite-text="Join {{ group.name }} on PokerNights" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M7 10H5.500A1.500 1.500 0 0 0 4 11.500v8A1.500 1.500 0 0 0 5.500 21h13a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18.500 10H17"/></svg>Share</button>{% endif %}
+  </div>
+</li>

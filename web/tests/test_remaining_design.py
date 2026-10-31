@@ -27,9 +27,9 @@ class RemainingFormsTests(TestCase):
         self.assertEqual(page.context['add_form']['names'].value(), 'Ada')
         self.assertIn('already', str(page.context['add_form'].errors))
         page = self.client.post(reverse('member_rename', args=[self.group.pk, second.pk]), {'name': 'Ada'}, follow=True)
-        member = next(m for m in page.context['members'] if m.pk == second.pk)
-        self.assertEqual(member.rename_form['name'].value(), 'Ada')
-        self.assertTrue(member.rename_form.errors)
+        self.assertEqual(page.context['member'].pk, second.pk)
+        self.assertEqual(page.context['rename_form']['name'].value(), 'Ada')
+        self.assertTrue(page.context['rename_form'].errors)
         second.refresh_from_db()
         self.assertEqual(second.display_name, 'Bea')
 

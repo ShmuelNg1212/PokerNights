@@ -11,6 +11,7 @@ class CopyLinkMarkupTests(TestCase):
         self.group, self.host = make_group()
         self.maria = add_player(self.group, "maria")
         self.players_url = reverse("group", args=[self.group.pk]) + "?view=players"
+        self.maria_url = reverse("player", args=[self.group.pk, self.maria.pk])
         self.client.force_login(self.host.user)
 
     def assertCopyField(self, page, field_id, url, label):
@@ -33,15 +34,17 @@ class CopyLinkMarkupTests(TestCase):
 
     def test_new_reset_link_has_a_copy_button(self):
         self.client.post(reverse("member_reset_link", args=[self.group.pk, self.maria.pk]))
-        page = self.client.get(self.players_url)
+        page = self.client.get(self.maria_url)
         self.assertCopyField(page, "new-reset-link", page.context["new_reset_link"]["url"], "Password reset link for maria")
 
     @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
 
-    def test_both_links_at_once_keep_separate_fields(self):
+    def test_each_link_waits_for_its_own_page(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
         self.client.post(reverse("member_reset_link", args=[self.group.pk, self.maria.pk]))
         page = self.client.get(self.players_url)
-        self.assertContains(page, 'class="copy-button"', count=2)
+        self.assertContains(page, 'class="copy-button"', count=1)
         self.assertContains(page, 'data-copy="new-invite-link"', count=1)
+        page = self.client.get(self.maria_url)
+        self.assertContains(page, 'class="copy-button"', count=1)
         self.assertContains(page, 'data-copy="new-reset-link"', count=1)

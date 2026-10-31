@@ -88,7 +88,7 @@ def player(request, group_id, member_id):
     if member is None:
         raise Http404("Not found")
     periods = settlement_queries.stat_periods(me.group)
-    context = {"me": me, "group": me.group, **stats_pages.player_context(request, me, member, periods)}
+    context = {"me": me, "group": me.group, **stats_pages.player_context(request, me, member, periods), **player_manage_context(request, me, member)}
     return render(request, "web/player.html", context)
 
 
@@ -133,9 +133,11 @@ def invite_rows(request, me) -> dict:
     }
 
 
+ROSTER_SEARCH_FROM = 11  # a list longer than one phone screen gets a search
+
+
 def group_players_context(request, me) -> dict:
     """Invites, adding names and the roster. Kept forms are taken only here, so they are not lost on another tab."""
-    group_id = me.group_id
     tools = settings.ROSTER_TOOLS
     members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
     removed = list(Member.objects.filter(group=me.group, status=Member.Status.REMOVED)) if tools and me.is_host else []
@@ -149,36 +151,47 @@ def group_players_context(request, me) -> dict:
         for member in members + removed:
             member.activity_label = activity_label(activity.get(member.pk), today)
             member.arrived = member.pk in arrived
-            if member.pk == me.pk:
-                member.own_form = take_form(request, f"{group_id}:me", NameForm,
-                    initial={"name": member.display_name}, auto_id="me_%s")
     context = {
         "members": members,
         "removed_members": removed,
         "roster_tools": tools,
         "roster_left": request.session.pop("roster_left", False),
+        "roster_search": len(members) >= ROSTER_SEARCH_FROM,
     }
     if me.is_host:
-        context["add_form"] = take_form(request, f"{group_id}:add", NamesForm if tools else NameForm, auto_id="add_%s")
-        for member in members:
-            member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", MemberForm if tools else NameForm,
-                initial={"name": member.display_name, "contact": member.contact}, auto_id=f"rename_{member.pk}_%s")
+        context["add_form"] = take_form(request, f"{me.group_id}:add", NamesForm if tools else NameForm, auto_id="add_%s")
         context.update(invite_rows(request, me))
-        live = accounts.live_reset_links([m.user_id for m in members if m.user_id])
-        for member in members:
-            member.reset_link = live.get(member.user_id)
-        claims = groups.live_claim_links([m.pk for m in members if not m.user_id])
-        for member in members:
-            member.claim_link = claims.get(member.pk)
-        new_claim = request.session.pop("new_claim_link", None)
-        if new_claim:
-            new_claim["expires_at"] = datetime.fromisoformat(new_claim["expires_at"])
-        context["new_claim_link"] = new_claim
+    return context
+
+
+def new_link(request, key, member) -> dict | None:
+    """A link made for this player, shown once. Another player's page leaves it for the page it belongs to."""
+    link = request.session.get(key)
+    if not link or link.get("member") != member.pk:
+        return None
+    del request.session[key]
+    return {**link, "expires_at": datetime.fromisoformat(link["expires_at"])}
+
+
+def player_manage_context(request, me, member) -> dict:
+    """What the viewer can change on a player's page: their own name; a host, everything about another player."""
+    group_id = me.group_id
+    tools = settings.ROSTER_TOOLS
+    context = {"manage_open": request.GET.get("open") == "manage", "roster_tools": tools}
+    if member.status != Member.Status.ACTIVE:
+        return context
+    if member.pk == me.pk:
+        if tools:
+            context["own_form"] = take_form(request, f"{group_id}:me", NameForm, initial={"name": member.display_name}, auto_id="me_%s")
+        return context
+    if me.is_host:
+        context["rename_form"] = take_form(request, f"{group_id}:rename:{member.pk}", MemberForm if tools else NameForm,
+            initial={"name": member.display_name, "contact": member.contact}, auto_id=f"rename_{member.pk}_%s")
+        context["reset_link"] = accounts.live_reset_links([member.user_id]).get(member.user_id) if member.user_id else None
+        context["claim_link"] = groups.live_claim_links([member.pk]).get(member.pk) if not member.user_id else None
         context["claim_links"] = settings.CLAIM_LINKS
-        new_link = request.session.pop("new_reset_link", None)
-        if new_link:
-            new_link["expires_at"] = datetime.fromisoformat(new_link["expires_at"])
-        context["new_reset_link"] = new_link
+        context["new_reset_link"] = new_link(request, "new_reset_link", member)
+        context["new_claim_link"] = new_link(request, "new_claim_link", member)
     return context
 
 

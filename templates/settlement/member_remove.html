@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load table_tags %}
 {% load money_tags %}
-{% block screen %} data-depth="2"{% endblock %}
+{% block screen %} data-depth="3"{% endblock %}
 {% block title %}Remove player · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
-{% block header_start %}<nav class="table-bar"><a href="{% url 'group' group.pk %}?view=players#players">{% icon 'arrow-left' %}<span class="back-words">{{ group.name }} players</span></a></nav>{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'player' group.pk member.pk %}?from=players">{% icon 'arrow-left' %}<span class="back-words">{{ member.display_name }}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>Remove {{ member.display_name }} from the group?</h1>
 {% if refusal %}
@@ -28,6 +28,6 @@
 <form method="post" class="form-section stack" data-once>{% csrf_token %}
   <button type="submit" class="btn btn-danger btn-block">Remove {{ member.display_name }}</button>
 </form>
-<p><a class="btn btn-quiet btn-block" href="{% url 'group' group.pk %}?view=players#players">Keep {{ member.display_name }}</a></p>
+<p><a class="btn btn-quiet btn-block" href="{% url 'player' group.pk member.pk %}?from=players">Keep {{ member.display_name }}</a></p>
 {% endif %}
 {% endblock %}

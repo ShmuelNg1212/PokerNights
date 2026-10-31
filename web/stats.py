@@ -166,6 +166,13 @@ def player_context(request, me, member, periods) -> dict:
     show_all = request.GET.get("all") == "1"
     listed = [SessionLine(result, Figure(signed(result.net, unit), result.net)) for result in listed]
     keep = {"period": period.slug, "unit": unit}
+    # The way in decides the way back; a change of period or unit keeps it.
+    from_players = request.GET.get("from") == "players"
+    if from_players:
+        keep["from"] = "players"
+        back_url = reverse("group", args=[me.group_id]) + f"?view=players#member-{member.pk}"
+    else:
+        back_url = reverse("group", args=[me.group_id]) + "?" + _query(view="stats", sort=request.GET.get("sort", "profit"), **keep)
     return {
         "member": member,
         "left": member.status != "active",
@@ -189,7 +196,9 @@ def player_context(request, me, member, periods) -> dict:
         "session_count": len(listed),
         "more": len(listed) > SHOWN and not show_all,
         "all_url": "?" + _query(all="1", **keep),
-        "back_url": reverse("group", args=[me.group_id]) + "?" + _query(view="stats", sort=request.GET.get("sort", "profit"), **keep),
+        "back_url": back_url,
+        "back_words": f"{me.group.name} players" if from_players else f"{me.group.name} stats",
+        "from_players": from_players,
         "keep": _query(**keep),
         "members_one": [member],
         "stat_where": where(period),

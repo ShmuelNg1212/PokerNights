@@ -68,9 +68,7 @@ class GroupViewTests(TestCase):
         self.client.force_login(add_player(self.group, "viewer").user)
         page = self.client.get(self.url, {"view": "players"})
         self.assertContains(page, ">Players</h2>")
-        # The one form a player has is for their own name.
-        self.assertContains(page, "<form method=\"post\" action=\"/g/", count=1)
-        self.assertContains(page, reverse("member_rename_self", args=[self.group.pk]))
+        self.assertNotContains(page, "<form method=\"post\" action=\"/g/")
         self.assertNotContains(page, "Invite players")
 
     def test_host_renames_the_group_from_settings(self):

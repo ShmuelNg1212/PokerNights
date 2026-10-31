@@ -726,8 +726,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .group-page input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
 .roster-person .chip { flex:none; }
-.group-players .form-row { flex-wrap:wrap; }
-.group-players .form-row > .grow { flex-basis:100%; }
+.player-manage .form-row { flex-wrap:wrap; }
+.player-manage .form-row > .grow { flex-basis:100%; }
 .log-page { max-width:850px; }
 .log-page h1, .log-page p, .log-records li { overflow-wrap:anywhere; }
 .log-page h2 { scroll-margin-top:96px; }
@@ -1228,18 +1228,26 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 }
 .numpad-open .toast:not(.toast-quiet) { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }
 
-/* Roster (the Players tab, roster.js). A row is a person: the name, then how often they
-   come. What a host can do to them is one disclosure away, and removing sits apart under a rule. */
+/* Roster (the Players tab, roster.js). A row is a person: the name, then how often they come. It
+   leads to their page; what a host can do to them is there, and removing sits apart under a rule. */
 .roster-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .roster-activity { display: block; color: var(--muted); font-size: .8125rem; font-weight: 500; font-variant-numeric: tabular-nums; }
-.roster-row { border-radius: var(--r-row); }
+.roster-row { scroll-margin-top: 80px; }
 .roster-row.just-changed { outline-offset: -1px; }
-.roster-row > details { margin-top: var(--s-1); }
-:is(#players, #invites) details > summary { gap: var(--s-2); list-style: none; }
-:is(#players, #invites) details > summary::-webkit-details-marker { display: none; }
+.list > .roster-row:has(> .roster-link) { padding: 0; }
+.group-page .list a.roster-link { display: flex; align-items: center; gap: var(--s-2); min-height: 64px; padding: var(--s-2) var(--s-2); margin: 0 calc(var(--s-2) * -1); border-radius: var(--r-row); color: inherit; text-decoration: none; min-width: 0; transition: background var(--t-fast); }
+.roster-link:hover, .roster-link:active { background: var(--pressed); }
+.roster-link .grow { flex: 1 1 0; }
+.roster-link > .icon { flex: none; width: 18px; height: 18px; color: var(--muted); }
+.roster-search { margin-bottom: var(--s-3); }
+.roster-search .hint { margin: var(--s-2) 0 0; }
+.player-manage { margin: 0 0 var(--s-4); border-block: 1px solid var(--rule); }
+.player-manage > .roster-form, .player-manage > .roster-manage { padding-bottom: var(--s-4); }
+:is(#players, #invites) details > summary, .player-manage > summary { gap: var(--s-2); list-style: none; }
+:is(#players, #invites) details > summary::-webkit-details-marker, .player-manage > summary::-webkit-details-marker { display: none; }
 /* The chevron is drawn, and turns when its disclosure opens. */
-:is(#players, #invites) details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-:is(#players, #invites) details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+:is(#players, #invites) details > summary::after, .player-manage > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+:is(#players, #invites) details[open] > summary::after, .player-manage[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .roster-form, .roster-manage { padding: var(--s-1) 0 var(--s-2); }
 .manage-end { border-top: 1px solid var(--rule); padding-top: var(--s-4); }
 .roster-manage > .roster-form { padding: 0; }
@@ -1274,6 +1282,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .invite-actions .btn .icon { width: 1.125rem; height: 1.125rem; }
 .invites-past { margin-top: var(--s-2); border-top: 1px solid var(--line); }
 .invites-past > summary { border-radius: var(--r-row); }
+.invites-more > .invite-list { padding-bottom: var(--s-2); }
 .invite-past { color: var(--muted); overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: no-preference) {
   .invite-row[data-arrived] .invite-who::after { animation: mark-draw var(--t-sheet) var(--ease-out) 180ms backwards; }

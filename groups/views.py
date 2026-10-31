@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from . import services
 from .access import member_for
 from .errors import RuleError
-from .http import attempt, attempt_bound, group_players, group_settings, keep_form
+from .http import attempt, attempt_bound, group_player, group_players, group_settings, keep_form
 from .forms import GroupForm, MemberForm, NameForm, NamesForm
 from .access import require_host
 from .models import Member
@@ -32,7 +32,7 @@ def create_group(request):
 def set_role(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.set_role, actor, member_id, request.POST.get("role", ""), success="Role updated.")
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @require_POST
@@ -65,7 +65,7 @@ def rename_self(request, group_id):
         keep_form(request, f"{group_id}:me", form)
     else:
         messages.success(request, f"Your name is now {' '.join(form.cleaned_data['name'].split())}.")
-    return group_players(group_id, "players")
+    return group_player(group_id, actor.pk)
 
 
 @require_POST
@@ -133,18 +133,19 @@ def create_password_reset(request, group_id, member_id):
         member, link, token = created
         # Shown once on the next page; only the hash is stored.
         request.session["new_reset_link"] = {
+            "member": member.pk,
             "name": member.display_name,
             "url": request.build_absolute_uri(reverse("password_reset", args=[token])),
             "expires_at": link.expires_at.isoformat(),
         }
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @require_POST
 def cancel_password_reset(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.cancel_password_reset, actor, member_id, success="Reset link cancelled.")
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @login_not_required
@@ -201,7 +202,7 @@ def rename_member(request, group_id, member_id):
             form.cleaned_data["contact"] if detailed else None,
             success="Saved." if detailed else "Player renamed.") is None:
         keep_form(request, f"{group_id}:rename:{member_id}", form)
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @require_POST
@@ -212,18 +213,19 @@ def create_claim_link(request, group_id, member_id):
         member, link, token = created
         # Shown once on the next page; only the hash is stored.
         request.session["new_claim_link"] = {
+            "member": member.pk,
             "name": member.display_name,
             "url": request.build_absolute_uri(reverse("claim", args=[token])),
             "expires_at": link.expires_at.isoformat(),
         }
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @require_POST
 def cancel_claim_link(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.cancel_claim_link, actor, member_id, success="Claim link cancelled.")
-    return group_players(group_id, "players")
+    return group_player(group_id, member_id)
 
 
 @login_not_required

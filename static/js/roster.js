@@ -1,6 +1,6 @@
 // The Players tab. It only adds: the rows a host just added or brought back are marked and
-// rise into place, an opened disclosure eases in, and the Names box counts what is typed.
-// Without it every form on the section still works.
+// rise into place, an opened disclosure eases in, the Names box counts what is typed, and a long
+// list can be searched. Without it every row and form still works, and no search shows.
 (function () {
   "use strict";
   var HOLD_MS = 3000, FADE_MS = 400, MOST = 30;
@@ -54,6 +54,37 @@
     }
     if (box) { box.addEventListener("input", count, { signal: life.signal }); count(); }
 
+    var finder = section.querySelector("[data-roster-search]"), find = finder && finder.querySelector("[data-roster-find]");
+    if (find) {
+      var rows = Array.from(list.children), none = finder.querySelector("[data-roster-none]");
+      function search() {
+        var words = find.value.trim().toLowerCase(), shown = 0;
+        rows.forEach(function (row) {
+          row.hidden = words !== "" && row.dataset.name.indexOf(words) < 0;
+          if (!row.hidden) shown++;
+        });
+        none.hidden = shown > 0;
+        none.textContent = shown ? "" : "No player is called that.";
+      }
+      finder.hidden = false;
+      find.addEventListener("input", search, { signal: life.signal });
+      search();
+    }
+
     return function () { life.abort(); timers.forEach(clearTimeout); };
+  });
+
+  // A player's page: Manage eases open, as the disclosures on the tab do.
+  window.pokerPage.register(function () {
+    var manage = document.querySelector(".player-manage"), M = window.pokerMotion;
+    if (!manage) return;
+    var life = new AbortController();
+    manage.addEventListener("toggle", function () {
+      if (!manage.open || !M || !M.on()) return;
+      var inside = manage.querySelector(":scope > :not(summary)"), from = { opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0px)"] };
+      inside.style.opacity = "0"; inside.style.transform = "translateY(-6px)";
+      M.settle(inside, M.run(inside, from, "fade"), ["opacity", "transform"]);
+    }, { signal: life.signal });
+    return function () { life.abort(); };
   });
 })();

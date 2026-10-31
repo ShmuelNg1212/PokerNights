@@ -21,29 +21,32 @@ const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
 const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
 // WCAG contrast of an element's text against the page ground, via canvas so oklch resolves.
 const contrast=sel=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.body).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
-const sized=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, #players summary')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
+const sized=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, #players summary, .player-manage summary')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
 const fits=w=>`document.documentElement.scrollWidth<=${w}`;
 const submit=P=>P.click(`document.querySelector('form.form-section [type=submit]')`);
 const login=async(P,name)=>{await P.go('/accounts/login/');await P.js(`document.querySelector('[name=username]').value='${name}';document.querySelector('[name=password]').value='tablestakes-91'`);await submit(P);};
 const row=name=>`[...document.querySelectorAll('#players [data-roster] > li')].find(li=>li.querySelector('.roster-name > span').textContent.trim().startsWith(${JSON.stringify(name)}))`;
 try {
  const A=await page();await send('Browser.grantPermissions',{permissions:['clipboardReadWrite','clipboardSanitizedWrite'],browserContextId:A.browserContextId});await login(A,'rosa');
- const settings=(await A.js(`[...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).find(h=>new RegExp('^/g/[0-9]+/$').test(h))`))+'?view=settings';
- const issue=async name=>{await A.go(settings);await A.js(`${row(name)}.querySelector('details').open=true`);await sleep(300);await A.click(`${row(name)}.querySelector('form[action$="/claim-link/"] button')`);return (await A.js(`document.getElementById('new-claim-link').value`)).replace(BASE,'');};
- await A.go(settings);await A.js(`${row('Tito Boy')}.querySelector('details').open=true`);await sleep(300);
- check('the action is offered for a player without a login only',await A.js(`!!${row('Tito Boy')}.querySelector('form[action$="/claim-link/"]')&&!${row('benny')}.querySelector('form[action$="/claim-link/"]')`));
+ const settings=(await A.js(`[...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).find(h=>new RegExp('^/g/[0-9]+/$').test(h))`))+'?view=players';
+ const open=async name=>{await A.go(settings);await A.click(`${row(name)}.querySelector('a.roster-link')`);await A.js(`document.querySelector('.player-manage').open=true`);await sleep(300)};
+ const issue=async name=>{await open(name);await A.click(`document.querySelector('form[action$="/claim-link/"] button')`);return (await A.js(`document.getElementById('new-claim-link').value`)).replace(BASE,'');};
+ await open('benny');
+ check('the action is not offered for a player with a login',await A.js(`!document.querySelector('form[action$="/claim-link/"]')`));
+ await open('Tito Boy');
+ check('the action is offered for a player without a login',await A.js(`!!document.querySelector('form[action$="/claim-link/"]')`));
  check('48px targets in Manage',await A.js(sized));await A.shot('claim-manage-390');
  const tito=await issue('Tito Boy');
  check('the link is shown once with what it does',await A.js(text('Whoever opens it becomes Tito Boy in this group.'))&&tito.startsWith('/claim/'));
  for(const w of [320,390,1280]){await A.size(w);check(`notice fits ${w}`,await A.js(fits(w)));}await A.size(390);await A.shot('claim-notice-390');
  await A.js(`document.querySelector('[data-copy="new-claim-link"]').click()`);await sleep(250);
  check('Copy puts the whole address on the clipboard',(await A.js(`navigator.clipboard.readText()`)).endsWith(tito));
- await A.go(settings);check('the link is not shown again and the row says it is live',await A.js(`!document.getElementById('new-claim-link')`)&&await A.js(text('Claim link active until')));
+ await open('Tito Boy');check('the link is not shown again and the page says it is live',await A.js(`!document.getElementById('new-claim-link')`)&&await A.js(text('Claim link active until')));
 
  // A newcomer signs up from the link and is the player.
  const B=await page();await B.go(tito);
  check('a signed-out visitor lands on Sign up, naming the group',await B.js(`location.pathname==='/accounts/signup/'`)&&await B.js(text('Thursday Regulars')));
- check('opening changed nothing',await A.js(`(async()=>{const r=await fetch(location.href);return (await r.text()).includes('Claim link active until')})()`));
+ check('opening changed nothing',await A.js(`(async()=>{const r=await fetch(location.pathname);return (await r.text()).includes('Claim link active until')})()`));
  await B.js(`document.querySelector('[name=username]').value='titoboy';document.querySelector('[name=password1]').value='tablestakes-91'`);await submit(B);
  check('the new account arrives in the group as the player',await B.js(text("You're in as Tito Boy."))&&await B.js(`new RegExp('^/g/[0-9]+/$').test(location.pathname)`));
  await B.go(settings);check('the player keeps the name and the history',await B.js(`(()=>{const li=${row('Tito Boy')};return li.textContent.includes('(you)')&&li.textContent.includes('1 session · last played Oct 1')&&!li.textContent.includes('No login')})()`));await B.shot('claim-arrived-390');
