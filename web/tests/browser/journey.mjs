@@ -55,6 +55,7 @@ try{
  check('a new person is not asked about the home screen before any session',await H.js(`!document.querySelector('dialog[open]')`));
  await H.type('main [name=name]','Friday crew');await H.tap('^Create group',1500);
  const groupPath=await H.js('location.pathname');
+ await H.go('/');{const before=H.taps;await H.tap('^Friday crew');await H.tap('^Players$');table.inviteTaps=H.taps-before;H.taps=before;check('a new host reaches Invite in two taps from Your groups, in view',table.inviteTaps===2&&await H.js(`(()=>{const b=document.querySelector('#invites form[action$="/invites/new/"] button').getBoundingClientRect();return b.top>=0&&b.bottom<=innerHeight})()`))}
  await H.go(groupPath+'?view=settings');table.settingsNew=await H.js('document.documentElement.scrollHeight');await H.go(groupPath);
  await H.tap('^New session');
  await H.type('[name=table_name]','Rosa kitchen');
@@ -124,6 +125,7 @@ line('Group settings, new group',`${table.settingsNew} px`);
 line('Settings, seeded',`${table.settingsSeeded} controls`);
 line('Player rows on the first screen, ready to start',`${table.rowsOpen}`);
 line('First ranked row on Stats',`${table.statsRow} px`);
+line('Your groups to Invite, new host',`${table.inviteTaps} taps`);
 writeFileSync(`${OUT}/journey.json`,JSON.stringify(table));
 ws.close();chrome.kill();
 const failed=results.filter(r=>!r.ok).length;console.log(`\n${results.length-failed} of ${results.length} checks passed`);process.exit(failed?1:0);

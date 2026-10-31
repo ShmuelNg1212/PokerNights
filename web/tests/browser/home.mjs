@@ -58,7 +58,7 @@ try {
  check('390px one column',await cols(A)===1);
  // The gear and the name lead where they say.
  await A.js(`${card(M.groups.open)}.querySelector('.group-gear').click()`);await sleep(900);
- check('the gear opens that group\'s Group settings',await A.js(`location.pathname+location.search`)===`/g/${M.groups.open}/?view=settings`&&await A.js(`document.querySelector('.tabs a[aria-current]').textContent.trim()==='Group settings'`));
+ check('the gear opens that group\'s Settings',await A.js(`location.pathname+location.search`)===`/g/${M.groups.open}/?view=settings`&&await A.js(`document.querySelector('.tabs a[aria-current]').textContent.trim()==='Settings'`));
  await A.go('/');await A.js(`${card(M.groups.open)}.querySelector('h2 a').click()`);await sleep(900);
  check('the name opens the group on Sessions',await A.js(`location.pathname+location.search`)===`/g/${M.groups.open}/`);
  // New group: a button that opens the form in place; a refused name keeps it open.

@@ -67,7 +67,7 @@ try {
  check('keyboard: the button takes focus with the ring',await A.js(`(()=>{const b=${btn('new-invite-link')};b.focus();return document.activeElement===b&&b.matches(':focus-visible')?getComputedStyle(b).outlineStyle!=='none':document.activeElement===b})()`));
  // Without JavaScript.
  const C=await page();await C.go('/accounts/login/');await C.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91'`);await submit(C);
- await send('Emulation.setScriptExecutionDisabled',{value:true},C.s);await C.go(settings);await C.click(make.invite);
+ await send('Emulation.setScriptExecutionDisabled',{value:true},C.s);await C.go(players);await C.click(make.invite);
  check('no JavaScript: no visible button, the field still holds the link',await C.js(`!${btn('new-invite-link')}.getClientRects().length&&${fld('new-invite-link')}.value.includes('/join/')`));await C.shot('copy-nojs-390');
  writeFileSync(`${OUT}/copy.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}
