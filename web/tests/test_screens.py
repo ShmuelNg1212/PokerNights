@@ -22,7 +22,7 @@ class ScreenDepthTests(TestCase):
     def test_each_screen_says_how_deep_it_is(self):
         group = reverse("group", args=[self.group.pk])
         for url, depth in (
-            (reverse("home"), 0), (group, 1), (group + "?view=settings", 1),
+            (reverse("home"), 0), (group, 1), (group + "?view=players", 1), (group + "?view=settings", 1),
             (reverse("night", args=[self.session.night_id]), 2), (reverse("session_create", args=[self.group.pk]), 2),
             (reverse("session", args=[self.session.pk]), 3),
             (reverse("session_log", args=[self.session.pk]), 4), (reverse("session_settings", args=[self.session.pk]), 4),
@@ -37,8 +37,9 @@ class ScreenDepthTests(TestCase):
     def test_group_tabs_are_numbered_in_order(self):
         group = reverse("group", args=[self.group.pk])
         self.assertIn('data-tab="0"', self.main(group)[1])
-        self.assertIn('data-tab="1"', self.main(group + "?view=stats")[1])
-        self.assertIn('data-tab="2"', self.main(group + "?view=settings")[1])
+        self.assertIn('data-tab="1"', self.main(group + "?view=players")[1])
+        self.assertIn('data-tab="2"', self.main(group + "?view=stats")[1])
+        self.assertIn('data-tab="3"', self.main(group + "?view=settings")[1])
         self.assertNotIn("data-tab", self.main(reverse("home"))[1])
 
     def test_one_heading_per_screen_can_carry_the_name(self):

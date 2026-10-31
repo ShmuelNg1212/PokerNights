@@ -54,7 +54,7 @@ def profile(request):
     return render(request, "web/profile.html", profile_page.profile_context(request, request.user))
 
 
-GROUP_VIEWS = ("sessions", "stats", "settings")
+GROUP_VIEWS = ("sessions", "players", "stats", "settings")
 
 
 def group(request, group_id):
@@ -72,6 +72,8 @@ def group(request, group_id):
     context["has_stats"] = bool(periods)
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
+    elif context["view"] == "players":
+        context.update(group_players_context(request, me))
     elif context["view"] == "stats":
         context.update(stats_pages.board_context(request, me, periods))
     else:
@@ -131,8 +133,8 @@ def invite_rows(request, me) -> dict:
     }
 
 
-def group_settings_context(request, me) -> dict:
-    """Roster, invites, tables, presets and the rake account. Kept forms are taken only here, so they are not lost on another tab."""
+def group_players_context(request, me) -> dict:
+    """Invites, adding names and the roster. Kept forms are taken only here, so they are not lost on another tab."""
     group_id = me.group_id
     tools = settings.ROSTER_TOOLS
     members = list(Member.objects.filter(group=me.group, status=Member.Status.ACTIVE))
@@ -150,25 +152,14 @@ def group_settings_context(request, me) -> dict:
             if member.pk == me.pk:
                 member.own_form = take_form(request, f"{group_id}:me", NameForm,
                     initial={"name": member.display_name}, auto_id="me_%s")
-    rake_totals, rake_sets = ledger_queries.group_rake(me.group)
     context = {
         "members": members,
         "removed_members": removed,
         "roster_tools": tools,
         "roster_left": request.session.pop("roster_left", False),
-        "rake_totals": rake_totals,
-        "rake_sets": rake_sets,
-        "rake_settlement": GroupRakeAccount.objects.filter(group=me.group).values_list("settlement", flat=True).first()
-        or GroupRakeAccount.Settlement.RETURNED,
-        "rake_settlement_choices": GroupRakeAccount.Settlement.choices,
-        "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
-        "chip_presets": [{"preset": preset, "rows": chips.named(preset.values)} for preset in games.chip_presets_for(me.group)],
     }
     if me.is_host:
-        context["group_form"] = take_form(request, f"{group_id}:group", GroupForm,
-            initial={"name": me.group.name}, auto_id="group_name_%s")
         context["add_form"] = take_form(request, f"{group_id}:add", NamesForm if tools else NameForm, auto_id="add_%s")
-        context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
         for member in members:
             member.rename_form = take_form(request, f"{group_id}:rename:{member.pk}", MemberForm if tools else NameForm,
                 initial={"name": member.display_name, "contact": member.contact}, auto_id=f"rename_{member.pk}_%s")
@@ -188,6 +179,26 @@ def group_settings_context(request, me) -> dict:
         if new_link:
             new_link["expires_at"] = datetime.fromisoformat(new_link["expires_at"])
         context["new_reset_link"] = new_link
+    return context
+
+
+def group_settings_context(request, me) -> dict:
+    """Tables, presets, the rake account and the group itself. Kept forms are taken only here, so they are not lost on another tab."""
+    group_id = me.group_id
+    rake_totals, rake_sets = ledger_queries.group_rake(me.group)
+    context = {
+        "rake_totals": rake_totals,
+        "rake_sets": rake_sets,
+        "rake_settlement": GroupRakeAccount.objects.filter(group=me.group).values_list("settlement", flat=True).first()
+        or GroupRakeAccount.Settlement.RETURNED,
+        "rake_settlement_choices": GroupRakeAccount.Settlement.choices,
+        "presets": SettingsPreset.objects.filter(group=me.group, archived_at__isnull=True),
+        "chip_presets": [{"preset": preset, "rows": chips.named(preset.values)} for preset in games.chip_presets_for(me.group)],
+    }
+    if me.is_host:
+        context["group_form"] = take_form(request, f"{group_id}:group", GroupForm,
+            initial={"name": me.group.name}, auto_id="group_name_%s")
+        context["table_form"] = take_form(request, f"{group_id}:table", TableForm, presets=context["presets"], auto_id="table_%s")
     return context
 
 

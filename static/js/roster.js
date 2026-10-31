@@ -1,10 +1,15 @@
-// Group settings → Players. It only adds: the rows a host just added or brought back are marked and
+// The Players tab. It only adds: the rows a host just added or brought back are marked and
 // rise into place, an opened disclosure eases in, and the Names box counts what is typed.
 // Without it every form on the section still works.
 (function () {
   "use strict";
   var HOLD_MS = 3000, FADE_MS = 400, MOST = 30;
   window.pokerPage.register(function () {
+    // An old address of Group settings: the players have their own tab now.
+    if (document.querySelector(".group-settings") && /^#(players|invites)$/.test(location.hash)) {
+      location.replace(location.pathname + "?view=players" + location.hash);
+      return;
+    }
     var section = document.getElementById("players"), list = section && section.querySelector("[data-roster]");
     if (!list) return;
     var life = new AbortController(), timers = [], M = window.pokerMotion;

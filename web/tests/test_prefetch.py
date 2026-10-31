@@ -15,6 +15,7 @@ class PrefetchGuardTests(TestCase):
         self.group, self.host = make_group()
         self.client.force_login(self.host.user)
         self.settings_url = reverse("group", args=[self.group.pk]) + "?view=settings"
+        self.players_url = reverse("group", args=[self.group.pk]) + "?view=players"
 
     def test_a_flash_message_waits_for_the_real_page(self):
         make_table(self.host)
@@ -41,8 +42,8 @@ class PrefetchGuardTests(TestCase):
 
     def test_a_new_invite_link_waits_for_the_real_page(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
-        self.client.get(self.settings_url, **PREFETCH)
-        real = self.client.get(self.settings_url)
+        self.client.get(self.players_url, **PREFETCH)
+        real = self.client.get(self.players_url)
         self.assertContains(real, "/join/")
         self.assertIsNotNone(real.context["new_invite_url"])
 
@@ -50,9 +51,9 @@ class PrefetchGuardTests(TestCase):
 
     def test_an_ordinary_request_is_untouched(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
-        first = self.client.get(self.settings_url)
+        first = self.client.get(self.players_url)
         self.assertIsNotNone(first.context["new_invite_url"])
-        self.assertIsNone(self.client.get(self.settings_url).context["new_invite_url"])  # shown once, as before
+        self.assertIsNone(self.client.get(self.players_url).context["new_invite_url"])  # shown once, as before
         self.assertNotIn("no-store", first.get("Cache-Control", ""))
 
     def test_a_prefetched_ledger_page_is_complete_and_never_stored(self):
@@ -67,4 +68,4 @@ class PrefetchGuardTests(TestCase):
     def test_a_post_is_never_treated_as_a_prefetch(self):
         response = self.client.post(reverse("invite_create", args=[self.group.pk]), **PREFETCH)
         self.assertEqual(response.status_code, 302)
-        self.assertIsNotNone(self.client.get(self.settings_url).context["new_invite_url"])
+        self.assertIsNotNone(self.client.get(self.players_url).context["new_invite_url"])

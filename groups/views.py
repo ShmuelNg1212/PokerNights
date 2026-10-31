@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from . import services
 from .access import member_for
 from .errors import RuleError
-from .http import attempt, attempt_bound, group_settings, keep_form
+from .http import attempt, attempt_bound, group_players, group_settings, keep_form
 from .forms import GroupForm, MemberForm, NameForm, NamesForm
 from .access import require_host
 from .models import Member
@@ -32,7 +32,7 @@ def create_group(request):
 def set_role(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.set_role, actor, member_id, request.POST.get("role", ""), success="Role updated.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
@@ -54,7 +54,7 @@ def restore_member(request, group_id, member_id):
             messages.success(request, f"{old} is back in the group.")
         else:
             messages.success(request, f"{old} is back as {member.display_name}, because another {old} is in the group. Rename either one.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
@@ -65,7 +65,7 @@ def rename_self(request, group_id):
         keep_form(request, f"{group_id}:me", form)
     else:
         messages.success(request, f"Your name is now {' '.join(form.cleaned_data['name'].split())}.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
@@ -114,7 +114,7 @@ def create_invite(request, group_id):
         else:
             # Shown once on the next page; only the hash is stored.
             request.session["new_invite_url"] = request.build_absolute_uri(reverse("invite_accept", args=[created[1]]))
-    return group_settings(group_id, "invites")
+    return group_players(group_id, "invites")
 
 
 @require_POST
@@ -122,7 +122,7 @@ def revoke_invite(request, group_id, invite_id):
     actor = member_for(request.user, group_id)
     if attempt(request, services.revoke_invite, actor, invite_id, success="Invite revoked.") is not None:
         request.session["invite_left"] = True  # Past invites is marked on the next page
-    return group_settings(group_id, "invites")
+    return group_players(group_id, "invites")
 
 
 @require_POST
@@ -137,14 +137,14 @@ def create_password_reset(request, group_id, member_id):
             "url": request.build_absolute_uri(reverse("password_reset", args=[token])),
             "expires_at": link.expires_at.isoformat(),
         }
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
 def cancel_password_reset(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.cancel_password_reset, actor, member_id, success="Reset link cancelled.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @login_not_required
@@ -186,7 +186,7 @@ def add_roster_player(request, group_id):
     else:
         request.session["roster_arrived"] = [member.pk for member in added]  # the rows that are new on the next page
         messages.success(request, "Player added." if len(added) == 1 else f"Added {len(added)} players.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
@@ -201,7 +201,7 @@ def rename_member(request, group_id, member_id):
             form.cleaned_data["contact"] if detailed else None,
             success="Saved." if detailed else "Player renamed.") is None:
         keep_form(request, f"{group_id}:rename:{member_id}", form)
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
@@ -216,14 +216,14 @@ def create_claim_link(request, group_id, member_id):
             "url": request.build_absolute_uri(reverse("claim", args=[token])),
             "expires_at": link.expires_at.isoformat(),
         }
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @require_POST
 def cancel_claim_link(request, group_id, member_id):
     actor = member_for(request.user, group_id)
     attempt(request, services.cancel_claim_link, actor, member_id, success="Claim link cancelled.")
-    return group_settings(group_id, "players")
+    return group_players(group_id, "players")
 
 
 @login_not_required

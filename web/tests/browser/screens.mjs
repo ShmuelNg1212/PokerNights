@@ -55,11 +55,12 @@ async function walk(width){
  r=await step('.table-bar a');check(`${W} set log → set: back`,back(r),r);
  r=await step('.table-bar a');check(`${W} set → session: back, the name is carried`,back(r)&&has(r,'group(title)')&&r.path===night,r);
  r=await step('.table-bar a',`screens-back-${width}`);check(`${W} session → group: back, the name returns to its row`,back(r)&&has(r,'group(title)')&&r.path==='/g/1/',r);
+ r=await step('.tabs a[href$="view=players"]');check(`${W} Sessions → Players: onward`,r.ok&&r.go==='next',r);
  r=await step('.tabs a[href$="view=stats"]',`screens-tab-${width}`);
- check(`${W} Sessions → Stats: the content shifts, the marker slides, the heading and tab bar stay`,r.ok&&r.go==='next'&&ran(r,'new(root)','screen-in-right')&&has(r,'group(tab-current)')&&has(r,'group(tabs)')&&has(r,'group(page-heading)'),r);
- check(`${W} tabs: the marker is its own layer under the words, and each word is a layer that stays in place`,['tab-1','tab-2','tab-3'].every(n=>has(r,`group(${n})`))&&await A.js(`(()=>{const m=document.querySelector('.tabs a[aria-current] .tab-marker');return !!m&&m.textContent===''&&document.querySelectorAll('.tab-marker').length===1&&getComputedStyle(document.querySelector('.tabs a[aria-current]')).backgroundColor==='rgba(0, 0, 0, 0)'})()`),r);
- r=await step('.tabs a[href$="view=settings"]');check(`${W} Stats → Group settings: onward`,r.ok&&r.go==='next',r);
- r=await step('.tabs a:first-child');check(`${W} Group settings → Sessions: the other way`,r.ok&&r.go==='prev'&&ran(r,'new(root)','screen-in-left'),r);
+ check(`${W} Players → Stats: the content shifts, the marker slides, the heading and tab bar stay`,r.ok&&r.go==='next'&&ran(r,'new(root)','screen-in-right')&&has(r,'group(tab-current)')&&has(r,'group(tabs)')&&has(r,'group(page-heading)'),r);
+ check(`${W} tabs: the marker is its own layer under the words, and each word is a layer that stays in place`,['tab-1','tab-2','tab-3','tab-4'].every(n=>has(r,`group(${n})`))&&await A.js(`(()=>{const m=document.querySelector('.tabs a[aria-current] .tab-marker');return !!m&&m.textContent===''&&document.querySelectorAll('.tab-marker').length===1&&getComputedStyle(document.querySelector('.tabs a[aria-current]')).backgroundColor==='rgba(0, 0, 0, 0)'})()`),r);
+ r=await step('.tabs a[href$="view=settings"]');check(`${W} Stats → Settings: onward`,r.ok&&r.go==='next',r);
+ r=await step('.tabs a:first-child');check(`${W} Settings → Sessions: the other way`,r.ok&&r.go==='prev'&&ran(r,'new(root)','screen-in-left'),r);
  r=await step('.table-bar a');check(`${W} group → Your groups: back, the name returns to its card`,back(r)&&has(r,'group(title)')&&r.path==='/',r);
  r=await step('!history.back()');check(`${W} the phone's Back: the plain cross-fade`,plain(r)&&r.path==='/g/1/',r);
  r=await step('!history.forward()');check(`${W} the phone's Forward: the plain cross-fade`,plain(r)&&r.path==='/',r);
@@ -96,6 +97,23 @@ try {
  check('twenty changes: no marker, no temporary name, no error',await A.js(`!document.documentElement.dataset.go&&document.querySelectorAll('[style*="view-transition-name"]').length===0&&__errors.length===0&&__vt.every(x=>x.ok)`));
 
  await walk(1280);
+ await walk(320);
+
+ // Four tabs on the smallest phone: every word whole, on one line, inside the bar.
+ const N=await user('hana',320);await N.go('/g/1/?view=players');
+ check('320px: four tabs fit, each word on one line and at 48px',await N.js(`(()=>{const bar=document.querySelector('.tabs'),tabs=[...bar.querySelectorAll('a')],b=bar.getBoundingClientRect();return tabs.length===4&&document.documentElement.scrollWidth<=320&&tabs.every(a=>{const r=a.getBoundingClientRect(),w=document.createRange();w.selectNodeContents(a);return r.left>=b.left&&r.right<=b.right&&r.height>=48&&w.getClientRects().length<=2&&w.getBoundingClientRect().width<=r.width})})()`));
+ check('320px: the marker fills the chosen tab',await N.js(`(()=>{const a=document.querySelector('.tabs a[aria-current]').getBoundingClientRect(),m=document.querySelector('.tab-marker').getBoundingClientRect();return Math.abs(a.width-m.width)<1&&Math.abs(a.left-m.left)<1})()`));
+ await N.shot('tabs-four-320');
+
+ // An old address of Group settings still arrives.
+ await N.go('/g/1/?view=settings#players');await sleep(500);
+ check('the old address of the players lands on the Players tab',await N.js(`location.search==='?view=players'&&!!document.querySelector('[data-roster]')`),await N.js('location.href'));
+ await N.go('/g/1/?view=settings#invites');await sleep(500);
+ check('the old address of the invite links lands on them',await N.js(`location.search==='?view=players'&&location.hash==='#invites'&&!!document.querySelector('#invites')`),await N.js('location.href'));
+ await N.go('/g/1/?view=settings');
+ check('Settings itself stays where it is and shows no moved line',await N.js(`location.search==='?view=settings'&&[...document.querySelectorAll('.settings-moved')].every(e=>!e.getClientRects().length)`));
+ const Q=await user('hana',390);await send('Emulation.setScriptExecutionDisabled',{value:true},Q.s);await Q.go('/g/1/?view=settings#players');
+ check('no JavaScript: the old address says where the players went',await Q.js(`(()=>{const m=document.querySelector('#players.settings-moved');return m.getClientRects().length>0&&m.querySelector('a').getAttribute('href').endsWith('?view=players')})()`));
 
  // Reduced motion: screens change, nothing is directed or carried.
  const R=await user('hana',390,s=>send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},s));await R.go('/');

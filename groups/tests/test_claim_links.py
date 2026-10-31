@@ -128,33 +128,33 @@ class ClaimLinkViewTests(TestCase):
         self.tito = services.add_roster_player(self.host, "Tito Boy")
         self.create = reverse("member_claim_link", args=[self.group.pk, self.tito.pk])
         self.cancel = reverse("member_claim_link_cancel", args=[self.group.pk, self.tito.pk])
-        self.settings_url = reverse("group", args=[self.group.pk]) + "?view=settings"
+        self.players_url = reverse("group", args=[self.group.pk]) + "?view=players"
         self.client.force_login(self.host.user)
 
     def link(self):
         return reverse("claim", args=[services.create_claim_link(self.host, self.tito.pk)[2]])
 
     def test_the_host_sees_the_link_once_and_can_cancel(self):
-        self.assertContains(self.client.get(self.settings_url), self.create)
-        self.assertRedirects(self.client.post(self.create), self.settings_url + "#players", fetch_redirect_response=False)
-        page = self.client.get(self.settings_url)
+        self.assertContains(self.client.get(self.players_url), self.create)
+        self.assertRedirects(self.client.post(self.create), self.players_url + "#players", fetch_redirect_response=False)
+        page = self.client.get(self.players_url)
         self.assertContains(page, "<strong>Claim link for Tito Boy.</strong> Send it to Tito Boy only. Whoever opens it becomes Tito Boy in this group.")
         url = page.context["new_claim_link"]["url"]
         self.assertTrue(url.startswith("http://testserver/claim/"))
         self.assertContains(page, f'value="{url}"')
-        again = self.client.get(self.settings_url)
+        again = self.client.get(self.players_url)
         self.assertNotContains(again, "/claim/")
         self.assertContains(again, "Claim link active until ")
         self.client.post(self.cancel)
-        self.assertNotContains(self.client.get(self.settings_url), "Claim link active until ")
+        self.assertNotContains(self.client.get(self.players_url), "Claim link active until ")
         self.assertEqual(self.client.get(url).status_code, 404)
 
     def test_offered_only_to_hosts_and_only_for_players_without_a_login(self):
         ben = add_player(self.group, "ben")
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertNotContains(page, reverse("member_claim_link", args=[self.group.pk, ben.pk]))
         self.client.force_login(ben.user)
-        self.assertNotContains(self.client.get(self.settings_url), "claim-link")
+        self.assertNotContains(self.client.get(self.players_url), "claim-link")
         self.assertEqual(self.client.post(self.create).status_code, 403)
         _, other = make_group("omar", "Other")
         self.client.force_login(other.user)
@@ -216,7 +216,7 @@ class ClaimLinkViewTests(TestCase):
 
         def count():
             with CaptureQueriesContext(connection) as queries:
-                self.client.get(self.settings_url)
+                self.client.get(self.players_url)
             return len(queries)
 
         services.create_claim_link(self.host, self.tito.pk)
@@ -227,6 +227,6 @@ class ClaimLinkViewTests(TestCase):
 
     @override_settings(CLAIM_LINKS=False)
     def test_switch_off_hides_the_action(self):
-        self.assertNotContains(self.client.get(self.settings_url), "claim-link")
+        self.assertNotContains(self.client.get(self.players_url), "claim-link")
         self.client.post(self.create, follow=True)
         self.assertFalse(ClaimLink.objects.exists())

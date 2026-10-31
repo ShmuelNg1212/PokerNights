@@ -10,7 +10,7 @@ class CopyLinkMarkupTests(TestCase):
     def setUp(self):
         self.group, self.host = make_group()
         self.maria = add_player(self.group, "maria")
-        self.settings_url = reverse("group", args=[self.group.pk]) + "?view=settings"
+        self.players_url = reverse("group", args=[self.group.pk]) + "?view=players"
         self.client.force_login(self.host.user)
 
     def assertCopyField(self, page, field_id, url, label):
@@ -20,7 +20,7 @@ class CopyLinkMarkupTests(TestCase):
         self.assertContains(page, f'data-copy-status="{field_id}" role="status"', count=1)
 
     def test_page_without_a_new_link_has_no_copy_button_but_loads_the_script(self):
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertNotContains(page, "data-copy")
         self.assertContains(page, "js/copy.js")
 
@@ -28,12 +28,12 @@ class CopyLinkMarkupTests(TestCase):
 
     def test_new_invite_link_has_a_copy_button(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertCopyField(page, "new-invite-link", page.context["new_invite_url"], "Invite link")
 
     def test_new_reset_link_has_a_copy_button(self):
         self.client.post(reverse("member_reset_link", args=[self.group.pk, self.maria.pk]))
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertCopyField(page, "new-reset-link", page.context["new_reset_link"]["url"], "Password reset link for maria")
 
     @override_settings(INVITE_LINKS_SHOWN=False)  # the link shown once, as with the switch off
@@ -41,7 +41,7 @@ class CopyLinkMarkupTests(TestCase):
     def test_both_links_at_once_keep_separate_fields(self):
         self.client.post(reverse("invite_create", args=[self.group.pk]))
         self.client.post(reverse("member_reset_link", args=[self.group.pk, self.maria.pk]))
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertContains(page, 'class="copy-button"', count=2)
         self.assertContains(page, 'data-copy="new-invite-link"', count=1)
         self.assertContains(page, 'data-copy="new-reset-link"', count=1)

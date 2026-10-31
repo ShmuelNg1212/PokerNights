@@ -10,7 +10,7 @@ from django.http import Http404
 from groups import services as groups
 from groups.access import member_for, require_host
 from groups.errors import RuleError
-from groups.http import attempt, group_settings, request_id_from
+from groups.http import attempt, group_players, request_id_from
 from groups.models import Member
 from ledger import money
 from ledger import queries as ledger_queries
@@ -171,7 +171,7 @@ def member_remove(request, group_id, member_id):
         if attempt(request, groups.remove_member, actor, member.pk,
                    success=f"{member.display_name} was removed.{back}") is not None:
             request.session["roster_left"] = True
-            return group_settings(group_id, "players")
+            return group_players(group_id, "players")
         return redirect("member_remove", group_id=group_id, member_id=member.pk)
     refusal = groups.removal_refusal(actor, member.pk)
     seated = games.sets_seating(member) if refusal else []

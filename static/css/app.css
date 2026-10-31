@@ -575,7 +575,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .name-preview li[data-problem] .state { color:var(--down); }
 .name-preview .link-button { min-height:var(--tap); margin-left:auto; }
 .section-rail { margin:12px 0; padding:12px 0; border-bottom:1px solid var(--rule); }
-/* Group tabs: Sessions is the default view; settings hold the roster, invites, tables, presets and rake. */
+/* Group tabs: Sessions is the default view; Players holds the roster and invites; Settings the tables, presets and rake. */
 .tabs { display:flex; gap:var(--s-1); padding:var(--s-1); margin:0 0 var(--s-5); background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-btn); }
 .tabs a { flex:1; display:flex; align-items:center; justify-content:center; min-height:var(--tap); padding:0 var(--s-3); border-radius:11px; color:var(--muted); font-weight:600; text-align:center; text-decoration:none; }
 .tabs a:hover { color:var(--text); }
@@ -583,11 +583,13 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .tabs a[aria-current] { color:var(--text); }
 /* The marker is its own element under the word, so a tab change can slide it without moving the word. */
 .tab-marker { position:absolute; inset:0; z-index:-1; border-radius:inherit; background:var(--surface-2); box-shadow:var(--shadow-btn); }
-.group-sessions, .group-settings > section { min-width:0; }
+.group-sessions, .group-settings > section, .group-players > section { min-width:0; }
 .group-sessions + .group-sessions { margin-top:var(--s-6); }
-.group-settings > section { scroll-margin-top:80px; }
-.group-settings summary { overflow-wrap:anywhere; min-width:0; }
-.group-settings summary.small { color:var(--muted); }
+.group-settings > section, .group-players > section { scroll-margin-top:80px; }
+:is(.group-settings, .group-players) summary { overflow-wrap:anywhere; min-width:0; }
+:is(.group-settings, .group-players) summary.small { color:var(--muted); }
+.settings-moved { display:none; }
+.settings-moved:target { display:block; }
 .group-settings .set-totals { border-top:0; }
 .group-settings .set-totals dt { color:var(--muted); }
 .pills { display:flex; gap:var(--s-2); margin:0 0 var(--s-3); padding-bottom:var(--s-1); overflow-x:auto; }
@@ -724,8 +726,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .group-page input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
 .roster-person .chip { flex:none; }
-.group-settings .form-row { flex-wrap:wrap; }
-.group-settings .form-row > .grow { flex-basis:100%; }
+.group-players .form-row { flex-wrap:wrap; }
+.group-players .form-row > .grow { flex-basis:100%; }
 .log-page { max-width:850px; }
 .log-page h1, .log-page p, .log-records li { overflow-wrap:anywhere; }
 .log-page h2 { scroll-margin-top:96px; }
@@ -742,7 +744,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
  .group-page .tabs { max-width:728px; }
  .group-settings { columns:2; column-gap:48px; }
  .group-settings > section { break-inside:avoid; }
- .group-settings > section:first-child h2 { margin-top:0; }
+ .group-settings > section:first-of-type h2 { margin-top:0; }
 }
 @media(max-width:359px) { .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
 
@@ -1115,8 +1117,9 @@ legend { padding: 0; }
   html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(1) { view-transition-name: tab-1; }
   html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(2) { view-transition-name: tab-2; }
   html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(3) { view-transition-name: tab-3; }
+  html:is([data-go=next], [data-go=prev]) .tabs a:nth-child(4) { view-transition-name: tab-4; }
   ::view-transition-group(tab-current) { z-index: 1; }
-  ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3) { z-index: 2; }
+  ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3), ::view-transition-group(tab-4) { z-index: 2; }
 }
 @keyframes screen-out-left { to { opacity: 0; transform: translateX(-24px); } }
 @keyframes screen-in-right { from { opacity: 0; transform: translateX(24px); } }
@@ -1225,7 +1228,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 }
 .numpad-open .toast:not(.toast-quiet) { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }
 
-/* Roster (Group settings → Players, roster.js). A row is a person: the name, then how often they
+/* Roster (the Players tab, roster.js). A row is a person: the name, then how often they
    come. What a host can do to them is one disclosure away, and removing sits apart under a rule. */
 .roster-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .roster-activity { display: block; color: var(--muted); font-size: .8125rem; font-weight: 500; font-variant-numeric: tabular-nums; }

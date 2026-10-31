@@ -24,10 +24,31 @@ class GroupViewTests(TestCase):
     def test_settings_holds_management_and_no_session_list(self):
         make_session(self.host, state="open")
         page = self.client.get(self.url, {"view": "settings"})
-        self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Group settings</a>')
-        for heading in ("Players", "Invite players", "Tables", "Presets", "Group rake account"):
+        self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Settings</a>')
+        for heading in ("Tables", "Presets", "Group rake account"):
             self.assertContains(page, f">{heading}</h2>")
         self.assertNotContains(page, "Current sessions")
+        self.assertNotContains(page, "data-roster")
+        self.assertNotContains(page, reverse("invite_create", args=[self.group.pk]))
+
+    def test_players_holds_the_roster_with_invite_and_adding_first(self):
+        page = self.client.get(self.url, {"view": "players"})
+        self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Players</a>')
+        html = page.content.decode()
+        invite, add, roster = (html.index(mark) for mark in (reverse("invite_create", args=[self.group.pk]), reverse("member_add", args=[self.group.pk]), "data-roster"))
+        self.assertLess(invite, add)
+        self.assertLess(add, roster)
+        self.assertNotContains(page, reverse("table_create", args=[self.group.pk]))
+
+    def test_old_settings_addresses_of_players_still_arrive(self):
+        """The server never sees "#players", so the Settings page itself says where they went."""
+        page = self.client.get(self.url, {"view": "settings"})
+        self.assertContains(page, f'id="players" class="notice notice-info settings-moved"><a href="{self.url}?view=players"')
+        self.assertContains(page, f'id="invites" class="notice notice-info settings-moved"><a href="{self.url}?view=players#invites"')
+
+    def test_a_player_is_not_told_about_invite_links(self):
+        self.client.force_login(add_player(self.group, "viewer").user)
+        self.assertNotContains(self.client.get(self.url, {"view": "settings"}), 'id="invites"')
 
     def test_empty_sessions_offer_one_next_action_for_the_role(self):
         page = self.client.get(self.url)
@@ -43,9 +64,9 @@ class GroupViewTests(TestCase):
         self.assertContains(page, "A host starts the next session")
         self.assertNotContains(page, "New session")
 
-    def test_player_reads_settings_without_host_forms(self):
+    def test_player_reads_players_without_host_forms(self):
         self.client.force_login(add_player(self.group, "viewer").user)
-        page = self.client.get(self.url, {"view": "settings"})
+        page = self.client.get(self.url, {"view": "players"})
         self.assertContains(page, ">Players</h2>")
         # The one form a player has is for their own name.
         self.assertContains(page, "<form method=\"post\" action=\"/g/", count=1)
@@ -74,13 +95,13 @@ class GroupViewTests(TestCase):
         self.group.refresh_from_db()
         self.assertEqual(self.group.name, "Friday Game")
 
-    def test_management_actions_return_to_their_settings_section(self):
+    def test_management_actions_return_to_their_tab_and_section(self):
         cases = [
-            ("table_create", [self.group.pk], {"name": "Kitchen", "seat_count": "9"}, "tables"),
-            ("member_add", [self.group.pk], {"name": "Ada"}, "players"),
-            ("invite_create", [self.group.pk], {}, "invites"),
+            ("table_create", [self.group.pk], {"name": "Kitchen", "seat_count": "9"}, "settings", "tables"),
+            ("member_add", [self.group.pk], {"name": "Ada"}, "players", "players"),
+            ("invite_create", [self.group.pk], {}, "players", "invites"),
         ]
-        for name, args, data, section in cases:
+        for name, args, data, view, section in cases:
             with self.subTest(name=name):
                 response = self.client.post(reverse(name, args=args), data)
-                self.assertRedirects(response, f"{self.url}?view=settings#{section}")
+                self.assertRedirects(response, f"{self.url}?view={view}#{section}")

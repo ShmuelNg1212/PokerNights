@@ -1,4 +1,4 @@
-// Group settings → Invite players. It only adds: Share where the phone has a share sheet, the new link
+// The Players tab → Invite players. It only adds: Share where the phone has a share sheet, the new link
 // dropping into place, Past invites marked after a revoke, and the disclosure easing open. Copy is
 // copy.js's. Without it every link can still be selected and every form still works.
 (function () {

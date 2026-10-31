@@ -11,6 +11,7 @@ class RemainingFormsTests(TestCase):
         self.client.force_login(self.host.user)
         self.group_url = reverse('group', args=[self.group.pk])
         self.settings_url = self.group_url + '?view=settings'
+        self.players_url = self.group_url + '?view=players'
 
     def test_group_name_error_keeps_input_once(self):
         value = 'G' * 61
@@ -44,7 +45,7 @@ class RemainingFormsTests(TestCase):
         self.client.post(reverse('member_add', args=[self.group.pk]), {'name': ''})
         player = add_player(self.group, 'viewer')
         self.client.force_login(player.user)
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         self.assertNotIn('add_form', page.context)
         self.assertEqual(self.client.get(reverse('group', args=[other.pk])).status_code, 404)
         self.assertEqual(self.client.post(reverse('member_add', args=[self.group.pk]), {'name': 'Cannot'}).status_code, 403)
@@ -53,8 +54,8 @@ class RemainingFormsTests(TestCase):
 
     def test_group_title_contains_no_form_and_invite_shown_once(self):
         self.client.post(reverse('invite_create', args=[self.group.pk]))
-        page = self.client.get(self.settings_url)
+        page = self.client.get(self.players_url)
         title = page.content.decode().split('<title>')[1].split('</title>')[0]
         self.assertNotIn('<form', title)
         self.assertTrue(page.context['new_invite_url'])
-        self.assertIsNone(self.client.get(self.settings_url).context['new_invite_url'])
+        self.assertIsNone(self.client.get(self.players_url).context['new_invite_url'])

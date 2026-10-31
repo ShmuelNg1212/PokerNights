@@ -1,4 +1,4 @@
-"""Group settings → Invite players: active links shown again, the new one marked, past invites as history."""
+"""The Players tab → Invite players: active links shown again, the new one marked, past invites as history."""
 
 from datetime import timedelta
 
@@ -14,7 +14,7 @@ from groups.tests.helpers import add_player, make_group
 class InviteRowsTests(TestCase):
     def setUp(self):
         self.group, self.host = make_group()
-        self.url = reverse("group", args=[self.group.pk]) + "?view=settings"
+        self.url = reverse("group", args=[self.group.pk]) + "?view=players"
         self.client.force_login(self.host.user)
 
     def address(self, token):

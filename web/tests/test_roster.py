@@ -1,4 +1,4 @@
-"""Group settings → Players: the list, your own name, details, removing and bringing back, several names."""
+"""The Players tab: the list, your own name, details, removing and bringing back, several names."""
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -10,8 +10,8 @@ from groups.tests.helpers import add_player, make_group
 from settlement.tests.test_stats import OCT_1, Club
 
 
-def settings_url(group):
-    return reverse("group", args=[group.pk]) + "?view=settings"
+def players_url(group):
+    return reverse("group", args=[group.pk]) + "?view=players"
 
 
 class RemovePageTests(TestCase):
@@ -35,7 +35,7 @@ class RemovePageTests(TestCase):
 
     def test_post_removes_and_says_where_to_bring_them_back(self):
         response = self.client.post(self.url, follow=True)
-        self.assertRedirects(response, settings_url(self.club.group) + "#players")
+        self.assertRedirects(response, players_url(self.club.group) + "#players")
         self.assertContains(response, "Ben was removed. Bring them back from Removed players.")
         self.assertEqual(Member.objects.get(pk=self.ben.pk).status, "removed")
 
@@ -82,7 +82,7 @@ class PlayersSectionTests(TestCase):
         self.client.force_login(self.host.user)
 
     def page(self):
-        return self.client.get(settings_url(self.group))
+        return self.client.get(players_url(self.group))
 
     def test_rows_say_how_often_a_player_comes(self):
         response = self.page()
@@ -133,7 +133,7 @@ class PlayersSectionTests(TestCase):
         self.assertContains(response, "Removed players (1)")
         self.assertContains(response, "Bring back")
         response = self.client.post(reverse("member_restore", args=[self.group.pk, ben.pk]), follow=True)
-        self.assertRedirects(response, settings_url(self.group) + "#players")
+        self.assertRedirects(response, players_url(self.group) + "#players")
         self.assertContains(response, "Ben is back in the group.")
         self.assertNotContains(response, "Removed players")
         self.assertEqual(self.club.stats()["Ben"], (-50000, 1, 0))
