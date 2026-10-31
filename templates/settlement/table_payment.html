@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% block screen %} data-depth="3"{% endblock %}
 {% block title %}Paid at the table · {{ night }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% if from_set %}{% url 'session' from_set %}{% else %}{% url 'night' night.pk %}{% endif %}">{% icon 'arrow-left' %}<span class="back-words">{% if from_set %}Back to the set{% else %}Session: {{ night.table.name }}{% endif %}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% if from_set %}{% url 'session' from_set %}{% else %}{% url 'night' night.pk %}{% endif %}">Back to the {% if from_set %}set{% else %}session{% endif %}</a></p>
 <h1>Paid at the table</h1>
 <p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
 {% if closed %}

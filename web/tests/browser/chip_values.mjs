@@ -98,6 +98,7 @@ await A.go(`/n/${ids.setup}/chip-values/`);
 await A.click(`document.querySelector('[data-chip-add]')`);
 check('no-JS add colour',await A.js(`document.querySelector('[name=chips-2-colour]')!==null`));
 await A.go(`/s/${ids.second}/counts/${ids.second_player}/chips/`);
+check('the chip page goes back from the header',await A.js(`!!document.querySelector('.site-header .table-bar a[href="/s/${ids.second}/"]')&&!document.querySelector('main p.small a')`));
 await type(A,'[name=qty_green]','10');
 await A.click(`document.querySelector('.chip-count-form .btn-primary')`);
 check('no-JS chip count writes the exact total',await A.js(`location.pathname==='/s/${ids.second}/'&&document.body.textContent.includes('Count confirmed.')&&document.body.textContent.includes('₱1,000')`));

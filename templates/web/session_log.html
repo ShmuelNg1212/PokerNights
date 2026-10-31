@@ -3,8 +3,8 @@
 {% load money_tags clock_tags table_tags %}
 {% block title %}Log · {{ session }}{% endblock %}
 {% block page_class %}log-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Back to set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'session' session.pk %}">Back to the set</a></p>
 <h1>Log of set {{ session.set_number }}</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"l, F j, Y" }}{% if session.location %} · {{ session.location }}{% endif %} · {{ session.get_game_type_display }} · <span class="badge">{{ session.state|state_word }}</span></p>
 

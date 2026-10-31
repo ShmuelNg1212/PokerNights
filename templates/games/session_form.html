@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% block screen %} data-depth="2"{% endblock %}
 {% block title %}New session · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'group' group.pk %}">{% icon 'arrow-left' %}<span class="back-words">{{ group.name }}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'group' group.pk %}">{{ group.name }}</a></p>
 <h1>New session</h1>
 {% if presets %}
 <form method="get" class="form-section preset-group" data-preset-form>

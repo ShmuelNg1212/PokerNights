@@ -52,7 +52,7 @@ async function walk(width){
  r=await step('.night-page a[href^="/s/"]');
  check(`${W} session → set: deeper, the name stays in the heading`,deeper(r)&&has(r,'group(title)')&&/^\/s\/\d+\/$/.test(r.path),r);
  r=await step('a[href$="/log/"]');check(`${W} set → set log: deeper, nothing carried`,deeper(r)&&!has(r,'group(title)'),r);
- r=await step('#main a[href^="/s/"]');check(`${W} set log → set: back`,back(r),r);
+ r=await step('.table-bar a');check(`${W} set log → set: back`,back(r),r);
  r=await step('.table-bar a');check(`${W} set → session: back, the name is carried`,back(r)&&has(r,'group(title)')&&r.path===night,r);
  r=await step('.table-bar a',`screens-back-${width}`);check(`${W} session → group: back, the name returns to its row`,back(r)&&has(r,'group(title)')&&r.path==='/g/1/',r);
  r=await step('.tabs a[href$="view=stats"]',`screens-tab-${width}`);

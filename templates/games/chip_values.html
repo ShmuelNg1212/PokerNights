@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% load money_tags %}
 {% block screen %} data-depth="3"{% endblock %}
 {% block title %}Chip values · {{ night }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'night' night.pk %}">{% icon 'arrow-left' %}<span class="back-words">Session: {{ night.table.name }}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'night' night.pk %}">Back to the session</a></p>
 <h1>Chip values</h1>
 <p class="hint">Set what each colour is worth. Every set in this session uses these values.</p>
 {% if locked %}

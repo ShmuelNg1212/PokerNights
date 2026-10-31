@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% block screen %} data-depth="3"{% endblock %}
 {% load money_tags %}
 {% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} session · {{ night }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'night' night.pk %}">{% icon 'arrow-left' %}<span class="back-words">Session: {{ night.table.name }}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'night' night.pk %}">Back to the session</a></p>
 <h1>{% if mode == 'delete' %}Delete this session?{% else %}Archive this session?{% endif %}</h1>
 <p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
 {% if unfinished %}

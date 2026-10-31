@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% block screen %} data-depth="2"{% endblock %}
 {% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} group · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings#manage{% endif %}">{% icon 'arrow-left' %}<span class="back-words">{% if group.is_archived %}Your groups{% else %}{{ group.name }} settings{% endif %}</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small">{% if group.is_archived %}<a href="{% url 'home' %}">Your groups</a>{% else %}<a href="{% url 'group' group.pk %}?view=settings#manage">{{ group.name }} settings</a>{% endif %}</p>
 <h1>{% if mode == 'delete' %}Delete this group?{% else %}Archive this group?{% endif %}</h1>
 <p><strong>{{ group.name }}</strong></p>
 {% if unfinished %}

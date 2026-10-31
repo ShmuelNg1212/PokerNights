@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load table_tags %}
 {% load money_tags %}
 {% block screen %} data-depth="2"{% endblock %}
 {% block title %}Remove player · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'group' group.pk %}?view=settings#players">{% icon 'arrow-left' %}<span class="back-words">{{ group.name }} settings</span></a></nav>{% endblock %}
 {% block content %}
-<p class="small"><a href="{% url 'group' group.pk %}?view=settings#players">{{ group.name }} settings</a></p>
 <h1>Remove {{ member.display_name }} from the group?</h1>
 {% if refusal %}
 <div class="notice notice-info">{{ refusal }}</div>
