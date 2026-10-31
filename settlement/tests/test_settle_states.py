@@ -134,7 +134,7 @@ class SettledIndicatorPagesTests(TestCase):
         live = Night("A", state="running")
         self.client.force_login(live.host.user)
         page = self.client.get(reverse("night", args=[live.session.night_id]))
-        self.assertIn("Session open", page.content.decode().split('data-carry="title"')[1].split("</div>")[0])
+        self.assertIn("In progress", page.content.decode().split('data-carry="title"')[1].split("</div>")[0])
         self.assertNotContains(self.client.get(reverse("group", args=[live.group.pk])), "settled")
 
     def test_query_count_does_not_grow_with_past_sessions(self):
