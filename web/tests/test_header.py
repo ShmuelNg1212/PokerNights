@@ -1,10 +1,14 @@
 """The site header (2026-10-17): the brand on Your groups, the way back on every deeper page, and the
 account token whose panel holds the username and Log out."""
 
-from django.test import TestCase, override_settings
+import datetime
+from unittest import mock
+
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from notify.tests.test_notices import Table
+from web.templatetags.table_tags import short_date
 
 KEYS = {"PUSH_ALERTS": True, "VAPID_PUBLIC_KEY": "BPublicKey", "VAPID_PRIVATE_KEY": "private"}
 
@@ -31,9 +35,9 @@ class HeaderTests(TestCase):
         pages = {
             reverse("group", args=[group.pk]): ("/", "Your groups"),
             reverse("night", args=[session.night_id]): (f"/g/{group.pk}/", group.name),
-            reverse("session", args=[session.pk]): (f"/n/{session.night_id}/", f'<span class="back-kind">Session: </span>{session.table.name}'),
+            reverse("session", args=[session.pk]): (f"/n/{session.night_id}/", "Session"),
         }
-        pages[reverse("player", args=[group.pk, member.pk])] = (None, f"{group.name} stats")
+        pages[reverse("player", args=[group.pk, member.pk])] = (None, "Stats")
         for url, (href, words) in pages.items():
             with self.subTest(url=url):
                 header, main = self.parts(url)
@@ -74,3 +78,10 @@ class HeaderTests(TestCase):
     def test_the_log_out_form_is_the_only_one_in_the_header(self):
         header, _ = self.parts(reverse("session", args=[self.table.session.pk]))
         self.assertEqual(header.count("<form"), 1)
+
+
+class ShortDateTests(SimpleTestCase):
+    def test_this_year_drops_the_year_and_another_year_keeps_it(self):
+        with mock.patch("web.templatetags.table_tags.timezone.localdate", return_value=datetime.date(2026, 11, 1)):
+            self.assertEqual(short_date(datetime.date(2026, 10, 25)), "Sun, Oct 25")
+            self.assertEqual(short_date(datetime.date(2025, 10, 25)), "Sat, Oct 25, 2025")

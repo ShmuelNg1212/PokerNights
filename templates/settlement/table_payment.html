@@ -6,7 +6,7 @@
 {% block header_start %}<nav class="table-bar"><a href="{% if from_set %}{% url 'session' from_set %}{% else %}{% url 'night' night.pk %}{% endif %}">{% icon 'arrow-left' %}<span class="back-words">{% if from_set %}Back to the set{% else %}Session: {{ night.table.name }}{% endif %}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>Paid at the table</h1>
-<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
+<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|short_date }}</p>
 {% if closed %}
 <div class="notice notice-info">The session is closed. Mark a transfer paid on the session page instead.</div>
 {% else %}

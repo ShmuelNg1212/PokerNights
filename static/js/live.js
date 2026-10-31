@@ -39,7 +39,7 @@
     var stale = failures >= 2;
     statusLine.classList.toggle("stale", stale);
     region.classList.toggle("is-stale", stale);
-    statusLine.textContent = (stale ? "Reconnecting… last updated " : "Live · ") + clock(lastOk);
+    statusLine.textContent = stale ? "Reconnecting… last updated " + clock(lastOk) : "Live";
   }
 
   // Typed values that are not saved yet. A refresh replaces the whole region,

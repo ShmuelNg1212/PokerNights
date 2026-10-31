@@ -3,7 +3,7 @@
 {% load static table_tags %}
 {% block title %}Add players · {{ session }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
-{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Back to set {{ session.set_number }}</span></a></nav>{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>Add players</h1>
 <p class="muted">{{ session.table.name }} · {{ session.game_date|date:"D, M j" }}</p>

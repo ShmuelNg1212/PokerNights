@@ -197,7 +197,7 @@ def player_context(request, me, member, periods) -> dict:
         "more": len(listed) > SHOWN and not show_all,
         "all_url": "?" + _query(all="1", **keep),
         "back_url": back_url,
-        "back_words": f"{me.group.name} players" if from_players else f"{me.group.name} stats",
+        "back_words": "Players" if from_players else "Stats",
         "from_players": from_players,
         "keep": _query(**keep),
         "members_one": [member],

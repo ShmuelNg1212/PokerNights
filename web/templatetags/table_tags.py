@@ -1,10 +1,17 @@
 """Presentation only: tokens, icons and plain input amounts."""
 from django import template
+from django.utils import formats, timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from ledger.money import plain_amount
 
 register = template.Library()
+
+@register.filter
+def short_date(value):
+    """A game's date: "Sun, Oct 25", with the year only when it is not this year."""
+    same_year = value.year == timezone.localdate().year
+    return formats.date_format(value, "D, M j" if same_year else "D, M j, Y")
 
 @register.filter(name="plain")
 def plain(value, unit):

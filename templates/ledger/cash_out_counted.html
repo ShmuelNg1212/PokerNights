@@ -3,13 +3,13 @@
 {% load money_tags table_tags %}
 {% block title %}{% if finishes %}Finish set {{ session.set_number }}{% else %}Cash out counted players{% endif %} · {{ session }}{% endblock %}
 {% block page_class %}table-page{% endblock %}
-{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Back to set {{ session.set_number }}</span></a></nav>{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
 <div class="table-layout review-layout">
 <aside class="table-left">
 <section class="felt hero" data-unit="{{ unit }}">
 <h1>{% if finishes %}Finish set {{ session.set_number }}{% else %}Cash out counted players{% endif %}</h1>
-<p class="where">{{ session.table.name }} · Set {{ session.set_number }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
+<p class="where">{{ session.table.name }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
 <dl class="set-totals"><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div>{% if summary.rake %}<div><dt>Collected rake</dt><dd>{{ summary.rake|amount:unit }}</dd></div>{% endif %}<div><dt>Bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
 </section>
 </aside>

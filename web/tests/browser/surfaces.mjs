@@ -30,6 +30,7 @@ async function user(name,width=390){
 }
 // Text is read as drawn: a visible text node, its size, and its contrast against the first solid fill behind it.
 const MEASURE=`(()=>{
+ scrollTo(0,0);
  const ctx=document.createElement('canvas').getContext('2d',{willReadFrequently:true});
  const rgba=v=>{ctx.clearRect(0,0,1,1);ctx.fillStyle='#000';ctx.fillStyle=v;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data]};
  const lum=a=>{const f=a.slice(0,3).map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});return .2126*f[0]+.7152*f[1]+.0722*f[2]};

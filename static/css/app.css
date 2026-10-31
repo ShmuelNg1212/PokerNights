@@ -310,7 +310,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .table-layout .host-controls .next-action:not(.btn-primary) { box-shadow: none; }
   .player-identity > .badge { font-size: .6875rem; padding: 0 6px; }
   .table-bar { padding-top: 0; padding-bottom: 0; }
-  .felt { padding-top: 8px; }
+  .felt { padding-top: var(--s-5); }
   .felt h1 { line-height: 1.2; }
   .felt .where { margin-bottom: 8px; }
   .pot-side { width: 100%; gap: 8px; }
@@ -750,12 +750,12 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 }
 @media(max-width:899px) {
  /* The group's head stays small on a phone, so its lists start high: the role sits beside the name. */
- .group-page > .page-heading { flex-wrap:nowrap; align-items:center; margin:var(--s-2) 0 var(--s-3); }
- .group-page > .page-heading h1 { font-size:1.75rem; min-width:0; }
+ .group-page > .page-heading { flex-wrap:nowrap; align-items:center; gap:var(--s-2); margin:var(--s-1) 0 var(--s-2); }
+ .group-page > .page-heading h1 { font-size:1.75rem; line-height:1.15; font-stretch:88%; min-width:0; }
  .group-page > .page-heading .badge { flex:none; }
  .group-page .tabs { margin-bottom:var(--s-3); }
 }
-@media(max-width:359px) { .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
+@media(max-width:359px) { .group-page > .page-heading h1 { font-size:1.5rem; } .site-header { flex-wrap:wrap; } .form-row { flex-wrap:wrap; } .form-row > .grow { flex-basis:100%; } }
 
 /* Reviewed remaining-screen links keep a full action target. */
 .group-page .list a, .form-page a, .log-page p a,
@@ -1599,7 +1599,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .sheet-summary strong { color: var(--text); font-variant-numeric: tabular-nums; }
 
 /* Preparing a set: a checklist where the panel of totals was. */
-.prep { margin: 0 -16px; padding: var(--s-2) var(--s-4) var(--s-4); border-bottom: 1px solid var(--rule); border-radius: 0 0 var(--r-sheet) var(--r-sheet); background: var(--rail); }
+.prep { margin: 0 -16px; padding: var(--s-5) var(--s-4) var(--s-4); border-bottom: 1px solid var(--rule); border-radius: 0 0 var(--r-sheet) var(--r-sheet); background: var(--rail); }
 .prep h1 { margin: 0; font-size: 1.375rem; font-stretch: 88%; line-height: 1.2; }
 .prep h1 small { color: var(--muted); font-size: .9375rem; white-space: nowrap; }
 .prep .where { margin: var(--s-1) 0 0; color: var(--muted); font-size: .84375rem; }
@@ -2118,8 +2118,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .back-words { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (hover: hover) and (pointer: fine) { .site-header .table-bar > a:hover .back-words { text-decoration: underline; text-underline-offset: 4px; } }
 .site-header .live-status { margin-left: auto; }
-/* On a narrow phone the set's way back gives up "Session: " on screen (a screen reader still hears it), so the table's name fits. */
-@media (max-width: 389px) { .back-kind { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
 /* Empty until live.js has heard from the server: no dot that claims a connection nobody checked. */
 .live-status:empty { display: none; }
 /* Below 360px the live status keeps its dot and says its words to a screen reader only. */

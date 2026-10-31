@@ -7,7 +7,7 @@
 {% block header_start %}<nav class="table-bar"><a href="{% url 'night' night.pk %}">{% icon 'arrow-left' %}<span class="back-words">Session: {{ night.table.name }}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>{% if mode == 'delete' %}Delete this session?{% else %}Archive this session?{% endif %}</h1>
-<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|date:"l, F j, Y" }}</p>
+<p><strong>{{ night.table.name }}</strong> · {{ night.game_date|short_date }}</p>
 {% if unfinished %}
 <div class="notice notice-info">Finish or cancel every set first. Not done: {% for s in unfinished %}set {{ s.set_number }} ({{ s.state_word|lower }}){% if not forloop.last %}, {% endif %}{% endfor %}.</div>
 {% elif mode == 'delete' and has_records %}

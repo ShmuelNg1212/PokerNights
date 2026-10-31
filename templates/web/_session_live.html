@@ -18,7 +18,7 @@
             <div><dt>Cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
             {% if settings.rake_mode != 'off' or summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}</dl>
           <p class="felt-hint">{% include "web/_rake_rule.html" %}</p>
-          <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
+          <p class="where">{{ session.game_date|short_date }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
         </div>
       </details>
     </section>
@@ -26,7 +26,7 @@
     {# Preparing: what is done and what is next. Money appears when there is money. #}
     <section class="prep{% if session.state == 'open' %} prep-open{% endif %}" data-unit="{{ unit }}" aria-label="Set overview">
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge">{{ session.state|state_word }}</span></div>
-      <p class="where">{{ session.game_date|date:"D, M j" }}{% if session.location %} · {{ session.location }}{% endif %} · {% if unit == 'chips' %}Chips game{% else %}{{ session.get_game_type_display }}{% endif %}</p>
+      <p class="where">{{ session.game_date|short_date }}{% if session.location %} · {{ session.location }}{% endif %}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if prep %}
       {% if prep.next == 'players' %}<h2 class="prep-title">Get this set ready</h2>
       {% else %}<h2 class="prep-title">Ready to start</h2>
@@ -45,7 +45,7 @@
           {% if prep.next != 'players' %}{% include "web/_prep_players.html" %}{% endif %}
         <li class="prep-step" data-step="stakes" data-state="done">
           {% include "web/_prep_mark.html" with state='done' number=2 %}
-          <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line"><span class="fact">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} ·</span> <span class="fact">buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} ·</span> <span class="fact">{% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></span></div>
+          <div class="prep-text"><span class="prep-name">Stakes and rake</span><span class="prep-line"><span class="fact">{{ session.get_game_type_display }} ·</span> <span class="fact">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }} ·</span> <span class="fact">buy-in {{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }} ·</span> <span class="fact">{% if settings.rake_mode == 'percent' %}{{ settings.rake_percentage }}% rake{% elif settings.rake_mode == 'flat' %}{{ settings.rake_flat|amount:unit }} rake{% else %}rake off{% endif %}</span></span></div>
           <a class="btn btn-small btn-quiet" href="{% url 'session_settings' session.pk %}" aria-label="{% if can_configure_rake %}Change stakes. Choose rake before buy-ins{% else %}Change set settings{% endif %}">Change</a>
         </li>
 {% if session.state == 'open' %}        <li class="prep-step" data-step="open" data-state="done">

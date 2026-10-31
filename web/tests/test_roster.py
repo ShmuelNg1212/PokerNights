@@ -112,10 +112,10 @@ class PlayersSectionTests(TestCase):
         ben = self.club.member("Ben")
         page = self.player_page(ben)
         self.assertEqual(page.context["back_url"], f"{players_url(self.group)}#member-{ben.pk}")
-        self.assertContains(page, f"{self.group.name} players")
+        self.assertContains(page, '<span class="back-words">Players</span>')
         page = self.client.get(reverse("player", args=[self.group.pk, ben.pk]))
         self.assertIn("view=stats", page.context["back_url"])
-        self.assertContains(page, f"{self.group.name} stats")
+        self.assertContains(page, '<span class="back-words">Stats</span>')
 
     def test_a_host_manages_another_player_on_their_page(self):
         ben = self.club.member("Ben")

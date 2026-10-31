@@ -7,7 +7,7 @@
     <h3 class="table-card-title" id="card-{{ card.pk }}"><strong>{{ card.table.name }}</strong></h3>
     <span class="badge{% if s.state == 'running' %} badge-live{% endif %}" id="card-{{ card.pk }}-state">Set {{ s.set_number }} · {{ s.state|state_word }}</span>
   </div>
-  <span class="table-card-when">{% if card.location %}{{ card.location }} · {% endif %}{% if card.is_today %}Today{% else %}{{ card.game_date|date:"D, M j" }}{% endif %}</span>
+  <span class="table-card-when">{% if card.location %}{{ card.location }} · {% endif %}{% if card.is_today %}Today{% else %}{{ card.game_date|short_date }}{% endif %}</span>
   <span class="table-card-seats">
     {% if card.chips %}<span class="token-stack">{% for p in card.chips %}{% player_token p card.seated %}{% endfor %}{% if card.more_seated %}<span class="chip-more" aria-hidden="true">+{{ card.more_seated }}</span>{% endif %}</span>{% endif %}
     <span class="table-card-facts">{% if card.at_table %}{{ card.at_table }} at the table{% else %}Nobody seated yet{% endif %}{% if card.seconds is not None %} · {% clock_value card.seconds True %}{% endif %}</span>
