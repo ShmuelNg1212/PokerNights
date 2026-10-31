@@ -235,13 +235,13 @@ class BatchPageTests(TestCase):
     def test_confirm_reports_the_result_and_leaves_the_set_counting(self):
         page = self.confirm()
         self.assertRedirects(page, self.page_url)
-        self.assertContains(page, "4 players cashed out; 2 awaiting final counts.")
+        self.assertContains(page, "4 players cashed out, 2 to count.")
         self.assertContains(page, "Counting up")
         self.assertNotContains(page, "Cash out counted players (")
         count(self.night, "E", 700)
         count(self.night, "F", 500)
         page = self.confirm()
-        self.assertContains(page, "2 players cashed out; everyone is cashed out.")
+        self.assertContains(page, "2 players cashed out.")
         self.assertContains(page, "Finalize results")
         self.assertContains(page, "The books balance")
 

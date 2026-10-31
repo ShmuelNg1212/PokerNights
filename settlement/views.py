@@ -29,7 +29,7 @@ def close_night(request, night_id):
     night, actor = night_for(request.user, night_id)
     attempt(
         request, services.close_night, night.pk, actor, request.POST.getlist("carry"),
-        success="The session is closed. Transfers are listed below.",
+        success="Session closed.",
     )
     return redirect("night", night_id=night.pk)
 
@@ -38,7 +38,7 @@ def close_night(request, night_id):
 def reopen_set(request, session_id):
     session, actor = session_for(request.user, session_id)
     attempt(request, services.reopen_set, session.pk, actor, request.POST.get("reason", ""),
-            success=f"Set {session.set_number} is counting up again. Correct it, then finalize.")
+            success=f"Set {session.set_number} is counting up again.")
     return redirect("session", session_id=session.pk)
 
 
@@ -46,7 +46,7 @@ def reopen_set(request, session_id):
 def reopen_night(request, night_id):
     night, actor = night_for(request.user, night_id)
     attempt(request, services.reopen_night, night.pk, actor, request.POST.get("reason", ""),
-            success="The session is open again. Close it when the results are right.")
+            success="The session is open again.")
     return redirect("night", night_id=night.pk)
 
 
@@ -110,7 +110,7 @@ def table_payment(request, night_id):
             except RuleError as refused:
                 error = str(refused)
             else:
-                messages.success(request, "Payment recorded. Closing the session subtracts it.")
+                messages.success(request, "Payment recorded.")
                 if from_set:
                     return redirect("session", session_id=from_set)
                 return redirect("night", night_id=night.pk)
@@ -127,7 +127,7 @@ def table_payment(request, night_id):
 def table_payment_undo(request, night_id, payment_id):
     night, actor = night_for(request.user, night_id)
     attempt(request, services.reverse_table_payment, night.pk, actor, payment_id, request.POST.get("reason", ""),
-            success="Payment undone. It stays in the records.")
+            success="Payment undone.")
     return redirect("night", night_id=night.pk)
 
 
@@ -137,7 +137,7 @@ def night_archive(request, night_id):
     require_host(actor)
     if request.method == "POST":
         if attempt(request, games.archive_night, night.pk, actor,
-                   success="Session archived. A host can restore it from Archived sessions.") is not None:
+                   success="Session archived.") is not None:
             return redirect("group", group_id=night.group_id)
         return redirect("night", night_id=night.pk)
     context = {"night": night, "mode": "archive", "unit": night.unit, "unpaid": queries.unpaid_in(night),

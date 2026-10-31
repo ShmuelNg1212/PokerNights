@@ -264,6 +264,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .pot-main.just-changed { outline: 0; box-shadow: 0 2px 0 var(--brass); background: transparent; }
 .toast { position: fixed; bottom: max(80px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: fit-content; max-width: calc(100% - 32px); margin: auto; z-index: 10; display: flex; align-items: center; gap: 12px; animation: toast-open var(--t-fast) var(--ease-out); }
 @keyframes sheet-open { from { opacity: .2; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-quiet-open { from { opacity: .2; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-open { from { opacity: .2; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes accepted-change { from { background-color: color-mix(in oklch, var(--brass) 24%, transparent); } }
 @view-transition { navigation: auto; }
@@ -1198,13 +1199,18 @@ input.numpad-refused { border-color: var(--down); }
 /* The proof leads the final page. */
 .final-proof { margin: 0 0 var(--s-4); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .final-proof .verdict { display: block; margin-top: var(--s-1); font-size: 1.0625rem; }
+/* A plain success: one line under the header. A tap goes through it to the page. */
+.toast.toast-quiet { top: calc(env(safe-area-inset-top, 0px) + 77px); bottom: auto; min-height: 40px; margin-bottom: 0; padding: 8px 16px; border-radius: var(--r-pill); background: var(--surface-2); box-shadow: 0 6px 18px oklch(0 0 0 / .4); font-size: .875rem; font-weight: 600; pointer-events: none; }
+html:not(.motion-on) .toast.toast-quiet { animation-name: toast-quiet-open; }
+.is-offline .toast.toast-quiet { top: calc(var(--offline-h, 44px) + 77px); }
+body:not(:has(.site-header)) .toast.toast-quiet { top: calc(env(safe-area-inset-top, 0px) + 12px); }
 /* A final set no longer changes, so it shows no live status. */
 body:has(#live[data-state="finalized"]) .site-header .live-status { display: none; }
 /* A message never sits on the bottom bar or the number keys. */
 @media (max-width: 899px) {
-  .dock-enabled .table-page:has(.table-layout .host-controls) .toast { bottom: calc(var(--dock-h, 128px) + var(--s-2)); }
+  .dock-enabled .table-page:has(.table-layout .host-controls) .toast:not(.toast-quiet) { bottom: calc(var(--dock-h, 128px) + var(--s-2)); }
 }
-.numpad-open .toast { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }
+.numpad-open .toast:not(.toast-quiet) { bottom: calc(var(--pad-h, 300px) + var(--s-2)); }
 
 /* Roster (Group settings → Players, roster.js). A row is a person: the name, then how often they
    come. What a host can do to them is one disclosure away, and removing sits apart under a rule. */

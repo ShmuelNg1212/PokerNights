@@ -274,7 +274,7 @@ def next_set(request, night_id):
     new = attempt(request, services.start_next_set, night.pk, actor)
     if new is None:
         return redirect("night", night_id=night.pk)
-    messages.success(request, f"Set {new.set_number} is open. Add or remove players, then start it.")
+    messages.success(request, f"Set {new.set_number} is open.")
     return redirect("session", session_id=new.pk)
 
 

@@ -219,11 +219,8 @@ def cash_out_counted(request, session_id):
         else:
             done = batch.cash_outs.count()
             waiting = len(queries.summary(session).awaiting_lines) + len(queries.summary(session).ready_lines)
-            rest = (
-                f"{waiting} awaiting final count{'' if waiting == 1 else 's'}" if waiting
-                else "everyone is cashed out"
-            )
-            messages.success(request, f"{done} player{'' if done == 1 else 's'} cashed out; {rest}.")
+            rest = f", {waiting} to count" if waiting else ""
+            messages.success(request, f"{done} player{'' if done == 1 else 's'} cashed out{rest}.")
             return redirect("session", session_id=session.pk)
     session.refresh_from_db()
     if session.state != services.State.RECONCILIATION:

@@ -252,7 +252,7 @@ class EndOfSetAcceptanceTest(TestCase):
         count_ids = re.findall(r'name="count_id" value="(\d+)"', review.content.decode())
         self.assertEqual(len(count_ids), 4)
         done = host.post(review_url, {"count_id": count_ids}, follow=True)
-        self.assertContains(done, "4 players cashed out; 2 awaiting final counts.")
+        self.assertContains(done, "4 players cashed out, 2 to count.")
         self.assertEqual(CashOut.objects.filter(kind="final").count(), 4)
         self.assertEqual((GameSession.objects.get().state, Finalization.objects.count()), ("reconciliation", 0))
 
@@ -266,7 +266,7 @@ class EndOfSetAcceptanceTest(TestCase):
         review = host.get(review_url)
         count_ids = re.findall(r'name="count_id" value="(\d+)"', review.content.decode())
         done = host.post(review_url, {"count_id": count_ids}, follow=True)
-        self.assertContains(done, "2 players cashed out; everyone is cashed out.")
+        self.assertContains(done, "2 players cashed out.")
         self.assertContains(done, "The books balance")
 
         # However long counting took, each player played three hours.

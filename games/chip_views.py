@@ -125,7 +125,7 @@ def values(request, night_id):
         except RuleError as refused:
             error = str(refused)
         else:
-            messages.success(request, "Chip values saved for every set in this session.")
+            messages.success(request, "Chip values saved.")
             return redirect("night", night_id=night.pk)
     return render(request, "games/chip_values.html", {
         "night": night, "unit": night.unit, "me": actor, "formset": formset, "error": error,
@@ -159,7 +159,7 @@ def preset(request, group_id, preset_id=None):
         except RuleError as refused:
             messages.error(request, str(refused))
         else:
-            messages.success(request, f"Archived {current.name}. Sessions keep their chip values.")
+            messages.success(request, f"Archived {current.name}.")
         return group_settings(group_id, "chip-presets")
     saved_unit = current.unit if current else Unit.PHP
     unit = post.get("unit") if post and post.get("unit") in Unit.values else saved_unit
