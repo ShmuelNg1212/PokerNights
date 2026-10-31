@@ -10,8 +10,8 @@ from .errors import RuleError
 
 
 def group_settings(group_id, section=""):
-    """Back to the group's settings view, at the section that was just used."""
-    return redirect(reverse("group", args=[group_id]) + "?view=settings" + (f"#{section}" if section else ""))
+    """Back to the group's Settings tab, with the row that was just used open."""
+    return redirect(reverse("group", args=[group_id]) + "?view=settings" + (f"&open={section}#{section}" if section else ""))
 
 
 def group_players(group_id, section=""):

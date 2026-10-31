@@ -3,9 +3,10 @@
 {# Old addresses, ?view=settings#players and #invites. roster.js goes straight on; without it, this line appears. #}
 <p id="players" class="notice notice-info settings-moved"><a href="{% url 'group' group.pk %}?view=players">Players have their own tab. Go to Players</a></p>
 {% if me.is_host %}<p id="invites" class="notice notice-info settings-moved"><a href="{% url 'group' group.pk %}?view=players#invites">Invite links are on the Players tab. Go to Players</a></p>{% endif %}
-<section id="tables" aria-labelledby="tables-heading">
-<h2 id="tables-heading">Tables</h2>
-<div class="panel">
+<div class="panel settings-rows">
+<details class="settings-row" id="tables"{% if settings_open == 'tables' or table_form.errors %} open{% endif %}>
+  <summary><h2 id="tables-heading">Tables</h2><span class="settings-value">{% if tables %}{{ tables|length }} table{{ tables|length|pluralize }}{% else %}None yet{% endif %}</span>{% icon 'chevron-down' %}</summary>
+  <div class="settings-body">
   {% if tables %}
   <ul class="list">
     {% for table in tables %}
@@ -14,17 +15,15 @@
   </ul>
   {% else %}<p class="muted">No tables yet. {% if me.is_host %}A session needs one.{% else %}A host adds them.{% endif %}</p>{% endif %}
   {% if me.is_host %}
-  <details {% if table_form.errors or not tables %}open{% endif %}><summary>Add a table</summary>
-    <form method="post" action="{% url 'table_create' group.pk %}" class="stack">{% csrf_token %}
+    <form method="post" action="{% url 'table_create' group.pk %}" class="stack" aria-labelledby="add-table-heading">{% csrf_token %}
+    <h3 id="add-table-heading">Add a table</h3>
     {% include "partials/form_fields.html" with form=table_form %}<button type="submit" class="btn btn-block">Add table</button></form>
-  </details>
   {% endif %}
-</div>
-</section>
-
-<section id="presets" aria-labelledby="presets-heading">
-<h2 id="presets-heading">Presets</h2>
-<div class="panel">
+  </div>
+</details>
+<details class="settings-row" id="presets"{% if settings_open == 'presets' %} open{% endif %}>
+  <summary><h2 id="presets-heading">Presets</h2><span class="settings-value">{% if presets %}{{ presets|length }} preset{{ presets|length|pluralize }}{% else %}None yet{% endif %}</span>{% icon 'chevron-down' %}</summary>
+  <div class="settings-body">
   {% if presets %}
   <ul class="list">
     {% for preset in presets %}
@@ -39,12 +38,11 @@
   </ul>
   {% else %}<p class="muted">No presets yet. A preset saves the stakes so a new set is quick to start.</p>{% endif %}
   {% if me.is_host %}<p><a class="btn btn-block" href="{% url 'preset_create' group.pk %}">New preset</a></p>{% endif %}
-</div>
-</section>
-
-<section id="chip-presets" aria-labelledby="chip-presets-heading">
-<h2 id="chip-presets-heading">Chip presets</h2>
-<div class="panel">
+  </div>
+</details>
+<details class="settings-row" id="chip-presets"{% if settings_open == 'chip-presets' %} open{% endif %}>
+  <summary><h2 id="chip-presets-heading">Chip presets</h2><span class="settings-value">{% if chip_presets %}{{ chip_presets|length }} preset{{ chip_presets|length|pluralize }}{% else %}None yet{% endif %}</span>{% icon 'chevron-down' %}</summary>
+  <div class="settings-body">
   {% if chip_presets %}
   <ul class="list">
     {% for item in chip_presets %}{% with preset=item.preset %}
@@ -59,12 +57,11 @@
   </ul>
   {% else %}<p class="muted">No chip presets yet. A chip preset saves what each colour is worth, so a session's chip values take one tap.</p>{% endif %}
   {% if me.is_host %}<p><a class="btn btn-block" href="{% url 'chip_preset_create' group.pk %}">New chip preset</a></p>{% endif %}
-</div>
-</section>
-
-<section id="rake" aria-labelledby="rake-heading">
-<h2 id="rake-heading">Group rake account</h2>
-<div class="panel" aria-label="Accumulated rake">
+  </div>
+</details>
+<details class="settings-row" id="rake"{% if settings_open == 'rake' %} open{% endif %}>
+  <summary><h2 id="rake-heading">Rake</h2><span class="settings-value">{% if rake_totals.php or rake_totals.chips %}{% if rake_totals.php %}{{ rake_totals.php|amount:'php' }}{% endif %}{% if rake_totals.php and rake_totals.chips %} · {% endif %}{% if rake_totals.chips %}{{ rake_totals.chips|amount:'chips' }}{% endif %}{% else %}None collected{% endif %}</span>{% icon 'chevron-down' %}</summary>
+  <div class="settings-body" role="group" aria-label="Accumulated rake">
   <p class="small muted">Lifetime collected rake across every session and set, including sets in progress. Reversed buy-ins are excluded.</p>
   <dl class="set-totals"><div><dt>Pesos collected</dt><dd>{{ rake_totals.php|amount:'php' }}</dd></div><div><dt>Chips collected</dt><dd>{{ rake_totals.chips|amount:'chips' }}</dd></div></dl>
   <details><summary>Rake by session and set</summary><ul class="list">
@@ -82,24 +79,26 @@
     <button class="btn btn-block" type="submit">Save rake rule</button>
   </form>
   {% else %}<p class="small">Players pay the rake {% for value, label in rake_settlement_choices %}{% if value == rake_settlement %}{{ label|lower }}{% endif %}{% endfor %}.</p>{% endif %}
-</div>
-</section>
+  </div>
+</details>
 {% if me.is_host %}
-<section id="manage" aria-labelledby="manage-heading">
-<h2 id="manage-heading">Manage this group</h2>
-<div class="panel stack">
-  <form method="post" action="{% url 'group_rename' group.pk %}" class="stack" data-once>
+<details class="settings-row" id="name"{% if settings_open == 'name' or group_form.errors %} open{% endif %}>
+  <summary><h2 id="name-heading">Group name</h2><span class="settings-value">{{ group.name }}</span>{% icon 'chevron-down' %}</summary>
+  <form method="post" action="{% url 'group_rename' group.pk %}" class="stack settings-body" data-once>
     {% csrf_token %}
     {% include "partials/form_fields.html" with form=group_form %}
     <p class="hint">Every member sees the new name.</p>
     <button type="submit" class="btn btn-block">Rename group</button>
   </form>
-  <div class="stack manage-end">
+</details>
+<details class="settings-row" id="manage"{% if settings_open == 'manage' %} open{% endif %}>
+  <summary><h2 id="manage-heading">Manage</h2><span class="settings-value">Archive or delete</span>{% icon 'chevron-down' %}</summary>
+  <div class="stack settings-body">
     <p class="small muted">Archiving hides the group from every member and can be undone. Deleting is only possible when no money was ever recorded in the group.</p>
     <a class="btn btn-block" href="{% url 'group_archive' group.pk %}">Archive group</a>
     <a class="btn btn-danger btn-block" href="{% url 'group_delete' group.pk %}">Delete group</a>
   </div>
-</div>
-</section>
+</details>
 {% endif %}
+</div>
 </div>

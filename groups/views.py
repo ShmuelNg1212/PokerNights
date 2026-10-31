@@ -77,7 +77,7 @@ def rename_group(request, group_id):
         keep_form(request, f"{group_id}:group", form)
     else:
         messages.success(request, f"The group is now {group.name}.")
-    return group_settings(group_id, "manage")
+    return group_settings(group_id, "name")
 
 
 PROFILE_NAME = "profile:name"  # the draft key, read by web.profile

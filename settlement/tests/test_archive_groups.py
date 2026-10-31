@@ -162,11 +162,11 @@ class GroupArchivePagesTests(TestCase):
     def test_settings_offers_archive_and_delete_to_hosts_only(self):
         settings = reverse("group", args=[self.group.pk]) + "?view=settings"
         page = self.client.get(settings)
-        self.assertContains(page, "Manage this group")
+        self.assertContains(page, "manage-heading")
         self.assertContains(page, reverse("group_archive", args=[self.group.pk]))
         self.assertContains(page, reverse("group_delete", args=[self.group.pk]))
         self.client.force_login(self.player.user)
-        self.assertNotContains(self.client.get(settings), "Manage this group")
+        self.assertNotContains(self.client.get(settings), "manage-heading")
         for name in ("group_archive", "group_delete", "group_restore"):
             self.assertEqual(self.client.post(reverse(name, args=[self.group.pk])).status_code, 403)
         self.assertFalse(GameGroup.objects.get(pk=self.group.pk).is_archived)

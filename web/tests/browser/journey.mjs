@@ -16,8 +16,9 @@ ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&wait.has(m.id)){const[ok,no
 const send=(method,params={},sessionId)=>new Promise((ok,no)=>{wait.set(++id,[ok,no]);ws.send(JSON.stringify({id,method,params,sessionId}))});
 const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${ok?'PASS':'FAIL'} ${name}`)};
 
-// Every control a person could press. Used for the seeded settings count too.
-const CONTROLS=`[...document.querySelectorAll('main a,main button,main summary,main input:not([type=hidden]),main select,main textarea')].filter(e=>e.getClientRects().length).length`;
+// Every control a person could press. Used for the seeded settings count too. checkVisibility, because a
+// control inside a closed disclosure still has client rects: it is not there to press until the row opens.
+const CONTROLS=`[...document.querySelectorAll('main a,main button,main summary,main input:not([type=hidden]),main select,main textarea')].filter(e=>e.checkVisibility({contentVisibilityAuto:true})).length`;
 async function person(){
  const{browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});
  await send('Page.enable',{},s);await send('Runtime.enable',{},s);

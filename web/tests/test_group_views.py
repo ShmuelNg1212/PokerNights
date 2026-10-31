@@ -1,3 +1,5 @@
+import re
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -19,13 +21,13 @@ class GroupViewTests(TestCase):
             self.assertEqual(page.context["view"], "sessions")
             self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Sessions</a>')
             self.assertNotContains(page, "Invite players")
-            self.assertNotContains(page, "Group rake account")
+            self.assertNotContains(page, "rake-heading")
 
     def test_settings_holds_management_and_no_session_list(self):
         make_session(self.host, state="open")
         page = self.client.get(self.url, {"view": "settings"})
         self.assertContains(page, 'aria-current="page"><span class="tab-marker" aria-hidden="true"></span>Settings</a>')
-        for heading in ("Tables", "Presets", "Group rake account"):
+        for heading in ("Tables", "Presets", "Chip presets", "Rake", "Group name", "Manage"):
             self.assertContains(page, f">{heading}</h2>")
         self.assertNotContains(page, "Current sessions")
         self.assertNotContains(page, "data-roster")
@@ -75,9 +77,35 @@ class GroupViewTests(TestCase):
         page = self.client.get(self.url, {"view": "settings"})
         self.assertContains(page, reverse("group_rename", args=[self.group.pk]))
         response = self.client.post(reverse("group_rename", args=[self.group.pk]), {"name": "Sunday Game"})
-        self.assertRedirects(response, f"{self.url}?view=settings#manage")
+        self.assertRedirects(response, f"{self.url}?view=settings&open=name#name")
         self.group.refresh_from_db()
         self.assertEqual(self.group.name, "Sunday Game")
+
+    def test_settings_rows_come_in_order_and_closed(self):
+        html = self.client.get(self.url, {"view": "settings"}).content.decode()
+        ids = re.findall(r'<details class="settings-row" id="([a-z-]+)"( open)?', html)
+        self.assertEqual(ids, [(row, "") for row in ("tables", "presets", "chip-presets", "rake", "name", "manage")])
+
+    def test_a_player_has_no_group_name_or_manage_row(self):
+        self.client.force_login(add_player(self.group, "viewer").user)
+        html = self.client.get(self.url, {"view": "settings"}).content.decode()
+        self.assertEqual(re.findall(r'<details class="settings-row" id="([a-z-]+)"', html), ["tables", "presets", "chip-presets", "rake"])
+
+    def test_the_address_opens_the_row_it_names(self):
+        page = self.client.get(self.url, {"view": "settings", "open": "presets"})
+        self.assertContains(page, '<details class="settings-row" id="presets" open>')
+        self.assertContains(page, '<details class="settings-row" id="tables">')
+
+    def test_each_form_keeps_its_draft_in_its_open_row_after_a_refusal(self):
+        cases = [
+            ("group_rename", {"name": "   "}, "name", "This field is required."),
+            ("table_create", {"name": "Kitchen", "seat_count": "99"}, "tables", 'value="Kitchen"'),
+        ]
+        for name, data, row, word in cases:
+            with self.subTest(row=row):
+                page = self.client.post(reverse(name, args=[self.group.pk]), data, follow=True)
+                self.assertContains(page, f'<details class="settings-row" id="{row}" open>')
+                self.assertContains(page, word)
 
     def test_a_refused_group_name_stays_with_its_form(self):
         self.client.post(reverse("group_rename", args=[self.group.pk]), {"name": "   "})
@@ -102,4 +130,4 @@ class GroupViewTests(TestCase):
         for name, args, data, view, section in cases:
             with self.subTest(name=name):
                 response = self.client.post(reverse(name, args=args), data)
-                self.assertRedirects(response, f"{self.url}?view={view}#{section}")
+                self.assertRedirects(response, f"{self.url}?view={view}" + (f"&open={section}" if view == "settings" else "") + f"#{section}")

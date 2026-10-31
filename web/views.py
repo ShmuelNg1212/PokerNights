@@ -72,6 +72,7 @@ def group(request, group_id):
     context["has_stats"] = bool(periods)
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
+        context["settings_open"] = request.GET.get("open")
     elif context["view"] == "players":
         context.update(group_players_context(request, me))
     elif context["view"] == "stats":

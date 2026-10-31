@@ -3,7 +3,7 @@
 {% block screen %} data-depth="2"{% endblock %}
 {% block title %}{% if mode == 'delete' %}Delete{% else %}Archive{% endif %} group · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
-{% block header_start %}<nav class="table-bar"><a href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings#manage{% endif %}">{% icon 'arrow-left' %}<span class="back-words">{% if group.is_archived %}Your groups{% else %}{{ group.name }} settings{% endif %}</span></a></nav>{% endblock %}
+{% block header_start %}<nav class="table-bar"><a href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings&amp;open=manage#manage{% endif %}">{% icon 'arrow-left' %}<span class="back-words">{% if group.is_archived %}Your groups{% else %}{{ group.name }} settings{% endif %}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>{% if mode == 'delete' %}Delete this group?{% else %}Archive this group?{% endif %}</h1>
 <p><strong>{{ group.name }}</strong></p>
@@ -34,5 +34,5 @@
   <button type="submit" class="btn btn-primary btn-block">Archive the group</button>
 </form>
 {% endif %}
-<p><a class="btn btn-quiet btn-block" href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings{% endif %}">Keep the group</a></p>
+<p><a class="btn btn-quiet btn-block" href="{% if group.is_archived %}{% url 'home' %}{% else %}{% url 'group' group.pk %}?view=settings&amp;open=manage#manage{% endif %}">Keep the group</a></p>
 {% endblock %}
