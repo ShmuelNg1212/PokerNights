@@ -145,9 +145,16 @@
   document.addEventListener("submit", function (event) {
     if (event.target.id === "counts-form" && key()) { try { sessionStorage.removeItem(key()); } catch (_) {} }
   });
-  window.pokerPage.register(function () {
+  // True while this page can count. End play redraws the page in place, so this also runs on a redraw
+  // (doc/wiki/footguns/in_place_answer_skips_page_start.md); it hides the fallback confirm button.
+  function enhance() {
     var on = !!document.querySelector("[data-count-preview]") && typeof BigInt === "function";
     document.documentElement.classList.toggle("counts-enhanced", on);
+    return on;
+  }
+  document.addEventListener("live:updated", enhance);
+  window.pokerPage.register(function () {
+    var on = enhance();
     if (!on) return;
     recall();
     update();
