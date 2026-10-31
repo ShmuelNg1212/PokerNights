@@ -23,6 +23,15 @@
 - [ ] A final set of six: best result first, one short row each, and a tap on the row opens its facts. The chevron turns.
 - [ ] Close a session: the recap opens. Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
 
+## Phone checks, unreleased (`feat/ui-revamp-d-group`)
+
+- [ ] The group page has four tabs. On the smallest phone every word is whole, and the marker slides between them.
+- [ ] From Your groups, tap a group, then Players: Invite is at the top. Copy and Share work.
+- [ ] Tap a player: Manage is above the record. Create a reset link: the link is on the screen, not above it. The arrow goes back to the same row.
+- [ ] Settings is six short rows. Open Tables and add a table: it comes back open. Refuse a table: the typing stays.
+- [ ] Stats: the first ranked row is near the top. Tap the period control: a sheet rises. Choose This year: the sheet closes and the control says so. All five orders scroll beside it.
+- [ ] New session is above the cards. A set that lets players join says Joining.
+
 ## Next (each needs its own study and plan)
 
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.

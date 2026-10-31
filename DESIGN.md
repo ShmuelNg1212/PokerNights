@@ -864,7 +864,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 
 **Preparing.** A draft and an open set show a Rail panel, never felt: "Get this set ready" and four steps (Players, Stakes and rake, Open for players, Start the set). A step is Done (Bone disc with a tick), Next (Brass ring with its number) or Later (rule ring, muted name); each says its state in words for a screen reader. The menu's one main button is the Next step. Stakes count as done from the start; the step's button reads "Choose rake" until a rule is chosen. Once the set is open, finished steps take one line each so the first player is in view. Totals appear only when there is money.
 
-**Words.** A set is Draft, Open, In play, Counting up, Finalized or Canceled on every page and in every message (`GameSession.state_word`). The stored names stay.
+**Words.** A set is Draft, Joining, In play, Counting up, Finalized or Canceled on every page and in every message (`GameSession.state_word`). The stored names stay.
 
 **Movement** (`static/js/table.js`).
 
@@ -1262,3 +1262,20 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Result row.** On a final set the whole row is the disclosure: token, name, signed result, and a muted 16 px Lucide `chevron-down` that turns over 180 ms (`--t-fast`). It has 12 px above and below, so a row with a one-line name is 68 px. The facts line and the records open under it. A session result row stays a plain row, and its second line drops the word "played".
 - **Closing the recap.** A recap that opened by itself closes onto Who pays whom, with focus on the heading, which draws no ring because it is no control. The page moves under the rising sheet, so nothing jumps on closing. A page that already shows the heading in its top half does not move. A recap opened from its button returns focus to the button. Closing a session sends no toast.
 - **Measured.** `results.mjs`, at 320, 390 and 1280 px.
+
+### 2026-11-01 addendum — Find things
+
+[Plan](doc/plan/1793431937_ui_revamp.md), slice D. Mode: Operate, inside the Rack. No new colour, font, token, icon or motion preset.
+
+- **Four tabs.** Sessions, Players, Stats and Settings. The marker and the words behave as before, and hold at 320 px.
+- **Group head on a phone.** Below 900 px the name is 1.75rem with the role beside it, 8 px above and 12 px below. The tabs have 12 px below them. A name that wraps keeps the role at its side.
+- **Players.** Invite players first, then Players. With no active link, the bone **Create invite link** sits alone. With links, the newest is in view and the others are under "Other active links (N)". Then "Add players without a login", a search from 11 players (script only), and the rows.
+- **A roster row** is one link of at least 64 px: token, name, one muted line, a Host badge and a muted 18 px chevron at the right edge. "No login" starts the muted line. It has no disclosure.
+- **A player's page.** Manage sits between the head and the record, between two Rule lines, closed unless a write just came back. A new link's notice sits on top of it, inside the place a write lands, with 80 px of scroll margin. The back arrow names where the person came from.
+- **Settings.** One panel of rows in the Profile's row shape: 56 px, the name at the left, the current state in Bone Dim at the right and cut off with an ellipsis, a muted chevron that turns. From 900 px it stays one column. The address opens a row (`open=`), so a row opens without script.
+- **Stats bar.** One line above the board: the choice control, then the order pills scrolling beside it. The control states the unit (when there are two) and the period, wraps rather than cuts, and opens a sheet headed Show. Without script the choices are in the page as links and no control shows. A choice in the sheet closes it, and the figures come in from the side; the marker slides only for the order.
+- **You.** One row of at least 64 px under the bar, leading to your page: a Bone Dim label, your place and last result in one muted line, the figure at 22 px in Up or Down. With no closed session, it is one muted sentence. This replaces the 2026-10-09 summary panel.
+- **New session** sits above the cards.
+- **Words.** Draft, Joining, In play, Counting up, Finalized, Canceled. "Let players join". "Go to" for moving. "In progress" for a session.
+- **Below 360 px** stat tiles and highlights take one column, so large figures do not run off the page.
+- **Measured.** `journey.mjs`, `screens.mjs`, `roster.mjs`, `claim.mjs` and `stats.mjs`, and `seed_break_group.py` at 320 and 390 px.
