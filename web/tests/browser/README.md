@@ -325,4 +325,5 @@ Since Slice B (2026-10-31):
 
 - Create session goes to the set, or to the session page when announced. `session_arrival.mjs`, `session_options.mjs`, `session_setup.mjs`, `session_form.mjs`, `rake_controls.mjs` and `remaining_actions.mjs` follow it. `seed_journey.py` adds an archived earlier session, so its host has played before.
 - `table.mjs` reads the folded steps: `players` and `stakes` on a draft, `seats`, `players`, `stakes` and `open` on an open set. There is no `start` step and no `later` state. "Let players join first" is under More host controls.
+- `navigate.mjs` expects New session to land on a working set page. That check passes; "exactly one poll loop on the set page" still fails, as on `main`.
 - `journey.mjs` checks the home-screen suggestion's timing, and it measures player rows on a set that is ready to start.

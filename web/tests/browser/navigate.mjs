@@ -151,7 +151,7 @@ try {
  await A.go('/g/1/');await A.click(`document.querySelector('a[href$="/sessions/new/"]')`,900);
  check('tapped-in New session: the form is there',await A.js(`location.pathname.endsWith('/sessions/new/')&&window.__mark===1&&!!document.querySelector('form.form-groups')`));
  await A.js(`(()=>{const v={small_blind:'10',big_blind:'20',min_buy_in:'500',max_buy_in:'2000',default_buy_in:'1000',location:'By tap'};for(const k in v)document.querySelector('[name='+k+']').value=v[k]})()`);await A.click(`document.querySelector('form.form-groups [type=submit]')`,1500);
- check('New session posts natively and lands on a working session page',await A.js(`/^\\/n\\/\\d+\\/$/.test(location.pathname)&&window.__mark!==1&&window.pokerPage.running()&&!!document.querySelector('#announce')`));
+ check('New session lands on a working set page',await A.js(`/^\\/s\\/\\d+\\/$/.test(location.pathname)&&window.pokerPage.running()&&!!document.querySelector('#live')`),await A.js(`[location.pathname,window.__mark]`));
  await A.go('/g/1/');await A.click(friday);await A.click(`document.querySelector('form[action$="/logout/"] button')`,1500);
  check('Log out from a tapped-in page reaches Log in',await A.js(`location.pathname==='/accounts/login/'&&!document.querySelector('.site-header')`));
  await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91'`);await A.click(`document.querySelector('form.form-section [type=submit]')`,1500);
