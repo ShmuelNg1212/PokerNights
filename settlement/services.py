@@ -17,7 +17,7 @@ from groups.errors import RuleError
 from groups.models import GroupRakeAccount, Member
 from ledger import money
 from ledger import services as ledger
-from ledger.models import Finalization, PlayerResult
+from ledger.models import CashOutBatch, Finalization, PlayerResult
 
 from . import algorithm
 from .models import CarriedTransfer, Payment, PaymentReversal, SettlementPlan, Transfer
@@ -44,6 +44,27 @@ def finalize(session_id, actor: Member) -> Finalization:
     )
     games.mark_finalized(session)
     return finalization
+
+
+@transaction.atomic
+def finish_set(session_id, actor: Member, count_ids, request_id) -> Finalization:
+    """Record the reviewed cash-outs and freeze the results in one action: both, or neither.
+
+    The existing rules decide. ``ledger.cash_out_counted`` refuses a count that changed since the
+    review, and finalizing refuses books that do not balance; either refusal undoes the whole action.
+    A repeated request changes nothing, also after the set was reopened.
+    """
+    require_host(actor)
+    session = games.lock_session(session_id, actor.group_id)
+    if CashOutBatch.objects.filter(session=session, request_id=request_id).exists():
+        return session.finalizations.order_by("-revision").first()  # a repeated tap
+    if session.state == State.FINALIZED:
+        raise RuleError(f"Set {session.set_number} is already final. Nothing was recorded.")
+    ledger.cash_out_counted(session.pk, actor, count_ids, request_id)
+    try:
+        return finalize(session.pk, actor)
+    except RuleError as refused:
+        raise RuleError(f"{refused} Nothing was recorded.") from refused
 
 
 def _reopen_reason(reason) -> str:

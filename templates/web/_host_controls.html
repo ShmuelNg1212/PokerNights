@@ -55,7 +55,7 @@
   {# gap.js turns the tap into a scroll to the record that looks wrong; without it the anchor leads to the books. #}
   <a class="btn btn-danger btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>See the {{ balance.difference_text }} difference</a>
   {% elif summary.ready_lines %}
-  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>Cash out counted players ({{ summary.ready_lines|length }})</a>
+  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>{% if finishes_the_set %}Review and finish{% else %}Cash out counted players ({{ summary.ready_lines|length }}){% endif %}</a>
   {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}

@@ -287,6 +287,51 @@ class ConcurrentEndOfSetTests(TransactionTestCase):
                 self.assertEqual(cash_outs.count(), 0)  # the stale batch recorded nothing
                 self.assertEqual(night.line("B").count.amount, 140000)
 
+    def balanced_set(self):
+        night = Night("A", "B")
+        night.buy("A", 1000)
+        night.buy("B", 1000)
+        night.go("reconciliation")
+        count(night, "A", 1200)
+        count(night, "B", 800)
+        return night
+
+    def test_two_hosts_finish_the_same_set_at_once(self):
+        night = self.balanced_set()
+        reviewed = ready_ids(night)
+        outcomes = race(*[
+            (lambda: settlement.finish_set(night.session.pk, night.host, reviewed, uuid.uuid4())) for _ in range(4)
+        ])
+        self.assertEqual(kinds(outcomes), ["ok"] + ["refused"] * 3, outcomes)
+        self.assertEqual((CashOutBatch.objects.count(), CashOut.objects.count(), Finalization.objects.count()), (1, 2, 1))
+
+    def test_one_finish_sent_six_times_records_once(self):
+        night = self.balanced_set()
+        reviewed, request_id = ready_ids(night), uuid.uuid4()
+        outcomes = race(*[lambda: settlement.finish_set(night.session.pk, night.host, reviewed, request_id)] * 6)
+        self.assertEqual(kinds(outcomes), ["ok"] * 6, outcomes)
+        self.assertEqual((CashOutBatch.objects.count(), CashOut.objects.count(), Finalization.objects.count()), (1, 2, 1))
+
+    def test_finish_races_with_a_count_change(self):
+        for _ in range(4):
+            night = self.balanced_set()
+            reviewed = ready_ids(night)
+            outcomes = race(
+                lambda: settlement.finish_set(night.session.pk, night.host, reviewed, uuid.uuid4()),
+                lambda: count(night, "A", 1100),
+            )
+            self.assertEqual(kinds(outcomes), ["ok", "refused"], outcomes)
+            night.refresh()
+            cash_outs = CashOut.objects.filter(session=night.session)
+            if outcomes[0][0] == "ok":
+                self.assertEqual(night.session.state, "finalized")
+                self.assertEqual(cash_outs.get(participant=night.players["A"]).amount, 120000)
+            else:
+                # The stale finish recorded nothing, not even the cash-outs.
+                self.assertEqual(night.session.state, "reconciliation")
+                self.assertEqual(cash_outs.count(), 0)
+                self.assertEqual(night.line("A").count.amount, 110000)
+
     def test_end_of_play_sent_twice_stops_the_timers_once(self):
         night = Night("A", "B", "C")
         outcomes = race(*[lambda: games.transition(night.session.pk, night.host, "end")] * 3)

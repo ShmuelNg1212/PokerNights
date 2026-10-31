@@ -25,6 +25,19 @@ def finalize(request, session_id):
 
 
 @require_POST
+def finish_set(request, session_id):
+    """The review's one button. A refusal returns to a fresh review, while there is still one to show."""
+    session, actor = session_for(request.user, session_id)
+    done = attempt(request, services.finish_set, session.pk, actor, request.POST.getlist("count_id"), request_id_from(request))
+    session.refresh_from_db()
+    if done is None and session.state == services.State.RECONCILIATION:
+        return redirect("cash_out_counted", session_id=session.pk)
+    if done is not None and session.state == services.State.FINALIZED:
+        messages.success(request, f"Set {session.set_number} is final.")
+    return redirect("session", session_id=session.pk)
+
+
+@require_POST
 def close_night(request, night_id):
     night, actor = night_for(request.user, night_id)
     attempt(

@@ -271,6 +271,7 @@ def session_context(session, me, *, later=UNSET) -> dict:
         "can_cash_out": me.is_host and session.state in ledger.CASH_OUT_STATES,
         "reopen_on": settings.REOPENING,
         "balance": ledger_queries.balance(summary) if session.state == GameSession.State.RECONCILIATION else None,
+        "finishes_the_set": session.state == GameSession.State.RECONCILIATION and ledger_queries.finishes_the_set(summary),
         "seats_free": session.seat_count - seated,
         "can_configure_rake": me.is_host and session.state in ("setup", "open") and not games.has_money(session),
         "can_join": session.state in games.JOINABLE_STATES,

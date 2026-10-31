@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block screen %} data-depth="4"{% endblock %}
 {% load money_tags table_tags %}
-{% block title %}Cash out counted players · {{ session }}{% endblock %}
+{% block title %}{% if finishes %}Finish set {{ session.set_number }}{% else %}Cash out counted players{% endif %} · {{ session }}{% endblock %}
 {% block page_class %}table-page{% endblock %}
 {% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Back to set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
 <div class="table-layout review-layout">
 <aside class="table-left">
 <section class="felt hero" data-unit="{{ unit }}">
-<h1>Cash out counted players</h1>
+<h1>{% if finishes %}Finish set {{ session.set_number }}{% else %}Cash out counted players{% endif %}</h1>
 <p class="where">{{ session.table.name }} · Set {{ session.set_number }} · play ended{% if session.ended_at %} {{ session.ended_at|date:"g:i A" }}{% endif %}</p>
 <dl class="set-totals"><div><dt>After this batch</dt><dd>{{ after_batch|amount:unit }}</dd></div>{% if summary.rake %}<div><dt>Collected rake</dt><dd>{{ summary.rake|amount:unit }}</dd></div>{% endif %}<div><dt>Bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div></dl>
 </section>
@@ -17,7 +17,7 @@
 {% if error %}<div class="notice notice-bad" role="alert">{{ error }}</div>{% endif %}
 
 {% if ready %}
-<form method="post" class="batch-review stack" data-once>
+<form method="post"{% if finishes %} action="{% url 'session_finish' session.pk %}"{% endif %} class="batch-review stack" data-once>
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">
   <table class="review">
@@ -35,7 +35,12 @@
   </table>
   {# One plain verdict, directly above the action. #}
   <p class="review-verdict{% if verdict_tone == 'warn' %} notice{% elif verdict_tone == 'good' %} notice notice-good{% endif %}" role="status"><span class="verdict" data-tone="{{ verdict_tone }}">{{ verdict }}</span></p>
+  {% if finishes %}
+  <p class="small muted">Records {{ ready|length }} cash-out{{ ready|length|pluralize }}. Results freeze.{% if reopening %} They replace the earlier ones.{% elif reopen_on %} A host can reopen the set.{% else %} This cannot be undone here.{% endif %}</p>
+  <button type="submit" class="btn btn-primary btn-block">Finish set {{ session.set_number }}</button>
+  {% else %}
   <button type="submit" class="btn btn-primary btn-block">Cash out {{ ready|length }} player{{ ready|length|pluralize }}</button>
+  {% endif %}
 </form>
 {% else %}
 <div class="notice"><p class="muted">No confirmed count yet. Confirm counts on the set page first.</p></div>

@@ -114,14 +114,14 @@ class ReviewVerdictTests(TestCase):
     def verdict(self):
         html = self.client.get(self.url).content.decode()
         start = html.index('class="review-verdict')
-        self.assertLess(start, html.index('class="btn btn-primary btn-block">Cash out'))  # above the action
+        self.assertLess(start, html.index('class="btn btn-primary btn-block">', start))  # above the action
         return html[start:html.index("</p>", start)]
 
     def test_a_batch_that_balances_says_so(self):
         count(self.night, "A", 1200)
         count(self.night, "B", 800)
         verdict = self.verdict()
-        self.assertIn('data-tone="good">After this batch the books balance.', verdict)
+        self.assertIn('data-tone="good">The books balance.', verdict)
         self.assertIn("notice-good", verdict)
 
     def test_a_batch_that_leaves_the_books_short_warns(self):

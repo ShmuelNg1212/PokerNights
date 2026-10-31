@@ -311,6 +311,12 @@ class Balance:
         return ""
 
 
+def finishes_the_set(found: Summary) -> bool:
+    """Recording every confirmed count leaves nobody to count and the books balanced, so one action can finish the set."""
+    remaining = count_total(found)
+    return bool(found.ready_lines) and remaining.complete and remaining.difference + found.adjustment == 0
+
+
 def balance(session_or_summary) -> Balance:
     found = session_or_summary if isinstance(session_or_summary, Summary) else summary(session_or_summary)
     return Balance(

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 import json
 import uuid
@@ -231,11 +232,14 @@ def cash_out_counted(request, session_id):
     batch_total = sum(line.count.amount for line in ready)
     # What the books will say once this batch is recorded: the last cheap moment to catch a miscount.
     difference = summary.cashed_out + batch_total + summary.adjustment + summary.rake - summary.total
-    if summary.awaiting_lines:
+    finishes = queries.finishes_the_set(summary)
+    if finishes:
+        verdict = ("good", "The books balance.")
+    elif summary.awaiting_lines:
         waiting = len(summary.awaiting_lines)
         verdict = ("", f"After this batch {waiting} player{' is' if waiting == 1 else 's are'} still to count.")
     elif difference == 0:
-        verdict = ("good", "After this batch the books balance.")
+        verdict = ("good", "After this batch the books balance.")  # only when a cash-out with no buy-in stands in the way
     else:
         off = money.format_amount(abs(difference), session.unit)
         verdict = ("warn", f"After this batch the books are {off} {'short' if difference < 0 else 'over'}. "
@@ -253,6 +257,9 @@ def cash_out_counted(request, session_id):
         "after_batch": summary.cashed_out + batch_total,
         "verdict_tone": verdict[0],
         "verdict": verdict[1],
+        "finishes": finishes,
+        "reopening": services.is_reopened(session),
+        "reopen_on": settings.REOPENING,
         "request_id": uuid.uuid4(),
     }
     return render(request, "ledger/cash_out_counted.html", context)
