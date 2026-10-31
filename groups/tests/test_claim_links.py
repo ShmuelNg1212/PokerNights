@@ -150,6 +150,11 @@ class ClaimLinkViewTests(TestCase):
         self.assertNotContains(self.client.get(self.tito_url), "Claim link active until ")
         self.assertEqual(self.client.get(url).status_code, 404)
 
+    def test_a_prefetch_does_not_use_up_the_notice(self):
+        self.client.post(self.create)
+        self.client.get(self.tito_url, headers={"X-Sec-Purpose": "prefetch"})
+        self.assertContains(self.client.get(self.tito_url), "Claim link for Tito Boy.")
+
     def test_offered_only_to_hosts_and_only_for_players_without_a_login(self):
         ben = add_player(self.group, "ben")
         self.assertContains(self.client.get(self.tito_url), self.create)
