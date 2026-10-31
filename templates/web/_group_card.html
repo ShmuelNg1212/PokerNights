@@ -15,10 +15,10 @@
     <a class="btn btn-primary btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>
   </section>
   {% elif card.kind == 'open' %}
-  <section class="home-band" aria-label="Open session">
+  <section class="home-band" aria-label="Session in progress">
     <div class="row"><strong class="band-title grow">{{ card.night.table.name }}</strong><span class="badge">Set {{ card.set.set_number }} · {{ card.set.state|state_word }}</span></div>
     {% if card.added %}<p class="band-added" data-added="{{ card.set.pk }}"><span class="added-dot" aria-hidden="true"></span>{% if card.added.kind == 'next' %}{{ card.added.actor_name }} started set {{ card.set.set_number }}{% else %}{{ card.added.actor_name }} added you{% endif %}</p>{% endif %}
-    <p class="band-facts">{{ card.night.game_date|date:"D, M j" }}{% if card.set.state == 'finalized' or card.set.state == 'canceled' %} · session still open{% endif %}</p>
+    <p class="band-facts">{{ card.night.game_date|date:"D, M j" }}{% if card.set.state == 'finalized' or card.set.state == 'canceled' %} · session in progress{% endif %}</p>
     <a class="btn {% if card.action_primary %}btn-primary{% endif %} btn-block" href="{{ card.action_url }}">{{ card.action_label }}</a>
   </section>
   {% else %}

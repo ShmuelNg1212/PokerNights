@@ -92,7 +92,7 @@ class OwnRebuyTests(TestCase):
 
     def test_not_after_play_has_ended(self):
         self.night.go("reconciliation")
-        with self.assertRaisesMessage(RuleError, "Buy-ins can be recorded only while the set is open or running."):
+        with self.assertRaisesMessage(RuleError, "Buy-ins can be recorded only while players are joining or the set is in play."):
             self.rebuy()
 
     @override_settings(PLAYER_ENTRIES=False)

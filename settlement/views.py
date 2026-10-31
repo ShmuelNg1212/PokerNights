@@ -57,7 +57,7 @@ def reopen_set(request, session_id):
 def reopen_night(request, night_id):
     night, actor = night_for(request.user, night_id)
     attempt(request, services.reopen_night, night.pk, actor, request.POST.get("reason", ""),
-            success="The session is open again.")
+            success="The session is in progress again.")
     return redirect("night", night_id=night.pk)
 
 

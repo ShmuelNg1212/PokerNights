@@ -53,7 +53,7 @@ for(const width of [320,390,1280]){
   check(`${tag} this year is open and last year is closed`,JSON.stringify(f.years)==='[false]'&&f.months[0].endsWith(String(new Date().getFullYear())),[f.years,f.months]);
   if(name==='ben'){
    check(`${tag} Ben's table in play is first, then the other in play, then his open set`,JSON.stringify(f.cards.map(c=>c.href))===JSON.stringify([`/s/${M.mine_live}/`,`/s/${M.other_live}/`,`/s/${M.mine_open}/`]),f.cards.map(c=>c.href));
-   if(width<900)check(`${tag} Open the table is in the first viewport`,f.firstButtonBottom<=844,f.firstButtonBottom);
+   if(width<900)check(`${tag} Go to the table is in the first viewport`,f.firstButtonBottom<=844,f.firstButtonBottom);
   }else{
    check(`${tag} the host gets the draft last`,f.cards.at(-1).href===`/s/${M.draft}/`,f.cards.map(c=>c.href));
   }

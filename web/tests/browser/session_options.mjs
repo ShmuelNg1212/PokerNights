@@ -53,7 +53,7 @@ try{
  check('a start time left behind does not block the button',/^\/s\/\d+\/$/.test(plain),plain);
  await A.go(await A.js(`document.querySelector('.table-bar a').getAttribute('href')`));
  check('creating lands on the set, and the session page offers both options',/^\/s\/\d+\/$/.test(plain)&&await A.js(`!!document.querySelector('#announce')&&!!document.querySelector('a.night-option-link')`),plain);
- check('the set is the one primary action',await A.js(`[...document.querySelectorAll('main .btn-primary')].filter(b=>b.getClientRects().length&&!b.closest('.numpad-panel')).length===1&&document.querySelector('main .btn-primary').textContent.trim()==='Open set 1'`),await A.js(`[...document.querySelectorAll('main .btn-primary')].map(b=>b.textContent.trim())`));
+ check('the set is the one primary action',await A.js(`[...document.querySelectorAll('main .btn-primary')].filter(b=>b.getClientRects().length&&!b.closest('.numpad-panel')).length===1&&document.querySelector('main .btn-primary').textContent.trim()==='Go to set 1'`),await A.js(`[...document.querySelectorAll('main .btn-primary')].map(b=>b.textContent.trim())`));
  check('the Announce card start time is a 48px field',await A.js(`(document.querySelector('#announce').open=true,document.querySelector('#announce-time').getBoundingClientRect().height>=48)`));await A.shot('session-page');
  await send('Page.navigate',{url:BASE+'/'},A.s);await A.settle();
  await A.go(NEW);const freshId=await A.js(`${FORM}.elements.request_id.value`);
@@ -73,7 +73,7 @@ try{
  await A.js(submit);await A.settle();
  const both=await A.js('location.pathname');
  check('both options apply',/^\/n\/\d+\/$/.test(both)&&await A.js(`!!document.querySelector('#coming')&&!document.querySelector('#announce')&&!!document.querySelector('.chip-value-reference')&&document.body.textContent.includes('Starts 8:30 PM')`),both);
- check('after announcing, Open set 1 leads',await A.js(`[...document.querySelectorAll('main .btn-primary')].some(b=>b.textContent.trim()==='Open set 1')`));
+ check('after announcing, Go to set 1 leads',await A.js(`[...document.querySelectorAll('main .btn-primary')].some(b=>b.textContent.trim()==='Go to set 1')`));
  await A.shot('session-page-announced');
  await B.go('/');check('the player is asked on the home page',await B.js(`document.body.textContent.includes('Are you in?')`));
  await B.go(both);check('the player sees the session and its chip values',await B.js(`!!document.querySelector('#coming')&&!!document.querySelector('.chip-value-reference')`));

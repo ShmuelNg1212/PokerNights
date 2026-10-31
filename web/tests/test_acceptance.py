@@ -320,10 +320,10 @@ class TwoSetSessionAcceptanceTest(TestCase):
         # The next set: same table and players, fresh buy-ins, its own timer.
         opened = host.post(reverse("next_set", args=[first.night_id]), follow=True)
         second = GameSession.objects.get(set_number=2)
-        self.assertContains(opened, "Set 2 is open")
+        self.assertContains(opened, "Players can join set 2")
         self.assertEqual(sorted(second.participants.values_list("member__display_name", flat=True)), ["A", "B", "C"])
         self.assertContains(opened, "₱0")  # nothing bought in yet
-        self.assertContains(host.get(night_url), "Not done: set 2 (open)")
+        self.assertContains(host.get(night_url), "Not done: set 2 (joining)")
 
         self.play_set(host, second, {"A": (1000, 600), "B": (1000, 1400), "C": (500, 500)})
         night_page = host.get(night_url)

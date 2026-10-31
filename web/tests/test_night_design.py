@@ -280,7 +280,7 @@ class SettlePageTests(TestCase):
         self.assertNotIn('night-settle', html)
         self.assertIn('Session open', html)
         self.assertNotIn('Collected rake across sets', html)  # no rake, no row
-        self.assertNotIn('Open set 1', html)  # set 1 is final: the choice is the next step
+        self.assertNotIn('Go to set 1', html)  # set 1 is final: the choice is the next step
         self.assertIn('Play set 2', html)
         self.assertIn('Close session and settle up', html)
         self.assertNotIn('data-my-part', html)

@@ -135,7 +135,7 @@ def record_buy_in(session_id, actor: Member, participant_id, amount: int, reques
     # A reopened set is being corrected: the host may add a buy-in that was never recorded.
     correcting = actor.is_host and is_reopened(session)
     if session.state not in BUY_IN_STATES and not correcting:
-        raise RuleError("Buy-ins can be recorded only while the set is open or running.")
+        raise RuleError("Buy-ins can be recorded only while players are joining or the set is in play.")
     participant = _participant(session, participant_id) if actor.is_host else _own_participant(session, actor, participant_id)
     if participant.status != Participant.Status.JOINED and not (
         correcting and participant.status == Participant.Status.LEFT
@@ -508,7 +508,7 @@ def cash_out_counted(session_id, actor: Member, count_ids, request_id) -> CashOu
         try:
             count_id = int(count_id)
         except (TypeError, ValueError):
-            raise RuleError("That review is not valid. Open the review again.") from None
+            raise RuleError("That review is not valid. Go to the review again.") from None
         if count_id not in wanted:
             wanted.append(count_id)
     if not wanted:
@@ -516,7 +516,7 @@ def cash_out_counted(session_id, actor: Member, count_ids, request_id) -> CashOu
 
     counts = FinalCount.objects.select_related("participant__member").filter(session=session, pk__in=wanted).in_bulk()
     if len(counts) != len(wanted):
-        raise RuleError("That review does not belong to this set. Nothing was recorded. Open the review again.")
+        raise RuleError("That review does not belong to this set. Nothing was recorded. Go to the review again.")
     stale = []
     for count_id in wanted:
         count = counts[count_id]

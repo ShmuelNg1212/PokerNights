@@ -9,7 +9,7 @@
   <div class="panel empty-state">
     <h3>Nobody is playing</h3>
     {% if coming %}<p class="muted">The next session is under Coming up.</p>
-    {% elif not me.is_host %}<p class="muted">A host starts the next session. It appears here when it opens.</p>
+    {% elif not me.is_host %}<p class="muted">A host starts the next session. It appears here when it starts.</p>
     {% else %}<p class="muted">Start one when the players arrive.</p>
     <p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>{% endif %}
   </div>
@@ -45,7 +45,7 @@
 {% if archived_nights %}
 <details class="group-sessions archived-sessions" id="archived">
 <summary>Archived sessions ({{ archived_nights|length }})</summary>
-<p class="small muted">Off the lists and out of the totals. Open one to restore it.</p>
+<p class="small muted">Off the lists and out of the totals. Go to one to restore it.</p>
 <ul class="session-list">
   {% for n in archived_nights %}
   <li><a class="session-link" href="{% url 'night' n.pk %}">

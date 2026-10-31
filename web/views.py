@@ -531,7 +531,7 @@ def night(request, night_id):
         "finalized_count": sum(1 for s in all_sets if s.state == State.FINALIZED),
     })
     context.update(next_step(night, me, by_number, {standing.pk for standing in outcome.standings}))
-    # Open set N leads to the latest set that still needs the host or the players; finished ones are under Sets.
+    # Go to set N leads to the latest set that still needs the host or the players; finished ones are under Sets.
     context["latest_set"] = next((s for s in reversed(sets) if s.state not in (State.FINALIZED, State.CANCELED)), None)
     context["my_makeup"] = outcome.makeup_for(me.pk)
     context.update(_rsvp_context(request, night, me, by_number))

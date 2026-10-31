@@ -3,7 +3,7 @@
 // in play with eight players, set 4 is an empty draft, sets 19 to 22 are open. The script consumes its fixtures.
 import {spawn} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
-// Open sets from seed_opening.py.
+// Go to sets from seed_opening.py.
 const OPEN=JSON.parse(readFileSync('/private/tmp/pn-opening-manifest.json','utf8'));
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-rack-review';mkdirSync(OUT,{recursive:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));

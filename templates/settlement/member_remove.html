@@ -9,8 +9,8 @@
 <h1>Remove {{ member.display_name }} from the group?</h1>
 {% if refusal %}
 <div class="notice notice-info">{{ refusal }}</div>
-{% if seated %}<p><a class="btn btn-block" href="{% url 'session' seated.pk %}">Open {{ seated.table.name }} set {{ seated.set_number }}</a></p>{% endif %}
-<p><a class="btn btn-quiet btn-block" href="{% url 'group' group.pk %}?view=players#players">Back to Players</a></p>
+{% if seated %}<p><a class="btn btn-block" href="{% url 'session' seated.pk %}">Go to {{ seated.table.name }} set {{ seated.set_number }}</a></p>{% endif %}
+<p><a class="btn btn-quiet btn-block" href="{% url 'group' group.pk %}?view=players#players">Go to Players</a></p>
 {% else %}
 <ul class="muted manage-effects">
   <li>{{ member.display_name }}'s results stay in past sessions and in Stats.</li>

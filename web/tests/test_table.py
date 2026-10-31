@@ -295,7 +295,7 @@ class PreparationTests(TestCase):
         games.transition(self.session.pk, self.host, "open")
         page = self.page()
         self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "done"})
-        self.assertIn('<span class="badge">Open</span>', page)
+        self.assertIn('<span class="badge">Joining</span>', page)
         self.assertIn("Players can see it and join.", page)
         self.assertIn("Next: Start the set", page)
         self.assertIn('name="opening_buy_ins"', page)

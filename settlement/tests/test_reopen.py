@@ -166,7 +166,7 @@ class MissedBuyInTests(TestCase):
         night = Night("A", "B")
         night.buy("A", 1000)
         night.go("reconciliation")
-        with self.assertRaisesMessage(RuleError, "only while the set is open or running"):
+        with self.assertRaisesMessage(RuleError, "only while players are joining or the set is in play"):
             night.buy("B", 1000)
 
     def test_a_player_cannot_rebuy_in_a_reopened_set(self):

@@ -23,7 +23,7 @@ class AddedYouTests(TestCase):
     def test_the_card_says_who_added_the_player_and_its_button_leads(self):
         page = self.client.get(reverse("home")).content.decode()
         self.assertIn(f'<p class="band-added" data-added="{self.table.session.pk}"><span class="added-dot" aria-hidden="true"></span>hana added you</p>', page)
-        self.assertIn('class="btn btn-primary btn-block" href="/s/%d/">Open set 1</a>' % self.table.session.pk, page)
+        self.assertIn('class="btn btn-primary btn-block" href="/s/%d/">Go to set 1</a>' % self.table.session.pk, page)
 
     def test_opening_the_set_clears_it(self):
         self.client.get(reverse("session", args=[self.table.session.pk]))

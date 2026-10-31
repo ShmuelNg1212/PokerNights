@@ -326,7 +326,7 @@ TRANSITIONS = {
 }
 
 ACTION_LABELS = {
-    "open": "Opened the set for joining",
+    "open": "Let players join",
     "close": "Closed the set (back to setup)",
     "start": "Started play",
     "end": "Ended play; counting up",
@@ -700,7 +700,7 @@ def add_participant(session_id, actor: Member, member_id) -> Participant:
         require_host(actor)
     allowed = HOST_ADD_STATES if actor.is_host else JOINABLE_STATES
     if session.state not in allowed:
-        raise RuleError("This set is not open for joining.")
+        raise RuleError("Players cannot join this set now.")
     # Locked, so that removing this member from the group waits for the seat, or the seat for it.
     member = Member.objects.select_for_update().filter(
         group_id=session.group_id, pk=member_id, status=Member.Status.ACTIVE
@@ -746,10 +746,10 @@ def _tell_added(session, actor: Member, participants, *, opened=False, started=F
         return
     where = f"{session.table.name} · "
     if started:
-        title = where + f"set {session.set_number} is open"
+        title = where + f"set {session.set_number} is ready to join"
         body = f"{actor.display_name} started set {session.set_number}. You\u2019re at the table."
     elif opened or session.state == State.OPEN:
-        title = where + (f"set {session.set_number} is open" if opened else f"you’re in set {session.set_number}")
+        title = where + (f"set {session.set_number} is ready to join" if opened else f"you’re in set {session.set_number}")
         body = f"{actor.display_name} added you. Tap to see the table."
     else:
         title, body = where + f"you’re in set {session.set_number}", f"{actor.display_name} added you. Play has started."
@@ -1035,7 +1035,7 @@ def draw_seats(session_id, actor: Member, request_id) -> SeatDraw:
             raise RuleError("That request belongs to another set.")
         return again
     if session.state != State.OPEN:
-        raise RuleError("Seats are drawn while the set is open, before it starts.")
+        raise RuleError("Seats are drawn while players are joining, before the set starts.")
     players = list(session.participants.filter(status=Participant.Status.JOINED).select_related("member").order_by("join_order"))
     if len(players) < 2:
         raise RuleError("A seat draw needs at least two players at the table.")
@@ -1078,7 +1078,7 @@ def choose_seat(session_id, actor: Member, seat, request_id) -> SeatDraw:
     if draw.dealer_seat is not None:
         raise RuleError("The dealer's seat is already chosen.")
     if session.state != State.OPEN:
-        raise RuleError("The seat is chosen while the set is open, before it starts.")
+        raise RuleError("The seat is chosen while players are joining, before the set starts.")
     try:
         seat = int(seat)
     except (TypeError, ValueError):

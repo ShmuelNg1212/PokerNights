@@ -205,7 +205,7 @@ class NewSessionOptionFormTests(TestCase):
 class SessionPageLeadTests(TestCase):
     """Before set 1 opens, one primary action leads the host's first screen."""
 
-    OPEN_SET = 'class="btn{} btn-block" href="{}">Open set 1</a>'
+    OPEN_SET = 'class="btn{} btn-block" href="{}">Go to set 1</a>'
 
     def setUp(self):
         self.group, self.host = make_group()

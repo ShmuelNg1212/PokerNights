@@ -47,7 +47,7 @@ class NextSetTests(TestCase):
             services.start_next_set(self.first.night_id, self.host)
         self.end()
         second = services.start_next_set(self.first.night_id, self.host)
-        with self.assertRaisesMessage(RuleError, "Set 2 is still open"):
+        with self.assertRaisesMessage(RuleError, "Set 2 is still joining"):
             services.start_next_set(self.first.night_id, self.host)  # a second tap
         self.assertEqual(GameSession.objects.filter(night=self.first.night).count(), 2)
         services.transition(second.pk, self.host, "start")
@@ -109,10 +109,10 @@ class NextSetPageTests(TestCase):
         page = self.client.post(self.url, follow=True)
         second = GameSession.objects.get(set_number=2)
         self.assertRedirects(page, reverse("session", args=[second.pk]))
-        self.assertContains(page, "Set 2 is open")
+        self.assertContains(page, "Players can join set 2")
         self.assertNotContains(self.client.get(self.night_url), "Play set 3")
         page = self.client.post(self.url, follow=True)  # a repeated tap
-        self.assertContains(page, "Set 2 is still open")
+        self.assertContains(page, "Set 2 is still joining")
         self.assertEqual(GameSession.objects.count(), 2)
 
     def test_player_and_stranger_are_refused(self):

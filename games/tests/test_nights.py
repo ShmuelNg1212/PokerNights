@@ -78,7 +78,7 @@ class NightPageTests(TestCase):
         second = second_set(self.first)
         self.client.force_login(self.ben.user)
         page = self.client.get(self.url)
-        for text in ("Set 1", "Set 2", "Counting up", reverse("session", args=[self.first.pk]), reverse("session", args=[second.pk]), "Open set 2"):
+        for text in ("Set 1", "Set 2", "Counting up", reverse("session", args=[self.first.pk]), reverse("session", args=[second.pk]), "Go to set 2"):
             self.assertContains(page, text)
         self.assertContains(self.client.get(reverse("session", args=[second.pk])), "Set 2")
 

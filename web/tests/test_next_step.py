@@ -89,7 +89,7 @@ class NextStepTests(TestCase):
         third = games.start_next_set(self.night_id, self.night.host)
         games.transition(third.pk, self.night.host, "cancel", reason="nobody came")
         html = self.client.get(reverse("night", args=[self.night_id])).content.decode()
-        self.assertIn("Open set 2", html)
+        self.assertIn("Go to set 2", html)
 
     def test_a_draft_blocks_settle_up_with_its_own_words(self):
         from types import SimpleNamespace

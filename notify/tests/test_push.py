@@ -41,7 +41,7 @@ class SendingTests(TestCase):
         webpush.assert_called_once()
         call = webpush.call_args.kwargs
         self.assertEqual(json.loads(call["data"]), {
-            "title": "Friday table · set 1 is open", "body": "hana added you. Tap to see the table.",
+            "title": "Friday table · set 1 is ready to join", "body": "hana added you. Tap to see the table.",
             "url": f"/s/{table.session.pk}/", "tag": f"set-{table.session.pk}",
         })
         self.assertEqual(call["vapid_claims"], {"sub": "https://pokernights-five.vercel.app"})

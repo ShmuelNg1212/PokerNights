@@ -39,17 +39,17 @@ class HomeStatusTests(TestCase):
     def test_each_set_state_chooses_its_action(self):
         one = make_session(self.host, state="setup")
         host = card_for(self.host.user, self.group)
-        self.assertEqual((host.kind, host.action_label, host.action_primary), ("open", "Open set 1", True))
+        self.assertEqual((host.kind, host.action_label, host.action_primary), ("open", "Go to set 1", True))
         # A draft is for hosts only: the player's card stays quiet.
         self.assertEqual(card_for(self.player.user, self.group).kind, "quiet")
         games.transition(one.pk, self.host, "open")
         player = card_for(self.player.user, self.group)
-        self.assertEqual((player.kind, player.action_label, player.action_primary), ("open", "Open set 1", True))
+        self.assertEqual((player.kind, player.action_label, player.action_primary), ("open", "Go to set 1", True))
         seat = games.add_participant(one.pk, self.host, self.player.pk)
         games.transition(one.pk, self.host, "start", opening_buy_ins=False)
         for user in (self.host.user, self.player.user):
             card = card_for(user, self.group)
-            self.assertEqual((card.kind, card.action_label, card.at_table), ("play", "Open the table", 1))
+            self.assertEqual((card.kind, card.action_label, card.at_table), ("play", "Go to the table", 1))
             self.assertEqual(card.action_url, reverse("session", args=[one.pk]))
             self.assertIsNotNone(card.seconds)
         ledger.record_buy_in(one.pk, self.host, seat.pk, 100000, uuid.uuid4())
@@ -166,7 +166,7 @@ class HomePageTests(TestCase):
         live = make_session(self.club.host, table=self.club.table, state="running")
         page = self.client.get(self.url)
         self.assertContains(page, 'class="home-band felt"', count=1)
-        self.assertContains(page, f'href="{reverse("session", args=[live.pk])}">Open the table</a>')
+        self.assertContains(page, f'href="{reverse("session", args=[live.pk])}">Go to the table</a>')
         self.assertContains(page, "data-running")
         self.assertNotContains(page, "in play ·")  # no money figure on this page
         self.assertNotContains(page, "New session")

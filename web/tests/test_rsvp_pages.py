@@ -229,7 +229,7 @@ class RsvpPageReviewFixTests(TestCase):
         self.client.force_login(self.ana.user)
         page = self.client.get(reverse("group", args=[self.group.pk])).content.decode()
         self.assertIn("Coming up", page)
-        self.assertIn("Set 1 · Open", page)  # and the set is on Now playing
+        self.assertIn("Set 1 · Joining", page)  # and the set is on Now playing
         self.assertIn("Are you in?", self.client.get(reverse("home")).content.decode())
 
     def test_answered_by_names_the_host_as_the_group_knows_them(self):

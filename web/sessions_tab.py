@@ -34,9 +34,9 @@ def destination(night, latest_set) -> tuple[str, str]:
     The one rule for the Sessions tab's cards and the group card on Your groups.
     """
     if latest_set.state == State.RUNNING:
-        return reverse("session", args=[latest_set.pk]), "Open the table"
+        return reverse("session", args=[latest_set.pk]), "Go to the table"
     if latest_set.state in (State.SETUP, State.OPEN, State.RECONCILIATION):
-        return reverse("session", args=[latest_set.pk]), f"Open set {latest_set.set_number}"
+        return reverse("session", args=[latest_set.pk]), f"Go to set {latest_set.set_number}"
     return reverse("night", args=[night.pk]), "Go to the session"
 
 

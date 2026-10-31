@@ -40,7 +40,7 @@ class CarriedPlayersAreToldTests(TestCase):
         self.assertEqual(set(told), {"bea"})
         notice = told["bea"]
         self.assertEqual(notice.kind, "next")
-        self.assertEqual(notice.title, "Friday table · set 2 is open")
+        self.assertEqual(notice.title, "Friday table · set 2 is ready to join")
         self.assertEqual(notice.body, "hana started set 2. You’re at the table.")
         self.assertEqual(notice.url, f"/s/{second.pk}/")
 

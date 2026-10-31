@@ -111,7 +111,7 @@ class CardLinkTests(Played, TestCase):
         games.add_participants(live.pk, self.host, [m.pk for m in crowd], uuid.uuid4())
         cards = {card.pk: card for card in sessions_context(self.ben)["cards"]}
         mine = cards[live.night_id]
-        self.assertEqual((mine.url, mine.action_label), (reverse("session", args=[live.pk]), "Open the table"))
+        self.assertEqual((mine.url, mine.action_label), (reverse("session", args=[live.pk]), "Go to the table"))
         self.assertEqual((len(mine.chips), mine.more_seated), (6, 2))
         self.assertEqual(cards[finished.pk].url, reverse("night", args=[finished.pk]))
         self.assertEqual(cards[finished.pk].action_label, "Go to the session")

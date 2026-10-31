@@ -46,7 +46,7 @@ class OpeningTellsTheAddedPlayersTests(TestCase):
         self.assertEqual(set(told), {"ana", "ben"})
         notice = told["ana"]
         self.assertEqual(notice.kind, "open")
-        self.assertEqual(notice.title, "Friday table · set 1 is open")
+        self.assertEqual(notice.title, "Friday table · set 1 is ready to join")
         self.assertEqual(notice.body, "hana added you. Tap to see the table.")
         self.assertEqual(notice.url, f"/s/{table.session.pk}/")
         self.assertEqual(notice.actor_name, "hana")
