@@ -1293,3 +1293,6 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Live status.** "Live" alone while the page is current. The clock appears only with "Reconnecting… last updated 02:47". A clock beside the set timer read as elapsed time, and a changing text was announced on each change.
 - **Dates.** "Sun, Oct 25", with the year only when it is not this year (`short_date`). The game type leaves the head: it is in Details on a set in play, in the stakes step while preparing, and under Sets on a session. "Chips game" stays in the head, since it changes how every figure reads.
 - **Group head.** At 390 px the head and tabs end at 178 px: the name at 1.75rem and 88% width, 20 px under the header, the role beside it, then 8 px, then the tabs. Below 360 px the name is 1.5rem.
+- **Type floor.** Text that carries money, state or a name is 13 px or more, at every width. Only a chip's initials are smaller: they sit beside the written name.
+- **Heading scale.** `--h-page` 28 px (24 px below 360 px), `--h-lead` 22 px, `--h-section` 18 px, `--h-part` 16 px, `--h-label` 13 px in a muted colour. This replaces the contextual heading sizes in "Typography". Figures keep their own sizes.
+- **Rhythm.** Page gaps come from `--s-*`. This replaces the statement in "Layout" that no scale exists.

@@ -2,6 +2,7 @@
 // heads, type and contrast. Seed a fresh temporary database with seed.py, seed_end_set.py, seed_night.py,
 // seed_remaining.py, seed_opening.py and seed_surfaces.py, serve it on 127.0.0.1:8765, run. It writes nothing.
 // PN_SURFACES_REPORT=1 prints the figures and sets no exit code: the baseline run before the slice.
+// Sizes are read as drawn. A chip's initials are left out: they sit beside the written name.
 import {spawn} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR||'/private/tmp/pn-surfaces-review';mkdirSync(OUT,{recursive:true});
@@ -48,8 +49,10 @@ const MEASURE=`(()=>{
  const deepest=frames.length?Math.max(...frames.map(depth)):0;const deep=frames.filter(f=>depth(f)>1).map(f=>(f.className||f.tagName).toString().slice(0,28));
  const header=document.querySelector('.site-header');const hb=header?header.getBoundingClientRect().bottom:0;const h1=[...document.querySelectorAll('main h1, h1')].find(shown);const tabs=document.querySelector('main .tabs');
  const range=h1&&document.createRange();if(range)range.selectNodeContents(h1);const backWords=(header&&header.querySelector('.table-bar a'))?header.querySelector('.table-bar a').textContent.trim().replace(/\\s+/g,' '):'';
- const allBtns=[...main.querySelectorAll('.btn,button.btn,a.btn')].filter(shown);const undersides=allBtns.filter(b=>!b.matches('.btn-primary')&&getComputedStyle(b).boxShadow!=='none').length;
- return{small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight};
+ const allBtns=[...main.querySelectorAll('.btn')].filter(shown);const undersides=allBtns.filter(b=>!b.matches('.btn-primary')&&getComputedStyle(b).boxShadow!=='none').length;
+ const scale=[0,4,8,12,16,24,32,48];const gaps=[];for(const e of main.querySelectorAll('section,.panel,.page-heading,.tabs,.form-section,h1,h2,.section-heading')){if(!shown(e)||e.closest('dialog,summary,.visually-hidden'))continue;const c=getComputedStyle(e);for(const k of ['marginTop','marginBottom','paddingTop','paddingBottom']){const v=parseFloat(c[k]);if(!scale.includes(Math.round(v)))gaps.push((e.className||e.tagName).toString().slice(0,24)+' '+k+' '+v)}}
+ const bare=/Session: |Back to /.test(backWords);
+ return{gaps:[...new Set(gaps)],bare,small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight};
 })()`;
 const host=[['home','/'],['group-sessions','/g/1/'],['group-players','/g/1/?view=players'],['group-stats','/g/1/?view=stats'],['group-settings','/g/1/?view=settings'],
  ['set-draft-empty','/s/4/'],['set-joining',`/s/${OPENING.default.set}/`],['set-in-play','/s/3/'],['set-counting','/s/2/'],['set-counting-chips','/s/6/'],['set-balanced','/s/8/'],['set-recount','/s/9/'],['set-final','/s/1/'],['set-large','/s/11/'],
@@ -64,6 +67,11 @@ try{
  await H.go('/g/1/?view=players');const path=await H.js(`[...document.querySelectorAll('a.roster-link')].find(a=>!a.textContent.includes('(you)')).getAttribute('href')`);await walk(H,[['player-page',path]]);
  const P=await user('ben');await walk(P,player);
  for(const[n,list]of empty){const U=await user(n);await walk(U,list)}
+ // Sheets are read open, for their type and contrast.
+ const sheet=async(U,name,path,open)=>{await U.go(path);await U.js(open);await sleep(500);const m=await U.js(MEASURE);m.name=name;m.titleGap=null;m.sheet=true;table.push(m);await U.shot(name)};
+ await sheet(H,'sheet-rebuy','/s/3/',`[...document.querySelectorAll('.player-row button')].find(b=>b.textContent.trim()==='Rebuy').click()`);
+ await sheet(H,'sheet-player','/s/3/',`document.querySelector('.player-opener').click()`);
+ await sheet(H,'sheet-recap',`/n/${NIGHTS.partly}/`,`document.querySelector('.recap-opener').click()`);
  const N=await user('hana',320);await walk(N,[['group-sessions','/g/1/'],['set-in-play','/s/3/'],['set-final','/s/1/'],['session-closed-partly',`/n/${NIGHTS.partly}/`]],'320-');
  const D=await user('hana',1280);await walk(D,[['group-sessions','/g/1/'],['set-in-play','/s/3/'],['session-closed-partly',`/n/${NIGHTS.partly}/`],['group-settings','/g/1/?view=settings']],'1280-');
  console.log('page | frames/deepest | title gap | tabs end | title | back');
@@ -73,6 +81,20 @@ try{
  console.log('\nnested frames:');for(const m of table)if(m.deepest>1)console.log(m.name,m.deepest,m.deep.join(', '));
  console.log('\nsecondary buttons with an underside:',table.reduce((a,m)=>a+m.undersides,0));
  writeFileSync(`${OUT}/report.json`,JSON.stringify(table,null,1));
+ const allowed=/^H1 (28|22|24)px$|^H2 (28|18|16|13)px$|^H3 (22|18|16|13)px$|^H4 /;
+ for(const m of table){
+  check(`${m.name}: one container level (${m.deepest}${m.deep.length?': '+m.deep.join(', '):''})`,m.deepest<=1);
+  check(`${m.name}: only a primary has an underside (${m.undersides})`,m.undersides===0);
+  check(`${m.name}: no text under 13px${m.small.length?': '+m.small.join(' | '):''}`,!m.small.length);
+  check(`${m.name}: text at 4.5:1 or more${m.low.length?': '+m.low.join(' | '):''}`,!m.low.length);
+  check(`${m.name}: headings on the scale (${Object.keys(m.heads).filter(k=>!allowed.test(k)).join(', ')})`,Object.keys(m.heads).every(k=>allowed.test(k)));
+  check(`${m.name}: gaps on the scale${m.gaps.length?': '+m.gaps.join(' | '):''}`,!m.gaps.length);
+  check(`${m.name}: no sideways scroll`,!m.overflow);
+  if(m.sheet)continue;
+  if(m.titleGap!==null)check(`${m.name}: at least 20px above the title (${m.titleGap})`,m.titleGap>=20);
+  check(`${m.name}: the way back says little and repeats no title ("${m.back}" / "${m.title}")`,!m.bare&&(!m.back||!m.title.includes(m.back)));
+  if(m.tabsEnd!==null&&!m.name.startsWith('1280-'))check(`${m.name}: head and tabs end by 180px (${m.tabsEnd})`,m.tabsEnd<=180);
+ }
 }catch(e){check(`the run finished: ${e.message}`,false)}
 ws.close();chrome.kill();
 const failed=results.filter(r=>!r.ok).length;console.log(`\n${results.length-failed} of ${results.length} checks passed`);process.exit(!REPORT&&failed?1:0);
