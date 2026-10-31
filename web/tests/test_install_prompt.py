@@ -29,6 +29,56 @@ class CameInTests(TestCase):
         self.assertNotContains(second, CAME_IN)
         self.assertContains(second, SHEET)  # the sheet is there to be opened from Your groups
 
+    def test_a_person_with_no_session_yet_is_asked_later(self):
+        self.log_in()
+        self.assertContains(self.client.get(reverse("home")), "data-install-wait")
+
+    def test_a_person_with_a_session_is_asked_now(self):
+        from games.tests.helpers import make_session
+        from groups.models import Member
+        make_session(Member.objects.get(user__username="hana"))
+        self.log_in()
+        page = self.client.get(reverse("home"))
+        self.assertContains(page, CAME_IN)
+        self.assertNotContains(page, "data-install-wait")
+
+    def test_an_archived_session_does_not_count(self):
+        from games import services
+        from games.tests.helpers import make_session
+        from groups.models import Member
+        hana = Member.objects.get(user__username="hana")
+        session = make_session(hana)
+        services.transition(session.pk, hana, "cancel")
+        services.archive_night(session.night_id, hana)
+        self.log_in()
+        self.assertContains(self.client.get(reverse("home")), "data-install-wait")
+
+    def test_a_player_is_asked_later_while_the_only_session_is_a_hidden_draft(self):
+        from games import services
+        from games.tests.helpers import make_session
+        from groups.models import Member
+        from groups.tests.helpers import add_player
+        hana = Member.objects.get(user__username="hana")
+        session = make_session(hana)
+        ben = add_player(hana.group, "ben")
+        self.client.force_login(ben.user)
+        self.client.post(reverse("logout"))
+        self.log_in("ben")
+        self.assertContains(self.client.get(reverse("home")), "data-install-wait")
+        self.client.post(reverse("logout"))
+        services.transition(session.pk, hana, "open")
+        self.log_in("ben")
+        self.assertNotContains(self.client.get(reverse("home")), "data-install-wait")
+
+    def test_a_removed_member_with_only_that_session_is_asked_later(self):
+        from games.tests.helpers import make_session
+        from groups.models import Member
+        hana = Member.objects.get(user__username="hana")
+        make_session(hana)
+        Member.objects.filter(pk=hana.pk).update(status=Member.Status.REMOVED)
+        self.log_in()
+        self.assertContains(self.client.get(reverse("home")), "data-install-wait")
+
     def test_every_login_says_so_again(self):
         self.log_in()
         self.client.get(reverse("home"))

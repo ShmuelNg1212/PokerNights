@@ -152,7 +152,7 @@ class WelcomeTests(TestCase):
         cookie = answer.cookies[ARRIVED]
         self.assertEqual((cookie.value, cookie["max-age"], cookie["samesite"], cookie["path"]), ("1", 30, "Lax", "/"))
         page = self.client.get(self.home)
-        self.assertContains(page, 'class="page hub-page home-page" data-depth="0" data-alerts-remind data-welcome data-came-in>')
+        self.assertContains(page, 'class="page hub-page home-page" data-depth="0" data-alerts-remind data-welcome data-came-in')
         self.assertEqual(page.cookies[ARRIVED].value, "")  # removed by the page that read it
         self.assertEqual(page.cookies[ARRIVED]["max-age"], 0)
         for _ in range(2):  # a reload, a later visit

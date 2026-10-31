@@ -79,6 +79,20 @@ class Door:
         request.door_welcomed = True
         return True
 
+    @property
+    def has_session(self):
+        """Whether this person can see a session of theirs. Asked only on the page after a login, for the same suggestion."""
+        from django.db.models import Q
+
+        from games.models import GameNight, GameSession
+        from groups.models import Member
+        mine = Member.objects.filter(user=self.request.user, status=Member.Status.ACTIVE)
+        hosting = mine.filter(role=Member.Role.HOST).values("group_id")
+        return GameNight.objects.filter(group__in=mine.values("group_id"), archived_at__isnull=True).filter(
+            Q(group__in=hosting) | Q(announced_at__isnull=False) | ~Q(sets__state=GameSession.State.SETUP)
+        ).exists()
+
+
 
 def door(request):
     return {"door": Door(request)}

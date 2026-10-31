@@ -107,7 +107,9 @@
     }
 
     // A login was just made in this browser: owed once, on the first page that has room for it.
-    if (main && main.hasAttribute("data-came-in")) write(sessionStorage, DUE, "1");
+    // A person with no session yet has nothing to come back to: it waits for their first one.
+    if (main && main.hasAttribute("data-came-in")) write(sessionStorage, DUE, main.hasAttribute("data-install-wait") ? "wait" : "1");
+    if (read(sessionStorage, DUE) === "wait" && document.querySelector("#live, .night-layout")) write(sessionStorage, DUE, "1");
     if (phone() && !installed && read(sessionStorage, DUE) === "1" && main && !main.classList.contains("entry-page")) {
       // After the arrival has played; a page that opens its own sheet (the recap) keeps the turn.
       timers.push(setTimeout(function () {
