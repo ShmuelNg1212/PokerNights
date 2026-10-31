@@ -66,6 +66,13 @@ class GroupViewTests(TestCase):
         self.assertContains(page, "A host starts the next session")
         self.assertNotContains(page, "New session")
 
+    def test_new_session_sits_above_the_cards(self):
+        make_session(self.host, state="open")
+        html = self.client.get(self.url).content.decode()
+        self.assertLess(html.index(reverse("session_create", args=[self.group.pk])), html.index('class="table-cards"'))
+        self.client.force_login(add_player(self.group, "viewer").user)
+        self.assertNotContains(self.client.get(self.url), "New session")
+
     def test_player_reads_players_without_host_forms(self):
         self.client.force_login(add_player(self.group, "viewer").user)
         page = self.client.get(self.url, {"view": "players"})

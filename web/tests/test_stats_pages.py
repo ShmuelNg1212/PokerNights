@@ -101,8 +101,8 @@ class StatsPagesTests(TestCase):
         self.client.force_login(user)
         page = self.stats()
         self.assertContains(page, "1st of 2")
-        self.assertContains(page, "Your stats")
-        self.assertContains(page, "Last result")
+        self.assertContains(page, "stat-you-link")
+        self.assertContains(page, "· last ")
 
     def test_player_page_figures_match_a_hand_calculation(self):
         page = self.player(self.ana)

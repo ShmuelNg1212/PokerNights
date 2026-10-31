@@ -31,13 +31,27 @@ try {
  const group=await A.js(`[...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).find(h=>new RegExp('^/g/[0-9]+/$').test(h))`);
  const board=group+'?view=stats';
  await A.go(board);
- check('your summary leads with a figure, a rank and the last result',await A.js(`(()=>{const y=document.querySelector('.stat-you');return !!y.querySelector('.stat-you-figure')&&new RegExp('of [0-9]+|Not ranked').test(y.textContent)&&y.textContent.includes('Last result')&&!!y.querySelector('a.btn')})()`));
+ check('your summary is one row with a figure, a rank and the last result, and it leads to your page',await A.js(`(()=>{const y=document.querySelector('.stat-you');const a=y.querySelector('a.stat-you-link');return !!a&&a.getAttribute('href').includes('/players/')&&!!y.querySelector('.stat-you-figure')&&new RegExp('of [0-9]+|Not ranked').test(y.textContent)&&y.textContent.includes('last ')&&a.getBoundingClientRect().height<=80})()`));
+ check('the first ranked row is within 350px at 390',await A.js(`document.querySelector('.stat-row').getBoundingClientRect().top<=350`));
+ check('one control states the unit and the period, whole',await A.js(`(()=>{const b=document.querySelector('.stat-choice');const t=b.querySelector('.grow');return b.getClientRects().length>0&&t.textContent.trim()==='Pesos · All time'&&t.scrollWidth<=t.clientWidth+1&&!document.querySelector('[data-stat-pills=period] a').getClientRects().length})()`));
+ check('all five orders are reachable beside it',await A.js(`(()=>{const n=document.querySelector('[data-stat-pills=sort]'),all=[...n.querySelectorAll('a')];const was=n.scrollLeft;n.scrollLeft=9999;const last=all.at(-1).getBoundingClientRect(),box=n.getBoundingClientRect();n.scrollLeft=was;return n.getClientRects().length>0&&all.length===5&&last.right<=box.right+1&&last.left>=box.left})()`));
+
+ // The sheet: what shows, what a choice does.
+ await A.click(`document.querySelector('.stat-choice')`);
+ check('the control opens a sheet with the units, the periods and the month',await A.js(`(()=>{const d=document.querySelector('dialog[open]');return !!d&&d.querySelector('h2').textContent==='Show'&&d.querySelectorAll('[data-stat-pills=unit] a').length===2&&d.querySelectorAll('[data-stat-pills=period] a').length===3&&!!d.querySelector('#stat-month')})()`));
+ check('in the sheet every choice is 48px and nothing overflows',await A.js(`(()=>{const d=document.querySelector('dialog[open]');return [...d.querySelectorAll('.pills a, select')].every(e=>e.getBoundingClientRect().height>=48)&&d.scrollWidth<=d.clientWidth})()`));await A.shot('stats-sheet-390');
+ check('focus starts on the current choice',await A.js(`document.activeElement.getAttribute('aria-current')==='true'&&document.activeElement.textContent.trim()==='All time'`));
+ await A.js(`[...document.querySelectorAll('dialog[open] [data-stat-pills=period] a')].find(a=>a.textContent.trim()==='This year').click()`);await sleep(1000);
+ check('a choice closes the sheet, changes the board and is stated on the control',await A.js(`!document.querySelector('dialog[open]')&&location.search.includes('period=year')&&document.querySelector('.stat-choice .grow').textContent.trim()==='Pesos · This year'`));
+ await A.click(`document.querySelector('.stat-choice')`);await A.key('Escape','Escape',27);await sleep(400);
+ check('Escape closes the sheet and focus returns to the control',await A.js(`!document.querySelector('dialog[open]')&&document.activeElement===document.querySelector('.stat-choice')`));
+ await A.go(board);
  check('ranked rows have places, others are apart',await A.js(`document.querySelectorAll('[data-stat-board] .stat-row').length>=5&&document.body.textContent.includes('Not ranked yet')&&!document.querySelector('.stat-list-rest .stat-rank').getClientRects().length`));
  check('a removed player stays, and movement is marked in words too',await A.js(`document.body.textContent.includes('Left the group')`)&&await A.js(`[...document.querySelectorAll('.stat-move')].length>0`));
  check('a result is never colour alone: sign and icon',await A.js(`[...document.querySelectorAll('[data-stat-board] .stat-net')].every(e=>new RegExp('^[+−₱]').test(e.textContent.trim())&&(!!e.querySelector('svg')))`));
  for(const w of [320,390,1280]){await A.size(w);await A.go(board);check(`board fits ${w}`,await A.js(fits(w)));check(`board 48px ${w}`,await A.js(sized));await A.shot(`stats-board-${w}`);}
  await A.size(390);await A.go(board);
- for(const sel of ['.stat-facts','.stat-label','.stat-move','.stat-you-facts dt','.stat-notes summary'])check(`contrast ${sel}`,await A.js(contrast(sel))>=4.5);
+ for(const sel of ['.stat-facts','.stat-label','.stat-move','.stat-you-line','.stat-notes summary'])check(`contrast ${sel}`,await A.js(contrast(sel))>=4.5);
  const before=await A.js(names);
  await A.click(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent==='Average')`);
  check('Average orders the board and shows profit small beneath',await A.js(`location.search.includes('sort=average')&&!!document.querySelector('.stat-profit')&&document.querySelector('[data-stat-pills=sort] [aria-current]').textContent==='Average'`));
@@ -45,17 +59,18 @@ try {
  await sleep(900);check('rows are at rest with no inline style left',await A.js(`[...document.querySelectorAll('.stat-row')].every(r=>!r.getAttribute('style'))`));await A.shot('stats-board-average-390');
  check('Per hour is offered when time was recorded',await A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].some(a=>a.textContent==='Per hour')`));
  await A.js(`(()=>{const s=document.querySelector('#stat-month');s.value=s.options[1].value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`);await sleep(900);
- check('picking a month shows it at once and keeps the order',await A.js(`new RegExp('period=2026-[0-9]{2}').test(location.search)&&location.search.includes('sort=average')&&document.querySelector('#stat-month').hasAttribute('data-chosen')`));await A.shot('stats-board-month-390');
+ check('picking a month shows it at once and keeps the order',await A.js(`new RegExp('period=2026-[0-9]{2}').test(location.search)&&location.search.includes('sort=average')&&document.querySelector('#stat-month').hasAttribute('data-chosen')&&new RegExp('[A-Z][a-z]+ 2026').test(document.querySelector('.stat-choice').textContent)`));await A.shot('stats-board-month-390');
  await A.go(board+'&unit=chips');check('a chips board never shows pesos',await A.js(`!document.querySelector('.group-stats').textContent.includes('₱')&&document.body.textContent.includes('chips')`));
  await A.go(board+'&period=2020-01');check('an empty period says so',await A.js(text('No closed session in January 2020')));
 
  // A change of period, unit or order keeps the page where it was scrolled.
- const stays=async(P,label,act)=>{await P.js(`window.scrollTo(0,300)`);await sleep(150);const y=await P.js(`window.scrollY`);const steps=await P.js(`history.length`);await act();await sleep(900);check(`${label}: the page stays where it was scrolled`,y>250&&Math.abs(await P.js(`window.scrollY`)-y)<=2);check(`${label}: Back still leaves Stats in one step`,await P.js(`history.length`)===steps);check(`${label}: nothing is left marked`,await P.js(`!document.documentElement.hasAttribute('data-go')&&[...document.querySelectorAll('.stat-row,.pills a,.pill-marker,[data-stat-body],#stat-month')].every(e=>!e.getAttribute('style'))`));};
+ const stays=async(P,label,act)=>{await P.js(`window.scrollTo(0,300)`);await sleep(150);const y=await P.js(`window.scrollY`);const steps=await P.js(`history.length`);await act();await sleep(900);check(`${label}: the page stays where it was scrolled, or as near as a shorter page allows`,y>250&&Math.abs(await P.js(`window.scrollY`)-Math.min(y,await P.js(`document.documentElement.scrollHeight-innerHeight`)))<=2);check(`${label}: Back still leaves Stats in one step`,await P.js(`history.length`)===steps);check(`${label}: nothing is left marked`,await P.js(`!document.documentElement.hasAttribute('data-go')&&[...document.querySelectorAll('.stat-row,.pills a,.pill-marker,[data-stat-body],#stat-month')].every(e=>!e.getAttribute('style'))`));};
  await A.size(390);await A.go(board);
  await stays(A,'period',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent.trim()==='This year').click()`));
  check('the period changed',await A.js(`location.search.includes('period=year')&&document.querySelector('[data-stat-pills=period] [aria-current]').textContent==='This year'`));
  await stays(A,'order',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=sort] a')].find(a=>a.textContent.trim()==='Return').click()`));
  await stays(A,'unit',()=>A.js(`[...document.querySelectorAll('[data-stat-pills=unit] a')].find(a=>a.textContent.trim()==='Chips games').click()`));
+ await A.go(board); // the chips board fits one screen, so it has nothing to keep
  await stays(A,'month',()=>A.js(`(()=>{const s=document.querySelector('#stat-month');s.value=s.options[1].value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`));
  await A.go(board);await A.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].find(a=>a.textContent.trim()==='Last 3 months').click()`);await sleep(140);
  {const{data}=await send('Page.captureScreenshot',{format:'png'},A.s);writeFileSync(`${OUT}/stats-mid-switch-390.png`,Buffer.from(data,'base64'));}
@@ -63,9 +78,9 @@ try {
  const moving=(P,tap)=>P.js(`(async()=>{setTimeout(()=>{${tap}},20);const seen=new Set();for(let i=0;i<40;i++){document.getAnimations().forEach(a=>{const t=a.effect&&a.effect.target;if(!t||a.effect.pseudoElement)return;if(t.matches('.pill-marker'))seen.add('marker');if(t.matches('[data-stat-body]'))seen.add('body');if(t.matches('.stat-row'))seen.add('row')});await new Promise(r=>setTimeout(r,15))}return [...seen].sort().join(',')})()`);
  const pill=(group,label)=>`[...document.querySelectorAll('[data-stat-pills=${group}] a')].find(a=>a.textContent.trim()==='${label}').click()`;
  await A.go(board);
- check('a new period slides the marker over and brings the figures in from the side',await moving(A,pill('period','This year'))==='body,marker');
+ check('a new period brings the figures in from the side',await moving(A,pill('period','This year'))==='body');
  await sleep(500);check('a new order slides the marker and moves the rows, and the summary stays still',await moving(A,pill('sort','Sessions'))==='marker,row');
- await sleep(500);check('a new unit slides the marker and brings the figures in',await moving(A,pill('unit','Chips games'))==='body,marker');
+ await sleep(500);check('a new unit brings the figures in',await moving(A,pill('unit','Chips games'))==='body');
  await sleep(700);check('everything is at rest afterwards with no inline style left',await A.js(`[...document.querySelectorAll('.pill-marker,[data-stat-body],.stat-row')].every(e=>!e.getAttribute('style'))`));
  // On a phone the order pills scroll sideways. A tap keeps that row, and the page, exactly where they were.
  await A.size(390);await A.go(board);await A.js(`window.scrollTo(0,640);document.querySelector('[data-stat-pills=sort]').scrollLeft=999`);await sleep(200);
@@ -115,6 +130,8 @@ try {
  const C=await page();await login(C,'rosa');await send('Emulation.setScriptExecutionDisabled',{value:true},C.s);await C.go(player);
  check('no JavaScript: the chart and the list are complete',await C.js(`document.querySelectorAll('.chart-bar').length>0&&document.querySelectorAll('.player-sessions li').length>0`));
  await C.go(board);check('no JavaScript: the Month list has its Show button',await C.js(`document.querySelector('.stat-month .btn').getClientRects().length>0`));
+ check('no JavaScript: the choices sit in the page as links, and no dead control shows',await C.js(`[...document.querySelectorAll('[data-stat-pills=period] a')].every(a=>a.getClientRects().length>0&&a.getAttribute('href').includes('period='))&&!document.querySelector('.stat-choice').getClientRects().length&&document.querySelector('[data-stat-pills=sort] a').getClientRects().length>0`));
+ await C.go(board+'&period=year');check('no JavaScript: a period link works',await C.js(`document.querySelector('[data-stat-pills=period] [aria-current]').textContent.trim()==='This year'`));
  writeFileSync(`${OUT}/stats.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}
 if(results.some(x=>!x.ok))process.exitCode=1;

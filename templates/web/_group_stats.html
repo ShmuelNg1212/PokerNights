@@ -2,25 +2,30 @@
 <section class="group-stats" aria-labelledby="stats-heading">
 <h2 id="stats-heading" class="visually-hidden">Player stats</h2>
 {% if stat_months %}
+<div class="stat-bar">
 {% include "web/_stat_controls.html" with board=True %}
+{% if stat_ranked or stat_unranked %}<nav class="pills stat-sort" aria-label="Order by" data-stat-nav data-stat-pills="sort">
+  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{% if slug == stat_sort %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ label }}</a>{% endfor %}
+</nav>
+{% endif %}
+</div>
 <div data-stat-body>
 <section class="panel stat-you" aria-labelledby="stat-you-heading">
-  <h3 id="stat-you-heading" class="stat-label">You · {{ stat_period.label }}</h3>
   {% if stat_mine %}
-  <p class="stat-you-net">{% include "web/_stat_figure.html" with figure=stat_mine.profit|default:stat_mine.figure class="stat-you-figure" %}</p>
-  <dl class="stat-you-facts">
-    <div><dt>Rank</dt><dd>{{ stat_mine_rank }}</dd></div>
-    <div><dt>Last result</dt><dd>{% include "web/_stat_figure.html" with figure=stat_mine_last class="" %} <span class="muted small">{{ stat_mine.record.last.date|date:"M j" }}</span></dd></div>
-  </dl>
-  <p><a class="btn btn-block" href="{{ stat_mine.url }}">Your stats</a></p>
+  <a class="stat-you-link" href="{{ stat_mine.url }}">
+    <span class="grow">
+      <h3 id="stat-you-heading" class="stat-label">You · {{ stat_period.label }}</h3>
+      <span class="stat-you-line">{{ stat_mine_rank }} · last {% include "web/_stat_figure.html" with figure=stat_mine_last class="" %} <span class="muted">{{ stat_mine.record.last.date|date:"M j" }}</span></span>
+    </span>
+    {% include "web/_stat_figure.html" with figure=stat_mine.profit|default:stat_mine.figure class="stat-you-figure" %}
+    {% icon 'chevron-right' %}
+  </a>
   {% else %}
+  <h3 id="stat-you-heading" class="visually-hidden">You</h3>
   <p class="muted">You have no closed session {{ stat_where }}.</p>
   {% endif %}
 </section>
 {% if stat_ranked or stat_unranked %}
-<nav class="pills stat-sort" aria-label="Order by" data-stat-nav data-stat-pills="sort">
-  {% for slug, label in stat_sorts %}<a data-turbo-action="replace" href="?view=stats&amp;unit={{ stat_unit }}&amp;period={{ stat_period.slug }}&amp;sort={{ slug }}" {% if slug == stat_sort %}aria-current="true"{% endif %}>{% if slug == stat_sort %}<span class="pill-marker" aria-hidden="true"></span>{% endif %}{{ label }}</a>{% endfor %}
-</nav>
 {% if stat_ranked %}
 <ol class="stat-list" data-stat-board>
   {% for line in stat_ranked %}{% include "web/_stat_row.html" %}{% endfor %}

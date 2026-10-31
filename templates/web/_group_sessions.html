@@ -1,10 +1,10 @@
-{% load money_tags table_tags %}<section class="group-sessions" aria-labelledby="current-sessions">
+{% load money_tags table_tags %}{% if cards and me.is_host %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
+<section class="group-sessions" aria-labelledby="current-sessions">
 <h2 id="current-sessions">Now playing</h2>
 {% if cards %}
   <ul class="table-cards">
     {% for card in cards %}{% include "web/_session_card.html" %}{% endfor %}
   </ul>
-  {% if me.is_host %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
 {% else %}
   <div class="panel empty-state">
     <h3>Nobody is playing</h3>

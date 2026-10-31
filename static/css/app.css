@@ -642,7 +642,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .table-card-you { display:flex; align-items:center; gap:var(--s-2); margin-top:var(--s-1); font-weight:700; }
 .you-dot { flex:none; width:10px; height:10px; border-radius:50%; background:var(--bone); box-shadow:0 0 0 3px color-mix(in oklch, var(--bone) 25%, transparent); }
 .table-card > .btn { margin-top:var(--s-1); }
-.new-session { margin:var(--s-4) 0 0; }
+.new-session { margin:0 0 var(--s-4); }
 
 /* RSVP (2026-10-27). "Coming up" cards hold their answer buttons, so the card is not one link and does not
    darken when pressed; the title is the link. The same viewer block sits on the session page. */
@@ -1308,26 +1308,45 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 
 /* Stats (the Stats tab, a player's page, stats.js). The viewer's own answer leads; the board is rows
    that open a player; charts are drawn by the server and read without colour or script. */
-.stat-periods { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0 0 var(--s-4); }
-.stat-periods .pills { margin: 0; padding: 0; flex: 0 1 auto; min-width: 0; }
-.stat-month { display: flex; gap: var(--s-2); align-items: center; flex: 1 1 10rem; }
+.stat-controls { margin: 0 0 var(--s-3); min-width: 0; }
+/* The board's one bar: what is shown, then its order. The order pills scroll sideways beside the choice. */
+.stat-bar { margin: 0 0 var(--s-2); }
+.sheets-enabled .stat-bar { display: flex; align-items: flex-start; gap: var(--s-2); }
+.sheets-enabled .stat-bar .stat-controls { flex: 0 1 auto; max-width: 58%; margin: 0; }
+.sheets-enabled .stat-bar .stat-choice { width: auto; max-width: 100%; }
+.stat-bar .stat-sort { flex: 1 1 0; min-width: 0; margin: 0; padding-bottom: 0; }
+.btn.stat-choice { justify-content: space-between; gap: var(--s-1); width: 100%; padding-inline: var(--s-3); font-weight: 600; font-size: .9rem; line-height: 1.15; text-align: left; }
+.stat-choice .grow { flex: 0 1 auto; min-width: 0; }
+.stat-choice .icon { flex: none; width: 18px; height: 18px; color: var(--muted); }
+.sheets-enabled .stat-choice { display: flex !important; }
+.stat-choices { display: grid; gap: var(--s-3); min-width: 0; }
+.stat-choices .pills { margin: 0; flex-wrap: wrap; overflow: visible; }
+.stat-periods { display: grid; gap: var(--s-3); }
+.stat-month { display: flex; gap: var(--s-2); align-items: center; }
 .stat-month select { min-height: var(--tap); border-radius: var(--r-pill); padding: 0 var(--s-4); color: var(--muted); font-weight: 600; font-size: .9rem; background: transparent; }
 .stat-month select[data-chosen] { background: var(--bone); border-color: var(--bone); color: var(--ink); }
 .stat-month.is-auto .btn { display: none; }
 .pills a { transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast); }
 
-.stat-you { display: grid; gap: var(--s-3); padding: var(--s-5) var(--s-4) var(--s-4); }
-.stat-you > * { margin: 0; }
+.panel.stat-you { margin: 0 0 var(--s-2); padding: 0 var(--s-3); }
+.stat-you + .stat-list { margin-top: var(--s-2); }
+.stat-you > p { margin: 0; padding-block: var(--s-3); }
+.stat-you-link { display: flex; align-items: center; gap: var(--s-2); min-height: 64px; padding-block: var(--s-2); color: inherit; text-decoration: none; min-width: 0; }
+.stat-you-link .grow { flex: 1 1 0; min-width: 0; }
+.stat-you-link > .icon { flex: none; width: 18px; height: 18px; color: var(--muted); }
+.stat-you-line { display: block; color: var(--muted); font-size: .8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat-you-line .amount { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; font-weight: 600; }
+.stat-you-line .icon { width: .8rem; height: .8rem; }
 .stat-label { margin: 0; color: var(--muted); font-size: .8125rem; font-weight: 600; letter-spacing: .01em; }
-.stat-you-figure, .player-net-figure { display: inline-flex; align-items: center; gap: var(--s-2); font-size: clamp(2.25rem, 11vw, 3.25rem); font-weight: 800; font-stretch: 85%; line-height: 1.05; letter-spacing: -.02em; white-space: nowrap; }
-.stat-you-figure .icon, .player-net-figure .icon { width: .55em; height: .55em; stroke-width: 2.5; }
-.stat-you-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin: 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); }
-.stat-you-facts dt, .player-highlights dt, .stat-tile dt { color: var(--muted); font-size: .8125rem; }
-.stat-you-facts dd, .player-highlights dd { margin: 2px 0 0; font-weight: 700; font-variant-numeric: tabular-nums; }
-.stat-you-facts .amount, .player-highlights .amount, .player-sessions .amount { display: inline-flex; align-items: center; gap: var(--s-1); white-space: nowrap; }
-.stat-you-facts .icon, .player-highlights .icon, .player-sessions .icon { width: .9rem; height: .9rem; }
+.stat-you-figure { flex: none; display: inline-flex; align-items: center; gap: var(--s-1); font-size: 1.375rem; font-weight: 750; font-stretch: 85%; white-space: nowrap; }
+.stat-you-figure .icon { width: 1rem; height: 1rem; }
+.player-net-figure { display: inline-flex; align-items: center; gap: var(--s-2); font-size: clamp(2.25rem, 11vw, 3.25rem); font-weight: 800; font-stretch: 85%; line-height: 1.05; letter-spacing: -.02em; white-space: nowrap; }
+.player-net-figure .icon { width: .55em; height: .55em; stroke-width: 2.5; }
+.player-highlights dt, .stat-tile dt { color: var(--muted); font-size: .8125rem; }
+.player-highlights dd { margin: 2px 0 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.player-highlights .amount, .player-sessions .amount { display: inline-flex; align-items: center; gap: var(--s-1); white-space: nowrap; }
+.player-highlights .icon, .player-sessions .icon { width: .9rem; height: .9rem; }
 
-.stat-sort { margin-top: var(--s-5); }
 .stat-heading { margin: var(--s-5) 0 var(--s-1); font-size: 1rem; }
 .stat-list { position: relative; }
 .stat-row { display: block; padding: 0; }
@@ -1404,7 +1423,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
   .stat-tiles { grid-template-columns: repeat(4, 1fr); }
   .player-highlights { grid-template-columns: repeat(4, 1fr); }
 }
-@media (max-width: 359px) { .stat-link { gap: var(--s-2); } .stat-you-facts { grid-template-columns: 1fr; } }
+@media (max-width: 359px) { .stat-link { gap: var(--s-2); } }
 
 /* The chosen pill on a stats screen is a marker behind its words, so stats.js can slide it from the
    pill that was chosen before. Without the script it simply sits there. */
@@ -2188,6 +2207,18 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-setting > summary .icon, .settings-row > summary .icon { flex: none; width: 18px; height: 18px; color: var(--muted); transition: transform var(--t-fast); }
 .profile-setting[open] > summary .icon, .settings-row[open] > summary .icon { transform: rotate(180deg); }
 .profile-setting > form { padding: 0 0 var(--s-4); }
+/* Settings (2026-11-01): one row each, in the Profile's row shape. Each says its current state and opens its own form. */
+.panel.settings-rows { padding-block: 0; padding-inline: var(--s-4); }
+.settings-row > summary h2 { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 1rem; font-weight: 600; }
+.settings-body { display: grid; gap: var(--s-3); padding: 0 0 var(--s-4); min-width: 0; }
+.settings-body > * { margin: 0; min-width: 0; }
+.settings-body h3 { margin: 0; font-size: .9375rem; }
+.settings-body fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.settings-body legend { padding: 0; font-weight: 600; }
+.settings-row details > summary { gap: var(--s-2); list-style: none; }
+.settings-row details > summary::-webkit-details-marker { display: none; }
+.settings-row details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+.settings-row details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .profile-names { margin: 0; }
 .profile-names li { display: flex; gap: var(--s-3); padding: var(--s-2) 0; border-top: 1px solid var(--rule); min-width: 0; }
 .profile-names li:first-child { border-top: 0; }
@@ -2207,18 +2238,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-choice > form { display: flex; margin: 0; }
 .next-card { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); width: 100%; padding: var(--s-3) var(--s-4) var(--s-4); text-align: left; overflow-wrap: anywhere; }
 .next-title { font-size: 1.125rem; font-weight: 700; line-height: 1.2; }
-/* Settings (2026-11-01): one row each, in the Profile's row shape. Each says its current state and opens its own form. */
-.panel.settings-rows { padding-block: 0; padding-inline: var(--s-4); }
-.settings-row > summary h2 { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 1rem; font-weight: 600; }
-.settings-body { display: grid; gap: var(--s-3); padding: 0 0 var(--s-4); min-width: 0; }
-.settings-body > * { margin: 0; min-width: 0; }
-.settings-body h3 { margin: 0; font-size: .9375rem; }
-.settings-body fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
-.settings-body legend { padding: 0; font-weight: 600; }
-.settings-row details > summary { gap: var(--s-2); list-style: none; }
-.settings-row details > summary::-webkit-details-marker { display: none; }
-.settings-row details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-.settings-row details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .next-line { color: var(--muted); font-size: .8125rem; font-weight: 500; line-height: 1.35; text-wrap: balance; }
 .next-card:disabled { opacity: 1; background: transparent; border-color: var(--rule); box-shadow: none; }
 .next-card:disabled .next-title { color: var(--muted); }

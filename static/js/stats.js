@@ -1,8 +1,8 @@
 // The Stats tab and a player's page. It only adds: a session can be read off the chart by touch,
 // pointer or arrow keys; the Month list shows its month as soon as one is picked; and a change of
-// period, unit or order keeps the page where it was scrolled and shows what changed: the chosen
-// pill's marker slides over, new figures slide in from the side that was tapped toward, and rows
-// glide to their new places. Every page is complete without it.
+// period, unit or order keeps the page where it was scrolled and shows what changed: an order pill's
+// marker slides over, new figures slide in from the side that was tapped toward, and rows glide to
+// their new places. Every page is complete without it.
 (function () {
   "use strict";
 
@@ -50,6 +50,7 @@
     list.querySelectorAll("[data-member]").forEach(function (row) { found[row.dataset.member] = Math.round(row.getBoundingClientRect().top - top); });
     return found;
   }
+  function sortRow() { return document.querySelector("#main .stat-sort"); }
   function hold(control) {
     var group = control.closest("[data-stat-pills]"), was = group && chosen(group), list = document.querySelector("[data-stat-board]");
     var box = was && was.getBoundingClientRect();
@@ -57,8 +58,8 @@
       path: location.pathname, y: window.scrollY, group: group ? group.dataset.statPills : "",
       from: was ? choices(group).indexOf(was) : -1, to: group ? choices(group).indexOf(control) : -1,
       box: box ? { left: box.left, top: box.top, width: box.width } : null, places: list ? places(list) : null,
-      // On a phone a row of pills scrolls sideways; each row is put back where it was.
-      rows: Array.from(document.querySelectorAll("#main .pills")).map(function (row) { return row.scrollLeft; })
+      // On a phone the order pills scroll sideways; the row is put back where it was.
+      side: sortRow() ? sortRow().scrollLeft : 0
     };
   }
   document.addEventListener("turbo:click", function (event) {
@@ -82,11 +83,9 @@
   });
 
   // Put the new screen where the old one was, before it is drawn and before anything is measured:
-  // each row of pills sideways, and the page itself. Without this the pills and the page jump.
+  // the order pills sideways, and the page itself. Without this the pills and the page jump.
   function place(was) {
-    document.querySelectorAll("#main .pills").forEach(function (row, at) {
-      if (was.rows[at]) row.scrollLeft = was.rows[at];
-    });
+    if (was.side && sortRow()) sortRow().scrollLeft = was.side;
     if (Math.abs(window.scrollY - was.y) > 1) window.scrollTo(0, was.y);
   }
   function arrived(was) {
@@ -104,8 +103,9 @@
     // The marker slides from the pill that was chosen to the one that is.
     var group = document.querySelector('[data-stat-pills="' + was.group + '"]'), now = group && chosen(group);
     var marker = now && now.querySelector(".pill-marker");
-    if (marker && was.box) {
-      var box = now.getBoundingClientRect();
+    var box = now && now.getBoundingClientRect();
+    // A choice made in the sheet has no marker to slide: the sheet has closed over it.
+    if (marker && was.box && box.width) {
       move(marker, { transform: [
         "translate(" + (was.box.left - box.left) + "px, " + (was.box.top - box.top) + "px) scaleX(" + (was.box.width / box.width) + ")",
         "translate(0px, 0px) scaleX(1)"

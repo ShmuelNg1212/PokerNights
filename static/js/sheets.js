@@ -1,4 +1,4 @@
-// Bottom sheets for one focused task (buy-in, cash-out, player details, the session recap).
+// Bottom sheets for one focused task (buy-in, cash-out, player details, the session recap, a stats period).
 // The sheet is a native dialog this script creates per page and removes when the page is left.
 (function () {
 "use strict";
@@ -135,7 +135,7 @@ if (S && event.detail.form && S.dialog.contains(event.detail.form)) showError(ev
 });
 
 window.pokerPage.register(function () {
-var region = document.getElementById("live") || document.querySelector(".night-layout"), mount = document.getElementById("table-sheets");
+var region = document.getElementById("live") || document.querySelector(".night-layout") || document.querySelector("[data-sheet-region]"), mount = document.getElementById("table-sheets");
 if (!region || !mount || !window.HTMLDialogElement) return;
 var dialog = document.createElement("dialog");
 dialog.className = "sheet"; dialog.setAttribute("aria-labelledby", "sheet-title");
