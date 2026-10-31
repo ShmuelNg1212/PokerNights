@@ -50,7 +50,7 @@ try {
   check('a refused percentage shows its field and message', await js(`location.pathname==='/g/1/sessions/new/'&&getComputedStyle(document.querySelector('[name=rake_percentage]').closest('.field')).display!=='none'&&!!document.querySelector('[name=rake_percentage]').closest('.field').querySelector('.errors')`));
   await shot('new-session-error');
   await js(`document.querySelector('[name=rake_mode][value=off]').click();document.querySelector('.form-groups [type=submit]').click()`); await settle();
-  const nightPath = await js('location.pathname'); check('creating lands on the session page', /^\/n\/\d+\/$/.test(nightPath) && (await js(`!!document.querySelector('#announce')&&!!document.querySelector('.session-chip-values')`)), nightPath);
+  const nightPath = await js('location.pathname'); check('creating lands on the session page', /^\/n\/\d+\/$/.test(nightPath) && (await js(`!!document.querySelector('#announce')&&!!document.querySelector('a.night-option-link')`)), nightPath);
   await go(await js(`document.querySelector('a.set-link').getAttribute('href')`));
   const setPath = await js('location.pathname'); check('the session is created with the chips preset', /^\/s\/\d+\/$/.test(setPath) && (await js(`document.body.textContent.includes('1,000,000 chips')`)), setPath);
   await shot('set-draft-chips');

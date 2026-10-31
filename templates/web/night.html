@@ -24,7 +24,7 @@
       {% if reopening %}{% include "web/_correction.html" with record=reopening lead="Reopened." %}{% endif %}
       {% if board and before_play %}{% if night.start_time %}<p class="felt-hint">Starts {{ night.start_time|time:"g:i A" }}.</p>{% endif %}
       {% elif not me.is_host %}<p class="felt-hint">Who pays whom comes when the host settles up.</p>{% endif %}
-      {% if latest_set %}<p><a class="btn{% if not announce or latest_set.state != 'setup' %} btn-primary{% endif %} btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
+      {% if latest_set %}<p><a class="btn{% if not board.open or me.is_host or board.mine %} btn-primary{% endif %} btn-block" href="{% url 'session' latest_set.pk %}">Open set {{ latest_set.set_number }}</a></p>{% endif %}
       {% if total_rake %}<dl class="set-totals"><div><dt>Collected rake across sets</dt><dd>{{ total_rake|amount:unit }}</dd></div></dl>{% endif %}
       {% if my_standing %}
       <div class="night-mine">
@@ -60,7 +60,7 @@
           <span class="small transfer-state">{% if t.paid %}<span class="transfer-mark">{% icon 'check' %}</span><span class="paid-word">Paid</span> · {{ t.paid.created_at|date:"M j, H:i" }} · marked by the host{% elif t.carried %}<span class="transfer-mark carried-mark">{% icon 'arrow-up-right' %}</span><span class="carried-word">Carried</span> to <a href="{% url 'night' t.carried.plan.night_id %}">{{ t.carried.plan.night.table.name }}, {{ t.carried.plan.night.game_date|date:"M j" }}</a>{% else %}<span class="unpaid-word">Not paid</span>{% endif %}</span>
           {% if me.is_host and not t.carried %}{% if t.paid %}
           <form method="post" data-turbo="true" action="{% url 'transfer_unpaid' night.pk t.pk %}">{% csrf_token %}<button type="submit" class="btn btn-quiet">Undo</button></form>
-          {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn btn-primary">Mark paid</button></form>{% endif %}{% endif %}
+          {% else %}<form method="post" data-turbo="true" action="{% url 'transfer_paid' night.pk t.pk %}" data-once>{% csrf_token %}{% request_id_field %}<button type="submit" class="btn">Mark paid</button></form>{% endif %}{% endif %}
         </li>{% endwith %}
         {% empty %}<li class="panel empty-state"><h3>Nothing to pay</h3><p class="muted">Every player's session result is even, so no transfer is needed.</p></li>{% endfor %}
       </ul>

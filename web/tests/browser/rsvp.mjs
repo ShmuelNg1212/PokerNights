@@ -37,6 +37,9 @@ check('Your groups asks Ben "Are you in?" with the time',await B.js(`/Are you in
 await B.go(tab);
 check('Coming up follows Now playing',await B.js(`[...document.querySelectorAll('.group-sessions h2')].map(h=>h.textContent.trim()).join('|').startsWith('Now playing|Coming up')`));
 check('the card gives date, time, seats and waiting',await B.js(`/8:00 PM/.test(document.querySelector('.coming-card .table-card-when').textContent)&&/3 of 3 seats · 1 waiting/.test(document.querySelector('.coming-card .table-card-facts').textContent)`));
+await B.go(friday);
+check('a player who has not answered has one main action on the session page',await B.js(`[...document.querySelectorAll('main .btn-primary')].filter(e=>e.getClientRects().length).length===1&&!document.querySelector('.hero a.btn-primary')`),await B.js(`[...document.querySelectorAll('main .btn-primary')].filter(e=>e.getClientRects().length).map(e=>e.textContent.trim())`));
+await B.go(tab);
 check('full: the primary reads Join the waitlist, beside Can\'t make it',await B.js(`(()=>{const b=[...document.querySelectorAll('.coming-card .rsvp-actions button')];return b.length===2&&b[0].textContent.trim()==='Join the waitlist'&&b[0].classList.contains('btn-primary')&&b[0].getBoundingClientRect().top===b[1].getBoundingClientRect().top})()`));
 check('card controls are 48px',(await B.js(targets('.coming-card'))).every(h=>h>=48),await B.js(targets('.coming-card')));
 check('390: no sideways scroll',await B.js(fits(390)));
@@ -87,6 +90,9 @@ await H.shot('rsvp-add-players-390',true);
 await H.go(back);
 check('a draft shows the Announce card with the table\'s 9 seats',await H.js(`!!document.querySelector('#announce')&&document.querySelector('#announce-seats').value==='9'&&/4 players with a login get a notice\\./.test(document.querySelector('#announce').textContent)`));
 await H.js(`document.querySelector('#announce').scrollIntoView()`);await H.shot('rsvp-announce-390');
+check('Announce starts folded, under one main action',await H.js(`!document.querySelector('#announce').open&&document.querySelector('.hero a.btn-primary')!==null`));
+await H.js(`(()=>{const d=document.querySelector('#announce');d.open=true;document.querySelector('#announce-seats').value='many';document.querySelector('#announce button[type=submit]').click()})()`);await sleep(1500);
+check('a refused Announce opens again with what was typed and the reason',await H.js(`document.querySelector('#announce').open&&document.querySelector('#announce-seats').value==='many'&&document.body.textContent.includes('Enter the number of seats.')`));
 await H.js(`(()=>{document.querySelector('#announce-time').value='21:30';document.querySelector('#announce-seats').value='6';document.querySelector('#announce button[type=submit]').click()})()`);await sleep(1500);
 check('announcing replaces the card with Who\'s coming, 0 of 6',await H.js(`!document.querySelector('#announce')&&/0 of 6/.test(document.querySelector('.rsvp-count').textContent)`));
 // Widths.

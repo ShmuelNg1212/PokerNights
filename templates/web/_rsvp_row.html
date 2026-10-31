@@ -12,14 +12,14 @@
     <form method="post" data-turbo="true" action="{% url 'night_seat_now' night.pk %}" data-once>{% csrf_token %}
       <input type="hidden" name="member" value="{{ person.pk }}">
       <p class="small">{% if board.full %}This adds a seat: the session goes to {{ board.limit|add:1 }}.{% else %}A seat is free.{% endif %}</p>
-      <button type="submit" class="btn btn-primary btn-block">Seat {{ person.display_name }}</button>
+      <button type="submit" class="btn btn-block">Seat {{ person.display_name }}</button>
     </form>
     {% else %}
     <form method="post" data-turbo="true" action="{% url 'night_rsvp' night.pk %}" data-once>{% csrf_token %}{% request_id_field %}
       <input type="hidden" name="member" value="{{ person.pk }}"><input type="hidden" name="back" value="night">
       <input type="hidden" name="going" value="{% if row.status == 'confirmed' %}out{% else %}in{% endif %}">
       {% if row.status == 'confirmed' %}<p class="small">{% if board.waitlisted %}The first in line takes the seat.{% else %}The seat stays free.{% endif %}</p>{% elif board.full %}<p class="small">The seats are full: this puts them on the waitlist.</p>{% endif %}
-      <button type="submit" class="btn btn-block{% if row.status == 'confirmed' %} btn-danger{% else %} btn-primary{% endif %}">{% if row.status == 'confirmed' %}Mark {{ person.display_name }} out{% else %}Mark {{ person.display_name }} in{% endif %}</button>
+      <button type="submit" class="btn btn-block{% if row.status == 'confirmed' %} btn-danger{% endif %}">{% if row.status == 'confirmed' %}Mark {{ person.display_name }} out{% else %}Mark {{ person.display_name }} in{% endif %}</button>
     </form>
     {% endif %}
     </div>

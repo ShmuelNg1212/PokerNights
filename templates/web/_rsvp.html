@@ -1,8 +1,7 @@
 {% load table_tags %}
 {# RSVP on the session page: the host's Announce card before players see it, then who is coming. #}
 {% if announce %}
-<section class="panel rsvp-announce" id="announce" aria-labelledby="announce-title">
-  <h2 id="announce-title">Announce to the group</h2>
+<details class="night-option rsvp-announce" id="announce" data-key="announce-{{ night.pk }}"{% if announce.refused %} open{% endif %}><summary><span class="grow">Announce to the group</span>{% icon 'chevron-down' %}</summary>
   <p class="small muted">Players see this session and answer In or Out. Past the seats, they wait in line.</p>
   <form method="post" action="{% url 'night_announce' night.pk %}" class="rsvp-announce-form" data-once>{% csrf_token %}
     <div class="rsvp-announce-fields">
@@ -16,10 +15,10 @@
       </div>
     </div>
     <div data-numpad-slot></div>
-    <button type="submit" class="btn btn-primary btn-block">Announce to the group</button>
+    <button type="submit" class="btn btn-block">Announce to the group</button>
     <p class="hint">{{ announce.told }} player{{ announce.told|pluralize }} with a login get{{ announce.told|pluralize:"s," }} a notice.</p>
   </form>
-</section>
+</details>
 {% endif %}
 {% if board %}
 <section class="panel rsvp" id="coming" aria-labelledby="coming-title">

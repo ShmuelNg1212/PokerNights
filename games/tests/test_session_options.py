@@ -216,11 +216,11 @@ class SessionPageLeadTests(TestCase):
     def page(self, session):
         return self.client.get(reverse("night", args=[session.night_id])).content.decode()
 
-    def test_a_draft_not_yet_announced_leads_with_announce(self):
+    def test_a_draft_not_yet_announced_still_leads_with_the_set(self):
         session = make_session(self.host)
         html = self.page(session)
-        self.assertIn(self.lead(session).format(""), html)
-        self.assertIn('class="btn btn-primary btn-block">Announce to the group', html)
+        self.assertIn(self.lead(session).format(" btn-primary"), html)
+        self.assertIn('class="btn btn-block">Announce to the group', html)
 
     def test_after_announcing_open_set_leads_again(self):
         session = make_session(self.host)

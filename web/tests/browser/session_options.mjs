@@ -51,9 +51,9 @@ try{
  await A.js(`${FORM}.querySelector('[type=submit]').click()`);await A.settle();
  const plain=await A.js('location.pathname');
  check('a start time left behind does not block the button',/^\/n\/\d+\/$/.test(plain),plain);
- check('creating lands on the session page with both cards',/^\/n\/\d+\/$/.test(plain)&&await A.js(`!!document.querySelector('#announce')&&!!document.querySelector('.session-chip-values')`),plain);
- check('Announce is the one primary action',await A.js(`document.querySelectorAll('main .btn-primary').length===1&&document.querySelector('main .btn-primary').textContent.trim()==='Announce to the group'`),await A.js(`[...document.querySelectorAll('main .btn-primary')].map(b=>b.textContent.trim())`));
- check('the Announce card start time is a 48px field',await A.js(`document.querySelector('#announce-time').getBoundingClientRect().height>=48`));await A.shot('session-page');
+ check('creating lands on the session page with both cards',/^\/n\/\d+\/$/.test(plain)&&await A.js(`!!document.querySelector('#announce')&&!!document.querySelector('a.night-option-link')`),plain);
+ check('the set is the one primary action',await A.js(`[...document.querySelectorAll('main .btn-primary')].filter(b=>b.getClientRects().length).length===1&&document.querySelector('main .btn-primary').textContent.trim()==='Open set 1'`),await A.js(`[...document.querySelectorAll('main .btn-primary')].map(b=>b.textContent.trim())`));
+ check('the Announce card start time is a 48px field',await A.js(`(document.querySelector('#announce').open=true,document.querySelector('#announce-time').getBoundingClientRect().height>=48)`));await A.shot('session-page');
  await send('Page.navigate',{url:BASE+'/'},A.s);await A.settle();
  await A.go(NEW);const freshId=await A.js(`${FORM}.elements.request_id.value`);
  const hist=await send('Page.getNavigationHistory',{},A.s);await send('Page.navigateToHistoryEntry',{entryId:hist.entries[hist.currentIndex-1].id},A.s);await A.settle();

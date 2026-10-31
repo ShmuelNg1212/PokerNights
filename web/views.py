@@ -474,7 +474,7 @@ def _rsvp_context(request, night, me, by_number) -> dict:
         draft = request.session.pop("announce_draft", None)
         draft = draft if draft and draft.get("night") == night.pk else {}
         told = games.announce_audience(night.group_id, request.user.pk).count()
-        return {"announce": {"start_time": draft.get("start_time", ""),
+        return {"announce": {"refused": bool(draft), "start_time": draft.get("start_time", ""),
                              "seat_limit": draft.get("seat_limit", night.table.seat_count), "told": told}}
     return {}
 
