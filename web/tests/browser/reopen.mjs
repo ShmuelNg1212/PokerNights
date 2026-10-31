@@ -86,7 +86,7 @@ async function night(width){
  await A.shot(`reopen-${width}-7-night-sheet`);
  await A.type('One more set');
  await A.js(`${dialog}.querySelector('form [type=submit]').click()`);
- check(`${W} the session is open again and says why`,await A.until(`/Session open/.test(document.body.textContent)&&!!document.querySelector('.night-overview .correction')&&/One more set/.test(document.querySelector('.night-overview .correction').textContent)`));
+ check(`${W} the session is open again and says why`,await A.until(`/In progress/.test(document.body.textContent)&&!!document.querySelector('.night-overview .correction')&&/One more set/.test(document.querySelector('.night-overview .correction').textContent)`));
  check(`${W} the earlier list is kept, struck, in its own disclosure; Start next set is back`,await A.js(`!!document.querySelector('[data-key=replaced-lists] .struck')&&/Start next set/.test(document.body.textContent)&&!document.querySelector('.transfer-list')&&${fits(width)}`));
  await A.shot(`reopen-${width}-8-night-open`);
  check(`${W} no script error on the session pages`,await A.js(`__errors.length===0`),await A.js('__errors'));

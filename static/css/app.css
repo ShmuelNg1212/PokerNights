@@ -126,6 +126,9 @@ input[type="datetime-local"], input[type="email"], select, textarea {
 .form-row { display: flex; gap: 8px; align-items: flex-end; }
 .form-row > .grow { flex: 1 1 0; }
 details > summary { cursor: pointer; min-height: var(--tap); display: flex; align-items: center; font-weight: 600; color: var(--accent); }
+/* One affordance for every disclosure: a chevron that turns. Drawn here for a summary that has no icon of its own. */
+details > summary:not(.btn, .account-button, .result-summary, .row, :has(.icon))::after { content: ""; flex: none; width: .45em; height: .45em; margin: -.2em 0 0 .6em; border-right: 2px solid; border-bottom: 2px solid; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+details[open] > summary:not(.btn, .account-button, .result-summary, .row, :has(.icon))::after { margin-top: .2em; transform: rotate(-135deg); }
 
 /* Checkbox rows: the whole row is the label, so it is one large touch target */
 [hidden] { display: none !important; }
@@ -1643,6 +1646,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .prep-open .prep-step[data-state=done] { min-height: 0; padding: var(--s-1) 0; }
 .prep-open .prep-step[data-state=done] .prep-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .row-hint { margin: var(--s-3) 0 0; text-align: center; }
+.row-hint-lead { margin: var(--s-1) 0 0; text-align: left; }
 
 /* Count-up, one line per player (count-v2). DESIGN.md, "Count-up in one line" (2026-10-10). */
 .count-v2 .count-row { padding: 7px 0; }

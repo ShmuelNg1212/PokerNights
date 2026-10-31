@@ -79,7 +79,7 @@ try{
 
  // An open session: the close arrives, and the recap opens by itself as on a fresh load.
  const Q=await user('ben',390,false);await Q.go(`/n/${open}/`);
- check('a player waiting on an open session',await Q.js(`/Session open/.test(document.body.textContent)&&!document.querySelector('.night-settle')`));
+ check('a player waiting on an open session',await Q.js(`/In progress/.test(document.body.textContent)&&!document.querySelector('.night-settle')`));
  await Q.js(`window.__mark='same document'`);
  host(`settlement.close_night(${open}, host)`);
  const t=await Q.until(`!!document.querySelector('.night-settle')&&document.querySelectorAll('[data-transfer]').length>0`);
@@ -88,7 +88,7 @@ try{
  await Q.shot('nightlive-390-3-closed');
  await Q.js(`document.querySelector('dialog.sheet .sheet-head button').click()`);await sleep(600);
  host(`settlement.reopen_night(${open}, host, 'One more set')`);
- check('a reopening reaches the player with its reason',await Q.until(`!document.querySelector('.night-settle')&&/Session open/.test(document.body.textContent)&&/One more set/.test((document.querySelector('.night-overview .correction')||{}).textContent||'')`)>0);
+ check('a reopening reaches the player with its reason',await Q.until(`!document.querySelector('.night-settle')&&/In progress/.test(document.body.textContent)&&/One more set/.test((document.querySelector('.night-overview .correction')||{}).textContent||'')`)>0);
  check('…and no recap opens over it',await Q.js(`!document.querySelector('dialog[open]')`));
  // Two hosts: the host's own page is asked about too.
  const H=await user('hana');await H.go(`/n/${closed}/`);

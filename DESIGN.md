@@ -1298,3 +1298,6 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Rhythm.** Page gaps come from `--s-*`. This replaces the statement in "Layout" that no scale exists.
 - **First-time states.** `partials/first_state.html`: one heading, one sentence, at most one action. A page with nothing else on it adds a stack of three drawn 56 px chips, centred. Home keeps the mark. A player's empty group has no action, because a player has none to take. "Nobody is playing" replaces the "Now playing" heading when there is no card, and a session has no Results section until a result exists.
 - **Words.** The Sessions tab's list is headed "In progress". It holds drafts, canceled and finalized sets as well, so "Now playing" misstated them.
+- **Cash-out on a phone.** While a host's set is in play and nobody has cashed out, "Tap a player to cash out or correct an entry." sits under the Players heading, before the rows. After the first cash-out it returns to the foot of the list.
+- **Disclosures.** Every disclosure has a chevron that turns. A summary with no icon of its own draws one in CSS.
+- **Badges.** A session in play says "In progress", a set on its final page "Finalized". Results keep "Final" and "Not final". Host is a neutral badge everywhere, since green means up.

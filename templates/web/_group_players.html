@@ -93,7 +93,7 @@
   <li class="roster-row" id="member-{{ m.pk }}" data-name="{{ m.display_name|lower }}"{% if m.arrived %} data-arrived{% endif %}>
     <a class="roster-link" href="{% url 'player' group.pk m.pk %}?from=players">
       <span class="roster-person grow">{% member_token m members %}<span class="roster-name"><span>{{ m.display_name }}{% if m.pk == me.pk %} <span class="muted">(you)</span>{% endif %}</span>{% if roster_tools %}<span class="roster-activity">{% if not m.has_login %}No login · {% endif %}{{ m.activity_label }}</span>{% endif %}</span></span>
-      {% if m.is_host %}<span class="badge badge-good">Host</span>{% endif %}
+      {% if m.is_host %}<span class="badge">Host</span>{% endif %}
       {% if not m.has_login and not roster_tools %}<span class="badge">No login</span>{% endif %}
       {% icon 'chevron-right' %}
     </a>

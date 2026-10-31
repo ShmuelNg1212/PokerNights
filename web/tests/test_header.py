@@ -56,7 +56,7 @@ class HeaderTests(TestCase):
     def test_the_session_status_moves_beside_the_heading(self):
         header, main = self.parts(reverse("night", args=[self.table.session.night_id]))
         self.assertNotIn("badge", header)
-        self.assertIn('<span class="badge">Session ', main.split('data-carry="title"')[1])
+        self.assertIn('<span class="badge">In progress', main.split('data-carry="title"')[1])
 
     def test_the_account_token_holds_the_username_and_log_out(self):
         header, _ = self.parts(reverse("home"))

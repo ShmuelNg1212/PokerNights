@@ -278,7 +278,7 @@ class SettlePageTests(TestCase):
         self.client.force_login(night.host.user)
         html = self.client.get(reverse('night', args=[night.session.night_id])).content.decode()
         self.assertNotIn('night-settle', html)
-        self.assertIn('Session open', html)
+        self.assertIn('In progress', html)
         self.assertNotIn('Collected rake across sets', html)  # no rake, no row
         self.assertNotIn('Go to set 1', html)  # set 1 is final: the choice is the next step
         self.assertIn('Play set 2', html)
