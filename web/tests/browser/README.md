@@ -340,3 +340,13 @@ For results at a glance, seed a fresh temporary database with `seed.py` and `see
 These fail the same on `main` and are not fixed by Slice C: `count_flow.mjs` 89 of 91 and `flow.mjs` 50 of 52 (both named above), `dock.mjs` 226 of 228 ("toggle keeps focus across live update" and "bar verdict follows typing"), and `reopen.mjs` 23 of 24 (it looks for "Start next set", and the screen now says "Play set N"). `night.mjs` and `counts.mjs` can fail "no runtime errors" on a busy machine: see [the footgun](../../../doc/wiki/footguns/view_transition_opt_in_rejects_under_load.md).
 
 `seed_break_group.py` holds the worst realistic data for a group's Players, Settings and Stats tabs: names at the 60-character limit, names with no space, one letter, diacritics, right-to-left, emoji, 16 players, figures in the millions. Seed it alone on a fresh temporary database and log in as `aleksandra`. It has no script of its own; use it to look at those tabs at 320 and 390 px.
+
+Since 2026-11-01 (UI revamp Slice D):
+
+- The Players tab is `?view=players`. Scripts that read the roster or invite links go there: `roster`, `claim`, `invites`, `copy`, `reset`, `new_names`, `late_player`, `remaining`, `remaining_supplement`, `remaining_actions`, `corrections`, `lifetime`.
+- A host's management is on the player's page, so `roster`, `claim`, `copy`, `reset`, `remaining_actions` and `corrections` go through a row first. `roster.mjs` has 59 checks and `claim.mjs` 31.
+- Settings rows are closed, and the address opens one (`?view=settings&open=manage`). `archive` and `navigate` use this. `remaining` and `archive` measure targets with `checkVisibility`, because a closed row's controls still have client rects.
+- `stats.mjs` has 85 checks. It reaches the period through the sheet, and the marker slides only for the order. A page shorter than the old scroll position keeps as near as it can.
+- `screens.mjs` has 75 checks: four tabs, also at 320 px, and old addresses. `journey.mjs` has 15 checks, with the two taps to Invite.
+- Words: `table`, `home` and others read Joining, Go to and In progress.
+- `copy.mjs` needs `INVITE_LINKS_SHOWN=False`, because its invite branch checks the link shown once. `rake_extra.mjs` runs after `rake.mjs`, on the same database.
