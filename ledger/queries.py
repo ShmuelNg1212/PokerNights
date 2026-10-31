@@ -312,9 +312,12 @@ class Balance:
 
 
 def finishes_the_set(found: Summary) -> bool:
-    """Recording every confirmed count leaves nobody to count and the books balanced, so one action can finish the set."""
+    """Recording every confirmed count leaves nobody to count and the books balanced, so one action can finish the set.
+
+    An override does not qualify: it is disclosed on the Finalize sheet, so that set keeps its two steps.
+    """
     remaining = count_total(found)
-    return bool(found.ready_lines) and remaining.complete and remaining.difference + found.adjustment == 0
+    return bool(found.ready_lines) and remaining.matches and not remaining.has_overrides
 
 
 def balance(session_or_summary) -> Balance:

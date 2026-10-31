@@ -2,6 +2,7 @@
 
 import re
 import uuid
+from types import SimpleNamespace
 
 from django.test import TestCase
 from django.urls import reverse
@@ -10,12 +11,15 @@ from audit.models import AuditEvent
 from groups.errors import NotAllowed, RuleError
 from groups.tests.helpers import add_player
 from ledger import queries
+from ledger import services as ledger
 from ledger.models import CashOut, CashOutBatch, Finalization, PlayerResult
 from ledger.tests.helpers import Night
 from ledger.tests.test_batch import ready_ids
 from ledger.tests.test_counts import count, counting
 from ledger.tests.test_rake import configure
+from settlement import queries as settlement_queries
 from settlement import services
+from web.templatetags.table_tags import token
 
 
 def balanced(*names):
@@ -25,6 +29,17 @@ def balanced(*names):
     amounts[0], amounts[-1] = 1200, 800
     for name, pesos in zip(night.players, amounts):
         count(night, name, pesos)
+    return night
+
+
+def covered_by_an_override():
+    """₱100 short with an override on B; then A's cash-out is reversed and the same count is confirmed again."""
+    night = counting("A", "B")
+    first = night.cash("A", 1100)
+    night.cash("B", 800)
+    ledger.record_override(night.session.pk, night.host, "lost chip", "player", night.players["B"].pk, uuid.uuid4())
+    ledger.reverse_cash_out(night.session.pk, night.host, first.pk, "recount")
+    count(night, "A", 1100)
     return night
 
 
@@ -76,7 +91,8 @@ class FinishSetTests(TestCase):
         reviewed, request_id = ready_ids(night), uuid.uuid4()
         finish(night, reviewed, request_id)
         services.reopen_set(night.session.pk, night.host, "wrong count")
-        finish(night, reviewed, request_id)
+        with self.assertRaisesMessage(RuleError, "already used"):
+            finish(night, reviewed, request_id)
         self.assertEqual(night.refresh().state, "reconciliation")
         self.assertEqual(Finalization.objects.filter(is_current=True).count(), 0)
 
@@ -102,6 +118,22 @@ class FinishSetTests(TestCase):
         with self.assertRaisesMessage(RuleError, "Not cashed out yet: B"):
             finish(night)
         self.nothing_recorded(night)
+
+    def test_a_batch_recorded_without_finishing_is_not_taken_for_a_finish(self):
+        night = balanced()
+        reviewed, request_id = ready_ids(night), uuid.uuid4()
+        ledger.cash_out_counted(night.session.pk, night.host, reviewed, request_id)
+        with self.assertRaisesMessage(RuleError, "already used"):
+            finish(night, reviewed, request_id)
+        self.assertEqual((night.refresh().state, Finalization.objects.count()), ("reconciliation", 0))
+
+    def test_an_override_stays_on_the_finalize_path(self):
+        night = covered_by_an_override()
+        self.assertFalse(queries.finishes_the_set(queries.summary(night.session)))
+        batches = CashOutBatch.objects.count()
+        with self.assertRaisesMessage(RuleError, "An override covers this set"):
+            finish(night)
+        self.assertEqual((night.refresh().state, CashOutBatch.objects.count(), Finalization.objects.count()), ("reconciliation", batches, 0))
 
     def test_a_set_another_host_finished_refuses_and_keeps_one_result(self):
         night = balanced()
@@ -226,6 +258,31 @@ class FinishPageTests(TestCase):
         self.assertContains(page, "already final")
         self.assertNotContains(page, "Counted players are cashed out")
 
+    def test_a_review_with_nothing_left_after_a_refusal_leads_to_the_set(self):
+        html = self.client.get(self.review).content.decode()
+        self.night.cash("A", 1200)
+        self.night.cash("B", 800)
+        page = self.post(html)
+        self.assertRedirects(page, reverse("session", args=[self.session.pk]))
+        self.assertContains(page, "cashed out in the meantime")
+        self.assertContains(page, "Finalize results")
+
+    def test_a_used_review_says_so_after_a_reopen(self):
+        html = self.client.get(self.review).content.decode()
+        self.post(html)
+        services.reopen_set(self.session.pk, self.night.host, "wrong count")
+        page = self.post(html)
+        self.assertContains(page, "That review was already used. Nothing changed.")
+        self.assertNotContains(page, "Set 1 is final.")
+
+    def test_an_overridden_review_warns_and_keeps_the_batch_button(self):
+        night = covered_by_an_override()
+        self.client.force_login(night.host.user)
+        html = self.client.get(reverse("cash_out_counted", args=[night.session.pk])).content.decode()
+        self.assertIn('data-tone="warn">After this batch an override covers the difference.', html)
+        self.assertIn(">Cash out 1 player</button>", html)
+        self.assertNotIn("Finish set", html)
+
     def test_a_balance_that_needs_more_keeps_the_batch_button(self):
         count(self.night, "B", 750)
         html = self.client.get(self.review).content.decode()
@@ -277,8 +334,20 @@ class ResultsAtAGlanceTests(TestCase):
         html = self.client.get(url).content.decode()
         rows = html[html.index('class="list night-results"'):]
         rows = rows[:rows.index("</ul>")]
-        names = [name for name in re.findall(r'<span class="grow">(\w+)<br>', rows)]
-        self.assertEqual(names, ["B", "A", "C"])
+        shown = re.findall(r'<span class="chip k(\d+)".*?<span class="grow">(\w+)<br>', rows)
+        self.assertEqual([name for _, name in shown], ["B", "A", "C"])
+        standings = settlement_queries.night_outcome(night).standings
+        self.assertEqual(
+            {name: int(colour) for colour, name in shown},
+            {s.member.display_name: token(s, standings)[1] for s in standings},
+        )
+
+    def test_a_tie_goes_by_name_and_the_set_log_keeps_join_order(self):
+        outcome = settlement_queries.outcome(self.night.refresh())
+        self.assertEqual([r.participant.member.display_name for r in outcome.results], ["A", "B", "C"])
+        self.assertEqual([r.participant.member.display_name for r in outcome.ranked], ["B", "A", "C"])
+        rows = [SimpleNamespace(net=0, member=SimpleNamespace(display_name=name, pk=pk)) for pk, name in ((1, "zoe"), (2, "Abe"))]
+        self.assertEqual([r.member.display_name for r in settlement_queries.best_first(rows, lambda r: r.member)], ["Abe", "zoe"])
 
     def test_closing_a_session_sends_no_success_message(self):
         night = self.night.refresh().night

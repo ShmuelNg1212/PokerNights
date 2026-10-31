@@ -70,7 +70,7 @@ class FinalizeTests(TestCase):
         override(night, name="A", note="overpaid")
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
-        a, c, b = outcome.results  # best to worst
+        a, b, c = outcome.results
         self.assertEqual((a.cashed_out, a.adjustment, a.cash_out, a.net), (160000, -5000, 155000, 55000))
         self.assertEqual((b.net, c.net), (-30000, -25000))
         self.assertEqual(sum(r.net for r in outcome.results), 0)
@@ -99,8 +99,8 @@ class FinalizeTests(TestCase):
         night.cash("C", 1800)
         services.finalize(night.session.pk, night.host)
         outcome = queries.outcome(night.session)
-        self.assertEqual([r.net for r in outcome.results], [200000, 80000, -30000, -250000])
-        self.assertEqual([r.buy_in_count for r in outcome.results], [1, 2, 1, 3])
+        self.assertEqual([r.net for r in outcome.results], [200000, -250000, 80000, -30000])
+        self.assertEqual([r.buy_in_count for r in outcome.results], [1, 3, 2, 1])
         transfers = close(night).transfers
         self.assertEqual(len(transfers), 3)
         self.assertEqual(sum(t.amount for t in transfers), 280000)

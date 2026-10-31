@@ -231,15 +231,17 @@ def cash_out_counted(request, session_id):
     ready = summary.ready_lines
     batch_total = sum(line.count.amount for line in ready)
     # What the books will say once this batch is recorded: the last cheap moment to catch a miscount.
-    difference = summary.cashed_out + batch_total + summary.adjustment + summary.rake - summary.total
+    difference = queries.count_total(summary).difference + summary.adjustment
     finishes = queries.finishes_the_set(summary)
     if finishes:
         verdict = ("good", "The books balance.")
     elif summary.awaiting_lines:
         waiting = len(summary.awaiting_lines)
         verdict = ("", f"After this batch {waiting} player{' is' if waiting == 1 else 's are'} still to count.")
+    elif difference == 0 and summary.adjustment:
+        verdict = ("warn", "After this batch an override covers the difference.")
     elif difference == 0:
-        verdict = ("good", "After this batch the books balance.")  # only when a cash-out with no buy-in stands in the way
+        verdict = ("good", "After this batch the books balance.")
     else:
         off = money.format_amount(abs(difference), session.unit)
         verdict = ("warn", f"After this batch the books are {off} {'short' if difference < 0 else 'over'}. "

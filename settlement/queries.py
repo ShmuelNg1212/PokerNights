@@ -14,12 +14,22 @@ from . import services
 from .models import CarriedTransfer, Payment, SettlementPlan, Transfer
 
 
+def best_first(rows, member):
+    """Best result first, the same way everywhere: a tie goes by name. ``member`` reads a row's member."""
+    return sorted(rows, key=lambda row: (-row.net, member(row).display_name.lower(), member(row).pk))
+
+
 @dataclass
 class Outcome:
     """The frozen results of one set."""
 
     finalization: Finalization
     results: list
+
+    @property
+    def ranked(self):
+        """The display order. ``results`` stays in join order, so the set log can compare revisions row by row."""
+        return best_first(self.results, lambda result: result.participant.member)
 
     def result_for(self, member_id):
         return next((r for r in self.results if r.member_id == member_id), None)
@@ -30,7 +40,7 @@ def outcome(session):
     finalization = Finalization.objects.filter(session=session, is_current=True).first()
     if finalization is None:
         return None
-    results = list(finalization.results.select_related("participant__member").order_by("-net", "participant__join_order"))
+    results = list(finalization.results.select_related("participant__member").order_by("participant__join_order"))
     return Outcome(finalization, results)
 
 
@@ -193,7 +203,7 @@ class NightOutcome:
     @property
     def ranked(self):
         """Best result first. ``standings`` stays in join order, because a player's token colour follows it."""
-        return sorted(self.standings, key=lambda standing: (-standing.net, standing.join_order))
+        return best_first(self.standings, lambda standing: standing.member)
 
     @property
     def total_to_pay(self):
@@ -418,7 +428,7 @@ def night_recap(night, standings, seconds=None, *, results=None, viewer_id=None)
         line.sets.append((row.set_number, row.net))
         by_set.setdefault(row.session_id, []).append(row)
     largest = max((abs(s.net) for s in standings), default=0)
-    ranking = sorted(by_member.values(), key=lambda line: (-line.net, line.member.display_name.lower(), line.member.pk))
+    ranking = best_first(by_member.values(), lambda line: line.member)
     for position, line in enumerate(ranking, 1):
         tied = position > 1 and ranking[position - 2].net == line.net
         line.place = ranking[position - 2].place if tied else position

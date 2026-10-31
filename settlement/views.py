@@ -13,6 +13,7 @@ from groups.errors import RuleError
 from groups.http import attempt, group_settings, request_id_from
 from groups.models import Member
 from ledger import money
+from ledger import queries as ledger_queries
 
 from . import queries, services
 
@@ -28,12 +29,11 @@ def finalize(request, session_id):
 def finish_set(request, session_id):
     """The review's one button. A refusal returns to a fresh review, while there is still one to show."""
     session, actor = session_for(request.user, session_id)
-    done = attempt(request, services.finish_set, session.pk, actor, request.POST.getlist("count_id"), request_id_from(request))
+    done = attempt(request, services.finish_set, session.pk, actor, request.POST.getlist("count_id"), request_id_from(request),
+                   success=f"Set {session.set_number} is final.")
     session.refresh_from_db()
-    if done is None and session.state == services.State.RECONCILIATION:
+    if done is None and session.state == services.State.RECONCILIATION and ledger_queries.summary(session).ready_lines:
         return redirect("cash_out_counted", session_id=session.pk)
-    if done is not None and session.state == services.State.FINALIZED:
-        messages.success(request, f"Set {session.set_number} is final.")
     return redirect("session", session_id=session.pk)
 
 

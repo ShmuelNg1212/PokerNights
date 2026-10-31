@@ -16,6 +16,7 @@ from groups.access import require_host
 from groups.errors import RuleError
 from groups.models import GroupRakeAccount, Member
 from ledger import money
+from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import CashOutBatch, Finalization, PlayerResult
 
@@ -52,15 +53,20 @@ def finish_set(session_id, actor: Member, count_ids, request_id) -> Finalization
 
     The existing rules decide. ``ledger.cash_out_counted`` refuses a count that changed since the
     review, and finalizing refuses books that do not balance; either refusal undoes the whole action.
-    A repeated request changes nothing, also after the set was reopened.
+    An override is refused too, because the Finalize sheet is where it is disclosed. A repeated
+    request changes nothing: it returns the results, or is refused once the set was reopened.
     """
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
     if CashOutBatch.objects.filter(session=session, request_id=request_id).exists():
-        return session.finalizations.order_by("-revision").first()  # a repeated tap
+        if session.state == State.FINALIZED:
+            return session.finalizations.get(is_current=True)  # a repeated tap
+        raise RuleError("That review was already used. Nothing changed.")
     if session.state == State.FINALIZED:
         raise RuleError(f"Set {session.set_number} is already final. Nothing was recorded.")
     ledger.cash_out_counted(session.pk, actor, count_ids, request_id)
+    if ledger_queries.balance(session).overridden:
+        raise RuleError("An override covers this set. Cash out the players, then finalize on the set page. Nothing was recorded.")
     try:
         return finalize(session.pk, actor)
     except RuleError as refused:
