@@ -307,3 +307,16 @@ Use a fresh temporary database. Migrate it, then run `manage.py shell < web/test
 ## Create session movement
 
 Use a fresh temporary database. Migrate it, then run `manage.py shell < web/tests/browser/seed_session_options.py`. Start the local server with the same database and `TABLE_NOTICES=True`. Run `node web/tests/browser/session_arrival.mjs`. It has 32 checks at 390 and 1280 px: the same page stays loaded, the screen moves deeper, the top bar stays still, the announced notice arrives, a double tap makes one session, Back and create makes a second, a refusal keeps the typed text and does not move, a corrected form is accepted, and reduced motion. Session numbers must start at 1, so reset the database before a repeat. A capture of the movement is in `/private/tmp/pn-session-arrival-review/`, or `PN_REVIEW_DIR`.
+
+## UI revamp: journeys and corrections (2026-10-31)
+
+Seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_remaining.py`, `seed_opening.py` and `seed_journey.py`, serve it on 127.0.0.1:8765, then run `node web/tests/browser/journey.mjs`. It walks a new host from sign-up to a marked payment and a repeat game from an idle Your groups, at 390 × 844 with touch. It prints the Targets table of the [plan](../../../doc/plan/1793431937_ui_revamp.md) and its checks. It writes to the database. On `main` before Slice A it printed 26 taps and 14 fields, 8 taps, 7 taps with 4 ticks and 1 scroll, 2,798 px, 126 controls, 1 row and 658 px.
+
+Seed another fresh database with the same seeds, without `seed_journey.py`, then run `node web/tests/browser/corrections.mjs` (68 checks). It checks at most one main action on each state of the set and session pages at 390 and 1280 px, the way back on 11 form pages, whole initials on token stacks at 320 and 390 px, k6's contrast, straight row hairlines, a success toast (one line, its time on screen, a real tap going through it), a refusal keeping the foot of the screen, rebuys seen late keeping their marks, and the words on a first buy-in. It renames the group and records a buy-in. `chip_values.mjs` checks the way back on the chip page; `rsvp.mjs` checks a player's one main action and a refused Announce.
+
+Since Slice A:
+
+- A plain success toast sits under the header, has no button and lets a tap through. It leaves after 3.5 seconds, or 6 seconds when longer than 44 characters, or on the next tap. A refusal, or a toast with a button, stays at the foot with Dismiss. `motion.mjs` uses refusals, so its toast checks are unchanged.
+- The server's message on closing a session is now "Session closed."
+- `session_options.mjs` expects the set as the one main action and opens the Announce disclosure before measuring its field.
+- These checks failed on `main` before Slice A and still fail: `flow.mjs` "typing: no redraw and no movement" and "count confirmed: the row draws its tick…"; `marks.mjs` "the badge does not change a row's height" at 320 and 390 px; `count_flow.mjs` "panel keys and buttons are at least 48px" and its 320 by 568 check; `navigate.mjs` "exactly one poll loop on the set page" and "New session posts natively…"; `archive.mjs` "group-manage 48px targets" at 320, 390 and 1280 px.

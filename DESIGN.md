@@ -119,6 +119,23 @@ components:
 
 # Design System: PokerNights
 
+## 2026-10-31: Corrections (UI revamp, slice A)
+
+Mode: Operate, inside the Rack. [Plan](doc/plan/1793431937_ui_revamp.md). This supersedes earlier text where they differ: the toast in "Motion system", the Announce card and "Mark paid" as a primary button in "Session overview and settle-up" and in "2026-10-13 Session setup polish".
+
+- **One main action.** Each state of a set and a session has at most one bone primary. On a session before play it is the set's button; for a player who has not answered an announced session it is their answer. Row actions (Mark paid, Seat, a host's RSVP mark) are ordinary buttons. The bone primary means "the next thing", not "this row".
+- **Session options.** Before play, Announce to the group is a quiet disclosure line and Set chip values is a quiet link line, each 56 px under a Rule hairline. Chip values becomes the panel only when values exist. A refused Announce opens again with what was typed.
+- **Quiet success.** A plain success is one pill under the header: Surface 2, a green hairline, 14 px at weight 600, 40 px high. It has no button. A tap goes through it to the page and also sends it away. It stays 3.5 seconds, or 6 seconds when it runs past 44 characters. It arrives from 12 px above with `arrive` and leaves with `leave`. A new one replaces the last one. Refusals and toasts with something to press keep the foot of the screen and Dismiss.
+- **Messages.** A success says what happened in a few words: "Session closed.", "Payment recorded.", "4 players cashed out, 2 to count." The page shows the rest.
+- **Together.** Three or more count rows changing in one redraw, or three or more player rows changing with the set's state, are one event. Rows keep their small movement (the new edge, the tick) and lose the brass box and the word. Other watched figures in that redraw lose the box and its flash. Rebuys that arrive in one redraw, as when a locked phone wakes, are separate events and keep their marks.
+- **First buy-in.** A rise from no buy-in says "Buy-in added". A later rise says "Rebuy added".
+- **A mark's hold.** A later change on a row starts its own three seconds. The earlier hold does not end it.
+- **Brass box.** A box on a text line has 4 px corners (`--r-bar`). A panel keeps its own corners.
+- **One way back.** Every page below a group has the way back in the header's first slot: the arrow, then where it goes. No page repeats it as a small text link.
+- **Token stacks.** Tokens overlap by 4 px and do not shrink, so two initials stay whole beside the 3 px ring, down to 320 px. On Your groups, where six tokens and the role badge do not fit one line, the badge takes the next line.
+- **Row hairlines.** `.player-row` and `.stat-row` have square corners. A pressed player row takes its radius and drops its hairline while pressed. A stat row's pressed and own-row fill keeps its radius on the row's link.
+- **Measured.** k6 initials measure 6.77:1 against the chip's fill in the browser, so no colour changed. The 3.8:1 in the 2026-10-17 critique could not be reproduced; its source is not recorded. `journey.mjs` and `corrections.mjs`.
+
 ## 2026-10-28: Session chip values
 
 Mode: Operate, inside the Rack. [Plan](doc/plan/1793117581_session_chip_values.md).
