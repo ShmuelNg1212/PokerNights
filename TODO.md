@@ -9,6 +9,13 @@
 - [ ] A session before play: one bright button leads to the set; Announce opens from a quiet line. Mark paid is a dark button.
 - [ ] Your groups on the smallest phone: every initial is whole and the role badge does not touch the tokens.
 
+## Phone checks, unreleased (`feat/ui-revamp-b-start`)
+
+- [ ] New group, then New session: name the table there. Create session lands on the set. The home-screen suggestion comes only now.
+- [ ] A repeat game: New session fits one screen, the stakes read as one line, and Change opens them. They match last session, not an old preset.
+- [ ] Add players, then Start the set from the draft: the felt sweeps and everyone has the usual buy-in.
+- [ ] A ready set shows four players above the bottom bar. "Let players join first" is under More host controls.
+
 ## Next (each needs its own study and plan)
 
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.

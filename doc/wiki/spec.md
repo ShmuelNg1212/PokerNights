@@ -74,6 +74,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ### 4. Roster and history
 - Saved player roster for fast session setup. A roster player needs no login.
+- A group's first table is named on New session. New session starts from the chosen preset, or the group's latest session and the default preset of that session's table. A draft set can start directly; the set opens and starts in one transaction ([ADR 0009](../adr/0009-start-a-game-fast.md)).
 - Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group, or in all their groups at once from their profile; a group where the name is taken is skipped.
 - Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session.
 - Hosts rename a group. Every member sees the new name.
@@ -95,7 +96,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - A person who forgot their password asks a host for a reset link. It works once and lasts 24 hours. The app sends no email or message.
 - Sign up asks for a username and one password. Two of the four password rules tick while the person types; the server checks all four on sending. An invited Sign up names the group, who sent the link and how many play.
 - A logged-in person changes their password on their profile, giving the current one. Their other logins end, and live reset links stop working. Five wrong current passwords in 15 minutes stop further tries for a while.
-- The app can be added to a phone's home screen and suggests it after a login.
+- The app can be added to a phone's home screen. It suggests this after a login, or at the person's first session if they can see none yet ([ADR 0009](../adr/0009-start-a-game-fast.md)).
 
 ## Later (not built)
 

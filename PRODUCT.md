@@ -152,3 +152,7 @@ A host finds every active invite link in Group settings, with Copy and Share, fo
 ## 2026-10-17 addendum — Front door, second pass
 
 Log in shows the form and an always-visible line on how to recover a password; the description moved to Sign up, under the heading, where a newcomer reads it first. An invited Sign up names who sent the link and how many people play, from the group's active members; anyone holding a usable link sees this. Sign up and Set a new password ask for the password once. Two rules, at least 8 characters and not only digits, tick while the person types; the server still checks all four. A refused field's reason sits directly under it. The invited button says the account joins the group. [Plan](doc/plan/1792250537_front_door_second_pass.md).
+
+## 2026-10-31 addendum — Start a game fast
+
+A new group names its first table on New session. New session starts from the chosen preset or the group's last session, and the game and stakes read as one line once known. Creating a session goes to the set, unless it was announced. Start the set works from a draft: it opens and starts the set together, and "Let players join first" stays for a game where players join by themselves or draw seats. This revises "After every sign-up or login" in the Home screen addendum: a person with no session yet is asked when they reach their first session. Each page has one main action, and success messages are one short line. What each step records is unchanged. [ADR 0009](doc/adr/0009-start-a-game-fast.md), [plan](doc/plan/1793431937_ui_revamp.md).

@@ -119,6 +119,18 @@ components:
 
 # Design System: PokerNights
 
+## 2026-10-31: Start a game fast (UI revamp, slice B)
+
+Mode: Operate, inside the Rack. [Plan](doc/plan/1793431937_ui_revamp.md), [ADR 0009](doc/adr/0009-start-a-game-fast.md). This supersedes the four and five steps of "Set page" and the session page lead in "2026-10-31: Corrections".
+
+- **New session.** With its values known, the game and stakes read as one 64 px line under a Rule hairline, with Change and a chevron: "No-Limit Hold'em · ₱10 / ₱20 · buy-in ₱500 to ₱5,000 · usual ₱1,000 · rake off". The line follows the fields. A refused form, a field the browser refuses, or a group with nothing to copy shows the fields open. Create session sits in the shared sticky foot.
+- **Same as last session.** With a last session, the preset list's first choice is "Same as last session" and it is selected unless a preset applies. Only a chosen preset, or the default preset of the last session's table, replaces last session's stakes. A figure a host did not choose never hides behind the fold.
+- **First table.** A group with no table sees Table and Seats as a pair (flexible, then 96 px) where the list would be.
+- **Preparing.** The panel says "Get this set ready" with what is still to do, or "Ready to start" with one line about the timer. Settled steps fold to one 52 px line: a filled check, "4 players · ₱10 / ₱20", a chevron. They open to change. Only a seat draw, on an open set, stays out as its own row. There is no Start step: the main button is the step.
+- **Host controls.** One main button: Add players, then Start the set. On a draft, "Let players join first" waits under More host controls with one line of help. An empty draft has no Players heading.
+- **Known gap.** A completed step's mark lands inside the closed fold, so it is not seen. Task F5 gives the fold its own movement.
+- **Measured.** At 390 × 844, a ready set shows four player rows above the host controls, and a repeat game with a preset needs no scroll. `journey.mjs`.
+
 ## 2026-10-31: Corrections (UI revamp, slice A)
 
 Mode: Operate, inside the Rack. [Plan](doc/plan/1793431937_ui_revamp.md). This supersedes earlier text where they differ: the toast in "Motion system", the Announce card and "Mark paid" as a primary button in "Session overview and settle-up" and in "2026-10-13 Session setup polish".

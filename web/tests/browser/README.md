@@ -320,3 +320,9 @@ Since Slice A:
 - The server's message on closing a session is now "Session closed."
 - `session_options.mjs` expects the set as the one main action and opens the Announce disclosure before measuring its field.
 - These checks failed on `main` before Slice A and still fail: `flow.mjs` "typing: no redraw and no movement" and "count confirmed: the row draws its tick…"; `marks.mjs` "the badge does not change a row's height" at 320 and 390 px; `count_flow.mjs` "panel keys and buttons are at least 48px" and its 320 by 568 check; `navigate.mjs` "exactly one poll loop on the set page" and "New session posts natively…"; `archive.mjs` "group-manage 48px targets" at 320, 390 and 1280 px.
+
+Since Slice B (2026-10-31):
+
+- Create session goes to the set, or to the session page when announced. `session_arrival.mjs`, `session_options.mjs`, `session_setup.mjs`, `session_form.mjs`, `rake_controls.mjs` and `remaining_actions.mjs` follow it. `seed_journey.py` adds an archived earlier session, so its host has played before.
+- `table.mjs` reads the folded steps: `players` and `stakes` on a draft, `seats`, `players`, `stakes` and `open` on an open set. There is no `start` step and no `later` state. "Let players join first" is under More host controls.
+- `journey.mjs` checks the home-screen suggestion's timing, and it measures player rows on a set that is ready to start.

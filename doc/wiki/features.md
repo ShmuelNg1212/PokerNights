@@ -79,7 +79,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 
 ## A game night (one set)
 
-1. **Create.** The host picks a table, date, location, game type, unit and stakes. The app then goes to the session page. The game starts as a draft that only hosts see, unless the host ticks **Announce to the group** on New session.
+1. **Create.** The host picks a table, or names the group's first one, then the date, location, game type, unit and stakes. The app then goes to the set, or to the session page if the host ticked **Announce to the group**. The game starts as a draft that only hosts see, unless announced.
 2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment. Add players stays available during play even when every roster member is seated. The same page offers Add new player: enter a name to save a no-login roster identity and join them to the current set in one action. The new player’s timer starts when they join; record their buy-in separately. Duplicate names direct the host to roster selection, or back to the set if that player is already seated, and a full or ended set adds nobody.
 3. **Start play and opening buy-ins.** Start the set includes a checked option to add the set’s usual buy-in for each player at the table without an accepted buy-in. Existing buy-ins are kept, even at a different amount. Uncheck the option to start without automatic entries. Records and timers commit together; repeated confirmation creates nothing twice. Each new set uses its own current settings. Resume and late joining add no automatic buy-in. A reversed-only player qualifies again before first start; uncheck when that is intentional.
@@ -99,7 +99,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 
 [Plan](../plan/1793347607_session_setup_menu.md). [ADR 0008](../adr/0008-new-session-options.md).
 
-- **After Create session.** The screen moves deeper to the session page, without a page load. It has the Announce and Chip values cards, and **Open set 1**. Before set 1 opens, **Announce to the group** is the primary button until the session is announced. Then **Open set 1** is primary.
+- **After Create session.** The screen moves deeper to the set, without a page load; an announced session goes to the session page. The session page leads with **Open set 1**, and Announce and Chip values are quiet lines until they hold something. Then **Open set 1** is primary.
 - **When it is created.** The last group on New session has two options. Both are off by default.
   - **Chip values** lists "Set later" and the group's chip presets of the chosen unit. `static/js/setup.js` changes the list when the unit changes. The field is not on the page when the group has no chip presets. Without JavaScript, all presets show, and the server refuses a preset of the other unit.
   - **Announce to the group** tells each member with a login. A start time shows when the box is ticked (CSS only). Seats come from the table.
