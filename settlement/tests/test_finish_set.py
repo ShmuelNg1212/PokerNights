@@ -279,3 +279,10 @@ class ResultsAtAGlanceTests(TestCase):
         rows = rows[:rows.index("</ul>")]
         names = [name for name in re.findall(r'<span class="grow">(\w+)<br>', rows)]
         self.assertEqual(names, ["B", "A", "C"])
+
+    def test_closing_a_session_sends_no_success_message(self):
+        night = self.night.refresh().night
+        page = self.client.post(reverse("night_close", args=[night.pk]), follow=True)
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual([str(message) for message in page.context["messages"]], [])
+        self.assertContains(page, 'id="transfers-title" tabindex="-1" data-recap-lands')

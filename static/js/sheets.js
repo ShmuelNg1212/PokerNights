@@ -154,6 +154,7 @@ if (event.clientX < box.left || event.clientX > box.right || event.clientY < box
 dialog.addEventListener("close", function () {
 putBack(me);
 if (S !== me) return; // the page is being left; there is nothing to focus
+if (me.lands) { me.lands.focus({preventScroll: true}); me.lands = null; return; } // the recap that opened by itself
 var target = me.opener && me.opener.isConnected ? me.opener : me.region.querySelector('[data-sheet-open="' + me.key + '"]');
 if (target) target.focus(); else me.region.querySelector("h1")?.focus();
 });
@@ -176,6 +177,9 @@ try {
 var seen = "rack-recap:" + recap.dataset.recap;
 if (!localStorage.getItem(seen)) {
 localStorage.setItem(seen, "1");
+// Closing leaves who pays whom in view. The page moves now, under the rising sheet, so nothing jumps later.
+me.lands = region.querySelector("[data-recap-lands]");
+if (me.lands && me.lands.getBoundingClientRect().top > innerHeight / 2) me.lands.scrollIntoView({block: "start"});
 open("recap", region.querySelector('[data-sheet-open="recap"]'));
 }
 } catch (_) {}

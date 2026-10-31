@@ -49,7 +49,7 @@
   <div class="night-detail">
     {% if night.is_closed and outcome.plan %}
     <section aria-labelledby="transfers-title">
-      <h2 id="transfers-title">Who pays whom</h2>
+      <h2 id="transfers-title" tabindex="-1" data-recap-lands>Who pays whom</h2>
       <p class="small muted">The app records payments; it does not move money.</p>
       {% if replaced_plans %}{% with last=replaced_plans|last %}<p class="small muted">Worked out again after the session was reopened on {{ last.voided_at|date:"M j" }}. This list replaces the earlier one.</p>{% endwith %}{% endif %}
       <ul class="transfer-list">

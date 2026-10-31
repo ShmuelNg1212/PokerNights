@@ -354,6 +354,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .own-count-change > summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
 .own-count-state { margin: var(--s-1) 0 0; }
 .result-row:has(> .result-details) { padding: 0; }
+[data-recap-lands] { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 88px); }
 .result-summary, .count-identity.result-summary { grid-template-columns: 44px minmax(0,1fr) minmax(0,auto) 1rem; padding: 12px 0; list-style: none; cursor: pointer; border-radius: var(--r-bar); }
 .result-summary::-webkit-details-marker { display: none; }
 .result-summary > .icon { width: 1rem; height: 1rem; color: var(--muted); transition: transform var(--t-fast) var(--ease-out); }

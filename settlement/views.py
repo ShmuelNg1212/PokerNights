@@ -40,10 +40,8 @@ def finish_set(request, session_id):
 @require_POST
 def close_night(request, night_id):
     night, actor = night_for(request.user, night_id)
-    attempt(
-        request, services.close_night, night.pk, actor, request.POST.getlist("carry"),
-        success="Session closed.",
-    )
+    # No success message: the page answers with the recap and who pays whom, and a toast would stand over the list.
+    attempt(request, services.close_night, night.pk, actor, request.POST.getlist("carry"))
     return redirect("night", night_id=night.pk)
 
 
