@@ -11,7 +11,7 @@ from django.db.models import Count, OuterRef, Subquery
 from django.urls import reverse
 
 from games import clock
-from games.models import GameNight, GameSession, Participant, Rsvp, Table
+from games.models import GameNight, GameSession, Participant, Rsvp
 from groups.models import Member
 from notify import services as notify
 from settlement import queries as settlement_queries
@@ -87,7 +87,6 @@ def home_cards(user) -> list:
     for member in Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE):
         cards[member.group_id].members.append(member)
 
-    with_table = set(Table.objects.filter(group_id__in=group_ids, archived_at__isnull=True).values_list("group_id", flat=True))
     open_nights = (
         GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN, archived_at__isnull=True)
         .select_related("table").prefetch_related("sets").order_by("-game_date", "-pk")
@@ -102,7 +101,7 @@ def home_cards(user) -> list:
             night.latest_set = night.shown_sets[-1]
             by_group.setdefault(night.group_id, []).append(night)
     for group_id, card in cards.items():
-        _choose_status(card, by_group.get(group_id, []), group_id in with_table)
+        _choose_status(card, by_group.get(group_id, []))
 
     # An announced session still taking answers, that the viewer has not answered: the card asks.
     coming = [n for n in open_nights if is_coming(n)]
@@ -160,16 +159,12 @@ def home_cards(user) -> list:
     return sorted(cards.values(), key=lambda c: (ORDER[c.kind], c.group.name.lower(), c.group.pk))
 
 
-def _choose_status(card, nights, has_table) -> None:
+def _choose_status(card, nights) -> None:
     """One status and one action per card, for this viewer."""
-    group_url = reverse("group", args=[card.me.group_id])
     if not nights:
         if card.me.is_host:
             card.action_primary = True
-            if has_table:
-                card.action_label, card.action_url = "New session", reverse("session_create", args=[card.me.group_id])
-            else:
-                card.action_label, card.action_url = "Add a table", f"{group_url}?view=settings#tables"
+            card.action_label, card.action_url = "New session", reverse("session_create", args=[card.me.group_id])
         return
     running = [n for n in nights if n.latest_set.state == State.RUNNING]
     card.night = (running or nights)[0]

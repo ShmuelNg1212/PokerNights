@@ -37,7 +37,7 @@ class FormLayoutTests(TestCase):
         self.assertEqual(control_names(page), ["table_id", "game_date", "location", "game_type", "unit", *STAKES_NAMES, *RAKE_NAMES, "announce", "start_time"])
         html = page.content.decode()
         titles = re.findall(r'class="group-title"[^>]*>([^<]+)<', html)
-        self.assertEqual(titles, ["Start from a preset", "When and where", "Game", "Stakes", "Rake per buy-in", "When it is created"])
+        self.assertEqual(titles, ["Start from a preset", "When and where", "Game and stakes", "Game", "Stakes", "Rake per buy-in", "When it is created"])
         self.assertEqual(html.count('class="field-pair'), 3)
         # The Unit help already says what an amount is; the Stakes group does not repeat it.
         self.assertNotContains(page, "Type each amount")
@@ -91,7 +91,7 @@ class FormLayoutTests(TestCase):
         response = self.client.post(self.new_url, data)
         night = GameNight.objects.get()
         session = night.sets.get()
-        self.assertRedirects(response, reverse("night", args=[night.pk]))
+        self.assertRedirects(response, reverse("session", args=[night.sets.get().pk]))
         settings = session.settings_versions.get()
         self.assertEqual((night.location, night.unit, str(night.game_date)), ("Miguel's place", "php", "2026-10-09"))
         self.assertEqual((settings.rake_mode, settings.rake_basis_points), ("percent", 500))

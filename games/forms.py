@@ -164,6 +164,10 @@ class ChipPresetSelect(forms.Select):
 
 class SessionForm(RakeForm):
     table_id = forms.ChoiceField(label="Table")
+    # A group with no table yet names its first one here.
+    table_name = forms.CharField(label="Table", max_length=60, help_text="Where you play. You can add more tables later.")
+    table_seats = forms.IntegerField(label="Seats", min_value=2, max_value=12, initial=9, required=False,
+                                     widget=forms.NumberInput(attrs={"data-numpad": "whole"}))
     game_date = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
     location = forms.CharField(label="Location", max_length=120, required=False)
     game_type = forms.ChoiceField(label="Poker variant", choices=GameType.choices)
@@ -180,6 +184,10 @@ class SessionForm(RakeForm):
     def __init__(self, *args, tables=(), chip_presets=(), **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["table_id"].choices = [(table.pk, f"{table.name} ({table.seat_count} seats)") for table in tables]
+        # A form sent with a name keeps it, so a repeat of the first-table form reaches the service.
+        named = not tables or self.data.get("table_name")
+        for name in (("table_id",) if named else ("table_name", "table_seats")):
+            del self.fields[name]
         self.fields["game_date"].initial = timezone.localdate
         self.offers_chip_presets = bool(chip_presets)
         self.fields["chip_preset_id"].widget.choices = [("", "Set later")] + [

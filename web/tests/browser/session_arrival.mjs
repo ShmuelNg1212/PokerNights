@@ -32,7 +32,7 @@ async function user(name,width,setup){
 const {group}=JSON.parse(readFileSync('/private/tmp/pn-session-options-manifest.json','utf8'));
 const NEW=`/g/${group}/sessions/new/`,FORM=`document.querySelector('form.form-groups')`,TAP=`${FORM}.querySelector('[type=submit]').click()`;
 // Sessions are numbered in order on a fresh database, so the number on the page says how many were made.
-let last=0;const made=async A=>{const n=await A.js(`location.pathname.startsWith('/n/')?Number(location.pathname.split('/')[2]):-1`),more=n-last;if(n>0)last=n;return more};
+let last=0;const made=async A=>{const n=await A.js(`/^\\/[ns]\\//.test(location.pathname)?Number(location.pathname.split('/')[2]):-1`),more=n-last;if(n>0)last=n;return more};
 // Marks this page, so a change of screen that keeps it can be told from a page load.
 const mark=`window.__same=true;__vt.length=0`;
 try{
@@ -42,14 +42,14 @@ try{
   await A.go(NEW);await A.js(mark);
   await A.js(TAP);for(let i=0,shot=false;i<200&&!shot;i++){await sleep(10);if(await A.js(`__vt.length>0&&__vt.at(-1).ok===null`)){await A.shot(`moving-${width}`);shot=true}}await A.settle();
   const r=await A.js(`({same:!!window.__same,path:location.pathname,vt:window.__vt&&__vt.at(-1)||null,n:window.__vt&&__vt.length,left:(document.documentElement.dataset.go||'')+document.querySelectorAll('[style*="view-transition-name"]').length})`);
-  check(`${W} Create session lands on the session page`,/^\/n\/\d+\/$/.test(r.path),r);
+  check(`${W} Create session lands on the set`,/^\/s\/\d+\/$/.test(r.path),r);
   check(`${W} the change happens in the same page`,r.same,r);
   const moved=(p,n)=>r.vt&&r.vt.anims.some(a=>a.p===p&&a.n===n);
   check(`${W} the screen moves deeper`,r.vt&&r.vt.ok&&r.vt.go==='deeper'&&moved('old(root)','screen-out-left')&&moved('new(root)','screen-in-right'),r.vt);
   check(`${W} the top bar stays still and the movement lasts 300ms or less`,r.vt&&r.vt.anims.length&&r.vt.anims.every(a=>a.d<=300)&&!r.vt.anims.some(a=>a.p==='old(site-header)'||a.p==='new(site-header)'),r.vt);
   check(`${W} nothing is left on the page`,r.left==='0'&&await A.js(`__errors.length===0`),r);
   const one=await made(A);check(`${W} one session was made`,one===1,one);
-  check(`${W} the session page runs`,await A.js(`!!document.querySelector('#announce')&&document.activeElement===document.getElementById('main')`));
+  check(`${W} the set page runs`,await A.js(`!!document.querySelector('#live')&&document.activeElement===document.getElementById('main')`));
   // Announced: the notice arrives with the screen.
   await A.go(NEW);await A.js(`document.querySelector('[name=announce]').checked=true;document.querySelector('[name=announce]').dispatchEvent(new Event('change',{bubbles:true}));document.querySelector('[name=start_time]').value='20:30'`);await A.js(TAP);await A.settle();await made(A);
   check(`${W} the announced notice shows on arrival`,await A.js(`document.body.textContent.includes('Announced. Players can answer now.')`));
@@ -74,7 +74,7 @@ try{
  // Reduced motion
  const R=await user('hana',390,s=>send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},s));
  await R.go(NEW);await R.js(mark);await R.js(TAP);await R.settle();await made(R);
- check('reduced motion: the session page arrives with no movement',await R.js(`location.pathname.startsWith('/n/')&&__vt.length===0`),await R.js(`[location.pathname,window.__vt]`));
+ check('reduced motion: the set arrives with no movement',await R.js(`location.pathname.startsWith('/s/')&&__vt.length===0`),await R.js(`[location.pathname,window.__vt]`));
  check('reduced motion: nothing is left on the page',await R.js(`!document.documentElement.dataset.go`));
 }finally{await send('Browser.close');ws.close();chrome.kill()}
 console.log(`${results.filter(Boolean).length} of ${results.length}`);

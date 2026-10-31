@@ -180,9 +180,9 @@ class SessionViewTests(TestCase):
             "preset_id": self.preset.pk,
         })
         session = GameSession.objects.get()
-        self.assertRedirects(response, reverse("night", args=[session.night_id]))
+        self.assertRedirects(response, reverse("session", args=[session.pk]))
         self.assertEqual((session.game_type, session.location, str(session.game_date)), ("plo", "Miguel's place", "2026-10-09"))
-        self.assertContains(self.client.get(reverse("session", args=[session.pk])), "Open for players")
+        self.assertContains(self.client.get(reverse("session", args=[session.pk])), "Add players")
 
     def test_after_creating_the_host_can_announce_and_set_chip_values(self):
         self.client.force_login(self.host.user)
@@ -191,6 +191,9 @@ class SessionViewTests(TestCase):
             "big_blind": "20", "min_buy_in": "500", "max_buy_in": "2000", "default_buy_in": "1000",
         }, follow=True)
         session = GameSession.objects.get()
+        self.assertEqual(page.redirect_chain[-1][0], reverse("session", args=[session.pk]))
+        self.assertContains(page, reverse("night", args=[session.night_id]))
+        page = self.client.get(reverse("night", args=[session.night_id]))
         self.assertContains(page, reverse("night_announce", args=[session.night_id]))
         self.assertContains(page, reverse("chip_values", args=[session.night_id]))
         self.assertContains(page, reverse("session", args=[session.pk]))

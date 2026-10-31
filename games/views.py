@@ -24,7 +24,7 @@ from ledger import money
 from . import clock, rsvp, services
 from .access import night_for, session_for
 from .forms import PresetForm, SessionForm, SettingsForm, TableForm
-from .models import Participant, SettingsPreset, Table
+from .models import GameNight, GameType, Participant, SettingsPreset, Table
 
 
 @require_POST
@@ -55,6 +55,35 @@ def preset_form(request, group_id, preset_id=None):
     return render(request, "games/preset_form.html", {"form": form, "group": actor.group, "preset": preset})
 
 
+STAKE_NAMES = ("small_blind", "big_blind", "min_buy_in", "max_buy_in", "default_buy_in")
+
+
+def _from_last_session(group, tables) -> dict:
+    """What New session starts from: the group's latest session that is not archived. Rake starts Off, as ever."""
+    night = GameNight.objects.filter(group=group, archived_at__isnull=True).order_by("-game_date", "-pk").first()
+    if night is None:
+        return {}
+    settings = services.current_settings(night.sets.order_by("-set_number").first())
+    initial = {"location": night.location, "game_type": night.game_type, "unit": night.unit, **settings.stakes()}
+    if any(table.pk == night.table_id for table in tables):
+        initial["table_id"] = night.table_id
+    return initial
+
+
+def _usual_preset(tables, presets, last):
+    """The preset nobody had to choose. After a session, only the default of the table it was at, so a stale preset never replaces last week's stakes."""
+    if last:
+        chosen = next((table for table in tables if table.pk == last.get("table_id")), None)
+        usual = chosen.default_preset if chosen else None
+    else:
+        usual = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
+    return usual if usual and usual.archived_at is None else None
+
+
+def _fill(game_type, unit, stakes) -> str:
+    return json.dumps({"game_type": game_type, "unit": unit, **{name: money.plain_amount(value, unit) for name, value in stakes.items()}})
+
+
 def session_new(request, group_id):
     actor = member_for(request.user, group_id)
     require_host(actor)
@@ -63,24 +92,37 @@ def session_new(request, group_id):
     # A refused form keeps the preset it was filled from: the script chose it without a reload.
     asked = request.POST.get("preset_id") or request.GET.get("preset")
     preset = presets.filter(pk=asked or 0).first()
-    if preset is None and not asked:
-        preset = next((table.default_preset for table in tables if table.default_preset), None) or presets.first()
-    initial = {"game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else {}
-    form = SessionForm(request.POST or None, initial=initial, tables=tables, chip_presets=services.chip_presets_for(actor.group))
     request_id = request_id_from(request) if request.method == "POST" else uuid.uuid4()
-    # What choosing each preset writes into the form, as the form shows it (static/js/setup.js).
+    chip_presets = services.chip_presets_for(actor.group)
+    form = None
+    if request.method == "POST":
+        form = SessionForm(request.POST, tables=tables, chip_presets=chip_presets)
+        if form.is_valid():
+            data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None, "request_id": request_id}
+            session = attempt_bound(request, form, services.create_session, actor, data)
+            if session is not None:
+                # From the session, not the form: a repeated request can carry a tick that changed nothing.
+                if data["announce"] and session.night.announced_at is not None:
+                    messages.success(request, "Announced. Players can answer now.")
+                    return redirect("night", night_id=session.night_id)
+                return redirect("session", session_id=session.pk)
+    last = _from_last_session(actor.group, tables)
+    start = None
+    if form is None:
+        if preset is None and not asked:
+            preset = _usual_preset(tables, presets, last)
+        # Tonight is usually last week again: its table, place, game and stakes, unless a preset says otherwise.
+        initial = {**last, "game_type": preset.game_type, "unit": preset.unit, **preset.stakes()} if preset else last
+        form = SessionForm(initial=initial, tables=tables, chip_presets=chip_presets)
+        # With its values known, the game and stakes read as one line. A refusal opens them again.
+        start = {**initial, "game_label": GameType(initial["game_type"]).label} if "small_blind" in initial else None
+    # What choosing each option writes into the form, as the form shows it (static/js/setup.js).
     presets = list(presets)
     for p in presets:
-        p.fill = json.dumps({"game_type": p.game_type, "unit": p.unit, **{name: money.plain_amount(value, p.unit) for name, value in p.stakes().items()}})
-    if request.method == "POST" and form.is_valid():
-        data = {**form.cleaned_data, "preset_id": request.POST.get("preset_id") or None, "request_id": request_id}
-        session = attempt_bound(request, form, services.create_session, actor, data)
-        if session is not None:
-            # From the session, not the form: a repeated request can carry a tick that changed nothing.
-            if data["announce"] and session.night.announced_at is not None:
-                messages.success(request, "Announced. Players can answer now.")
-            return redirect("night", night_id=session.night_id)
+        p.fill = _fill(p.game_type, p.unit, p.stakes())
+    last_fill = _fill(last["game_type"], last["unit"], {name: last[name] for name in STAKE_NAMES}) if last else ""
     context = {"form": form, "group": actor.group, "tables": tables, "presets": presets, "preset": preset, "request_id": request_id,
+               "start": start, "last_fill": last_fill,
                "told": services.announce_audience(actor.group_id, request.user.pk).count()}
     # A refused form is a 422: Turbo draws only that over the form (static/js/turbo-setup.js).
     response = render(request, "games/session_form.html", context, status=422 if request.method == "POST" else 200)

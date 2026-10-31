@@ -155,7 +155,8 @@ class NewSessionOptionFormTests(TestCase):
         response = self.post(chip_preset_id=self.preset().pk)
         night = GameNight.objects.get()
         self.assertEqual(night.chip_values[0]["value"], 2500)
-        self.assertContains(self.client.get(response["Location"]), "Edit chip values")
+        self.assertEqual(response["Location"], reverse("session", args=[night.sets.get().pk]))
+        self.assertContains(self.client.get(reverse("night", args=[night.pk])), "Edit chip values")
 
     def test_without_the_options_nothing_is_told_and_no_values_are_set(self):
         self.post(chip_preset_id="")
@@ -188,7 +189,7 @@ class NewSessionOptionFormTests(TestCase):
     def test_a_refused_form_is_a_422_and_an_accepted_one_redirects(self):
         # Turbo draws a refusal over the form only when it is a 422, and follows the redirect.
         self.assertEqual(self.post(announce="on", start_time="late").status_code, 422)
-        self.assertRedirects(self.post(), reverse("night", args=[GameNight.objects.get().pk]))
+        self.assertRedirects(self.post(), reverse("session", args=[GameNight.objects.get().sets.get().pk]))
 
     def test_the_form_leaves_in_the_app_and_goes_deeper(self):
         self.assertContains(self.client.get(self.url), '<form method="post" data-turbo="true" data-go="deeper" class="form-section form-groups"')

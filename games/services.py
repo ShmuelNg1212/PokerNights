@@ -198,9 +198,7 @@ def create_session(actor: Member, data: dict) -> GameSession:
         night = GameNight.objects.filter(group=actor.group, create_request_id=request_id).first()
         if night is not None:
             return night.sets.get(set_number=1)
-    table = Table.objects.filter(group=actor.group, pk=data.get("table_id"), archived_at__isnull=True).first()
-    if table is None:
-        raise RuleError("Select a table of this group.")
+    table = _table_for_new_session(actor, data)
     preset = None
     if data.get("preset_id"):
         preset = SettingsPreset.objects.filter(group=actor.group, pk=data["preset_id"]).first()
@@ -226,6 +224,24 @@ def create_session(actor: Member, data: dict) -> GameSession:
     _apply_new_session_options(night, actor, data)
     session.refresh_from_db()
     return session
+
+
+def _table_for_new_session(actor: Member, data: dict) -> Table:
+    """The chosen table; or, for a group with none yet, the one named on the form. Rolled back with a refused session."""
+    active = Table.objects.filter(group=actor.group, archived_at__isnull=True)
+    if data.get("table_id"):
+        table = active.filter(pk=data["table_id"]).first()
+    elif data.get("table_name") is not None:
+        name = clean_name(data["table_name"], "Table name")
+        if Table.objects.filter(group=actor.group, name=name, archived_at__isnull=False).exists():
+            raise RuleError(f"A table named {name} is archived. Use another name.")
+        # Another host may have made it while this form was open.
+        table = active.filter(name=name).first() or create_table(actor, name, data.get("table_seats") or 9)
+    else:
+        table = None
+    if table is None:
+        raise RuleError("Select a table of this group.")
+    return table
 
 
 def _apply_new_session_options(night, actor: Member, data: dict) -> None:

@@ -39,11 +39,11 @@ try {
  check('date field is a native date input, left-aligned',await A.js(`(()=>{const d=document.querySelector('[name=game_date]');return d.type==='date'&&getComputedStyle(d).textAlign==='left'&&getComputedStyle(d).display==='block'&&d.value.length===10})()`));
  check('select has the app arrow and equal text inset',await A.js(`(()=>{const s=getComputedStyle(document.querySelector('[name=table_id]')),t=getComputedStyle(document.querySelector('[name=location]'));return s.backgroundImage.includes('svg')&&s.paddingLeft===t.paddingLeft&&s.appearance==='none'})()`));
  check('dropdown values are not cut off on a phone',await A.js(`[...${F}.querySelectorAll('select')].every(e=>{const c=document.createElement('canvas').getContext('2d');c.font=getComputedStyle(e).font;return c.measureText(e.selectedOptions[0].textContent).width<=e.clientWidth-56})`));
- check('five groups in order',await A.js(`JSON.stringify([...document.querySelectorAll('.group-title')].map(e=>e.textContent.trim()))===JSON.stringify(['When and where','Game','Stakes','Rake per buy-in','When it is created'])`));
+ check('the groups in order',await A.js(`JSON.stringify([...document.querySelectorAll('.group-title')].map(e=>e.textContent.trim()))===JSON.stringify(['When and where','Game and stakes','Game','Stakes','Rake per buy-in','When it is created'])`));
  // Keyboard order follows the visual order.
- await A.js(`document.querySelector('[name=table_id]').focus()`);const order=[];
- for(let i=0;i<16;i++){await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},A.s);await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},A.s);const n=await A.js(`document.activeElement.name`);if(n!==order[order.length-1])order.push(n);}order.length=Math.min(order.length,10);console.log('  order',order.join(' '));
- check('keyboard order',JSON.stringify(order)===JSON.stringify(['game_date','location','game_type','unit','small_blind','big_blind','min_buy_in','max_buy_in','default_buy_in','rake_mode']));
+ await A.js(`document.querySelector('[data-stakes-fold]').open=true;document.querySelector('[name=table_id]').focus()`);const order=[];
+ for(let i=0;i<16;i++){await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},A.s);await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},A.s);const n=await A.js(`document.activeElement.name`);if(n&&n!==order[order.length-1])order.push(n);}order.length=Math.min(order.length,10);console.log('  order',order.join(' '));
+ check('keyboard order',JSON.stringify(order.filter(Boolean))===JSON.stringify(['game_date','location','game_type','unit','small_blind','big_blind','min_buy_in','max_buy_in','default_buy_in','rake_mode']));
  // One field of a pair refused: the partner input does not move.
  await A.go('/g/1/sessions/new/');await A.js(fill);await A.js(`${F}.noValidate=true;document.querySelector('[name=small_blind]').value='';document.querySelector('[name=max_buy_in]').value='x';document.querySelector('[name=game_date]').value=''`);await A.click(`${F}.querySelector('[type=submit]')`);
  for(const width of [320,390]){await size(A,width);
@@ -58,7 +58,7 @@ try {
  // Without JavaScript: create a session through the native form.
  await send('Emulation.setScriptExecutionDisabled',{value:true},A.s);await A.go('/g/1/sessions/new/');
  await A.js(fill);await A.js(`document.querySelector('[name=location]').value='No script'`);await A.click(`${F}.querySelector('[type=submit]')`);
- check('no JavaScript: session created',await A.js(`/^\\/n\\/\\d+\\/$/.test(location.pathname)`));
+ check('no JavaScript: session created',await A.js(`/^\\/s\\/\\d+\\/$/.test(location.pathname)`));
  await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
  writeFileSync(`${OUT}/session_form.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}

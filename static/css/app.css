@@ -2344,3 +2344,25 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .night-option[open] > summary .icon { transform: rotate(180deg); }
 .night-option[open] { padding-bottom: var(--s-4); }
 @media (prefers-reduced-motion: reduce) { .night-option > summary .icon { transition: none; } }
+/* Settled steps of a prepared set, folded to one line. */
+.prep-ready { margin: 0 0 var(--s-2); color: var(--muted); font-size: .875rem; }
+.prep-done { border-top: 1px solid var(--rule); }
+.prep-done > summary { display: flex; align-items: center; gap: var(--s-3); min-height: 52px; cursor: pointer; list-style: none; }
+.prep-done > summary::-webkit-details-marker { display: none; }
+.prep-done > summary .prep-mark { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--bone); color: var(--ink); }
+.prep-done > summary > .icon { flex: none; transition: transform var(--t-fast) var(--ease-out); }
+.prep-done[open] > summary > .icon { transform: rotate(180deg); }
+.prep-done-line { min-width: 0; font-size: .9375rem; font-weight: 600; }
+.prep-done-line .fact { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .prep-done > summary > .icon { transition: none; } }
+/* New session: the game and stakes as one line once they are known. */
+.stakes-fold > summary { display: flex; align-items: center; gap: var(--s-3); min-height: 64px; cursor: pointer; list-style: none; }
+.stakes-fold > summary::-webkit-details-marker { display: none; }
+.stakes-fold > summary .group-title { display: block; margin: 0; }
+.stakes-line { display: block; margin-top: 2px; color: var(--muted); font-size: .875rem; line-height: 1.35; }
+.stakes-change { display: inline-flex; align-items: center; gap: var(--s-1); flex: none; font-size: .875rem; font-weight: 600; }
+.stakes-change .icon { transition: transform var(--t-fast) var(--ease-out); }
+.stakes-fold[open] .stakes-change .icon { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .stakes-change .icon { transition: none; } }
+.field-pair-name { grid-template-columns: minmax(0, 1fr) 96px; }
+.form-page .sticky-actions { margin-top: var(--s-4); }

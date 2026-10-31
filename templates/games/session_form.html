@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load table_tags %}
+{% load table_tags money_tags %}
 {% block screen %} data-depth="2"{% endblock %}
 {% block title %}New session · {{ group.name }}{% endblock %}
 {% block page_class %}form-page{% endblock %}
@@ -12,6 +12,7 @@
   <div class="form-row">
     <div class="grow">
       <select id="preset" name="preset">
+        {% if last_fill %}<option value="" data-fill="{{ last_fill }}"{% if not preset %} selected{% endif %}>Same as last session</option>{% endif %}
         {% for p in presets %}<option value="{{ p.pk }}" data-fill="{{ p.fill }}" {% if preset and p.pk == preset.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
       </select>
     </div>
@@ -26,13 +27,19 @@
   {% if form.non_field_errors %}<div class="notice notice-bad" role="alert">{{ form.non_field_errors }}</div>{% endif %}
   <section class="form-group{% if not presets %} form-group-first{% endif %}" aria-labelledby="group-when">
     <h2 class="group-title" id="group-when">When and where</h2>
-    {% include "partials/field.html" with field=form.table_id %}
+    {% if form.table_name %}<div class="field-pair field-pair-name">
+      {% include "partials/field.html" with field=form.table_name %}
+      {% include "partials/field.html" with field=form.table_seats %}
+    </div>{% else %}{% include "partials/field.html" with field=form.table_id %}{% endif %}
     {% include "partials/field.html" with field=form.game_date %}
     {% include "partials/field.html" with field=form.location %}
   </section>
-  {% include "games/_game_fields.html" %}
-  {% include "games/_stakes_fields.html" %}
-  {% include "games/_rake_fields.html" %}
+  <details class="stakes-fold form-group" data-stakes-fold{% if not start %} open{% endif %}>
+    <summary><span class="grow"><span class="group-title">Game and stakes</span><span class="stakes-line" data-stakes-summary data-empty="Choose the game and the stakes.">{% if start %}{{ start.game_label }} · {{ start.small_blind|amount:start.unit }} / {{ start.big_blind|amount:start.unit }} · buy-in {{ start.min_buy_in|amount:start.unit }} to {{ start.max_buy_in|amount:start.unit }} · usual {{ start.default_buy_in|amount:start.unit }} · rake off{% else %}Choose the game and the stakes.{% endif %}</span></span><span class="stakes-change">Change{% icon 'chevron-down' %}</span></summary>
+    {% include "games/_game_fields.html" with first=True %}
+    {% include "games/_stakes_fields.html" %}
+    {% include "games/_rake_fields.html" %}
+  </details>
   <section class="form-group session-options" aria-labelledby="group-options">
     <h2 class="group-title" id="group-options">When it is created</h2>
     {% if form.offers_chip_presets %}{% include "partials/field.html" with field=form.chip_preset_id %}{% endif %}
@@ -40,6 +47,6 @@
     <p class="hint">{{ told }} player{{ told|pluralize }} with a login get{{ told|pluralize:"s," }} a notice. Seats come from the table.</p>
     {% include "partials/field.html" with field=form.start_time %}
   </section>
-  <button type="submit" class="btn btn-primary btn-block">Create session</button>
+  <div class="sticky-actions"><button type="submit" class="btn btn-primary btn-block">Create session</button></div>
 </form>
 {% endblock %}

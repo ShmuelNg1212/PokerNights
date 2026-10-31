@@ -29,7 +29,7 @@ check('three native choices with Off selected',await A.js(`document.querySelecto
 await choose('percent','oops','5.001');await A.click(`document.querySelector('form.form-section button')`);
 check('native active percentage rejects precision and retains radio',await A.js(`document.querySelector('[name=rake_mode]:checked').value==='percent'&&document.querySelector('[name=rake_percentage]').value==='5.001'&&document.querySelector('#id_rake_percentage_error')!==null`));await capture('rake-new-error');
 await choose('flat','20','oops');await A.click(`document.querySelector('form.form-section button')`);
-check('creating lands on the session page',await A.js(`location.pathname.startsWith('/n/')`));await A.go(await A.js(`document.querySelector('a.set-link').getAttribute('href')`));
+check('creating lands on the set',await A.js(`location.pathname.startsWith('/s/')`));
 check('native creation flat ignores malformed percentage',await A.js(`location.pathname.startsWith('/s/')&&document.body.textContent.includes('₱20 rake')`));
 const firstPath=await A.js('location.pathname');await A.go(firstPath+'settings/');await capture('rake-choice');
 await choose('percent','oops','5');await A.click(`document.querySelector('form.form-section button')`);
@@ -53,7 +53,7 @@ await send('Emulation.setScriptExecutionDisabled',{value:false},A.s);
 await fillNew('chips');await choose('flat','1.5','0');await A.click(`document.querySelector('form.form-section button')`);
 check('chips active flat rejects fractions with scripts enabled',await A.js(`document.querySelector('#id_rake_flat_error')!==null&&document.querySelector('[name=rake_flat]').value==='1.5'`));
 await choose('percent','oops','5');await A.click(`document.querySelector('form.form-section button')`);
-await A.go(await A.js(`document.querySelector('a.set-link').getAttribute('href')`));
+if(await A.js(`location.pathname.startsWith('/n/')`))await A.go(await A.js(`document.querySelector('a.set-link').getAttribute('href')`));
 check('chips creation percentage with scripts enabled',await A.js(`document.body.textContent.includes('5% rake')&&document.body.textContent.includes('chips')`));
 await A.go(await A.js('location.pathname')+'settings/');
 await A.js(`document.querySelector('[name=rake_mode][value=off]').focus()`);await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40},A.s);await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40},A.s);
