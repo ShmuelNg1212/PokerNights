@@ -53,6 +53,7 @@ class LifecycleTests(TestCase):
     """Each action from each state, for a host and for a player."""
 
     ALLOWED = {
+        ("setup", "start"): "running",
         ("setup", "open"): "open",
         ("setup", "cancel"): "canceled",
         ("open", "close"): "setup",
@@ -94,7 +95,8 @@ class LifecycleTests(TestCase):
                         before = session.version
                         session = services.transition(session.pk, self.host, action, "reason")
                         self.assertEqual(session.state, expected)
-                        self.assertEqual(session.version, before + 1)
+                        # Starting a draft opens it first, so it records two steps.
+                        self.assertEqual(session.version, before + (2 if (state, action) == ("setup", "start") else 1))
 
     def test_a_player_can_do_no_transition(self):
         for state in ("setup", "open", "running", "reconciliation"):

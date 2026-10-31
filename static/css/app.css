@@ -1561,7 +1561,6 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .prep-step[data-state=next] .prep-mark { border: 2px solid var(--brass); color: var(--brass); }
 .prep-text { display: grid; min-width: 0; }
 .prep-name { font-weight: 650; }
-.prep-step[data-state=later] .prep-name { color: var(--muted); }
 .prep-line { color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
 .prep-step .visually-hidden { grid-column: 1; }
 .prep-step .btn { position: relative; z-index: 1; min-width: 84px; }

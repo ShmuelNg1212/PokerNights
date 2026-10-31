@@ -351,6 +351,9 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
         request_id = uuid.UUID(str(request_id)) if request_id is not None else uuid.uuid4()
         if session.start_request_id == request_id:
             return session
+        # A host at the table starts a draft directly: the set opens and starts in this one transaction.
+        if session.state == State.SETUP:
+            session = transition(session_id, actor, "open")
     allowed_from, target = TRANSITIONS[action]
     if session.state not in allowed_from:
         raise RuleError(f"This set is {session.state_word.lower()}, so that action is not available.")

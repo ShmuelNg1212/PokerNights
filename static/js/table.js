@@ -29,9 +29,8 @@
     if (!was) return;
     region.querySelectorAll(".prep-step").forEach(function (step) {
       var name = step.dataset.step, mark = step.querySelector(".prep-mark");
-      // A step just completed: its mark lands with the tick. The step that is next now is pointed at.
+      // A step just completed: its mark lands with the tick.
       if (now[name] === "done" && was[name] && was[name] !== "done") go(mark, { opacity: [0, 1], transform: ["scale(0.5)", "scale(1)"] }, "arrive");
-      else if (now[name] === "next" && was[name] === "later") go(mark, { transform: ["scale(1)", "scale(1.18)", "scale(1)"] }, "pulse", { delay: 0.12 });
     });
     // The set starts, once: felt sweeps across the panel from the left and the timer is running.
     if (now.state === "running" && (was.state === "open" || was.state === "setup")) {

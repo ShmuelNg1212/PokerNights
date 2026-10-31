@@ -1,0 +1,5 @@
+{% load table_tags %}<li class="prep-step" data-step="players" data-state="{{ prep.players }}">
+          {% include "web/_prep_mark.html" with state=prep.players number=1 %}
+          <div class="prep-text"><span class="prep-name">Players</span><span class="prep-line" data-player-count="{{ summary.player_count }}">{% if summary.player_count %}{{ summary.player_count }} added · {{ seats_free }} seat{{ seats_free|pluralize }} free{% else %}Nobody yet · {{ seats_free }} seat{{ seats_free|pluralize }}{% endif %}</span></div>
+          {% if can_manage_players and not dock_adds %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}" aria-label="Add players to this set">Add</a>{% endif %}
+        </li>

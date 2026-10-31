@@ -31,16 +31,17 @@ try {
   await js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91';document.querySelector('form.form-section [type=submit]').click()`); await settle();
   // New session
   await go('/g/1/sessions/new/'); await shot('new-session');
+  await js(`document.querySelector('[data-stakes-fold]').open=true`);
   const title = await js(R('.preset-group .group-title')), when = await js(R('#group-when')), psel = await js(R('#preset')), rake = await js(R('.rake-settings legend')), game = await js(R('#group-game'));
   check('group titles share a weight', rake.w === game.w && title.w === game.w, {rake, game, title});
   check('preset → next title is the 41px group rhythm', when.t - psel.b === 41, when.t - psel.b);
   check('Use is hidden once the script runs', await js(`getComputedStyle(document.querySelector('.preset-group [type=submit]')).display==='none'`));
   check('preset select spans the column', psel.l === 16 + (+W >= 900 ? when.l - 16 : 0) && psel.r === when.r, {psel, when});
   check('rake Off: no amount field shows', await js(`[...document.querySelectorAll('.rake-settings .field')].every(f=>getComputedStyle(f).display==='none')`));
-  const btn = await js(R('.form-groups > .btn-block')); const docH = await js('document.documentElement.scrollHeight');
-  check('page ends 48px under the button', docH - btn.b === 48, docH - btn.b);
+  const btn = await js(R('.form-groups .sticky-actions .btn-block')); const docH = await js('document.documentElement.scrollHeight');
+  check('Create session stays in view at the foot of the screen', btn.b <= await js('innerHeight'), {b: btn.b, docH});
   // preset in place keeps typed fields
-  await js(`document.querySelector('[name=location]').value="Hana's place";document.querySelector('[name=game_date]').value='2026-10-17';const p=document.querySelector('#preset');p.selectedIndex=1;p.dispatchEvent(new Event('change',{bubbles:true}))`); await sleep(300);
+  await js(`document.querySelector('[name=location]').value="Hana's place";document.querySelector('[name=game_date]').value='2026-10-17';const p=document.querySelector('#preset');p.selectedIndex=[...p.options].findIndex(o=>o.text.startsWith('Chips'));p.dispatchEvent(new Event('change',{bubbles:true}))`); await sleep(300);
   const vals = await js(`(()=>{const f=document.querySelector('.form-groups');return {loc:f.location.value,date:f.game_date.value,unit:f.unit.value,sb:f.small_blind.value,bb:f.big_blind.value,min:f.min_buy_in.value,max:f.max_buy_in.value,def:f.default_buy_in.value,pid:f.preset_id.value,path:location.pathname+location.search}})()`);
   check('choosing a preset fills stakes and keeps typed fields', vals.loc === "Hana's place" && vals.date === '2026-10-17' && vals.unit === 'chips' && vals.sb === '25' && vals.max === '5000000' && vals.pid === await js(`document.querySelector('#preset').value`) && vals.path === '/g/1/sessions/new/', vals);
   await js(`document.querySelector('[name=rake_mode][value=flat]').click()`); await sleep(200);
@@ -50,18 +51,15 @@ try {
   check('a refused percentage shows its field and message', await js(`location.pathname==='/g/1/sessions/new/'&&getComputedStyle(document.querySelector('[name=rake_percentage]').closest('.field')).display!=='none'&&!!document.querySelector('[name=rake_percentage]').closest('.field').querySelector('.errors')`));
   await shot('new-session-error');
   await js(`document.querySelector('[name=rake_mode][value=off]').click();document.querySelector('.form-groups [type=submit]').click()`); await settle();
-  const nightPath = await js('location.pathname'); check('creating lands on the session page', /^\/n\/\d+\/$/.test(nightPath) && (await js(`!!document.querySelector('#announce')&&!!document.querySelector('a.night-option-link')`)), nightPath);
-  await go(await js(`document.querySelector('a.set-link').getAttribute('href')`));
-  const setPath = await js('location.pathname'); check('the session is created with the chips preset', /^\/s\/\d+\/$/.test(setPath) && (await js(`document.body.textContent.includes('1,000,000 chips')`)), setPath);
+  const setPath = await js('location.pathname'); check('creating lands on the set with the chips preset', /^\/s\/\d+\/$/.test(setPath) && (await js(`document.body.textContent.includes('1,000,000 chips')`)), setPath);
   await shot('set-draft-chips');
   // Draft set (pesos one made earlier by the seed is not a draft; make another)
   await go('/g/1/sessions/new/'); await js(`document.querySelector('.form-groups [type=submit]').click()`); await settle();
-  await go(await js(`document.querySelector('a.set-link').getAttribute('href')`));
-  const draft = await js('location.pathname'); await shot('set-draft');
+  const draft = await js('location.pathname'); await js(`document.querySelector('.prep-done').open=true`); await shot('set-draft');
   const facts = await js(`[...document.querySelectorAll('.prep-line .fact')].map(e=>{const r=e.getClientRects();return r.length})`);
   check('no fact of the stakes line breaks inside', facts.length === 3 && facts.every(n => n === 1), facts);
   const ends = await js(`[...document.querySelectorAll('.prep-step .btn')].map(e=>Math.round(e.getBoundingClientRect().left))`);
-  check('step buttons start at one place', new Set(ends).size === 1 && ends.length >= 2, ends);
+  check('step buttons start at one place', new Set(ends).size === 1 && ends.length >= 1, ends);
   check('step 2 says Change', await js(`document.querySelector('[data-step=stakes] .btn').textContent.trim()==='Change'`));
   check('host sees no second "No players yet"', await js(`!document.body.textContent.includes('No players yet')`));
   if (+W < 900) { const t = await js(R('.dock-toggle .dock-title')), i = await js(R('.dock-toggle .icon')); check('dock arrow centred on the title', Math.abs((t.t + t.b) / 2 - (i.t + i.b) / 2) <= 1, {t, i}); }

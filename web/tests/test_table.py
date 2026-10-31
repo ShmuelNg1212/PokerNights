@@ -85,7 +85,7 @@ class TablePageTests(TestCase):
         # Nobody is in the set yet, so adding players is the next step and Open is offered beside it.
         self.assertContains(page, 'Next: Add players', count=1)
         self.assertContains(page, '<a class="btn btn-primary btn-block next-action" href="%s">Add players</a>' % reverse('participants_add', args=[night.session.pk]))
-        self.assertContains(page, 'name="action" value="open">Open for players</button>')
+        self.assertContains(page, 'name="action" value="open">Let players join first</button>')
 
     def test_host_dock_toggle_carries_the_count_verdict(self):
         self.night.go('reconciliation')
@@ -268,32 +268,33 @@ class PreparationTests(TestCase):
 
     def test_an_empty_draft(self):
         page = self.page()
-        self.assertEqual(self.steps(page), {"players": "next", "stakes": "done", "open": "later", "start": "later"})
+        self.assertEqual(self.steps(page), {"players": "next", "stakes": "done"})
         self.assertIn('<span class="badge">Draft</span>', page)
         self.assertIn("Get this set ready", page)
         self.assertIn("Nobody yet", page)
-        self.assertIn("Players cannot see this set yet.", page)
+        self.assertIn("Players cannot see it yet.", page)
         # Step 1 says nobody is here; the Players section does not say it again to the host.
         self.assertNotIn("No players yet", page)
         # No panel of zeros.
         for absent in ("Still in play", "Set timer", "Cashed out", "Collected rake", "prep-money"):
             self.assertNotIn(absent, page)
 
-    def test_a_draft_with_players_makes_opening_the_next_step(self):
+    def test_a_draft_with_players_is_ready_to_start(self):
         self.seat(self.ana, self.ben)
         page = self.page()
-        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "next", "start": "later"})
+        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done"})
         self.assertIn("2 added ·", page)
-        self.assertIn('<button class="btn btn-primary next-action btn-block" name="action" value="open">Open for players</button>', page)
-        self.assertNotIn(">Add players</a>\n  <form", page)
-        self.assertIn("Next: Open for players", page)
+        self.assertIn('<button class="btn btn-primary btn-block next-action" name="action" value="start">Start the set</button>', page)
+        self.assertIn('name="action" value="open">Let players join first</button>', page)
+        self.assertIn("Ready to start", page)
+        self.assertIn("Next: Start the set", page)
 
     def test_an_open_set_makes_starting_the_next_step(self):
         from games import services as games
         self.seat(self.ana)
         games.transition(self.session.pk, self.host, "open")
         page = self.page()
-        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "done", "start": "next"})
+        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "done"})
         self.assertIn('<span class="badge">Open</span>', page)
         self.assertIn("Players can see it and join.", page)
         self.assertIn("Next: Start the set", page)
@@ -302,7 +303,10 @@ class PreparationTests(TestCase):
     def test_an_open_set_with_nobody_still_asks_for_players(self):
         from games import services as games
         games.transition(self.session.pk, self.host, "open")
-        self.assertEqual(self.steps(self.page()), {"players": "next", "stakes": "done", "open": "done", "start": "later"})
+        page = self.page()
+        self.assertEqual(self.steps(page), {"players": "next", "stakes": "done", "open": "done"})
+        # The bar offers Start here, so the step keeps its own way to add players.
+        self.assertIn('aria-label="Add players to this set"', page)
 
     def test_money_appears_when_there_is_money(self):
         import uuid
@@ -326,7 +330,7 @@ class PreparationTests(TestCase):
 
     def test_every_step_says_its_state_in_words(self):
         page = self.page()
-        for words in ("Next:</span>", "Done:</span>", "Later:</span>"):
+        for words in ("Next:</span>", "Done:</span>"):
             self.assertIn(words, page)
 
     def test_a_player_sees_the_stakes_and_no_checklist(self):

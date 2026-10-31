@@ -102,22 +102,22 @@ try {
 
  // ===== Preparing: a draft, walked to the start.
  await H.go('/s/4/');
- check('draft: four steps, players next; no totals',same(await H.js(steps),{players:'next',stakes:'done',open:'later',start:'later'})&&await H.js(`document.querySelector('.prep .badge').textContent==='Draft'&&!${text('Still in play')}&&!${text('Set timer')}&&!${text('Cashed out')}&&!document.querySelector('.felt')`));
- check('draft: the main button is Add players; Open is offered beside it',await H.js(`document.querySelector('.host-controls .next-action').textContent==='Add players'&&!!document.querySelector('.host-controls button[value=open]')&&document.querySelectorAll('.host-controls .btn-primary').length===1`));
+ check('draft: players next, stakes settled; no totals',same(await H.js(steps),{players:'next',stakes:'done'})&&await H.js(`document.querySelector('.prep .badge').textContent==='Draft'&&!${text('Still in play')}&&!${text('Set timer')}&&!${text('Cashed out')}&&!document.querySelector('.felt')`));
+ check('draft: the main button is Add players; Let players join waits under More',await H.js(`document.querySelector('.host-controls .next-action').textContent==='Add players'&&!!document.querySelector('.host-more button[value=open]')&&document.querySelectorAll('.host-controls .btn-primary').length===1`));
  check('draft: 48px controls, no overflow, the list is not under the menu',await H.js(targets)&&await H.js(`document.documentElement.scrollWidth<=390&&document.querySelector('.prep').getBoundingClientRect().bottom<=document.querySelector('.host-controls').getBoundingClientRect().top+1`));
- check('contrast: a step on the rail',await H.js(contrast('.prep-line','--rail'))>=4.5&&await H.js(contrast('.prep-step[data-state=later] .prep-name','--rail'))>=4.5);
- check('each step says its state in words',await H.js(`[...document.querySelectorAll('.prep-step .visually-hidden')].map(e=>e.textContent).join(' ')==='Next: Done: Later: Later:'`));
+ check('contrast: a step on the rail',await H.js(contrast('.prep-line','--rail'))>=4.5&&await H.js(contrast('.prep-step[data-state=next] .prep-name','--rail'))>=4.5);
+ check('each step says its state in words',await H.js(`[...document.querySelectorAll('.prep-step .visually-hidden')].map(e=>e.textContent).join(' ')==='Next: Done:'`));
  await H.shot('table-draft-390');
  await H.size(320,568);await H.go('/s/4/');check('draft at 320px: no overflow, 48px controls',await H.js(`document.documentElement.scrollWidth<=320`)&&await H.js(targets));await H.shot('table-draft-320',true);await H.size(390);await H.go('/s/4/');
  // Add two players from the menu, in place.
  for(const n of [0,1]){await H.js(`document.querySelector('details.host-more').open=true;document.querySelector('details[data-key="add-one"]').open=true`);await H.click(`document.querySelector('details[data-key="add-one"] button[type=submit]')`,50);
-  if(n===0){const ok=await H.until(`document.querySelector('[data-step=players]').dataset.state==='done'`);const moved=await H.until(`document.querySelector('[data-step=players] .prep-mark').getAnimations().length>0||!!document.querySelector('[data-step=players] .prep-mark').style.transform`,400);
-   check('a completed step: the mark lands with its tick, and the next step is pointed at',ok&&moved&&same(await H.js(steps),{players:'done',stakes:'done',open:'next',start:'later'}));}
+  if(n===0){const ok=await H.until(`document.querySelector('[data-step=players]').dataset.state==='done'`);
+   check('a completed step folds with the settled ones',ok&&same(await H.js(steps),{players:'done',stakes:'done'})&&await H.js(`!!document.querySelector('.prep-done [data-step=players]')`));}
   else await H.until(`document.querySelectorAll('.player-row').length===2`);await sleep(700);}
  check('at rest the steps keep no inline style',await H.js(`[...document.querySelectorAll('.prep-mark')].every(m=>!m.getAttribute('style'))&&document.getAnimations().length===0`));
- check('with players, Open for players is the one main button',await H.js(`document.querySelector('.host-controls .next-action').textContent==='Open for players'&&document.querySelector('.dock-next').textContent.includes('Next: Open for players')&&${text('2 added')}`));
- await H.click(`document.querySelector('.host-controls button[value=open]')`,50);
- check('opening is answered in place: the step is done, Start is next',await H.until(`document.querySelector('.prep .badge').textContent==='Open'`)&&same(await H.js(steps),{players:'done',stakes:'done',open:'done',seats:'optional',start:'next'})&&await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&${text('Players can see it and join.')}`));
+ check('with players, Start the set is the one main button',await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&document.querySelector('.dock-next').textContent.includes('Next: Start the set')&&${text('2 added')}&&${text('Ready to start')}`));
+ await H.click(`document.querySelector('.host-more button[value=open]')`,50);
+ check('opening is answered in place: the step is done, Start is next',await H.until(`document.querySelector('.prep .badge').textContent==='Open'`)&&same(await H.js(steps),{seats:'optional',players:'done',stakes:'done',open:'done'})&&await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&${text('Players can see it and join.')}`));
  await sleep(600);
  check('open: the menu holds the option and Start; Back to draft waits under More',await H.js(`!!document.querySelector('#opening-buy-ins')&&${shown('.host-controls > form button[value=close], .host-controls > button[value=close]')}.length===0&&!!document.querySelector('.host-more button[value=close]')`));
  await H.js(`localStorage.removeItem('rack-dock')`);await H.go('/s/4/');
@@ -150,7 +150,7 @@ try {
  await X.click(`document.querySelectorAll('.player-row .player-opener')[3]`,500);await X.click(`document.querySelector('dialog [data-sheet-swap]')`,500);
  check('Motion blocked: rows, sheets and the page work, with no script error',await X.js(`!window.Motion&&document.querySelector('dialog.sheet').open&&document.querySelector('#sheet-title').textContent.startsWith('Cash out')`)&&errors.length===before,errors.slice(before).join('; '));
  const N=await page();await N.login('hana');await send('Emulation.setScriptExecutionDisabled',{value:true},N.s);await N.go(`/s/${OPEN.opt_out.set}/`);
- check('no JavaScript, open set: the steps, the option and Start are all there',await N.js(`[...document.querySelectorAll('.prep-step')].map(e=>e.dataset.step).join()==='players,stakes,open,seats,start'&&!!document.querySelector('#opening-buy-ins')&&!!document.querySelector('button[value=start]')`));
+ check('no JavaScript, open set: the steps, the option and Start are all there',await N.js(`[...document.querySelectorAll('.prep-step')].map(e=>e.dataset.step).join()==='seats,players,stakes,open'&&!!document.querySelector('#opening-buy-ins')&&!!document.querySelector('button[value=start]')`));
  await N.click(`document.querySelector('.host-controls button[value=start]')`,1500);
  check('no JavaScript: Start works and the page in play is whole',await N.js(`location.pathname==='/s/${OPEN.opt_out.set}/'&&!!document.querySelector('.table-v2 .felt')&&document.querySelector('.felt .badge').textContent==='In play'`));
  check('no JavaScript: each row offers Rebuy, Cash out and Details as native disclosures',await N.js(`(()=>{const row=document.querySelector('.player-row');const s=[...row.querySelectorAll('summary')].filter(e=>e.getClientRects().length).map(e=>e.textContent.trim());return s.join('|')==='Rebuy|Cash out|Details'&&!row.querySelector('.player-opens .icon').getClientRects().length})()`),await N.js(`[...document.querySelector('.player-row').querySelectorAll('summary')].map(e=>e.textContent.trim()).join('|')`));
