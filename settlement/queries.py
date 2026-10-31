@@ -30,7 +30,7 @@ def outcome(session):
     finalization = Finalization.objects.filter(session=session, is_current=True).first()
     if finalization is None:
         return None
-    results = list(finalization.results.select_related("participant__member").order_by("participant__join_order"))
+    results = list(finalization.results.select_related("participant__member").order_by("-net", "participant__join_order"))
     return Outcome(finalization, results)
 
 
@@ -189,6 +189,11 @@ class NightOutcome:
     carried_in: list = field(default_factory=list)  # earlier transfers this session's list took over
     table_payments: list = field(default_factory=list)  # paid at the table before closing (ADR 0002), undone ones too
     rake_to_fund: bool = False  # the session's rake is paid into the rake fund, not returned to each player
+
+    @property
+    def ranked(self):
+        """Best result first. ``standings`` stays in join order, because a player's token colour follows it."""
+        return sorted(self.standings, key=lambda standing: (-standing.net, standing.join_order))
 
     @property
     def total_to_pay(self):

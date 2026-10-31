@@ -4,14 +4,18 @@
   <ul class="player-list">
     {% for r in outcome.results %}
     <li class="result-row">
-      <div class="count-identity">
+      {# The row is the disclosure. Name and result read at a glance; the facts wait behind the chevron. #}
+      <details class="result-details" data-key="player-{{ r.participant_id }}">
+      <summary class="count-identity result-summary">
         {% player_token r.participant participants %}
         <span class="player-name grow">{{ r.participant.member.display_name }}{% if r.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
         <span class="result-amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {% if r.net == 0 %}Even{% else %}{{ r.net|signed_amount:unit }}{% endif %}</span>
-      </div>
+        {% icon 'chevron-down' %}<span class="visually-hidden">Details</span>
+      </summary>
       {# One line of facts; rake and an override only when there are some. #}
       <p class="result-line small"><span class="pair">{{ r.buy_in_total|amount:unit }} in</span>{% if r.buy_in_count > 1 %}, <span class="pair">{{ r.buy_in_count|add:-1 }} rebuy{{ r.buy_in_count|add:-1|pluralize }}</span>{% endif %} · <span class="pair">{{ r.cashed_out|amount:unit }} out</span>{% if r.rake_total %} · <span class="pair">{{ r.rake_total|amount:unit }} rake</span>{% endif %}{% if r.adjustment %} · <span class="pair">override {{ r.adjustment|signed_amount:unit }}</span>{% endif %}{% if r.play_seconds is not None %} · <span class="pair">{{ r.play_seconds|duration }}</span>{% endif %}</p>
-      {% include "web/_player_records.html" with line=r.line p=r.participant %}
+      {% include "web/_player_records_body.html" with line=r.line p=r.participant %}
+      </details>
     </li>
     {% endfor %}
   </ul>

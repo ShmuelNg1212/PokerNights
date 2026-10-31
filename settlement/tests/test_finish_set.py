@@ -243,3 +243,39 @@ class FinishPageTests(TestCase):
     def test_a_get_changes_nothing(self):
         response = self.client.get(reverse("session_finish", args=[self.session.pk]))
         self.assertEqual(response.status_code, 405)
+
+
+class ResultsAtAGlanceTests(TestCase):
+    def setUp(self):
+        self.night = counting("A", "B", "C")
+        count(self.night, "A", 800)
+        count(self.night, "B", 1500)
+        count(self.night, "C", 700)
+        finish(self.night)
+        self.client.force_login(self.night.host.user)
+        self.url = reverse("session", args=[self.night.session.pk])
+
+    def test_set_results_run_best_to_worst(self):
+        html = self.client.get(self.url).content.decode()
+        rows = html[html.index('class="final-results"'):]
+        self.assertEqual(re.findall(r'class="player-name grow">(\w+)', rows), ["B", "A", "C"])
+
+    def test_the_row_is_the_disclosure_and_holds_the_facts(self):
+        html = self.client.get(self.url).content.decode()
+        row = html[html.index('class="result-details"'):]
+        row = row[:row.index("</details>")]
+        self.assertLess(row.index("<summary"), row.index("</summary>"))
+        summary = row[row.index("<summary"):row.index("</summary>")]
+        self.assertIn("result-amount", summary)
+        self.assertNotIn("₱1,000 in", summary)
+        self.assertIn("₱1,000 in", row[row.index("</summary>"):])
+        self.assertIn("Final cash-out", row)
+
+    def test_session_results_run_best_to_worst_and_tokens_keep_their_colours(self):
+        night = self.night.refresh().night
+        url = reverse("night", args=[night.pk])
+        html = self.client.get(url).content.decode()
+        rows = html[html.index('class="list night-results"'):]
+        rows = rows[:rows.index("</ul>")]
+        names = [name for name in re.findall(r'<span class="grow">(\w+)<br>', rows)]
+        self.assertEqual(names, ["B", "A", "C"])
