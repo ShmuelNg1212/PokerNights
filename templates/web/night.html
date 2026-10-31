@@ -73,14 +73,14 @@
       <details class="night-how" data-key="how-settled"><summary class="small">How this is worked out</summary><p class="muted small">Transfers settle the session results{% if outcome.carried_in %} and the earlier transfers carried in{% endif %}. This list nets every set of the session. It excludes rake already collected at buy-in{% if outcome.table_payments %} and subtracts the payments made at the table before closing (see Payment records){% endif %}.</p></details>
     </section>
     {% endif %}
-    {% if not before_play or outcome.standings %}
+    {% if outcome.ranked %}
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="badge">Not final</span>{% endif %}</h2>
       {% if night.is_closed %}<p class="small muted">Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>{% elif total_rake %}<p class="small muted">Includes rake already collected.</p>{% endif %}
       <ul class="list night-results">
         {% for row in outcome.ranked %}
         <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>
-        {% empty %}<li class="muted">No finalized set results yet.</li>{% endfor %}
+        {% endfor %}
       </ul>
     </section>
     {% endif %}

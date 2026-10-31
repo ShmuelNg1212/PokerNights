@@ -1,18 +1,14 @@
 {% load money_tags table_tags %}{% if cards and me.is_host %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
 <section class="group-sessions" aria-labelledby="current-sessions">
-<h2 id="current-sessions">Now playing</h2>
 {% if cards %}
+<h2 id="current-sessions">In progress</h2>
   <ul class="table-cards">
     {% for card in cards %}{% include "web/_session_card.html" %}{% endfor %}
   </ul>
 {% else %}
-  <div class="panel empty-state">
-    <h3>Nobody is playing</h3>
-    {% if coming %}<p class="muted">The next session is under Coming up.</p>
-    {% elif not me.is_host %}<p class="muted">A host starts the next session. It appears here when it starts.</p>
-    {% else %}<p class="muted">Start one when the players arrive.</p>
-    <p><a class="btn btn-primary btn-block" href="{% url 'session_create' group.pk %}">New session</a></p>{% endif %}
-  </div>
+  {% if coming %}{% include "partials/first_state.html" with id="current-sessions" title="Nobody is playing" line="The next session is under Coming up." %}
+  {% elif not me.is_host %}{% include "partials/first_state.html" with id="current-sessions" title="Nobody is playing" line="The next session appears here when a host starts it." chips=no_past %}
+  {% else %}{% url 'session_create' group.pk as new_url %}{% include "partials/first_state.html" with id="current-sessions" title="Nobody is playing" line="Start a session when the players arrive." url=new_url label="New session" primary=True chips=no_past %}{% endif %}
 {% endif %}
 </section>
 {% if coming %}<section class="group-sessions" aria-labelledby="coming-sessions">

@@ -57,7 +57,7 @@ def _first(night):
 def is_coming(night) -> bool:
     """An announced session still taking answers: it is on "Coming up".
 
-    While set 1 is a draft it is only there. Once set 1 is open it is also on "Now playing", to reach the set.
+    While set 1 is a draft it is only there. Once set 1 is open it is also under "In progress", to reach the set.
     """
     return rsvp.answering_open(night, _first(night)) if night.announced_at is not None else False
 
@@ -189,6 +189,7 @@ def sessions_context(me, past=None) -> dict:
         "cards": current_cards(me, nights),
         "past_years": past_years(shown, filtered=past is not None),
         "past_any": bool(rows),
+        "no_past": not rows,
         "past_filter": past,
         "not_settled": sum(1 for n in rows if PAST_FILTERS["unsettled"](n)),
         "played": sum(1 for n in rows if PAST_FILTERS["mine"](n)),

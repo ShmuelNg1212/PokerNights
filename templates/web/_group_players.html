@@ -87,6 +87,7 @@
   <p class="hint" data-roster-none aria-live="polite" hidden></p>
 </div>
 {% endif %}
+{% if members|length == 1 %}<p class="muted roster-alone">Only you so far. Send the invite link, or add names above.</p>{% endif %}
 <ul class="list roster" data-roster>
   {% for m in members %}
   <li class="roster-row" id="member-{{ m.pk }}" data-name="{{ m.display_name|lower }}"{% if m.arrived %} data-arrived{% endif %}>

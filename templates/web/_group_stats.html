@@ -53,10 +53,6 @@
 </details>
 </div>
 {% else %}
-<div class="panel empty-state">
-  <h3>No stats yet</h3>
-  <p class="muted">Stats come from closed sessions. Close a session after its sets are finalized and the players appear here.</p>
-  <p><a class="btn btn-block" href="{% url 'group' group.pk %}">Go to sessions</a></p>
-</div>
+{% url 'group' group.pk as sessions_url %}{% include "partials/first_state.html" with title="No stats yet" line="Players appear here once a session closes." url=sessions_url label="Go to sessions" chips=True %}
 {% endif %}
 </section>

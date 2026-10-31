@@ -1296,3 +1296,5 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Type floor.** Text that carries money, state or a name is 13 px or more, at every width. Only a chip's initials are smaller: they sit beside the written name.
 - **Heading scale.** `--h-page` 28 px (24 px below 360 px), `--h-lead` 22 px, `--h-section` 18 px, `--h-part` 16 px, `--h-label` 13 px in a muted colour. This replaces the contextual heading sizes in "Typography". Figures keep their own sizes.
 - **Rhythm.** Page gaps come from `--s-*`. This replaces the statement in "Layout" that no scale exists.
+- **First-time states.** `partials/first_state.html`: one heading, one sentence, at most one action. A page with nothing else on it adds a stack of three drawn 56 px chips, centred. Home keeps the mark. A player's empty group has no action, because a player has none to take. "Nobody is playing" replaces the "Now playing" heading when there is no card, and a session has no Results section until a result exists.
+- **Words.** The Sessions tab's list is headed "In progress". It holds drafts, canceled and finalized sets as well, so "Now playing" misstated them.

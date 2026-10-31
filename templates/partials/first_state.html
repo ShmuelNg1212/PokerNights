@@ -1,0 +1,7 @@
+{% comment %}A first-time or empty state: one heading, one sentence, one action. With chips=True the page is otherwise bare, so a small stack of drawn chips stands over it.{% endcomment %}
+<div class="empty-state{% if chips %} first-state{% endif %}">
+  {% if chips %}<span class="first-chips" aria-hidden="true"><span class="chip k2"></span><span class="chip k4"></span><span class="chip k1"></span></span>{% endif %}
+  <h2{% if id %} id="{{ id }}"{% endif %}>{{ title }}</h2>
+  <p class="muted">{{ line }}</p>
+  {% if url %}<p><a class="btn btn-block{% if primary %} btn-primary{% endif %}" href="{{ url }}">{{ label }}</a></p>{% endif %}
+</div>

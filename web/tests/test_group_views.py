@@ -63,7 +63,7 @@ class GroupViewTests(TestCase):
         self.assertNotContains(page, "Add a table")
         self.client.force_login(add_player(self.group, "viewer").user)
         page = self.client.get(self.url)
-        self.assertContains(page, "A host starts the next session")
+        self.assertContains(page, "when a host starts it")
         self.assertNotContains(page, "New session")
 
     def test_new_session_sits_above_the_cards(self):

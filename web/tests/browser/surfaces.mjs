@@ -9,7 +9,7 @@ const OUT=process.env.PN_REVIEW_DIR||'/private/tmp/pn-surfaces-review';mkdirSync
 const BASE=process.env.PN_BROWSER_URL||'http://127.0.0.1:8765';const REPORT=!!process.env.PN_SURFACES_REPORT;
 const NIGHTS=JSON.parse(readFileSync('/private/tmp/pn-slice3-manifest.json','utf8'));
 const OPENING=JSON.parse(readFileSync('/private/tmp/pn-opening-manifest.json','utf8'));
-const EMPTY=JSON.parse(readFileSync('/private/tmp/pn-surfaces-manifest.json','utf8')).group;
+const FIRST=JSON.parse(readFileSync('/private/tmp/pn-surfaces-manifest.json','utf8'));const EMPTY=FIRST.group;
 const PROFILE='/private/tmp/pn-surfaces-chrome';rmSync(PROFILE,{recursive:true,force:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const chrome=spawn(process.env.PN_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--headless=new','--remote-debugging-port=9463',`--user-data-dir=${PROFILE}`,'--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
@@ -52,18 +52,20 @@ const MEASURE=`(()=>{
  const allBtns=[...main.querySelectorAll('.btn')].filter(shown);const undersides=allBtns.filter(b=>!b.matches('.btn-primary')&&getComputedStyle(b).boxShadow!=='none').length;
  const scale=[0,4,8,12,16,24,32,48];const gaps=[];for(const e of main.querySelectorAll('section,.panel,.page-heading,.tabs,.form-section,h1,h2,.section-heading')){if(!shown(e)||e.closest('dialog,summary,.visually-hidden'))continue;const c=getComputedStyle(e);for(const k of ['marginTop','marginBottom','paddingTop','paddingBottom']){const v=parseFloat(c[k]);if(!scale.includes(Math.round(v)))gaps.push((e.className||e.tagName).toString().slice(0,24)+' '+k+' '+v)}}
  const bare=/Session: |Back to /.test(backWords);
- return{gaps:[...new Set(gaps)],bare,small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight};
+ const firsts=[...main.querySelectorAll('.empty-state,.home-first')].filter(shown).map(e=>({sentences:[...e.querySelectorAll(':scope > p.muted:not(.small)')].map(p=>p.textContent.trim().split(/[.!?](?:\\s|$)/).filter(Boolean).length).reduce((a,b)=>a+b,0),actions:[...e.querySelectorAll('a.btn,button.btn')].filter(shown).length,drawn:!!e.querySelector('img,.first-chips')}));
+ return{firsts,gaps:[...new Set(gaps)],bare,small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight};
 })()`;
 const host=[['home','/'],['group-sessions','/g/1/'],['group-players','/g/1/?view=players'],['group-stats','/g/1/?view=stats'],['group-settings','/g/1/?view=settings'],
  ['set-draft-empty','/s/4/'],['set-joining',`/s/${OPENING.default.set}/`],['set-in-play','/s/3/'],['set-counting','/s/2/'],['set-counting-chips','/s/6/'],['set-balanced','/s/8/'],['set-recount','/s/9/'],['set-final','/s/1/'],['set-large','/s/11/'],
  ['session-before-play',`/n/${OPENING.default.night}/`],['session-in-play','/n/3/'],['session-closed-partly',`/n/${NIGHTS.partly}/`],['session-closed-unpaid',`/n/${NIGHTS.unpaid}/`],['session-closed-settled',`/n/${NIGHTS.settled}/`],['session-ready',`/n/${NIGHTS.ready}/`],['session-two-sets',`/n/${NIGHTS['two-sets']}/`],
  ['set-log','/s/3/log/'],['form-new-session','/g/1/sessions/new/'],['form-set-settings',`/s/${OPENING.default.set}/settings/`],['form-add-players',`/s/${OPENING.default.set}/players/add-several/`],['form-chip-values',`/n/${OPENING.default.night}/chip-values/`]];
 const player=[['player-home','/'],['player-group','/g/1/'],['player-set-in-play','/s/3/'],['player-set-final','/s/1/'],['player-session',`/n/${NIGHTS.partly}/`]];
-const empty=[['nora',[['empty-home','/']]],['owen',[['empty-group',`/g/${EMPTY}/`],['empty-players',`/g/${EMPTY}/?view=players`],['empty-stats',`/g/${EMPTY}/?view=stats`],['empty-settings',`/g/${EMPTY}/?view=settings`],['empty-new-session',`/g/${EMPTY}/sessions/new/`]]],['pia',[['empty-player-group',`/g/${EMPTY}/`],['empty-player-stats',`/g/${EMPTY}/?view=stats`]]]];
+const empty=[['nora',[['empty-home','/']]],['owen',[['empty-group',`/g/${EMPTY}/`],['empty-players',`/g/${EMPTY}/?view=players`],['empty-stats',`/g/${EMPTY}/?view=stats`],['empty-settings',`/g/${EMPTY}/?view=settings`],['empty-new-session',`/g/${EMPTY}/sessions/new/`]]],['pia',[['empty-player-group',`/g/${EMPTY}/`],['empty-player-stats',`/g/${EMPTY}/?view=stats`]]],['rae',[['empty-roster',`/g/${FIRST.solo}/?view=players`]]]];
 const table=[];const rows={};
 async function walk(U,list,prefix=''){for(const[name,path]of list){await U.go(path);const m=await U.js(MEASURE);m.name=prefix+name;rows[prefix+name]=m;table.push(m);await U.shot(prefix+name,true);await U.js(`document.querySelector('html').style.filter='brightness(.45)'`);if(U.width===390&&/^(group-sessions|set-joining|set-in-play|set-counting|session-closed-partly|group-settings)$/.test(name))await U.shot('dim-'+name);await U.js(`document.querySelector('html').style.filter=''`)}}
 try{
  const H=await user('hana');await walk(H,host);
+ await walk(H,[['empty-past','/g/1/?past=mine']]);
  await H.go('/g/1/?view=players');const path=await H.js(`[...document.querySelectorAll('a.roster-link')].find(a=>!a.textContent.includes('(you)')).getAttribute('href')`);await walk(H,[['player-page',path]]);
  const P=await user('ben');await walk(P,player);
  for(const[n,list]of empty){const U=await user(n);await walk(U,list)}
@@ -91,6 +93,8 @@ try{
   check(`${m.name}: gaps on the scale${m.gaps.length?': '+m.gaps.join(' | '):''}`,!m.gaps.length);
   check(`${m.name}: no sideways scroll`,!m.overflow);
   if(m.sheet)continue;
+  for(const f of m.firsts||[])check(`${m.name}: an empty state has one sentence and at most one action (${f.sentences}, ${f.actions})`,f.sentences<=1&&f.actions<=1);
+  if(/^empty-(home|group|stats|player-group|player-stats)$/.test(m.name))check(`${m.name}: a bare page has the mark or drawn chips`,(m.firsts||[]).some(f=>f.drawn));
   if(m.titleGap!==null)check(`${m.name}: at least 20px above the title (${m.titleGap})`,m.titleGap>=20);
   check(`${m.name}: the way back says little and repeats no title ("${m.back}" / "${m.title}")`,!m.bare&&(!m.back||!m.title.includes(m.back)));
   if(m.tabsEnd!==null&&!m.name.startsWith('1280-'))check(`${m.name}: head and tabs end by 180px (${m.tabsEnd})`,m.tabsEnd<=180);

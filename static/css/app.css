@@ -555,6 +555,14 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .empty-state { padding:var(--s-5) 0; }
 .empty-state h2, .empty-state h3 { margin-top:0; }
 .panel.empty-state { padding:var(--s-5) 0; }
+/* A first-time state on an otherwise bare page: drawn chips, one heading, one sentence, one action. */
+.first-state { margin-top:var(--s-4); text-align:center; text-wrap:balance; }
+.first-state h2 { margin:var(--s-4) 0 var(--s-1); }
+.first-state .btn { margin-top:var(--s-4); }
+.first-chips { display:inline-flex; }
+.first-chips .chip { width:56px; height:56px; box-shadow:0 0 0 3px var(--ground); }
+.first-chips .chip + .chip { margin-left:-16px; }
+.roster-alone { margin:var(--s-3) 0 0; }
 .form-page { max-width:600px; padding-top:var(--s-6); padding-bottom:48px; }
 .form-page > .form-section:last-child { margin-bottom:0; padding-bottom:0; }
 .form-page h1 { font-weight:800; }
@@ -2397,6 +2405,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .chip-values-form .field ~ .chip-value-fields { margin-top: var(--s-4); }
 /* What a session can do before play, as one quiet line each: the set's button stays the one main action. */
 .night-option { margin-top: var(--s-3); border-top: 1px solid var(--rule); }
+.night-overview > .felt + .night-option { margin-top: 0; border-top: 0; }
 .night-option + .night-option { margin-top: 0; }
 .night-option > summary, .night-option-link { display: flex; align-items: center; gap: var(--s-2); min-height: 56px; color: var(--text); font-weight: 650; text-decoration: none; cursor: pointer; list-style: none; }
 .night-option > summary::-webkit-details-marker { display: none; }
