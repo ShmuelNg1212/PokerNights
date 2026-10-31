@@ -1424,7 +1424,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
   .stat-tiles { grid-template-columns: repeat(4, 1fr); }
   .player-highlights { grid-template-columns: repeat(4, 1fr); }
 }
-@media (max-width: 359px) { .stat-link { gap: var(--s-2); } }
+@media (max-width: 359px) { .stat-link { gap: var(--s-2); } .player-highlights, .stat-tiles { grid-template-columns: minmax(0, 1fr); } }
 
 /* The chosen pill on a stats screen is a marker behind its words, so stats.js can slide it from the
    pill that was chosen before. Without the script it simply sits there. */
@@ -2210,7 +2210,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-setting > form { padding: 0 0 var(--s-4); }
 /* Settings (2026-11-01): one row each, in the Profile's row shape. Each says its current state and opens its own form. */
 .panel.settings-rows { padding-block: 0; padding-inline: var(--s-4); }
-.settings-row > summary h2 { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 1rem; font-weight: 600; }
+.settings-row > summary h2 { flex: none; margin: 0 auto 0 0; font-size: 1rem; font-weight: 600; }
 .settings-body { display: grid; gap: var(--s-3); padding: 0 0 var(--s-4); min-width: 0; }
 .settings-body > * { margin: 0; min-width: 0; }
 .settings-body h3 { margin: 0; font-size: .9375rem; }

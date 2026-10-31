@@ -117,7 +117,7 @@ try {
  check('at rest the steps keep no inline style',await H.js(`[...document.querySelectorAll('.prep-mark')].every(m=>!m.getAttribute('style'))&&document.getAnimations().length===0`));
  check('with players, Start the set is the one main button',await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&document.querySelector('.dock-next').textContent.includes('Next: Start the set')&&${text('2 added')}&&${text('Ready to start')}`));
  await H.click(`document.querySelector('.host-more button[value=open]')`,50);
- check('opening is answered in place: the step is done, Start is next',await H.until(`document.querySelector('.prep .badge').textContent==='Open'`)&&same(await H.js(steps),{seats:'optional',players:'done',stakes:'done',open:'done'})&&await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&${text('Players can see it and join.')}`));
+ check('opening is answered in place: the step is done, Start is next',await H.until(`document.querySelector('.prep .badge').textContent==='Joining'`)&&same(await H.js(steps),{seats:'optional',players:'done',stakes:'done',open:'done'})&&await H.js(`document.querySelector('.host-controls .next-action').textContent==='Start the set'&&${text('Players can see it and join.')}`));
  await sleep(600);
  check('open: the menu holds the option and Start; Back to draft waits under More',await H.js(`!!document.querySelector('#opening-buy-ins')&&${shown('.host-controls > form button[value=close], .host-controls > button[value=close]')}.length===0&&!!document.querySelector('.host-more button[value=close]')`));
  await H.js(`localStorage.removeItem('rack-dock')`);await H.go('/s/4/');
