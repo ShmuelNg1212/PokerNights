@@ -4,22 +4,29 @@
 (function () {
   "use strict";
   var HOLD_MS = 3000, FADE_MS = 400, MOST = 30;
+  // Motion begins on the next frame, so the element is put at its starting point now
+  // (doc/wiki/footguns/motion_starts_a_frame_late.md).
+  function move(el, keyframes, preset, extra) {
+    var M = window.pokerMotion;
+    if (!el || !M || !M.on()) return;
+    Object.keys(keyframes).forEach(function (name) { el.style[name] = keyframes[name][0]; });
+    M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
+  }
+  // An opened disclosure eases in; closing is immediate.
+  function easeOpen(details) {
+    move(details.querySelector(":scope > :not(summary)"), { opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0px)"] }, "fade");
+  }
   window.pokerPage.register(function () {
-    // An old address of Group settings: the players have their own tab now.
-    if (document.querySelector(".group-settings") && /^#(players|invites)$/.test(location.hash)) {
-      location.replace(location.pathname + "?view=players" + location.hash);
+    if (document.querySelector(".group-settings")) {
+      // An old address of Group settings: the players have their own tab now, and a row opens by its name.
+      if (/^#(players|invites)$/.test(location.hash)) location.replace(location.pathname + "?view=players" + location.hash);
+      var row = location.hash && document.getElementById(location.hash.slice(1));
+      if (row && row.matches(".settings-row")) row.open = true;
       return;
     }
     var section = document.getElementById("players"), list = section && section.querySelector("[data-roster]");
     if (!list) return;
-    var life = new AbortController(), timers = [], M = window.pokerMotion;
-    // Motion begins on the next frame, so the element is put at its starting point now
-    // (doc/wiki/footguns/motion_starts_a_frame_late.md).
-    function move(el, keyframes, preset, extra) {
-      if (!el || !M || !M.on()) return;
-      Object.keys(keyframes).forEach(function (name) { el.style[name] = keyframes[name][0]; });
-      M.settle(el, M.run(el, keyframes, preset, extra), Object.keys(keyframes));
-    }
+    var life = new AbortController(), timers = [];
     // The same brass mark as an accepted change on a set, held and then faded.
     function mark(els) {
       els.forEach(function (el) { el.classList.add("just-changed"); });
@@ -41,8 +48,7 @@
     // "toggle" does not bubble, so it is caught on the way down.
     section.addEventListener("toggle", function (event) {
       var details = event.target;
-      if (!details.open || !details.matches || !details.matches("details")) return;
-      move(details.querySelector(":scope > :not(summary)"), { opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0px)"] }, "fade");
+      if (details.open && details.matches && details.matches("details")) easeOpen(details);
     }, { capture: true, signal: life.signal });
 
     var tally = section.querySelector("[data-names-tally]"), box = tally && document.getElementById(tally.dataset.namesTally);
@@ -76,15 +82,10 @@
 
   // A player's page: Manage eases open, as the disclosures on the tab do.
   window.pokerPage.register(function () {
-    var manage = document.querySelector(".player-manage"), M = window.pokerMotion;
+    var manage = document.querySelector(".player-manage");
     if (!manage) return;
     var life = new AbortController();
-    manage.addEventListener("toggle", function () {
-      if (!manage.open || !M || !M.on()) return;
-      var inside = manage.querySelector(":scope > :not(summary)"), from = { opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0px)"] };
-      inside.style.opacity = "0"; inside.style.transform = "translateY(-6px)";
-      M.settle(inside, M.run(inside, from, "fade"), ["opacity", "transform"]);
-    }, { signal: life.signal });
+    manage.addEventListener("toggle", function () { if (manage.open) easeOpen(manage); }, { signal: life.signal });
     return function () { life.abort(); };
   });
 })();

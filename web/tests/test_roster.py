@@ -156,9 +156,46 @@ class PlayersSectionTests(TestCase):
         ben = self.club.member("Ben")
         response = self.client.post(reverse("member_rename", args=[self.group.pk, ben.pk]), {"name": "ana", "contact": "note"}, follow=True)
         self.assertEqual(response.redirect_chain[-1][0], f'{reverse("player", args=[self.group.pk, ben.pk])}?from=players&open=manage#manage')
-        self.assertContains(response, 'class="player-manage" id="manage" open')
+        self.assertContains(response, '<details class="player-manage" open>')
         self.assertContains(response, 'value="ana"')
         self.assertContains(response, "note")
+
+    def test_a_write_keeps_the_unit_the_period_and_the_way_in(self):
+        ben = self.club.member("Ben")
+        url = reverse("member_rename", args=[self.group.pk, ben.pk])
+        page = self.client.get(reverse("player", args=[self.group.pk, ben.pk]), {"unit": "php", "period": "year"})
+        self.assertContains(page, 'name="keep" value="period=year&amp;unit=php"')
+        response = self.client.post(url, {"name": "Ben", "contact": "", "keep": "period=year&unit=php&evil=https://x.example"})
+        self.assertEqual(response.url, f'{reverse("player", args=[self.group.pk, ben.pk])}?period=year&unit=php&open=manage#manage')
+        self.assertIn("view=stats", self.client.get(response.url).context["back_url"])
+
+    def test_a_refused_write_about_nobody_in_the_group_lands_on_the_tab_with_its_refusal(self):
+        _, other = make_group("omar", "Other")
+        response = self.client.post(reverse("member_reset_link", args=[self.group.pk, other.pk]), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.redirect_chain[-1][0], f"{players_url(self.group)}#players")
+
+    def test_a_link_that_has_run_out_is_not_shown_as_new(self):
+        maria = add_player(self.group, "maria")
+        self.client.post(reverse("member_reset_link", args=[self.group.pk, maria.pk]))
+        session = self.client.session
+        session["new_reset_link"]["expires_at"] = "2020-01-01T00:00:00+00:00"
+        session.save()
+        self.assertNotContains(self.player_page(maria), "/accounts/reset/")
+        self.assertNotIn("new_reset_link", self.client.session)
+
+    def test_a_link_made_before_links_named_their_player_still_shows(self):
+        maria = add_player(self.group, "maria")
+        self.client.post(reverse("member_reset_link", args=[self.group.pk, maria.pk]))
+        session = self.client.session
+        del session["new_reset_link"]["member"]
+        session.save()
+        self.assertContains(self.player_page(maria), "/accounts/reset/")
+
+    def test_a_new_link_is_inside_the_place_a_write_lands(self):
+        maria = add_player(self.group, "maria")
+        page = self.client.post(reverse("member_reset_link", args=[self.group.pk, maria.pk]), follow=True).content.decode()
+        self.assertLess(page.index('id="manage"'), page.index("/accounts/reset/"))
 
     def test_a_long_list_gets_a_search(self):
         self.assertNotContains(self.page(), "data-roster-search")

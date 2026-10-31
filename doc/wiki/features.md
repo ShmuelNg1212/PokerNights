@@ -59,7 +59,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 
 [Plan](../plan/1793173506_chip_value_presets.md). [ADR 0005](../adr/0005-group-chip-presets.md).
 
-- **Manage.** Group settings has a **Chip presets** section below Presets. Each preset shows its name, a Chips badge for a chips unit, and its colours with values. A host selects **New chip preset** or a preset's name. The page has a name, a unit and the same colour rows as a session. **Archive chip preset** removes it from new choices.
+- **Manage.** Settings has a **Chip presets** row below Presets. Each preset shows its name, a Chips badge for a chips unit, and its colours with values. A host selects **New chip preset** or a preset's name. The page has a name, a unit and the same colour rows as a session. **Archive chip preset** removes it from new choices.
 - **Use.** On a session's Chip values page, **Start from a preset** lists presets of the session's unit. **Fill** replaces the rows; nothing saves until **Save chip values**. With JavaScript the rows fill in place and the note says "Filled from …".
 - **Save one.** **Save as a group preset** below the rows saves them as a new preset. On a locked session it saves the session's values. The session does not change.
 - **Copies.** A session keeps its own values. Editing or archiving a preset changes no session.
@@ -81,7 +81,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 ## A game night (one set)
 
 1. **Create.** The host picks a table, or names the group's first one, then the date, location, game type, unit and stakes. The app then goes to the set, or to the session page if the host ticked **Announce to the group**. The game starts as a draft that only hosts see, unless announced.
-2. **Open.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
+2. **Joining.** Players join from their phones. The host adds roster players. A full table refuses the next join. A second tap on "Join" adds nothing.
    - **Add players.** A host can add several players in one action: tick them in a searchable list, check the count against the free seats, and confirm once ("Add 4 players"). Everyone selected is added, or nobody is. Players at the table cannot be ticked. If someone else changed the roster first, nothing is added and the selection is kept for review. Adding players records no buy-in and no payment. Add players stays available during play even when every roster member is seated. The same page offers Add new player: enter a name to save a no-login roster identity and join them to the current set in one action. The new player’s timer starts when they join; record their buy-in separately. Duplicate names direct the host to roster selection, or back to the set if that player is already seated, and a full or ended set adds nobody.
 3. **Start play and opening buy-ins.** Start the set includes a checked option to add the set’s usual buy-in for each player at the table without an accepted buy-in. Existing buy-ins are kept, even at a different amount. Uncheck the option to start without automatic entries. Records and timers commit together; repeated confirmation creates nothing twice. Each new set uses its own current settings. Resume and late joining add no automatic buy-in. A reversed-only player qualifies again before first start; uncheck when that is intentional.
 4. **Buy-ins and rebuys.** The host records each one (a player with a login can record their own rebuy; see “Player rebuys and player-entered counts”) with an amount between the minimum and the maximum. Each record keeps its amount and time. Each player has a running total. On the active set, tap the row’s Buy-in or Rebuy button and confirm to record the default amount. The sheet also offers minimum, default, twice default (capped at maximum), and maximum amounts.
@@ -100,7 +100,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 
 [Plan](../plan/1793347607_session_setup_menu.md). [ADR 0008](../adr/0008-new-session-options.md).
 
-- **After Create session.** The screen moves deeper to the set, without a page load; an announced session goes to the session page. The session page leads with **Open set 1**, and Announce and Chip values are quiet lines until they hold something. Then **Open set 1** is primary.
+- **After Create session.** The screen moves deeper to the set, without a page load; an announced session goes to the session page. The session page leads with **Go to set 1**, and Announce and Chip values are quiet lines until they hold something. Then **Go to set 1** is primary.
 - **When it is created.** The last group on New session has two options. Both are off by default.
   - **Chip values** lists "Set later" and the group's chip presets of the chosen unit. `static/js/setup.js` changes the list when the unit changes. The field is not on the page when the group has no chip presets. Without JavaScript, all presets show, and the server refuses a preset of the other unit.
   - **Announce to the group** tells each member with a login. A start time shows when the box is ticked (CSS only). Seats come from the table.
@@ -133,7 +133,7 @@ Every buy-in and rebuy uses the rule, including default opening buy-ins and manu
 
 The set shows gross bought in, collected rake and available to play. Counts/cash-outs plus rake must match gross buy-ins; rake does not replace a missing player's cash-out. Final results include the fee as a loss. Group settings → Group rake account → When players pay the rake chooses what settle-up does with it (hosts only; applies at the next close). "In cash at buy-in" (default) excludes the already-collected fee, so it is never charged twice and the rake account receives no transfer. "At settle-up, into the rake fund" makes each player's settle-up figure equal their standing; the Rake fund appears as a payee with a brass R chip, a host marks its lines paid, and they are never carried to a later session. A closed session keeps the rule it was closed with.
 
-Group settings shows the group's lifetime collected rake across all sessions and sets, including games in progress. Peso and chip totals stay separate. Expand the session/set breakdown to see where each total came from. Reversing a buy-in excludes its fee; payment marks and Undo do not change rake totals. Historical records start at zero rake.
+Settings → Rake shows the group's lifetime collected rake across all sessions and sets, including games in progress. Peso and chip totals stay separate. Expand the session/set breakdown to see where each total came from. Reversing a buy-in excludes its fee; payment marks and Undo do not change rake totals. Historical records start at zero rake.
 
 ## Collapsible host dock
 
@@ -154,8 +154,8 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - **Archive a session.** A host opens “Manage this session” on the session page and confirms. Allowed when no set is a draft, open, in play or counting up. The confirmation lists transfers that are not marked paid.
 - **An archived session** leaves the Sessions list and Your groups, and its results leave the stats, player records, “To settle” and the group rake total. Its pages stay readable by link with an “Archived” notice. No write is accepted. Hosts find it under “Archived sessions” at the bottom of the Sessions tab and restore it from its page; everything returns as it was.
 - **Delete a session.** Offered only when no money record exists under it (a reversed buy-in is still a record) and no set is unfinished. It removes the session and its sets for good.
-- **Rename a group.** Group settings → “Manage this group” → “Rename group”. Hosts only. The name is 1 to 60 characters; spaces are tidied. The same name writes nothing. An archived group is not renamed. The audit log keeps the old and the new name (`group.renamed`). Code: `groups.services.rename_group`.
-- **Archive a group.** Group settings → “Manage this group”. Refused while any set is unfinished. The group leaves Your groups for every member, every page of the group returns 404 and its invite links are refused. Hosts restore it from “Archived groups” on Your groups.
+- **Rename a group.** Settings → Group name → “Rename group”. Hosts only. The name is 1 to 60 characters; spaces are tidied. The same name writes nothing. An archived group is not renamed. The audit log keeps the old and the new name (`group.renamed`). Code: `groups.services.rename_group`.
+- **Archive a group.** Settings → Manage. Refused while any set is unfinished. The group leaves Your groups for every member, every page of the group returns 404 and its invite links are refused. Hosts restore it from “Archived groups” on Your groups.
 - **Delete a group.** Only when no session of the group holds a money record. The host types the group name. It removes the group, memberships, tables, presets, invites and empty sessions. User accounts stay.
 - Money records are never removed by any of these. Each action writes an audit event; the events of a deleted session or group stay.
 - Not possible: archiving or deleting a single set, purging an archived group, deleting a user account.
@@ -183,7 +183,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The card then reads "You're in", "Waitlist · 2nd in line" or "You said you can't make it", with one quiet button to change it.
 - When a confirmed player drops out, the first in line gets the seat and a notice: "A seat opened. You're in."
 - The session page shows **Who's coming**: the confirmed, the waitlist in order, and folded lists of who can't make it and (for hosts) who has not answered. A host can **Mark in**, **Mark out**, **Seat now** (adds a seat) and change the seats. A tap on a row opens a short confirmation under it; the pill reads **Cancel** while it is open. The answer updates the page in place, and the player glides to their new list. The seats cannot go below the number coming.
-- Answers stop when set 1 is in play. While set 1 is Open, the session is under both Coming up and Now playing.
+- Answers stop when set 1 is in play. While set 1 is Joining, the session is under both Coming up and Now playing.
 - Set 1's **Add players** ticks the confirmed players first, no more than the free seats, and shows the waitlist with each place.
 
 
@@ -260,7 +260,7 @@ Group settings shows the group's lifetime collected rake across all sessions and
 - The transfer list excludes rake already collected at buy-in. It subtracts the payments made at the table before closing (see “Paid at the table”).
 - A reopened session cannot count payments already made toward its new transfer list: paid marks are removed first. See “Reopen a set or a session”.
 - No breaks: "Left" is the way to stop a player's time. The end time of a set can be moved earlier while it counts up, never later (see "Correct the end time").
-- A group's Stats and Group settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.
+- A group's Players, Stats and Settings tabs do not refresh by themselves; Your groups, the Sessions tab, the session page and the set page do.
 - No banker mode and no seasons. Seating is the optional seat draw (see “Seat draw”); the app does not follow the dealer button hand by hand. Stats have no minimum-session threshold, average result or ROI yet.
 - No password reset by email. A host sends a reset link (see “Password reset link”). A site administrator, a person who hosts two or more groups, and the only host of a group still need a superuser in `/admin/`. No screen changes a password while logged in.
 - On the public address, an account can be created only from a usable invite link; a superuser adds the first host of a group.
@@ -318,20 +318,21 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 
 ## Your groups home
 
-- The first page lists each group with its players, one status band and one next action for the viewer: **Open the table** for a set in play, **Open set N** for a draft, open or counting set, **Go to the session** when every set is finished, and **New session** or **Add a table** for a host in a quiet group. A player in a quiet group gets no button.
+- The first page lists each group with its players, one status band and one next action for the viewer: **Go to the table** for a set in play, **Go to set N** for a draft, joining or counting set, **Go to the session** when every set is finished, and **New session** or **Add a table** for a host in a quiet group. A player in a quiet group gets no button.
 - A set in play shows players at the table and the timer on the blue felt band. Money still in play is not shown here; the page does not refresh by itself.
 - **To settle** lists the viewer's unpaid transfers from closed sessions ("You owe Miguel ₱425", "Jerome owes you ₱1,375"), three at most, each linking to its session. Nobody sees another member's debts here.
 - **Your record** shows profit or loss, sessions and wins per unit, by the same rules as Stats. **Last session** shows the viewer's result in the latest closed session, or "You did not play".
 - Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
 - Create a group is a closed section under the groups. A person with no group gets a first-group screen.
 
-- **Since 2026-10-05 each group is a card** with one settings button (a gear, top right) in place of the Sessions, Stats and Group settings links; the name still opens the group. The card shows who, now and you in that order; the viewer's record and last result are large figures side by side; "New group" is a button after the last card. Template `templates/web/_group_card.html`; check `web/tests/browser/home.mjs` with `seed_home.py`. Details in DESIGN.md.
+- **Since 2026-10-05 each group is a card** with one settings button (a gear, top right) in place of the group's tab links; the name still opens the group. The card shows who, now and you in that order; the viewer's record and last result are large figures side by side; "New group" is a button after the last card. Template `templates/web/_group_card.html`; check `web/tests/browser/home.mjs` with `seed_home.py`. Details in DESIGN.md.
 
 ## Group page, stats and branding (UI evolution)
 
-- The group page has tabs on the one group address: **Sessions** (default), **Stats** and **Group settings** (`?view=stats`, `?view=settings`). An unknown `view` shows Sessions.
+- The group page has tabs on the one group address: **Sessions** (default), **Players**, **Stats** and **Settings** (`?view=players`, `?view=stats`, `?view=settings`). An unknown `view` shows Sessions. An old `?view=settings#players` or `#invites` address goes on to Players; without JavaScript the Settings page says where they went.
 - Sessions shows the sessions in progress as table cards, then the past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
-- Group settings holds players, invite links, tables, presets, chip presets and the group rake account. Each management action returns to its own section. Players read the same lists without host forms.
+- **Players** holds invite links and adding names at its top, then the roster, with a search from 11 players.
+- **Settings** holds one row each: Tables, Presets, Chip presets, Rake, and for hosts Group name and Manage. Each row states its current value and opens its own form. A write comes back with its row open, and a refused form keeps its typing there. Players read the same lists without host forms.
 - Stats appears once the group has a closed session. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately.
   - Only closed sessions count, using the current frozen results of their finalized sets. Canceled sets and open sessions are excluded.
   - A player's sets are added per session first. Several sets in one session count as one session.
@@ -410,7 +411,7 @@ From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end
 - **Settle up** opens a sheet: “Close the session?”, three lines (how many sets are added up, who pays whom is listed, no set can start after this), the carry list when there is one, **Close session and settle up**, and **Not yet** with the focus. Without scripts the same content opens in place.
 - **When the cards show.** Host only, while the session is open and no later set is open or in play. With a later set, the final page offers **Go to set N** instead. While another set is unfinished, Settle up is a disabled card: “Finish set N first.”, or “Cancel the set N draft first.” for a draft.
 - **A player** reads “Who pays whom comes when the host settles up.” and **Go to the session**.
-- **The session page** shows **Open set N** only for the latest set that is not finished. The rake row shows only when rake was collected. “Results so far” has a “Not final” badge.
+- **The session page** shows **Go to set N** only for the latest set that is not finished. The rake row shows only when rake was collected. “Results so far” has a “Not final” badge.
 - **On a phone** “Found a mistake?” and **Reopen set** follow the results, so the choice stands alone under the proof.
 - **Motion.** The two cards rise 8 px and fade in once per set and browser, 60 ms apart, after finalizing. A press during the rise takes over. Reduced motion, a blocked Motion file and a reload show them at once.
 - **Live.** A final set's poll version also carries the session's set states and status, so the choice changes when another set moves or the session closes.
@@ -432,7 +433,7 @@ On count confirmation, a visible typed field keeps its position when the accepte
 
 ## Password reset link (2026-10-06)
 
-- **A host creates it.** Group settings → Players → “Manage {name}” → **Create password reset link**, for a member with a login. The link is shown once in the Players section and is sent by the host; the app sends nothing and stores only the link's hash.
+- **A host creates it.** Players → the player's row → “Manage {name}” → **Create password reset link**, for a member with a login. The link is shown once on the player's page and is sent by the host; the app sends nothing and stores only the link's hash.
 - **It works once and for 24 hours.** Creating another cancels the earlier one. While one is live the member's Manage block says “Reset link active until …” with **Cancel link**. Any host of a group the person is in sees and can cancel it.
 - **Refused for:** yourself; a roster player without a login; a site administrator (staff or superuser); a person who hosts another group. The last two keep a host from reaching the admin or another group's host powers by taking over an account.
 - **The person opens it** (`/accounts/reset/<token>/`, signed out or not): the page names their username and asks for a new password twice, with Sign up's rules and wording. Saving logs them in on Your groups and signs every other device out. Opening the link without saving changes nothing, so a chat app's preview cannot spend it.
@@ -476,15 +477,15 @@ On count confirmation, a visible typed field keeps its position when the accepte
 
 ## Roster management (2026-10-09)
 
-Group settings → Players. [Plan](../plan/1791525658_roster_management.md).
+The Players tab and each player's page. [Plan](../plan/1791525658_roster_management.md). Since 2026-11-01 the management below is on the player's page, and a row is one link to it.
 
-- **Rows.** Each player has the token, the name, the Host and No login badges and one line: "12 sessions · last played Oct 1" or "No sessions yet". A session counts as in Stats (closed, not archived, with a counted result), once whatever its unit. Every member sees it. Names are in order whatever their capitals.
-- **Your own name.** Your row has "Change your name", for a host and a player. It is the name in this group; the username you log in with does not change.
+- **Rows.** Each player has the token, the name, a Host badge and one line that starts with "No login" where it applies: "12 sessions · last played Oct 1" or "No sessions yet". A session counts as in Stats (closed, not archived, with a counted result), once whatever its unit. Every member sees it. Names are in order whatever their capitals.
+- **Your own name.** Your own page has "Change your name", for a host and a player. It is the name in this group; the username you log in with does not change.
 - **Manage a player (hosts).** One form saves the name and a contact note of up to 120 characters. Only hosts see the note, and its text is not written to the audit log. Make host, Make player and the reset link are below it, and Remove from group sits apart under a rule.
 - **Removing.** Remove from group opens a page that asks first. It says what happens, lists the player's unpaid transfers under "Still to pay" and has "Remove {name}" and "Keep {name}". Opening the page removes nobody. Unpaid transfers do not stop a removal and stay on their session pages.
 - **Refused removals.** A player at the table of a set that is not finished (setup, open, in play or counting up) cannot be removed: the page names the set and links to it. The only host cannot be removed. Withdrawn and Left players, and finished or canceled sets, do not block.
 - **Removed players.** A closed list for hosts at the end of the panel, with Bring back. The member row is the same one, so past results and Stats are unchanged. A returning player is a player, also a former host. A person with a login can open the group again at once. If another active player took the name, they return as "{name} (2)" and the message says so.
-- **A removed name is not added again.** Adding a name that a removed player has is refused and points to Removed players, in Group settings and on a set's Add players page. A second row would split that person's history, and nothing merges members.
+- **A removed name is not added again.** Adding a name that a removed player has is refused and points to Removed players, on the Players tab and on a set's Add players page. A second row would split that person's history, and nothing merges members.
 - **A removed player who Left a set** is not brought back to that table until a host brings them back to the group.
 - **Several names.** "Add players without a login" takes one name per line, up to 30. Everyone is added, or nobody is; blank lines are skipped. A refusal names every problem at once (already in the group, typed twice, removed, too long) and keeps the text. The box counts the names while they are typed.
 - **Said on the page.** Rows that were just added or brought back carry the brass mark for three seconds and rise into place; after a removal the Removed players line is marked. An opened disclosure eases in. Under reduced motion the mark shows and nothing moves.
@@ -495,7 +496,7 @@ Group settings → Players. [Plan](../plan/1791525658_roster_management.md).
 
 A player who was only a name on the roster gets their own login and keeps their history. [Plan](../plan/1791527506_claim_links.md).
 
-- **The host creates it.** Group settings → Players → "Manage {name}" on a player without a login has **Create claim link**. The link is shown once with a Copy button, with what it does: whoever opens it becomes that player in this group. It works once and lasts 7 days. While one is live the block says until when and offers **Cancel link**; a new link cancels the earlier one.
+- **The host creates it.** Players → the player's row → "Manage {name}" on a player without a login has **Create claim link**. The link is shown once with a Copy button, with what it does: whoever opens it becomes that player in this group. It works once and lasts 7 days. While one is live the block says until when and offers **Cancel link**; a new link cancels the earlier one.
 - **A newcomer** who opens it goes to Sign up, which names the group, and is the player as soon as the account exists.
 - **A person with an account** gets one page that asks: the player's token, "Join {group} as {name}", the account they are logged in as, a **Claim {name}** button, "Not now" and a way to log out of the wrong account. Opening the link changes nothing.
 - **Already in the group with nothing recorded:** the page says that entry is replaced, and the claim deletes it. If it was a host, the claimed player is a host.
@@ -510,7 +511,7 @@ A player who was only a name on the roster gets their own login and keeps their 
 
 [Plan](../plan/1791528961_stats_revamp.md). Everything is worked out when read, from the frozen results of closed, unarchived sessions, one unit at a time.
 
-- **Your summary** leads the Stats tab: your profit or loss for the unit and period, your place ("3rd of 9", or "Not ranked yet: 1 of 3 sessions"), your last result, and **Your stats**.
+- **Your summary** is one row on the Stats tab, under the bar that holds the unit and period control and the order pills. The control states the choice and opens a sheet; without JavaScript the choices sit in the page as links. The row has your profit or loss for the unit and period, your place ("3rd of 9", or "Not ranked yet: 1 of 3 sessions"), your last result, and **Your stats**.
 - **Periods:** All time, This year, Last 3 months (this calendar month and the two before), and one month picked from a list of the months that have a closed session.
 - **Order:** Profit, Average, Return, Per hour (offered only when the period has recorded time) and Sessions. The figure at the right of a row follows the order; when it is not Profit, the profit or loss sits small beneath.
 - **Ranked and not ranked.** A player needs 3 sessions in All time and This year, 2 in Last 3 months and 1 in a month. Others are listed under "Not ranked yet" without a place.
@@ -552,7 +553,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - `templates/web/_session_live.html` chooses the page: the felt panel with `details.set-facts` in play, and the `.prep` checklist for a draft or an open set. `web/prep.py` works out each step's state from the summary the page already has; no query is added.
 - `_player_row.html` is one row and its sheet sources. `sheets.js` can swap one sheet's content for another's inside the open dialog (`data-sheet-swap`); that is how Cash out is reached on a phone.
 - `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` holds the movement and remembers the steps in `sessionStorage` to know what changed.
-- `GameSession.state_word` gives the words Draft, Open, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
+- `GameSession.state_word` gives the words Draft, Joining, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
 - The `TABLE_REVAMP` switch and the earlier set page were removed on 2026-10-12, after the human accepted the new one. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).
 
 ## Count-up in one line and settle-up in rows (2026-10-10)
@@ -627,7 +628,7 @@ After every sign-up or login in a phone's browser, a sheet suggests putting Poke
 
 ## Invite links shown again (2026-10-16)
 
-Group settings → Invite players lists every active invite with its link, for as long as it works. [Plan](../plan/1792115570_invite_links_shown_again.md).
+The Players tab → Invite players lists every active invite with its link, for as long as it works. [Plan](../plan/1792115570_invite_links_shown_again.md).
 
 - **How.** The token is not stored. `Invite.salt` (random, 22 characters) is stored, and the token is `salted_hmac("groups.invite", salt)` under `SECRET_KEY`, base64url (`groups.services.invite_token`). `invite_link_token(invite)` makes it again and returns it only when its hash matches `token_hash`. A database copy alone rebuilds no link.
 - **An active row** (not revoked, not expired, not used up): "Created by {name} · {date}", "Used 3 of 20 · expires {date, time}", the address in a read-only field with **Copy** (`copy.js`), **Share** where the phone has a share sheet (text "Join {group} on PokerNights" and the address), and **Revoke** as a quiet action on the left.
@@ -678,10 +679,10 @@ Everyone with a session page open sees what another person does within about 5 s
 
 A person on Your groups or on a group's Sessions tab sees what someone else does within about 5 seconds, without a reload. [Plan](../plan/1791711535_hub_pages_live.md).
 
-- **What arrives:** a session created and its set opened, a set's state (Open, In play, Counting up, Finalized), the number at the table, a new member, the session closed, reopened or archived, a transfer marked paid or unpaid ("you owe", the settle badge).
+- **What arrives:** a session created and its set opened, a set's state (Joining, In play, Counting up, Finalized), the number at the table, a new member, the session closed, reopened or archived, a transfer marked paid or unpaid ("you owe", the settle badge).
 - **What does not:** buy-ins and cash-outs, which these pages do not show.
 - **It waits** while a field has focus or typing, a form such as New group is open, or the page is the answer to a form. It lands within a second of that ending.
-- **Group settings and Stats never redraw by themselves.** Group settings shows a new invite, claim or reset link once; a redraw would lose it.
+- **Players, Settings and Stats never redraw by themselves.** Players shows a new invite link once, and a player's page shows a new claim or reset link once; a redraw would lose it.
 - **How often:** as the session page: every 5 seconds, every 20 after two quiet minutes, not while hidden, at once on return.
 - The page asks once as it starts and takes that answer as its starting point. A change made in the instant between the page being drawn and that answer shows at the next change or visit.
 - Check: `web/tests/browser/hub_live.mjs` with `seed.py`.
@@ -690,7 +691,7 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 
 [Plan](../plan/1791717121_seat_draw.md), [study](../study/1791717120_seat_draw.md). Optional. A set starts without it.
 
-- **Where.** An open set with two or more players. "Get this set ready" has an optional step, **Seat draw**, between Open for players and Start the set, with a **Draw** button for a host. Start the set stays the one main button.
+- **Where.** A joining set with two or more players. "Get this set ready" has an optional step, **Seat draw**, between Let players join and Start the set, with a **Draw** button for a host. Start the set stays the one main button.
 - **The draw.** The server shuffles the players at the table (`secrets.SystemRandom`). The first is the dealer; the others sit 1, 2, 3… places clockwise. Each phone plays back that one result, so no two phones can differ.
 - **The table (since 2026-10-12, [plan](../plan/1791735776_draw_table_look.md)).** A racetrack with a padded rail, lit felt with a betting line and the app's mark, a chair at every place and a light dealer button; the same on the stage and on the page's still table. During the draw the felt dims and a light travels with the button; the winner gets one brighter moment.
 - **The stage.** A full-screen sheet opens by itself on the host's phone at once and on every other phone on the set page at its next update: a drawn table with every player's chip around it, a dealer button that runs around the table, slows, passes the winner by one and springs back (about two and a half seconds since 2026-10-12; about four before), then "{Name} has the dealer seat". A tap skips the part that is playing. Close and Escape leave it; closing counts as having watched.
@@ -755,7 +756,7 @@ The group's Sessions tab leads with the viewer's own table, then lists their pas
 
 - **Now playing.** One card for each session in progress. A card shows the table, the location and the date ("Today" for today in Manila), the latest set and its state, up to six seated players' chips with "+N", "N at the table", and the clock while the set is in play. A set in play is felt; every other state is a neutral panel.
 - **Order.** Sets in play where the viewer sits, other sets in play, the viewer's open or ended sets, other open or ended sets, then drafts (hosts only). Inside each band: the earliest date, then the oldest session.
-- **Your table.** A card where the viewer sits says "You're playing" (or "You're at this table" before play). The first such card has the one bone action: **Open the table**, **Open set N** or **Go to the session**. Another card of the viewer's has the same label in the secondary style.
+- **Your table.** A card where the viewer sits says "You're playing" (or "You're at this table" before play). The first such card has the one bone action: **Go to the table**, **Go to set N** or **Go to the session**. Another card of the viewer's has the same label in the secondary style.
 - **Where a card leads.** The latest set while it is unfinished, else the session. The group card on Your groups uses the same rule (`web.sessions_tab.destination`).
 - **New session** (hosts with a table) comes after the cards, as a secondary button.
 - **Past sessions.** Grouped by month, newest first. This year's months are open; each earlier year is one closed disclosure ("2025 · 48 sessions"). With nothing this year, the newest year is open. Each row: the table, "date · N sets · status", the viewer's net in the session's unit ("Even" for zero, "Did not play" if absent), and one line for each transfer the viewer still pays or receives ("You pay Carlo ₱500", "Dina pays you ₱200").

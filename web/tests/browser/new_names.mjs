@@ -49,7 +49,7 @@ try {
   let b = await js(bar);
   check('two names: counted and named on the button', b.summary === '2 new.' && b.button === 'Add 2 players' && !b.disabled && !b.warning, b);
   const lines = await type('Lia\ncarlo\nmiguel\nGone\nlia\n' + 'x'.repeat(61));
-  check('each problem is named in the preview', JSON.stringify(lines) === JSON.stringify(['LiaNew', 'carloOn the rosterTick carlo instead', 'miguelAlready at the table', 'GoneRemoved from this group. Bring them back in Group settings', 'liaTyped twice', 'x'.repeat(61) + 'Too long: 60 characters at most']), lines);
+  check('each problem is named in the preview', JSON.stringify(lines) === JSON.stringify(['LiaNew', 'carloOn the rosterTick carlo instead', 'miguelAlready at the table', 'GoneRemoved from this group. Bring them back on the Players tab', 'liaTyped twice', 'x'.repeat(61) + 'Too long: 60 characters at most']), lines);
   b = await js(bar);
   check('problems hold the button and say so', b.disabled && b.warning === '5 names need a change before adding.' && await js(`document.querySelector('[name=names]').getAttribute('aria-invalid')!==null`), b);
   await shot('problems');
@@ -76,7 +76,7 @@ try {
   check('the mark fades after three seconds and no inline style is left', await js(`!document.querySelector('.player-row.just-changed')&&[...document.querySelectorAll('.player-row')].every(r=>!r.style.opacity&&!r.style.transform)`));
   await go(`/s/${SET}/`);
   check('the next view marks no one', await js(`!document.querySelector('[data-arrived],.player-row.just-changed')`));
-  await go(`/g/1/?view=settings`);
+  await go(`/g/1/?view=players`);
   check('the new names are on the roster', await js(`document.body.textContent.includes('Mo Reyes')||document.body.textContent.includes('Lia')`));
   check('no script error', (await js('__errors.length')) === 0, await js('__errors'));
 } finally { await send('Browser.close').catch(() => {}); ws.close(); chrome.kill(); }

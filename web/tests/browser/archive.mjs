@@ -19,7 +19,7 @@ const results=[];const check=(name,ok)=>{results.push({name,ok});console.log(`${
 const M=JSON.parse(readFileSync('/private/tmp/pn-archive-manifest.json','utf8'));
 const size=(A,width)=>send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);
 const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
-const targets=`[...document.querySelectorAll('main a.btn, main button, main summary, main input:not([type=hidden])')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
+const targets=`[...document.querySelectorAll('main a.btn, main button, main summary, main input:not([type=hidden])')].filter(el=>el.checkVisibility({contentVisibilityAuto:true})).every(el=>el.getBoundingClientRect().height>=48)`;
 async function look(A,name,path,widths=[320,390,1280]){for(const width of widths){await size(A,width);await A.go(path);await A.js(`document.querySelectorAll('details.night-manage, details.archived-sessions, details.home-archived').forEach(d=>d.open=true)`);check(`${name} fits ${width}`,await A.js(`document.documentElement.scrollWidth<=${width}`));check(`${name} 48px targets ${width}`,await A.js(targets));await A.shot(`archive-${name}-${width}`);}await size(A,390);}
 try {
  const A=await user('hana'),P=await user('ben');
@@ -80,7 +80,7 @@ try {
  await A.go(`/g/${M.club}/delete/`);await A.js(`document.querySelector('[name=confirm_name]').value='Empty Club'`);await A.click(`document.querySelector('form.form-section button')`);
  check('group delete lands on home',await A.js(`location.pathname==='/'&&${text('Deleted the group Empty Club')}`));
  // Keyboard focus is visible on the danger link.
- await A.go(`/g/${M.group}/?view=settings`);await A.js(`document.querySelector('#manage a.btn-danger').focus()`);
+ await A.go(`/g/${M.group}/?view=settings&open=manage`);await A.js(`document.querySelector('#manage a.btn-danger').focus()`);
  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8},A.s);await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},A.s);
  check('danger link shows keyboard focus',await A.js(`document.activeElement.matches('#manage a.btn-danger')&&getComputedStyle(document.activeElement).outlineWidth==='3px'`));
  writeFileSync(`${OUT}/archive.json`,JSON.stringify(results,null,2));

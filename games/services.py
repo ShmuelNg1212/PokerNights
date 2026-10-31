@@ -326,7 +326,7 @@ TRANSITIONS = {
 }
 
 ACTION_LABELS = {
-    "open": "Let players join",
+    "open": "Allowed players to join",
     "close": "Closed the set (back to setup)",
     "start": "Started play",
     "end": "Ended play; counting up",
@@ -782,7 +782,7 @@ def add_new_player(session_id, actor: Member, name: str, request_id) -> list:
         if str(error).startswith("Removed from this group"):
             raise RuleError(
                 f"{_removed_name(session.group_id, name)} was removed from this group. "
-                "Bring them back in Group settings, then add them here."
+                "Bring them back on the Players tab, then add them here."
             ) from None
         if "already in this group" in str(error):
             seated = Participant.objects.filter(
@@ -978,7 +978,7 @@ def set_left(session_id, actor: Member, participant_id, left: bool = True) -> Pa
         pk=participant.member_id, status=Member.Status.ACTIVE
     ).exists():
         raise RuleError(
-            f"{participant.member.display_name} was removed from this group. Bring them back in Group settings first."
+            f"{participant.member.display_name} was removed from this group. Bring them back on the Players tab first."
         )
     if not left and _seats_taken(session) >= session.seat_count:
         raise RuleError(f"The table is full ({session.seat_count} seats).")

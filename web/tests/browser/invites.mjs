@@ -5,7 +5,7 @@ import {writeFileSync,readFileSync,mkdirSync,rmSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-rack-review';mkdirSync(OUT,{recursive:true});
 const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765';
 const M=JSON.parse(readFileSync('/private/tmp/pn-invites-manifest.json','utf8'));
-const SETTINGS=`/g/${M.group}/?view=settings`;
+const SETTINGS=`/g/${M.group}/?view=players`;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const UA={phone:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
  desktop:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'};

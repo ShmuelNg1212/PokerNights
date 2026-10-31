@@ -144,7 +144,7 @@ try {
  await send('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1},A.s);await sleep(2500);
  // 10. Anchors and leaving the app.
  await A.go('/g/1/archive/');await A.click(`document.querySelector('a[href*="#manage"]')`,900);
- check('a link with an anchor lands on its section',await A.js(`location.hash==='#manage'&&location.search==='?view=settings'&&(()=>{const t=document.getElementById('manage').getBoundingClientRect().top;return t>=0&&t<innerHeight})()&&window.__mark===1`));
+ check('a link with an anchor lands on its section',await A.js(`location.hash==='#manage'&&location.search==='?view=settings&open=manage'&&document.getElementById('manage').open&&(()=>{const t=document.getElementById('manage').getBoundingClientRect().top;return t>=0&&t<innerHeight})()&&window.__mark===1`));
  await A.js(`(()=>{const a=document.createElement('a');a.href='/admin/login/';a.id='to-admin';a.textContent='admin';document.getElementById('main').append(a)})()`);await A.click(`document.getElementById('to-admin')`,1500);
  check('a page outside the app loads the ordinary way',await A.js(`location.pathname==='/admin/login/'&&window.__mark!==1`));
  // 6. Forms that lead elsewhere, from a page reached by a tap.

@@ -4,6 +4,10 @@ Words of the product, as screens and docs use them. The code names are in bracke
 
 - **Session** (`GameNight`): one gathering at one table on one date. It holds sets. Settle-up, payments and the unit belong to it.
 - **Set** (`GameSession`): one round of play in a session. Money records, counts, the timer and results belong to it.
+- **Set states**: Draft, Joining, In play, Counting up, Finalized and Canceled. Screens and messages use these words (`GameSession.state_word`). The stored names stay.
+- **Joining** (`GameSession.State.OPEN`): a set that players can join before play starts. The host's action is "Let players join". Do not say "Open" for this state.
+- **In progress** (`GameNight.Status.OPEN`): a session that is not closed. Do not say "open" or "not closed" for this state.
+- **Go to**: the word for moving to a place: Go to the table, Go to set 1, Go to the session. "Open" stays only as a verb for a link, an app or a disclosure.
 - **Chip values** (`GameNight.chip_values`): the session's optional colour-to-value assignments. Each value uses its session unit. Every set shares them. They lock after the first chip-based count is submitted.
 - **Chip preset** (`ChipPreset`): a group's saved chip values with a name and a unit. A host fills a session's chip values from one; the session keeps a copy.
 - **Chip breakdown**: the denomination, quantity and subtotal saved with a chip-based count. It explains the amount. It does not replace host confirmation or cash-out.

@@ -49,7 +49,7 @@ class RemovalGuardTests(TestCase):
     def test_a_removed_name_at_the_table_says_where_to_bring_them_back(self):
         roster = Roster(state="running")
         groups.remove_member(roster.host, roster.members["Carlo"].pk)
-        with self.assertRaisesMessage(RuleError, "Carlo was removed from this group. Bring them back in Group settings, then add them here."):
+        with self.assertRaisesMessage(RuleError, "Carlo was removed from this group. Bring them back on the Players tab, then add them here."):
             services.add_new_player(roster.session.pk, roster.host, "carlo", uuid.uuid4())
         self.assertEqual(Member.objects.filter(group=roster.group, display_name__iexact="carlo").count(), 1)
 
@@ -58,7 +58,7 @@ class RemovalGuardTests(TestCase):
         seat = roster.add("Dani")[0]
         services.set_left(roster.session.pk, roster.host, seat.pk)
         groups.remove_member(roster.host, roster.members["Dani"].pk)
-        with self.assertRaisesMessage(RuleError, "Dani was removed from this group. Bring them back in Group settings first."):
+        with self.assertRaisesMessage(RuleError, "Dani was removed from this group. Bring them back on the Players tab first."):
             services.set_left(roster.session.pk, roster.host, seat.pk, left=False)
         groups.restore_member(roster.host, roster.members["Dani"].pk)
         self.assertEqual(services.set_left(roster.session.pk, roster.host, seat.pk, left=False).status, "joined")

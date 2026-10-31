@@ -81,7 +81,7 @@
       else if (seen[key]) out.problem = "Typed twice";
       else if (seated[key]) out.problem = "Already at the table";
       else if (key in known.roster) { out.problem = "On the roster"; out.tick = boxes.some(function (b) { return b.value === String(known.roster[key]); }); }
-      else if (removed[key]) out.problem = "Removed from this group. Bring them back in Group settings";
+      else if (removed[key]) out.problem = "Removed from this group. Bring them back on the Players tab";
       else out.state = "New";
       seen[key] = 1;
       return out;

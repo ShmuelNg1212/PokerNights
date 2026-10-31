@@ -1,12 +1,15 @@
 """Small helpers shared by the POST views of every app."""
 
+from urllib.parse import urlencode
 import uuid
 
 from django.contrib import messages
+from django.http import QueryDict
 from django.shortcuts import redirect
 from django.urls import reverse
 
 from .errors import RuleError
+from .models import Member
 
 
 def group_settings(group_id, section=""):
@@ -19,9 +22,16 @@ def group_players(group_id, section=""):
     return redirect(reverse("group", args=[group_id]) + "?view=players" + (f"#{section}" if section else ""))
 
 
-def group_player(group_id, member_id):
-    """Back to a player's page, with its Manage section open. The way back leads to the Players tab."""
-    return redirect(reverse("player", args=[group_id, member_id]) + "?from=players&open=manage#manage")
+KEPT_ON_A_PLAYER = ("from", "period", "unit")  # what the page's ``keep`` field may carry back
+
+
+def group_player(request, group_id, member_id):
+    """Back to a player's page with Manage open, as the form left it. No such player: the Players tab, which shows the refusal."""
+    if not Member.objects.filter(group_id=group_id, pk=member_id).exists():
+        return group_players(group_id, "players")
+    kept = QueryDict(request.POST.get("keep", ""))
+    query = {name: kept[name] for name in KEPT_ON_A_PLAYER if name in kept} or {"from": "players"}
+    return redirect(reverse("player", args=[group_id, member_id]) + "?" + urlencode({**query, "open": "manage"}) + "#manage")
 
 
 def attempt(request, action, *args, success="", **kwargs):

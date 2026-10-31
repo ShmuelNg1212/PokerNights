@@ -156,3 +156,9 @@ Log in shows the form and an always-visible line on how to recover a password; t
 ## 2026-10-31 addendum — Start a game fast
 
 A new group names its first table on New session. New session starts from the chosen preset or the group's last session, and the game and stakes read as one line once known. Creating a session goes to the set, unless it was announced. Start the set works from a draft: it opens and starts the set together, and "Let players join first" stays for a game where players join by themselves or draw seats. This revises "After every sign-up or login" in the Home screen addendum: a person with no session yet is asked when they reach their first session. Each page has one main action, and success messages are one short line. What each step records is unchanged. [ADR 0009](doc/adr/0009-start-a-game-fast.md), [plan](doc/plan/1793431937_ui_revamp.md).
+
+## 2026-11-01 addendum — Find things
+
+The group page has four tabs: Sessions, Players, Stats and Settings. Players has its own tab, with Invite and adding names first, so a new host reaches Invite in two taps from Your groups. A roster row leads to the player's page, and a host's management is there. Settings is six rows, each opening its own form. Stats states its unit and period in one control that opens a sheet. This revises the 2026-10-04 addendum, which split the page into Sessions, Stats and Group settings.
+
+Words: a set is Draft, Joining, In play, Counting up, Finalized or Canceled. The host's action is "Let players join". Moving says "Go to". A session that is not closed is "In progress". This revises the 2026-10-09 addendum, which fixed the states as Draft, Open and In play.

@@ -36,7 +36,7 @@ await sleep(4600);check('second host sees live arrival',await B.js(`document.bod
 check('new join timer shown',await A.js(`[...document.querySelectorAll('.player-row')].find(r=>r.textContent.includes('Late arrival')).textContent.includes('Played')`));
 await A.go(path);await A.js(`document.querySelector('[name=names]').value='late ARRIVAL'`);await A.click(`document.querySelector('form.form-section [type=submit]')`);
 check('duplicate bound name and seated recovery',await A.js(`document.querySelector('[name=names]').value==='late ARRIVAL'&&document.querySelector('[name=names]').getAttribute('aria-invalid')==='true'&&document.body.textContent.includes('Already at the table: late ARRIVAL.')`));await A.shot('late-duplicate-390');
-await A.go(`/g/1/?view=settings`);check('new identity saved to group roster',await A.js(`document.body.textContent.includes('Late arrival')`));
+await A.go(`/g/1/?view=players`);check('new identity saved to group roster',await A.js(`document.body.textContent.includes('Late arrival')`));
 await A.go(`/s/${ids.full}/`);const fullPath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(fullPath);
 check('full table explains disabled new action',await A.js(`document.body.textContent.includes('The table is full')&&document.querySelector('[name=names]').matches(':disabled')&&document.querySelector('[data-pick-submit]').matches(':disabled')`));
 await A.go(`/s/${ids.stale}/`);const stalePath=await A.js(`document.querySelector('.section-heading a').getAttribute('href')`);await A.go(stalePath);await A.js(`document.querySelector('[name=names]').value='After end'`);

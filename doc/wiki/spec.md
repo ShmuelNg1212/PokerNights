@@ -38,7 +38,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ### 1. Sessions, sets, buy-ins and rebuys
 - Create a session: date, table, location, stakes (e.g. 1/2), game type (Hold'em, PLO, etc.), min, max and usual buy-in, unit, and an optional rake rule.
-- A group can have several sessions open at the same time, for example at two tables. The group's Sessions tab shows each one, with the viewer's own table first.
+- A group can have several sessions in progress at the same time, for example at two tables. The group's Sessions tab shows each one, with the viewer's own table first.
 - Add players to a set from the roster, or type new names. Players can join late.
 - Log each buy-in and rebuy per player with a timestamp and amount. Every player has a running total. Starting a set can record the usual buy-in for everyone at the table.
 - The host records any buy-in. A player with a login records their own rebuy from their phone; the host can reverse it. One rebuy sent from two phones is recorded once.
@@ -73,7 +73,10 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Any member can share a closed session's results to the group chat as one picture and as text. The app sends nothing itself.
 
 ### 4. Roster and history
+- A group's page has the tabs Sessions, Players, Stats and Settings. Stats appears after the first closed session.
 - Saved player roster for fast session setup. A roster player needs no login.
+- The Players tab holds Invite and adding names at its top, then one row per player. A row leads to the player's page. A host manages another player on that page; a player can change only their own name there.
+- The Settings tab has one row each for Tables, Presets, Chip presets and Rake, and for hosts Group name and Manage. Each row opens its own form.
 - A group's first table is named on New session. New session starts from the chosen preset, or the group's latest session and the default preset of that session's table. A draft set can start directly; the set opens and starts in one transaction ([ADR 0009](../adr/0009-start-a-game-fast.md)).
 - Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group, or in all their groups at once from their profile; a group where the name is taken is skipped.
 - Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session.

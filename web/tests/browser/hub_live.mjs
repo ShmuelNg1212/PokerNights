@@ -84,9 +84,9 @@ settlement.mark_paid(t.plan.night_id,host,t.pk,uuid.uuid4())`);
  await G.js(`Object.defineProperty(document,'hidden',{value:false,configurable:true});document.dispatchEvent(new Event('visibilitychange'))`);await sleep(600);
  check('…and asks at once on return',await G.js(`__asked.length===__n+1`));
  // Tabs that must never redraw by themselves.
- const S=await user('hana',`/g/${GROUP}/?view=settings`),T=await user('hana',`/g/${GROUP}/?view=stats`);
+ const S=await user('hana',`/g/${GROUP}/?view=settings`),T=await user('hana',`/g/${GROUP}/?view=stats`),L=await user('hana',`/g/${GROUP}/?view=players`);
  await sleep(6500);
- check('Group settings and Stats ask nothing',await S.js(`__asked.length===0&&!document.querySelector('[data-state-url]')`)&&await T.js(`__asked.length===0&&!document.querySelector('[data-state-url]')`));
+ check('Players, Settings and Stats ask nothing',await S.js(`__asked.length===0&&!document.querySelector('[data-state-url]')`)&&await T.js(`__asked.length===0&&!document.querySelector('[data-state-url]')`)&&await L.js(`__asked.length===0&&!document.querySelector('[data-state-url]')`));
  // The arrival after a login is not replayed by a redraw.
  const W=await user('ben');await sleep(1600);
  check('after a login the arrival has finished and the page asks',await W.js(`location.pathname==='/'&&!document.getElementById('main').hasAttribute('data-welcome')&&__asked.length>=1`),await W.js(`[location.pathname,__asked.length]`));

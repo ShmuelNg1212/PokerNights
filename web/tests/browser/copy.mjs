@@ -27,12 +27,13 @@ try {
  await send('Emulation.setFocusEmulationEnabled',{enabled:true},A.s);
  await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').value='hana';document.querySelector('[name=password]').value='tablestakes-91'`);await submit(A);
  const groups=await A.js(`[...new Set([...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>new RegExp('^/g/[0-9]+/$').test(h)))]`);
- let settings;for(const g of groups){settings=g+'?view=settings';await A.go(settings);if(await A.js(`!!document.querySelector('form[action$="/reset-link/"]')`))break;}
+ let players,resetPage;for(const g of groups){players=g+'?view=players';await A.go(players);const rows=await A.js(`[...document.querySelectorAll('a.roster-link')].map(a=>a.getAttribute('href'))`);for(const h of rows){await A.go(h);if(await A.js(`!!document.querySelector('form[action$="/reset-link/"]')`)){resetPage=h;break}}if(resetPage)break;}
+ await A.go(players);
  check('no copy button before a link is created',await A.js(`!document.querySelector('[data-copy]')`));
  const make={invite:`document.querySelector('form[action$="/invites/new/"] button')`,reset:`document.querySelector('form[action$="/reset-link/"] button')`};
  const btn=id=>`document.querySelector('[data-copy="${id}"]')`,fld=id=>`document.getElementById('${id}')`,stat=id=>`document.querySelector('[data-copy-status="${id}"]')`;
  for(const [kind,id,path] of [['invite','new-invite-link','/join/'],['reset','new-reset-link','/accounts/reset/']]){
-  await A.size(390);await A.go(settings);if(kind==='reset')await A.js(`${make.reset}.closest('details').open=true`);await A.click(make[kind]);
+  await A.size(390);await A.go(kind==='reset'?resetPage:players);if(kind==='reset')await A.js(`${make.reset}.closest('details').open=true`);await A.click(make[kind]);
   const shown=await A.js(`${fld(id)}.value`);
   check(`${kind}: the button is shown inside the field's right edge`,await A.js(`(()=>{const b=${btn(id)},f=${fld(id)};if(b.hidden||b.textContent!=='Copy')return false;const r=b.getBoundingClientRect(),q=f.getBoundingClientRect();return r.right<=q.right+.5&&r.left>=q.left&&r.top>=q.top-.5&&r.bottom<=q.bottom+.5&&parseFloat(getComputedStyle(f).paddingRight)>=r.width})()`));
   check(`${kind}: 48px target`,await A.js(`(()=>{const r=${btn(id)}.getBoundingClientRect();return r.height>=48&&r.width>=48})()`));
@@ -55,11 +56,11 @@ try {
   check(`${kind}: a later success clears the refusal line`,await A.js(`${btn(id)}.textContent==='Copied'&&${stat(id)}.classList.contains('visually-hidden')`));
  }
  // A browser with no clipboard at all (an http address).
- await A.go(settings);await A.click(make.invite);
+ await A.go(players);await A.click(make.invite);
  await A.js(`Object.defineProperty(navigator,'clipboard',{value:undefined,configurable:true})`);await A.js(`${btn('new-invite-link')}.click()`);await sleep(150);
  check('no clipboard: refusal line, address selected',await A.js(`!${stat('new-invite-link')}.classList.contains('visually-hidden')&&document.activeElement===${fld('new-invite-link')}`));
  // Leaving the screen and coming back in the app does not double the listener.
- await A.go(settings);await A.click(make.invite);
+ await A.go(players);await A.click(make.invite);
  await A.js(`window.__n=0;const w=navigator.clipboard.writeText.bind(navigator.clipboard);navigator.clipboard.writeText=t=>{window.__n++;return w(t)};window.pokerPage.stop();window.pokerPage.start()`);
  await A.js(`${btn('new-invite-link')}.click()`);await sleep(250);
  check('one copy per tap after the page scripts restart',await A.js(`window.__n===1`));

@@ -44,7 +44,7 @@ try{
  const H=await user('hana');
  const session=OPENING.default.set,night=OPENING.default.night;
  const backs=[`/s/${session}/players/add-several/`,`/s/${session}/settings/`,`/s/${session}/log/`,`/n/${night}/chip-values/`,`/n/${night}/archive/`,`/n/${night}/paid-at-table/`,'/g/1/sessions/new/','/g/1/presets/new/','/g/1/chip-presets/new/','/g/1/archive/'];
- await H.go('/g/1/?view=settings');backs.push(await H.js(`document.querySelector('a[href*="/remove/"]').getAttribute('href')`));
+ await H.go('/g/1/?view=players');await H.go(await H.js(`[...document.querySelectorAll('a.roster-link')].find(a=>!a.textContent.includes('(you)')).getAttribute('href')`));backs.push(await H.js(`document.querySelector('a[href*="/remove/"]').getAttribute('href')`));
  for(const path of backs){await H.go(path);
   const r=await H.js(`(()=>{const a=document.querySelector('.site-header .table-bar a');const b=a&&a.getBoundingClientRect();return{bar:!!a,height:b?b.height:0,brand:!!document.querySelector('.site-header .brand'),inPage:!!document.querySelector('main p.small > a[href]:first-child')&&/^(Back to|.* settings$)/.test(document.querySelector('main p.small > a[href]:first-child').textContent.trim()),words:a?a.textContent.trim():''}})()`);
   check(`${path} goes back from the header (${r.words}), at 48px`,r.bar&&r.height>=48&&!r.brand&&!r.inPage);

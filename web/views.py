@@ -166,12 +166,13 @@ def group_players_context(request, me) -> dict:
 
 
 def new_link(request, key, member) -> dict | None:
-    """A link made for this player, shown once. Another player's page leaves it for the page it belongs to."""
+    """A link made for this player, shown once. Another player's page leaves it for the page it belongs to; one that has run out is dropped."""
     link = request.session.get(key)
-    if not link or link.get("member") != member.pk:
+    if not link or link.get("member", member.pk) != member.pk:
         return None
     del request.session[key]
-    return {**link, "expires_at": datetime.fromisoformat(link["expires_at"])}
+    expires_at = datetime.fromisoformat(link["expires_at"])
+    return {**link, "expires_at": expires_at} if expires_at > timezone.now() else None
 
 
 def player_manage_context(request, me, member) -> dict:

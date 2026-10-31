@@ -29,18 +29,19 @@ try {
  const A=await page();await logIn(A,'hana','tablestakes-91');
  // The seeded group is the one with a second account in it.
  const groups=await A.js(`[...new Set([...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>new RegExp('^/g/[0-9]+/$').test(h)))]`);
- let settings;for(const g of groups){settings=g+'?view=settings';await A.go(settings);if(await A.js(`!!document.querySelector('form[action$="/reset-link/"]')`))break;}
- check('one member can be sent a link: not the host, not a player without a login',await A.js(`document.querySelectorAll('form[action$="/reset-link/"]').length===1&&${create}.textContent.trim()==='Create password reset link'`));
+ let players,resetPage;for(const g of groups){players=g+'?view=players';await A.go(players);const rows=await A.js(`[...document.querySelectorAll('a.roster-link')].map(a=>a.getAttribute('href'))`);for(const h of rows){await A.go(h);if(await A.js(`!!document.querySelector('form[action$="/reset-link/"]')`)){resetPage=h;break}}if(resetPage)break;}
+ check('a member with a login can be sent a link',await A.js(`document.querySelectorAll('form[action$="/reset-link/"]').length===1&&${create}.textContent.trim()==='Create password reset link'`));
+ {const others=await A.js(`(async()=>{const r=await fetch(${JSON.stringify(players)});const d=new DOMParser().parseFromString(await r.text(),'text/html');return [...d.querySelectorAll('a.roster-link')].map(a=>a.getAttribute('href')).filter(h=>h!==${JSON.stringify(resetPage)})})()`);let offered=0;for(const h of others){await A.go(h);offered+=await A.js(`document.querySelectorAll('form[action$="/reset-link/"]').length`)}check('no page offers it for the host or a player without a login',offered===0);await A.go(resetPage);}
  await A.js(`${create}.closest('details').open=true`);
  check('the action matches its neighbours',await A.js(`(()=>{const d=${create}.closest('details');const hs=[...d.querySelectorAll('button')].map(b=>Math.round(b.getBoundingClientRect().height));return new Set(hs).size===1})()`));
  await A.shot('reset-manage-390');
  await A.click(create);
- check('the link is shown once, in the Players section',await A.js(`location.hash==='#players'&&${text('Reset link for Ben.')}&&${text('Send it to Ben only. Whoever opens it can set the password.')}&&${text('It works once and expires ')}&&document.querySelector('#players .notice-good input').value.startsWith(location.origin+'/accounts/reset/')`));
- const link=new URL(await A.js(`document.querySelector('#players .notice-good input').value`)).pathname;
- for(const width of [320,390,1280]){await A.size(width);check('notice fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}&&document.querySelector('#players .notice-good input').getBoundingClientRect().right<=${width}`));await A.shot('reset-notice-'+width);}
- await A.size(390);check('contrast of the notice',await A.js(contrast('#players .notice-good p'))>=4.5);
- await A.go(settings);await A.js(`${create}.closest('details').open=true`);
- check('after a reload the link is gone and the row says it is active',await A.js(`!document.querySelector('#players .notice-good')&&!document.body.innerHTML.includes('/accounts/reset/')&&${text('Reset link active until ')}&&!!document.querySelector('form[action$="/reset-link/cancel/"]')&&${create}.textContent.trim()==='Create a new reset link'`));
+ check('the link is shown once, on the player\'s page',await A.js(`location.hash==='#manage'&&${text('Reset link for Ben.')}&&${text('Send it to Ben only. Whoever opens it can set the password.')}&&${text('It works once and expires ')}&&document.querySelector('main .notice-good input').value.startsWith(location.origin+'/accounts/reset/')`));
+ const link=new URL(await A.js(`document.querySelector('main .notice-good input').value`)).pathname;
+ for(const width of [320,390,1280]){await A.size(width);check('notice fits '+width,await A.js(`document.documentElement.scrollWidth<=${width}&&document.querySelector('main .notice-good input').getBoundingClientRect().right<=${width}`));await A.shot('reset-notice-'+width);}
+ await A.size(390);check('contrast of the notice',await A.js(contrast('main .notice-good p'))>=4.5);
+ await A.go(resetPage);await A.js(`${create}.closest('details').open=true`);
+ check('after a reload the link is gone and the row says it is active',await A.js(`!document.querySelector('main .notice-good')&&!document.body.innerHTML.includes('/accounts/reset/')&&${text('Reset link active until ')}&&!!document.querySelector('form[action$="/reset-link/cancel/"]')&&${create}.textContent.trim()==='Create a new reset link'`));
  await A.shot('reset-active-390');
  // The player opens it, signed out.
  const B=await page();
@@ -74,17 +75,17 @@ try {
  await C.go('/accounts/reset/not-a-token/');check('unknown link is refused',await C.js(text('This reset link is not valid.')));
  await logIn(C,'ben','tablestakes-91');check('old password is refused, and the line points to a host',await C.js(`location.pathname==='/accounts/login/'&&${text('Forgot your password? Ask a host of your group for a reset link.')}`));
  await logIn(C,'ben','tablestakes-92');check('new password logs in',await C.js(`location.pathname==='/'`));
- await C.go(settings);check('a player sees no reset action',await C.js(`!document.querySelector('form[action*="/reset-link/"]')`));
+ await C.go(resetPage);check('a player sees no reset action',await C.js(`!document.querySelector('form[action*="/reset-link/"]')`));
  // Host: the used link no longer shows as active; a new one can be cancelled.
- await A.go(settings);check('used link is no longer active',await A.js(`!${text('Reset link active until ')}`));
+ await A.go(resetPage);check('used link is no longer active',await A.js(`!${text('Reset link active until ')}`));
  await A.js(`${create}.closest('details').open=true`);await A.click(create);
- const second=new URL(await A.js(`document.querySelector('#players .notice-good input').value`)).pathname;
+ const second=new URL(await A.js(`document.querySelector('main .notice-good input').value`)).pathname;
  await A.js(`document.querySelector('form[action$="/reset-link/cancel/"]').closest('details').open=true`);await A.click(`document.querySelector('form[action$="/reset-link/cancel/"] button')`);
  check('cancel says so and clears the row',await A.js(`${text('Reset link cancelled.')}&&!${text('Reset link active until ')}`));
  await C.go(second);check('a cancelled link is refused',await C.js(text('This reset link is not valid.')));
  // Without JavaScript the page still works.
- const D=await page();await A.go(settings);await A.js(`${create}.closest('details').open=true`);await A.click(create);
- const third=new URL(await A.js(`document.querySelector('#players .notice-good input').value`)).pathname;
+ const D=await page();await A.go(resetPage);await A.js(`${create}.closest('details').open=true`);await A.click(create);
+ const third=new URL(await A.js(`document.querySelector('main .notice-good input').value`)).pathname;
  await send('Emulation.setScriptExecutionDisabled',{value:true},D.s);await D.go(third);
  check('no JavaScript: no Show button, native form',await D.js(`!document.querySelector('[data-password-toggle]').getClientRects().length&&document.querySelector('[name=new_password1]').type==='password'`));
  await fill(D,'tablestakes-94');await submit(D);check('no JavaScript: saving logs in',await D.js(`location.pathname==='/'&&!!document.querySelector('.site-header')`));

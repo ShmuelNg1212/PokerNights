@@ -43,7 +43,7 @@ try {
  await A.js(`pokerPage.start()`);
  check('started again: everything is back',await A.js(`document.querySelectorAll('dialog.sheet').length===1&&!document.querySelector('.dock-toggle').hidden`)&&[2,3].includes(await polls(A,8500)));
  // The other pages: start and stop without their elements, and the modules that do apply still work.
- for(const p of ['/','/g/1/','/g/1/?view=settings','/n/1/','/s/2/','/g/1/sessions/new/','/s/3/players/add-several/']){await A.go(p);await A.js(`for(let i=0;i<5;i++){pokerPage.stop();pokerPage.start()}`);
+ for(const p of ['/','/g/1/','/g/1/?view=players','/g/1/?view=settings','/n/1/','/s/2/','/g/1/sessions/new/','/s/3/players/add-several/']){await A.go(p);await A.js(`for(let i=0;i<5;i++){pokerPage.stop();pokerPage.start()}`);
   check('restarts are clean on '+p,await A.js(`pokerPage.running()&&document.querySelectorAll('dialog.sheet').length<=1`));}
  await A.go('/s/3/players/add-several/');await A.js(`for(let i=0;i<3;i++){pokerPage.stop();pokerPage.start()}`);
  check('the player picker still shows its search after restarts',await A.js(`!document.querySelector('[data-pick-search-box]')||!document.querySelector('[data-pick-search-box]').hidden`));

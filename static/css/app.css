@@ -723,7 +723,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .ledger-year > summary .icon { margin-left:auto; color:var(--muted); transition:rotate var(--t-fast) var(--ease-out); }
 .ledger-year[open] > summary .icon { rotate:180deg; }
 .group-page .grow { flex-basis:160px; overflow-wrap:anywhere; }
-.group-page input[readonly] { font-size:.875rem; }
+:is(.group-page, .player-page) input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
 .roster-person .chip { flex:none; }
 .player-manage .form-row { flex-wrap:wrap; }
@@ -1244,13 +1244,14 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .roster-link > .icon { flex: none; width: 18px; height: 18px; color: var(--muted); }
 .roster-search { margin-bottom: var(--s-3); }
 .roster-search .hint { margin: var(--s-2) 0 0; }
+.player-tools { scroll-margin-top: 80px; }
 .player-manage { margin: 0 0 var(--s-4); border-block: 1px solid var(--rule); }
 .player-manage > .roster-form, .player-manage > .roster-manage { padding-bottom: var(--s-4); }
-:is(#players, #invites) details > summary, .player-manage > summary { gap: var(--s-2); list-style: none; }
-:is(#players, #invites) details > summary::-webkit-details-marker, .player-manage > summary::-webkit-details-marker { display: none; }
+:is(#players, #invites, .settings-row) details > summary, .player-manage > summary { gap: var(--s-2); list-style: none; }
+:is(#players, #invites, .settings-row) details > summary::-webkit-details-marker, .player-manage > summary::-webkit-details-marker { display: none; }
 /* The chevron is drawn, and turns when its disclosure opens. */
-:is(#players, #invites) details > summary::after, .player-manage > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-:is(#players, #invites) details[open] > summary::after, .player-manage[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+:is(#players, #invites, .settings-row) details > summary::after, .player-manage > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
+:is(#players, #invites, .settings-row) details[open] > summary::after, .player-manage[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .roster-form, .roster-manage { padding: var(--s-1) 0 var(--s-2); }
 .roster-manage > .roster-form { padding: 0; }
 .roster-actions { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
@@ -2215,10 +2216,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .settings-body h3 { margin: 0; font-size: .9375rem; }
 .settings-body fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .settings-body legend { padding: 0; font-weight: 600; }
-.settings-row details > summary { gap: var(--s-2); list-style: none; }
-.settings-row details > summary::-webkit-details-marker { display: none; }
-.settings-row details > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-.settings-row details[open] > summary::after { transform: translateY(3px) rotate(225deg); }
 .profile-names { margin: 0; }
 .profile-names li { display: flex; gap: var(--s-3); padding: var(--s-2) 0; border-top: 1px solid var(--rule); min-width: 0; }
 .profile-names li:first-child { border-top: 0; }
