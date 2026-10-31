@@ -65,7 +65,7 @@
     var button = event.target.closest && event.target.closest(".btn");
     if (!button || button.disabled || !on()) return;
     pressed = tapped = button;
-    run(button, { y: 3 }, "press");
+    run(button, { y: button.matches(".btn-primary") ? 3 : 1 }, "press");
   });
   function release() {
     var button = pressed; pressed = null;

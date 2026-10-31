@@ -1279,3 +1279,13 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Words.** Draft, Joining, In play, Counting up, Finalized, Canceled. "Let players join". "Go to" for moving. "In progress" for a session.
 - **Below 360 px** stat tiles and highlights take one column, so large figures do not run off the page.
 - **Measured.** `journey.mjs`, `screens.mjs`, `roster.mjs`, `claim.mjs` and `stats.mjs`, and `seed_break_group.py` at 320 and 390 px.
+
+### 2026-11-01 addendum — Clean surfaces
+
+[Plan](doc/plan/1793431937_ui_revamp.md), slice E. Mode: Operate, inside the Rack. This supersedes earlier text where they differ: the underside in "Buttons" and "Elevation & Depth", the Rail frame in "Cards / Containers", the segmented `.tabs` and the framed `.panel` in "UI evolution", and the frames in "Sessions tab".
+
+- **One container level.** A page has one level of surface. The surfaces are the felt, the lead panel (`.felt.hero`, `.prep`), a group's block on Your groups, a notice and a sheet. Nothing with a frame sits inside another frame.
+- **Sections.** Everything else separates by space and Rule hairlines. `.panel` is a section under a hairline, with no fill and no corners. A panel straight under a heading or the tabs has no hairline of its own.
+- **Sessions tab.** A set in play is a felt card. Every other state is a row under a hairline, so felt alone means "in play".
+- **Buttons.** Only a primary button has the hard underside, and a press sinks it 3 px. A secondary button is Rail 2 with a Line edge and no shadow, and a press sinks it 1 px. A danger button in the dock is flat too. The drawn chip in a chip count keeps its underside: it is a chip, not a button.
+- **Tabs.** Words on a Rule hairline, each 48 px high. A 2 px Bone bar marks the current tab and slides between them.

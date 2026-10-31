@@ -36,7 +36,7 @@ try {
  const btn=`document.querySelector('.host-controls .next-action')`;
  await A.js(`${btn}.addEventListener('click',e=>e.preventDefault(),{once:true})`);
  await A.mouse('mousePressed',btn);await sleep(120);
- check('press: the button sinks',await A.js(`${ty(btn)}>1`));await A.shot('motion-press');
+ check('press: the button sinks',await A.js(`${ty(btn)}>0`));await A.shot('motion-press');
  await A.mouse('mouseReleased',btn);await sleep(700);
  check('release: the button is back with no inline transform',await A.js(`${ty(btn)}===0&&${btn}.style.transform===''`));
  check('busy control runs the progress line',await A.js(`(()=>{const b=${btn};b.setAttribute('aria-busy','true');const ok=getComputedStyle(b,'::after').animationName==='busy-line';b.removeAttribute('aria-busy');return ok})()`));
