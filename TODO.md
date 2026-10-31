@@ -16,6 +16,13 @@
 - [ ] Add players, then Start the set from the draft: the felt sweeps and everyone has the usual buy-in.
 - [ ] A ready set shows four players above the bottom bar. "Let players join first" is under More host controls.
 
+## Phone checks, unreleased (`feat/ui-revamp-c-finish`)
+
+- [ ] Confirm counts that balance: the bottom bar says Review and finish, and the review has one button, Finish set 1. One tap lands on the final set.
+- [ ] Confirm counts that do not balance: the review warns and says Cash out N players. Nothing finishes.
+- [ ] A final set of six: best result first, one short row each, and a tap on the row opens its facts. The chevron turns.
+- [ ] Close a session: the recap opens. Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
+
 ## Next (each needs its own study and plan)
 
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.

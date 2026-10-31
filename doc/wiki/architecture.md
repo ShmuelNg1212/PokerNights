@@ -89,6 +89,7 @@ AuditEvent (group_id, session_id as plain integers)
 - `ledger.services.cash_out_counted(session_id, actor, count_ids, request_id)`: under the set lock, each submitted count must still be current and its player not cashed out; otherwise nothing is recorded. It writes one `CashOutBatch`, one final `CashOut` per count (linked to the count and the batch), audit events and one version increment. A known `request_id` returns the first batch.
 - Reversing a batch cash-out voids its count. Resuming play voids counts that are not cashed out.
 - The finalization gate: each player with a buy-in needs a final cash-out, and the totals must match or be overridden.
+- `settlement.services.finish_set(session_id, actor, count_ids, request_id)` composes `cash_out_counted` and `finalize` in one transaction, so a refusal by either undoes both. It lives in `settlement` because `ledger` does not depend on it. `ledger.queries.finishes_the_set()` decides when the review offers it. `NightOutcome.standings` stays in first-join order because token colours follow it; `NightOutcome.ranked` is the display order.
 
 ### Session chip values
 

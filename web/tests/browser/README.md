@@ -327,3 +327,14 @@ Since Slice B (2026-10-31):
 - `table.mjs` reads the folded steps: `players` and `stakes` on a draft, `seats`, `players`, `stakes` and `open` on an open set. There is no `start` step and no `later` state. "Let players join first" is under More host controls.
 - `navigate.mjs` expects New session to land on a working set page. That check passes; "exactly one poll loop on the set page" still fails, as on `main`.
 - `journey.mjs` checks the home-screen suggestion's timing, and it measures player rows on a set that is ready to start.
+
+Since Slice C (2026-10-31):
+
+- A review whose counts balance the books says "The books balance." and its one button is Finish set N. `end_set.mjs`, `chip_values.mjs`, `rake.mjs` and `rake_extra.mjs` finish the set that way. `count_flow.mjs` and `counts.mjs` remove the form's `action` first, so the review's older POST records only the cash-outs and they can still check Finalize results.
+- `journey.mjs` walks Review and finish, then Finish set 1. It also checks that closing the recap leaves Who pays whom on the first screen with no toast.
+- `night.mjs` expects focus on Who pays whom after the recap that opened by itself, and on the button after a recap opened by a tap. Its runtime error check now prints the error's description.
+- The server sends no message on closing a session. This replaces the earlier note about "Session closed."
+
+For results at a glance, seed a fresh temporary database with `seed.py` and `seed_results.py`, serve it, then run `results.mjs`. It writes nothing. It reads a final set of six out of join order at 320, 390 and 1280 px: order, row height, emphasis, the chevron, and the row as a disclosure with and without JavaScript. Captures are in `/private/tmp/pn-results-review/`, or `PN_REVIEW_DIR`.
+
+These fail the same on `main` and are not fixed by Slice C: `count_flow.mjs` 89 of 91 and `flow.mjs` 50 of 52 (both named above), `dock.mjs` 226 of 228 ("toggle keeps focus across live update" and "bar verdict follows typing"), and `reopen.mjs` 23 of 24 (it looks for "Start next set", and the screen now says "Play set N"). `night.mjs` and `counts.mjs` can fail "no runtime errors" on a busy machine: see [the footgun](../../../doc/wiki/footguns/view_transition_opt_in_rejects_under_load.md).
