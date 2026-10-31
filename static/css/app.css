@@ -259,6 +259,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .sheet .form-row { flex-wrap: wrap; }
 .sheet .form-row .grow { min-width: 140px; }
 .sheet-error { color: var(--down); margin: 8px 0; }
+.just-changed:not(.panel) { border-radius: var(--r-bar); }
 .just-changed { outline: 2px solid var(--brass); outline-offset: 2px; background-color: color-mix(in oklch, var(--brass) 12%, transparent); animation: accepted-change var(--t-focal) var(--ease-out); }
 .pot-main.just-changed { outline: 0; box-shadow: 0 2px 0 var(--brass); background: transparent; }
 .toast { position: fixed; bottom: max(80px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: fit-content; max-width: calc(100% - 32px); margin: auto; z-index: 10; display: flex; align-items: center; gap: 12px; animation: toast-open var(--t-fast) var(--ease-out); }
@@ -318,6 +319,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .player-row, .count-row { position: relative; }
 :is(.player-row, .count-row).just-changed { outline: 0; background-color: transparent; animation: none; isolation: isolate; }
 :is(.player-row, .count-row).just-changed::before { content: ""; position: absolute; inset: 2px -8px; z-index: -1; border: 2px solid var(--brass); border-radius: var(--r-row); background-color: color-mix(in oklch, var(--brass) 12%, transparent); pointer-events: none; animation: accepted-change var(--t-focal) var(--ease-out); }
+:is(.player-row, .count-row).just-changed.changed-together::before { content: none; }
+.just-changed.changed-together { outline-color: transparent; background-color: transparent; animation: none; }
 /* "Rebuy added" takes a place in the line under the name. It can wrap; it cannot cover anything. */
 .player-meta { flex-wrap: wrap; row-gap: 2px; }
 .player-meta .change-label { padding: 0 6px; font-size: .6875rem; line-height: 1.2; }

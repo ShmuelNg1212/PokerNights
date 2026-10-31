@@ -2,7 +2,13 @@
 (function () {
   "use strict";
   var region = null, prefix = "", seen = {};
-  var HOLD_MS = 3000, FADE_MS = 400;
+  var HOLD_MS = 3000, FADE_MS = 400, TOGETHER = 3, timers = new WeakMap();
+  // What this element's value was when last seen, in this page view or earlier in the tab.
+  function lastSeen(el) {
+    var key = prefix + el.dataset.watch, previous = seen[key];
+    try { if (previous === undefined) previous = sessionStorage.getItem(key); } catch (_) {}
+    return previous;
+  }
   // With Motion a small thing springs in; without it the CSS animation, or nothing, plays.
   function move(el, keyframes, preset, extra) {
     var M = window.pokerMotion;
@@ -34,26 +40,41 @@
         move(el.querySelector(".correction-text"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.18 });
       } catch (_) {}
     });
+    // Several rows changing as one event (Start the set, Confirm counts) keep their own small movement,
+    // and no row is singled out with a box and a word. Rebuys that arrive in one redraw, say after the
+    // phone was locked, are separate events: each keeps its mark.
+    var changed = function (selector) {
+      return Array.from(region.querySelectorAll(selector)).filter(function (el) {
+        var previous = lastSeen(el);
+        return previous != null && previous !== el.dataset.value;
+      }).length;
+    };
+    var stateKey = prefix + "state", stateWas = seen[stateKey];
+    try { if (stateWas === undefined) stateWas = sessionStorage.getItem(stateKey); } catch (_) {}
+    var stateNew = stateWas != null && stateWas !== region.dataset.state;
+    seen[stateKey] = region.dataset.state;
+    try { sessionStorage.setItem(stateKey, region.dataset.state); } catch (_) {}
+    var together = changed(".count-row[data-watch]") >= TOGETHER || (stateNew && changed(".player-row[data-watch]") >= TOGETHER);
     region.querySelectorAll("[data-watch]").forEach(function (el) {
       var key = prefix + el.dataset.watch, value = el.dataset.value;
-      var previous = seen[key];
-      try { if (previous === undefined) previous = sessionStorage.getItem(key); } catch (_) {}
+      var previous = lastSeen(el);
       if (previous != null && previous !== value) {
         var was = previous.split(":"), now = value.split(":");
         el.classList.add("just-changed");
+        if (together) el.classList.add("changed-together");
         // The badge sits in the line under the name, which the row has twice: in the button
         // that opens the player's sheet and in the plain line shown without it. One is displayed.
         var badges = el.querySelectorAll(".change-label");
         if (badges.length) {
           // A player row: bought in, buy-in count, cashed out, status.
-          var rebuy = Number(now[1]) > Number(was[1]);
+          var added = Number(now[1]) > Number(was[1]);
           badges.forEach(function (badge) {
-            badge.textContent = rebuy ? "Rebuy added" : "Updated";
-            badge.hidden = false;
-            if (badge.getClientRects().length) pop(badge);
+            badge.textContent = !added ? "Updated" : Number(was[1]) === 0 ? "Buy-in added" : "Rebuy added";
+            badge.hidden = together;
+            if (!together && badge.getClientRects().length) pop(badge);
           });
           var edge = el.querySelector(".buy-stack i:last-of-type");
-          if (edge && rebuy) {
+          if (edge && added) {
             edge.classList.add("new-edge");
             move(edge, { opacity: [0, 1], transform: ["translateY(-8px)", "translateY(0px)"] }, "drop");
           }
@@ -66,8 +87,13 @@
         var status = el.querySelector("[data-status]");
         if (status && was[0] !== now[0]) pop(status);
         // The mark fades out over its last moments instead of vanishing.
-        setTimeout(function () { el.classList.add("change-fading"); }, HOLD_MS - FADE_MS);
-        setTimeout(function () { el.classList.remove("just-changed", "change-fading", "just-left"); badges.forEach(function (badge) { badge.hidden = true; }); }, HOLD_MS);
+        // A later change on the same row starts its own hold; the earlier one must not end it.
+        (timers.get(el) || []).forEach(clearTimeout);
+        el.classList.remove("change-fading");
+        timers.set(el, [
+          setTimeout(function () { el.classList.add("change-fading"); }, HOLD_MS - FADE_MS),
+          setTimeout(function () { el.classList.remove("just-changed", "changed-together", "change-fading", "just-left"); badges.forEach(function (badge) { badge.hidden = true; }); }, HOLD_MS),
+        ]);
       }
       seen[key] = value;
       try { sessionStorage.setItem(key, value); } catch (_) {}
