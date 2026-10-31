@@ -51,21 +51,22 @@ try{
  await H.go('/accounts/signup/');await sleep(900);
  await H.type('[name=username]','rosa'+Date.now()%100000);await H.type('input[type=password]','tablestakes-91');
  await H.tap('^Create account',1800);await sleep(1200);
- if(await H.js(`!!document.querySelector('dialog[open]')`))await H.tap('^Not now',900);
+ check('a new person is not asked about the home screen before any session',await H.js(`!document.querySelector('dialog[open]')`));
  await H.type('main [name=name]','Friday crew');await H.tap('^Create group',1500);
  const groupPath=await H.js('location.pathname');
- await H.tap('^Add a table',1300);
- table.settingsNew=await H.js('document.documentElement.scrollHeight');
- await H.type('form[action$="/tables/new/"] [name=name]','Rosa kitchen');await H.tap('^Add table$',1500);
- await H.tap('^Sessions$');await H.tap('^New session');
+ await H.go(groupPath+'?view=settings');table.settingsNew=await H.js('document.documentElement.scrollHeight');await H.go(groupPath);
+ await H.tap('^New session');
+ await H.type('[name=table_name]','Rosa kitchen');
  for(const[k,v]of[['small_blind',10],['big_blind',20],['min_buy_in',500],['max_buy_in',5000],['default_buy_in',1000]])await H.type(`[name=${k}]`,v);
- await H.tap('^Create session',1800);
- await H.tap('^Open set 1|^Go to set 1|^Set 1$');
- await H.tap('^Add$|^Add players');
+ await H.tap('^Create session',1800);await sleep(1200);
+ check('creating lands on the set',/^\/s\/\d+\/$/.test(await H.js('location.pathname')));
+ check('the home-screen suggestion comes with the first session',await H.js(`!!document.querySelector('dialog[open]')`));
+ if(await H.js(`!!document.querySelector('dialog[open]')`))await H.tap('^Not now',900);
+ await H.tap('^Add players');
  await H.type('[name=names]','Ana\nBong\nCes\nDon');await sleep(300);await H.tap('^Add 4 players',1600);
- await H.tap('^Open for players',1500);
- table.rowsOpen=await H.js(`(()=>{const dock=document.querySelector('.host-controls');const edge=dock?dock.getBoundingClientRect().top:innerHeight;return [...document.querySelectorAll('.player-row')].filter(r=>r.getBoundingClientRect().bottom<=edge).length})()`);
- await H.shot('open');
+ const rowsAbove=`(()=>{const dock=document.querySelector('.host-controls');const edge=dock?dock.getBoundingClientRect().top:innerHeight;return [...document.querySelectorAll('.player-row')].filter(r=>r.getBoundingClientRect().bottom<=edge).length})()`;
+ table.rowsOpen=await H.js(rowsAbove);
+ await H.shot('ready');
  await H.tap('^Start the set',500);await H.shot('started');
  check('start: no first buy-in is called a rebuy',await H.js(`![...document.querySelectorAll('.change-label')].some(b=>b.getClientRects().length&&b.textContent==='Rebuy added')`));
  check('start: no row is singled out with a box',await H.js(`![...document.querySelectorAll('.player-row')].some(r=>getComputedStyle(r,'::before').content!=='none'&&getComputedStyle(r,'::before').borderTopWidth==='2px')`));
@@ -95,14 +96,13 @@ try{
  // A repeat game with a preset, from an idle group on Your groups.
  const R=await person();await R.login('rena');
  if(await R.js(`!!document.querySelector('dialog[open]')`)){await R.js(`[...document.querySelectorAll('dialog[open] button')].find(b=>/^Not now/.test(b.textContent.trim())).click()`);await sleep(700)}
- await R.tap('^New session');await sleep(300);
- await R.tap('^Create session',1800);
- await R.tap('^Open set 1|^Go to set 1|^Set 1$');
- await R.tap('^Add$|^Add players');
+ await R.tap('^New session');await sleep(300);await R.shot('new-session');
+ await R.tap('^Create session',1800);await sleep(1000);
+ if(await R.js(`!!document.querySelector('dialog[open]')`)){await R.js(`[...document.querySelectorAll('dialog[open] button')].find(b=>/^Not now/.test(b.textContent.trim())).click()`);await sleep(700)}
+ await R.tap('^Add players');
  const ticks=await R.js(`[...document.querySelectorAll('[name=member_id]')].filter(e=>e.getClientRects().length&&!e.disabled).slice(0,4).map(e=>e.value)`);
  for(const v of ticks)await R.tick(`[name=member_id][value="${v}"]`);
  await R.tap('^Add \\d+ players|^Add players',1600);
- await R.tap('^Open for players',1500);
  await R.tap('^Start the set',1500);
  table.repeatTaps=R.taps;table.repeatScrolled=R.scrolled;
  check('the repeat game started',await R.js(`!!document.querySelector('#live[data-state=running]')`));
@@ -119,7 +119,7 @@ line('Typed counts to the transfer list, books balanced',`${table.endOfGame} tap
 line('Repeat game with a preset, from an idle Home',`${table.repeatTaps} taps + 4 ticks, ${table.repeatScrolled} needing a scroll`);
 line('Group settings, new group',`${table.settingsNew} px`);
 line('Settings, seeded',`${table.settingsSeeded} controls`);
-line('Player rows on the first screen, open set',`${table.rowsOpen}`);
+line('Player rows on the first screen, ready to start',`${table.rowsOpen}`);
 line('First ranked row on Stats',`${table.statsRow} px`);
 writeFileSync(`${OUT}/journey.json`,JSON.stringify(table));
 ws.close();chrome.kill();
