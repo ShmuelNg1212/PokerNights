@@ -15,7 +15,7 @@ await go('/accounts/login/');await js(`document.querySelector('[name=username]')
 return {s,js,go,click,shot};}
 const results=[];function check(name,ok,detail){results.push({name,ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail===undefined?'':JSON.stringify(detail)}`)}
 const A=await user('hana'),B=await user('hana'),P=await user('ben');
-const errors=[];ws.addEventListener('message',e=>{const m=JSON.parse(e.data);if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.text)});await send('Runtime.enable',{},A.s);
+const errors=[];ws.addEventListener('message',e=>{const m=JSON.parse(e.data);if(m.method==='Runtime.exceptionThrown')errors.push(`${m.params.exceptionDetails.text} ${m.params.exceptionDetails.exception?.description||m.params.exceptionDetails.exception?.value||''}`.trim())});await send('Runtime.enable',{},A.s);
 const post=async(U,path,data)=>U.js(`(async()=>{const body=new URLSearchParams(${JSON.stringify(data)});body.set('csrfmiddlewaretoken',document.querySelector('[name=csrfmiddlewaretoken]').value);const r=await fetch(${JSON.stringify(path)},{method:'POST',body});return {status:r.status,text:await r.text()};})()`);
 const ids=JSON.parse(readFileSync('/private/tmp/pn-counts-manifest.json','utf8'));
 const state=()=>A.js(`(()=>{const b=document.querySelector('[data-count-preview]');return {label:b.querySelector('[data-count-label]').textContent,total:b.querySelector('[data-count-accounted]').textContent,status:b.querySelector('[data-count-status]').textContent,coverage:b.querySelector('[data-count-coverage]').textContent}})()`);

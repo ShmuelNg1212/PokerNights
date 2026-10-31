@@ -88,6 +88,7 @@ try{
  if(await H.js(`!!document.querySelector('dialog[open]')`))await H.tap('^Close',900);
  table.endOfGame=H.taps-tapsBeforeEnd;
  check('closing the recap: who pays whom on the first screen',await H.js(`(()=>{const t=document.querySelector('#transfers-title').getBoundingClientRect(),r=document.querySelector('.transfer-row').getBoundingClientRect(),h=document.querySelector('header').getBoundingClientRect();return t.top>=h.bottom&&r.bottom<=innerHeight})()`));
+ check('closing the recap: focus is on the heading, and it draws no ring',await H.js(`document.activeElement.id==='transfers-title'&&getComputedStyle(document.activeElement).outlineStyle==='none'`));
  check('closing the recap: no toast over the list',await H.js(`![...document.querySelectorAll('.toast')].some(t=>t.getClientRects().length)`));
  await H.shot('transfers');
  await H.tap('^Mark paid',1400);
