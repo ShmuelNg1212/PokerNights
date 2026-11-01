@@ -159,9 +159,9 @@ class GroupStatsPageTests(TestCase):
         self.url = reverse("group", args=[self.club.group.pk])
         self.client.force_login(self.club.host.user)
 
-    def test_tab_appears_only_with_a_closed_session(self):
+    def test_tab_stays_visible_before_and_after_the_first_closed_session(self):
         self.club.session(OCT_1, {"A": (1000, 1500), "B": (1000, 500)}, close=False)
-        self.assertNotContains(self.client.get(self.url), "view=stats")
+        self.assertContains(self.client.get(self.url), "view=stats")
         page = self.client.get(self.url, {"view": "stats"})
         self.assertContains(page, "No stats yet")
         self.club.session(OCT_1, {"A": (1000, 1500), "B": (1000, 500)})

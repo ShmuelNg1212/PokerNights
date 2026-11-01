@@ -68,8 +68,6 @@ def group(request, group_id):
         "tables": Table.objects.filter(group=me.group, archived_at__isnull=True).select_related("default_preset"),
     }
     periods = settlement_queries.stat_periods(me.group)
-    # The Stats tab appears once a closed session gives it something to show.
-    context["has_stats"] = bool(periods)
     if context["view"] == "settings":
         context.update(group_settings_context(request, me))
         context["settings_open"] = request.GET.get("open")

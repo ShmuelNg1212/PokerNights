@@ -23,6 +23,20 @@ class GroupViewTests(TestCase):
             self.assertNotContains(page, "Invite players")
             self.assertNotContains(page, "rake-heading")
 
+    def test_empty_stats_tab_is_visible_and_explains_what_is_needed(self):
+        for user in (self.host.user, add_player(self.group, "viewer").user):
+            self.client.force_login(user)
+            self.assertContains(self.client.get(self.url), '?view=stats"')
+            page = self.client.get(self.url, {"view": "stats"})
+            self.assertContains(page, "No stats yet")
+            self.assertContains(page, "Players appear here once a session closes.")
+            self.assertContains(page, "Go to sessions")
+
+    def test_empty_stats_still_requires_active_membership(self):
+        other, stranger = make_group("Elsewhere")
+        self.client.force_login(stranger.user)
+        self.assertEqual(self.client.get(self.url, {"view": "stats"}).status_code, 404)
+
     def test_settings_holds_management_and_no_session_list(self):
         make_session(self.host, state="open")
         page = self.client.get(self.url, {"view": "settings"})
