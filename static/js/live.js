@@ -67,7 +67,7 @@
     var active = document.activeElement;
     var focusKey = active && region.contains(active) ? active.dataset.focusKey : null;
     // The checklist opens for 80 ms to show a completed step. That is not the person's choice.
-    region.querySelectorAll("details[open][data-key]:not(.prep-completing)").forEach(function (el) { open.push(el.dataset.key); });
+    region.querySelectorAll("details[open][data-key]:not(.prep-completing):not([data-disclosure-closing])").forEach(function (el) { open.push(el.dataset.key); });
     // Before and after: flow.js compares the two to show what moved.
     var hadNext = !!region.querySelector("[data-next-set]");
     region.dispatchEvent(new Event("live:updating", {bubbles: true}));

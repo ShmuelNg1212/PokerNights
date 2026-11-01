@@ -4,7 +4,7 @@ Mode: mixed. Direction: refine The Rack. Base: `976b889`.
 
 Study: [installed iPhone motion](../study/1793517118_iphone_motion.md).
 
-Status: approved on 2026-11-01. Execute on `fix/iphone-motion`, from `b969b2a`.
+Status: approved on 2026-11-01. Work is saved on `fix/iphone-motion`, from `b969b2a`. Rendezvous stopped after two failed rechecks. Ask the human before another round. This branch is not yet verified.
 
 ## OPEN QUESTIONS
 
@@ -49,13 +49,13 @@ Complete when the regression and existing sheet checks pass on the source fix.
 
 ### 2. Give in-flow menus a compatible fallback — tests: alongside
 
-- [ ] Inventory the expanding sections on group settings, set Details, More host controls, result rows and preparation steps. Identify each motion owner.
-- [ ] Add a focused regression check with native interpolation unavailable. Check an intermediate content height. Do not count a turning chevron as content motion.
-- [ ] Keep the native path when both required CSS features work. Add a small shared fallback for the scoped in-flow disclosures when they do not.
-- [ ] Keep the content connected to its summary. Support open, close and reversal from the current position. Reuse the existing 200 ms disclosure timing and ease-out curve.
-- [ ] Exclude overlay and script-owned menus from the generic path. Do not run the native and fallback paths together.
-- [ ] Remove temporary size and clipping styles at rest. Release listeners and observers on page cleanup.
-- [ ] Check a live update during an open disclosure and during a checklist completion. Keep the person's choice. Do not restore a temporary automatic open.
+- [x] Inventory the expanding sections on group settings, set Details, More host controls, result rows and preparation steps. Identify each motion owner.
+- [x] Add a focused regression check with native interpolation unavailable. Check an intermediate content height. Do not count a turning chevron as content motion.
+- [x] Keep the native path when both required CSS features work. Add a small shared fallback for the scoped in-flow disclosures when they do not.
+- [x] Keep the content connected to its summary. Support open, close and reversal from the current position. Reuse the existing 200 ms disclosure timing and ease-out curve.
+- [x] Exclude overlay and script-owned menus from the generic path. Do not run the native and fallback paths together.
+- [x] Remove temporary size and clipping styles at rest. Release listeners and observers on page cleanup.
+- [x] Check a live update during an open disclosure and during a checklist completion. Keep the person's choice. Do not restore a temporary automatic open.
 
 Files: `static/css/app.css`, the existing page/motion registration, and a small disclosure module if needed. Register it through the existing script-loading path. Extend `web/tests/browser/fluid.mjs` or add one focused browser probe.
 
@@ -65,10 +65,10 @@ Complete when the capability-off check fails on the old source and passes on the
 
 ### 3. Fix the account flyout alignment — tests: alongside
 
-- [ ] Isolate the 8 px resting caret error. Compare untransformed panel geometry, entry geometry and the existing caret clamp. Do not change the clamp without evidence.
-- [ ] Fix the measurement at its owner. Keep the panel inside the viewport.
-- [ ] Check first open, close, reversal during close, Escape, outside press and navigation. Check ordinary and narrow widths.
-- [ ] If the bell uses the same defective measurement, add the same evidence before applying the bounded correction there.
+- [x] Isolate the 8 px resting caret error. Compare untransformed panel geometry, entry geometry and the existing caret clamp. Do not change the clamp without evidence.
+- [x] Fix the measurement at its owner. Keep the panel inside the viewport.
+- [x] Check first open, close, reversal during close, Escape, outside press and navigation. Check ordinary and narrow widths.
+- [x] If the bell uses the same defective measurement, add the same evidence before applying the bounded correction there.
 
 Files: `static/js/account.js`, `web/tests/browser/header.mjs`. Touch shared panel CSS or `alerts.js` only if the same repro requires it.
 
@@ -119,3 +119,22 @@ After release, the phone checks are:
 ## Verification record
 
 Task 1: the new checks failed on the old source (34/40). With the source fix and fresh fixtures, motion passed 40/40. The 7 in-place rendering tests passed. A first repeat used consumed fixtures and failed two write checks; reject that run. The fresh run passed those checks. Code and motion reviews remain for rendezvous.
+
+
+### Rendezvous checkpoint, 2026-11-01
+
+- SQLite: 1,670 tests passed. 17 PostgreSQL-only tests were skipped.
+- In-place rendering and script loading: 7 tests passed on the final source.
+- Header: 106/106 passed at 320, 390 and 1280 px. Excluding `.account` from generic native height motion fixed the caret error. `account.js` needed no change.
+- Sheet motion: 40/40 passed with fresh fixtures. The new first-frame and cleanup checks failed on the old source and passed with the fix.
+- Chromium 156.0.8078.76 and WebKit 27.2: the original cross-browser probe passed 52/52. The expanded probe now passes 58/60. It covers native support and forced fallback, expanding content, reversal, live close state, sheet first frame, interrupted entry, swap focus, navigation, reduced motion, checklist polling and no JavaScript.
+- Standards and spec reviewers approved. The motion reviewer found late closing indicators. The three CSS guards were corrected. The reviewer then approved.
+- A new close-indicator assertion still fails in both Chromium paths after two rechecks. It reads caret matrix A as -1 at 50 ms. The requested closed state and restored summary text pass. Both WebKit paths pass the complete indicator assertion.
+- A focused Chrome probe shows the caret moving correctly. It measured A=-1 at close, then A=0.900362 after 50 ms, then reached rest. This conflicts with the full probe. Do not claim that the timing assertion passes.
+- One earlier run reported the exact browser view-transition rejection recorded in `doc/wiki/footguns/view_transition_opt_in_rejects_under_load.md`. The next two runs had no runtime errors. They failed only the new close-indicator assertion.
+- The new probe's first checklist sample used only animation frames. A fast poll could end the hold before that sample. The probe now also records the completion event before the poll. It checks that the automatic open is not restored. All four checklist cases pass.
+- The reduced-motion probe now starts from an explicit closed state. WebKit Back can retain an open disclosure. All four reduced-motion cases pass.
+- The final sequential controller stopped at the mobile probe. Fluid, table, dock and the post-fallback motion rerun have not run. Do not record them as passed.
+- The physical iPhone and installed mode remain unverified. No merge or push was made.
+
+Next: obtain permission for another diagnosis/recheck round. Isolate the close-indicator probe discrepancy. Then complete the remaining browser suites, sync docs, and record a verified branch. The plan is still editable because rendezvous is incomplete.

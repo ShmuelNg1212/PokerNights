@@ -26,7 +26,7 @@
     clearTimeout(completion.close); clearTimeout(completion.light); clearTimeout(completion.end);
     if (completion.fold) completion.fold.classList.remove("prep-completing", "prep-folding");
     completion.mark.classList.remove("prep-ticked");
-    if (completion.auto && !keepOpen) completion.fold.open = false;
+    if (completion.auto && !keepOpen) window.pokerDisclosure.setOpen(completion.fold, false, true);
     if (completion.next) completion.next.classList.remove("prep-next-waiting");
     completion = null;
   }
@@ -43,16 +43,16 @@
       next.classList.add("prep-next-ready", "prep-next-waiting");
       item.light = setTimeout(function () { if (completion === item) next.classList.remove("prep-next-waiting"); }, 260);
     }
-    // Show the completed step long enough to draw its tick, then let native details fold it.
+    // Show the completed step long enough to draw its tick, then let the disclosure owner fold it.
     // Only a fold that was closed is ours to close. A person's open fold stays open.
-    if (fold && !fold.open && CSS.supports("interpolate-size", "allow-keywords") && CSS.supports("selector(details::details-content)")) {
+    if (fold && !fold.open && window.pokerDisclosure && window.pokerDisclosure.available()) {
       item.auto = true;
       fold.classList.add("prep-completing");
-      fold.open = true;
+      window.pokerDisclosure.setOpen(fold, true, true);
       void fold.offsetHeight; // establish the open height before the closing transition
       item.close = setTimeout(function () {
         if (completion !== item || !fold.isConnected) return;
-        fold.classList.replace("prep-completing", "prep-folding"); fold.open = false;
+        fold.classList.replace("prep-completing", "prep-folding"); window.pokerDisclosure.setOpen(fold, false);
       }, 80);
     }
     item.end = setTimeout(function () { if (completion === item) clearCompletion(); }, 290);

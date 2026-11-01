@@ -128,7 +128,7 @@ input[type="datetime-local"], input[type="email"], select, textarea {
 details > summary { cursor: pointer; min-height: var(--tap); display: flex; align-items: center; font-weight: 600; color: var(--accent); }
 /* One affordance for every disclosure: a chevron that turns. Drawn here for a summary that has no icon of its own. */
 details > summary:not(.btn, .account-button, .result-summary, .row, :has(.icon))::after { content: ""; flex: none; width: .45em; height: .45em; margin: -.2em 0 0 .6em; border-right: 2px solid; border-bottom: 2px solid; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-details[open] > summary:not(.btn, .account-button, .result-summary, .row, :has(.icon))::after { margin-top: .2em; transform: rotate(-135deg); }
+details[open]:not([data-disclosure-closing]) > summary:not(.btn, .account-button, .result-summary, .row, :has(.icon))::after { margin-top: .2em; transform: rotate(-135deg); }
 
 /* Checkbox rows: the whole row is the label, so it is one large touch target */
 [hidden] { display: none !important; }
@@ -373,7 +373,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .result-summary, .count-identity.result-summary { grid-template-columns: 44px minmax(0,1fr) minmax(0,auto) 1rem; padding: 12px 0; list-style: none; cursor: pointer; border-radius: var(--r-bar); }
 .result-summary::-webkit-details-marker { display: none; }
 .result-summary > .icon { width: 1rem; height: 1rem; color: var(--muted); transition: transform var(--t-fast) var(--ease-out); }
-.result-details[open] > .result-summary > .icon { transform: rotate(180deg); }
+.result-details[open]:not([data-disclosure-closing]) > .result-summary > .icon { transform: rotate(180deg); }
 .result-details > :not(summary) { margin-bottom: 12px; }
 .result-details > .result-line { margin-top: 0; }
 @media (prefers-reduced-motion: reduce) { .result-summary > .icon { transition: none; } }
@@ -725,7 +725,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .rsvp-more > summary { display:flex; align-items:center; gap:var(--s-2); min-height:48px; font-weight:700; cursor:pointer; list-style:none; }
 .rsvp-more > summary::-webkit-details-marker { display:none; }
 .rsvp-more > summary .icon { transition:transform var(--t-fast) var(--ease-out); }
-.rsvp-more[open] > summary .icon { transform:rotate(180deg); }
+.rsvp-more[open]:not([data-disclosure-closing]) > summary .icon { transform:rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .rsvp-more > summary .icon { transition:none; } }
 .rsvp-seats { display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s-2); margin-top:var(--s-4); padding-top:var(--s-3); border-top:1px solid var(--rule); }
 .rsvp-seats [data-numpad-slot] { flex-basis:100%; }
@@ -749,7 +749,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .ledger-year > summary { display:flex; align-items:center; gap:var(--s-2); min-height:var(--tap); font-weight:700; cursor:pointer; list-style:none; }
 .ledger-year > summary::-webkit-details-marker { display:none; }
 .ledger-year > summary .icon { margin-left:auto; color:var(--muted); transition:rotate var(--t-fast) var(--ease-out); }
-.ledger-year[open] > summary .icon { rotate:180deg; }
+.ledger-year[open]:not([data-disclosure-closing]) > summary .icon { rotate:180deg; }
 .group-page .grow { flex-basis:160px; overflow-wrap:anywhere; }
 :is(.group-page, .player-page) input[readonly] { font-size:.875rem; }
 .roster-person { display:flex; align-items:center; gap:12px; min-width:0; overflow-wrap:anywhere; }
@@ -858,8 +858,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .home-create { margin-top: var(--s-4); }
 .home-create:not(.home-archived) > summary { list-style: none; color: var(--text); border: 1px dashed var(--line); background: transparent; box-shadow: none; }
 .home-create:not(.home-archived) > summary::-webkit-details-marker { display: none; }
-.home-create:not(.home-archived) > summary:hover, .home-create:not(.home-archived)[open] > summary { background: var(--surface); }
-.home-create:not(.home-archived)[open] > summary { border-style: solid; border-color: var(--rule); }
+.home-create:not(.home-archived) > summary:hover, .home-create:not(.home-archived)[open]:not([data-disclosure-closing]) > summary { background: var(--surface); }
+.home-create:not(.home-archived)[open]:not([data-disclosure-closing]) > summary { border-style: solid; border-color: var(--rule); }
 .home-create:not(.home-archived) form { margin-top: var(--s-3); padding: var(--s-4); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
 .home-archived { margin-top: var(--s-5); padding-top: var(--s-2); border-top: 1px solid var(--line); }
 .home-archived > summary { color: var(--muted); }
@@ -904,7 +904,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .host-more > * + * { margin-top: var(--s-2); }
 .host-more details > summary.btn { color: var(--text); list-style: none; }
 .host-more details > summary.btn::-webkit-details-marker { display: none; }
-.host-more details[open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
+.host-more details[open]:not([data-disclosure-closing]) > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
 /* Archive and delete: a notice on an archived session and quiet management sections. */
 .archived-notice { margin: var(--s-3) 0; }
 .archived-notice p { margin: 0 0 var(--s-3); }
@@ -1161,17 +1161,17 @@ legend { padding: 0; }
 @keyframes back-out-right { to { opacity: 0; transform: translateX(8px); } }
 @keyframes back-in-left { from { opacity: 0; transform: translateX(-8px); } }
 
-/* Native disclosures own their height. Intrinsic-size interpolation is local to details;
-   unsupported browsers keep the native snap. Height is the accordion's layout exception. */
+/* In-flow disclosures own their height. Script-owned overlays and RSVP confirmations keep
+   their own motion. disclosures.js supplies measured height where native interpolation is absent. */
 @supports (interpolate-size: allow-keywords) and selector(details::details-content) {
   @media (prefers-reduced-motion: no-preference) {
-    details { interpolate-size: allow-keywords; }
-    details::details-content {
+    details:not(.account, .rsvp-host, [data-app-link]) { interpolate-size: allow-keywords; }
+    details:not(.account, .rsvp-host, [data-app-link])::details-content {
       block-size: 0;
       overflow: clip;
       transition: block-size 200ms var(--ease-out), content-visibility 200ms allow-discrete;
     }
-    details[open]::details-content { block-size: auto; }
+    details[open]:not(.account, .rsvp-host, [data-app-link])::details-content { block-size: auto; }
     details.prep-completing::details-content { transition: none; }
   }
 }
@@ -1302,7 +1302,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 :is(#players, #invites, .settings-row) details > summary::-webkit-details-marker, .player-manage > summary::-webkit-details-marker { display: none; }
 /* The chevron is drawn, and turns when its disclosure opens. */
 :is(#players, #invites, .settings-row) details > summary::after, .player-manage > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-:is(#players, #invites, .settings-row) details[open] > summary::after, .player-manage[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+:is(#players, #invites, .settings-row) details[open]:not([data-disclosure-closing]) > summary::after, .player-manage[open]:not([data-disclosure-closing]) > summary::after { transform: translateY(3px) rotate(225deg); }
 .roster-form, .roster-manage { padding: var(--s-1) 0 var(--s-2); }
 .roster-manage > .roster-form { padding: 0; }
 .roster-actions { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
@@ -1597,15 +1597,15 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .facts-line strong { color: var(--bone); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .facts-more { display: inline-flex; align-items: center; gap: var(--s-1); flex: none; font-weight: 600; }
 .facts-more .icon { width: 1rem; height: 1rem; transition: transform var(--t-fast) var(--ease-out); }
-.set-facts[open] .facts-more .icon { transform: rotate(180deg); }
+.set-facts[open]:not([data-disclosure-closing]) .facts-more .icon { transform: rotate(180deg); }
 /* Open, the list says the same and more, so the line gives way to it. */
-.set-facts[open] .facts-line { visibility: hidden; }
+.set-facts[open]:not([data-disclosure-closing]) .facts-line { visibility: hidden; }
 .set-facts .set-totals { margin-top: 0; padding-top: 0; border-top: 0; }
 .set-facts .where { margin: var(--s-2) 0 0; }
 .table-v2 .felt > .felt-hint { margin-top: var(--s-2); }
 @media (min-width: 900px) {
   /* The column has the room: dock.js opens the facts and the line is not needed. */
-  .set-facts[open] > summary { display: none; }
+  .set-facts[open]:not([data-disclosure-closing]) > summary { display: none; }
   .set-facts[open] .facts-body { padding-top: var(--s-3); }
 }
 /* A player's row: one line. The whole row opens the player's sheet; the one written action sits on top of it. */
@@ -1798,7 +1798,7 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .night-records > summary::-webkit-details-marker { display: none; }
 .night-records > summary h2 { margin: 0; }
 .night-records > summary .icon { color: var(--muted); transition: transform var(--t-fast) var(--ease-out); }
-.night-records[open] > summary .icon { transform: rotate(180deg); }
+.night-records[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
 .night-after { min-width: 0; margin-top: var(--s-5); }
 .night-after .recap-opener { margin-top: 0; }
 @media (max-width: 359px) { .transfer-line .chip { width: 24px; height: 24px; flex-basis: 24px; } }
@@ -1849,7 +1849,7 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .missed-buy-in { margin-top: var(--s-3); }
 .missed-buy-in > summary.btn, .set-correct summary.btn, .night-manage summary.btn { list-style: none; }
 .missed-buy-in > summary.btn::-webkit-details-marker, .set-correct summary.btn::-webkit-details-marker, .night-manage summary.btn::-webkit-details-marker { display: none; }
-.missed-buy-in[open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
+.missed-buy-in[open]:not([data-disclosure-closing]) > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
 
 /* Share results (2026-10-11). The card is a picture share.js draws; here are its frame, the
    actions and the one moment: the card is dealt onto the sheet, then uncovered from the top. */
@@ -2023,8 +2023,8 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 .seats-fold > summary { justify-content: space-between; border-bottom: 1px solid var(--rule); }
 .seats-fold > summary strong { color: var(--bone); }
 .seats-fold > summary .icon { width: 1rem; height: 1rem; }
-.seats-fold[open] > summary .icon { transform: rotate(180deg); }
-.seats-fold[open] > summary { border-bottom: 0; }
+.seats-fold[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
+.seats-fold[open]:not([data-disclosure-closing]) > summary { border-bottom: 0; }
 .seats-fold .seats-head h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .prep-step.prep-optional .prep-mark { border-style: dashed; }
 .prep-step.prep-optional[data-state=optional] .prep-name { color: var(--bone); }
@@ -2101,7 +2101,7 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
 .night-carried > summary::-webkit-details-marker { display: none; }
 .night-carried > summary strong { color: var(--bone); }
 .night-carried > summary .icon { width: 1rem; height: 1rem; flex: none; transition: transform var(--t-fast) var(--ease-out); }
-.night-carried[open] > summary .icon { transform: rotate(180deg); }
+.night-carried[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
 .night-carried > summary:active { background: var(--pressed); }
 .carried-list { list-style: none; margin: 0 0 var(--s-2); padding: 0; }
 .carried-list > li { display: flex; align-items: center; gap: var(--s-3); min-height: 52px; padding: 6px 0; border-top: 1px solid var(--rule); }
@@ -2172,7 +2172,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .account { position: static; }
 .account-button { display: inline-flex; align-items: center; justify-content: center; width: var(--tap); height: var(--tap); padding: 0; border-radius: var(--r-pill); list-style: none; -webkit-tap-highlight-color: transparent; }
 .account-button::-webkit-details-marker { display: none; }
-.account[open] > .account-button { background: var(--rail-2); }
+.account[open]:not([data-disclosure-closing]) > .account-button { background: var(--rail-2); }
 @media (hover: hover) and (pointer: fine) { .account-button:hover { background: var(--rail-2); } }
 .account-button .account-chip { width: 32px; height: 32px; font-size: .8125rem; }
 .account-who { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-4); min-width: 0; }
@@ -2210,12 +2210,12 @@ p.alerts-text:last-child { margin-bottom: 0; }
 :is(.discrepancy-where, [data-key=override]) > summary { gap: var(--s-2); list-style: none; }
 :is(.discrepancy-where, [data-key=override]) > summary::-webkit-details-marker { display: none; }
 :is(.discrepancy-where, [data-key=override]) > summary::after { content: ""; flex: none; width: 7px; height: 7px; margin: -3px 2px 0 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform var(--t-fast) var(--ease-out); }
-:is(.discrepancy-where, [data-key=override])[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+:is(.discrepancy-where, [data-key=override])[open]:not([data-disclosure-closing]) > summary::after { transform: translateY(3px) rotate(225deg); }
 .discrepancy-where > summary { font-size: .875rem; }
 /* The override opens from a quiet button, as the host's other options do; its form's Record override stays the one danger action. */
 .override-lead { margin: var(--s-2) 0 calc(var(--s-1) * -1); color: var(--muted); }
 [data-key=override] > summary.btn { justify-content: center; color: var(--text); }
-[data-key=override][open] > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
+[data-key=override][open]:not([data-disclosure-closing]) > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
 @media (prefers-reduced-motion: reduce) { :is(.discrepancy-where, [data-key=override]) > summary::after { transition: none; } }
 /* The one sentence under the gap: balanced lines, so "buy-ins" never splits at its hyphen. */
 .discrepancy :is(.gap-sentence, p) { text-wrap: balance; }
@@ -2255,7 +2255,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-setting > summary::-webkit-details-marker, .settings-row > summary::-webkit-details-marker { display: none; }
 .profile-setting-value, .settings-value { color: var(--muted); font-weight: 500; min-width: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .profile-setting > summary .icon, .settings-row > summary .icon { flex: none; width: 18px; height: 18px; color: var(--muted); transition: transform var(--t-fast); }
-.profile-setting[open] > summary .icon, .settings-row[open] > summary .icon { transform: rotate(180deg); }
+.profile-setting[open]:not([data-disclosure-closing]) > summary .icon, .settings-row[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
 .profile-setting > form { padding: 0 0 var(--s-4); }
 /* Settings (2026-11-01): one row each, in the Profile's row shape. Each says its current state and opens its own form. */
 .panel.settings-rows { margin-top: 0; padding-block: 0; border-top: 0; }
@@ -2291,7 +2291,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .next-fallback > summary { list-style: none; }
 .next-fallback > summary::-webkit-details-marker { display: none; }
 .next-fallback[open] { grid-column: 1 / -1; }
-.next-fallback[open] > .sheet-content { margin-top: var(--s-3); }
+.next-fallback[open]:not([data-disclosure-closing]) > .sheet-content { margin-top: var(--s-3); }
 /* A hint with nothing to add is not drawn: the button names the step. */
 .host-controls > .dock-hint:empty, .end-set-layout .host-controls > .dock-hint:empty { display: none; }
 .final-proof:last-child { margin-bottom: 0; }
@@ -2318,11 +2318,11 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .table-pay-undo { margin-top: var(--s-2); }
 .table-pay-undo > summary { list-style: none; width: auto; }
 .table-pay-undo > summary::-webkit-details-marker { display: none; }
-.table-pay-undo[open] > summary { margin-bottom: var(--s-2); }
+.table-pay-undo[open]:not([data-disclosure-closing]) > summary { margin-bottom: var(--s-2); }
 .sheets-enabled .table-pay-opener { display: flex !important; }
 .table-pay-fallback > summary { list-style: none; }
 .table-pay-fallback > summary::-webkit-details-marker { display: none; }
-.table-pay-fallback[open] > .sheet-content { margin-top: var(--s-3); }
+.table-pay-fallback[open]:not([data-disclosure-closing]) > .sheet-content { margin-top: var(--s-3); }
 .table-pay-parties { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: var(--s-3); }
 .table-pay-parties select { width: 100%; }
 .leaver-pay { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--rule); }
@@ -2444,7 +2444,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .night-option > summary, .night-option-link { display: flex; align-items: center; gap: var(--s-2); min-height: 56px; color: var(--text); font-weight: 650; text-decoration: none; cursor: pointer; list-style: none; }
 .night-option > summary::-webkit-details-marker { display: none; }
 .night-option > summary .icon { transition: transform var(--t-fast) var(--ease-out); }
-.night-option[open] > summary .icon { transform: rotate(180deg); }
+.night-option[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
 .night-option[open] { padding-bottom: var(--s-4); }
 @media (prefers-reduced-motion: reduce) { .night-option > summary .icon { transition: none; } }
 /* Settled steps of a prepared set, folded to one line. */
@@ -2454,7 +2454,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .prep-done > summary::-webkit-details-marker { display: none; }
 .prep-done > summary .prep-mark { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--bone); color: var(--ink); }
 .prep-done > summary > .icon { flex: none; transition: transform var(--t-fast) var(--ease-out); }
-.prep-done[open] > summary > .icon { transform: rotate(180deg); }
+.prep-done[open]:not([data-disclosure-closing]) > summary > .icon { transform: rotate(180deg); }
 .prep-done-line { min-width: 0; font-size: .9375rem; font-weight: 600; }
 .prep-done-line .fact { white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .prep-done > summary > .icon { transition: none; } }
@@ -2465,7 +2465,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .stakes-line { display: block; margin-top: 2px; color: var(--muted); font-size: .875rem; line-height: 1.35; }
 .stakes-change { display: inline-flex; align-items: center; gap: var(--s-1); flex: none; font-size: .875rem; font-weight: 600; }
 .stakes-change .icon { transition: transform var(--t-fast) var(--ease-out); }
-.stakes-fold[open] .stakes-change .icon { transform: rotate(180deg); }
+.stakes-fold[open]:not([data-disclosure-closing]) .stakes-change .icon { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .stakes-change .icon { transition: none; } }
 .field-pair-name { grid-template-columns: minmax(0, 1fr) 96px; }
 .form-page .sticky-actions { margin-top: var(--s-4); }
