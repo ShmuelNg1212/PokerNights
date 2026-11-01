@@ -67,6 +67,9 @@ try{
  const H=await user('hana');await walk(H,host);
  await walk(H,[['empty-past','/g/1/?past=mine']]);
  await H.go('/g/1/?view=players');const path=await H.js(`[...document.querySelectorAll('a.roster-link')].find(a=>!a.textContent.includes('(you)')).getAttribute('href')`);await walk(H,[['player-page',path]]);
+ await H.go('/s/3/');
+ const stale=await H.js(`(()=>{const l=document.querySelector('.live-status');l.classList.add('stale');l.textContent='Reconnecting… last updated 02:47';return document.querySelector('.site-header').getBoundingClientRect().height})()`);
+ check(`reconnecting does not grow the header (${stale}px)`,stale<=69);
  const P=await user('ben');await walk(P,player);
  for(const[n,list]of empty){const U=await user(n);await walk(U,list)}
  // Sheets are read open, for their type and contrast.
@@ -75,7 +78,7 @@ try{
  await sheet(H,'sheet-player','/s/3/',`document.querySelector('.player-opener').click()`);
  await sheet(H,'sheet-recap',`/n/${NIGHTS.partly}/`,`document.querySelector('.recap-opener').click()`);
  const N=await user('hana',320);await walk(N,[['group-sessions','/g/1/'],['set-in-play','/s/3/'],['set-final','/s/1/'],['session-closed-partly',`/n/${NIGHTS.partly}/`]],'320-');
- const D=await user('hana',1280);await walk(D,[['group-sessions','/g/1/'],['set-in-play','/s/3/'],['session-closed-partly',`/n/${NIGHTS.partly}/`],['group-settings','/g/1/?view=settings']],'1280-');
+ const D=await user('hana',1280);await walk(D,[['set-recount','/s/9/'],['group-sessions','/g/1/'],['set-in-play','/s/3/'],['session-closed-partly',`/n/${NIGHTS.partly}/`],['group-settings','/g/1/?view=settings']],'1280-');
  console.log('page | frames/deepest | title gap | tabs end | title | back');
  for(const m of table)console.log(`${m.name} | ${m.frames}/${m.deepest} | ${m.titleGap} | ${m.tabsEnd??'-'} | ${m.titleSize} ${m.title} | ${m.back}`);
  const small=[...new Set(table.flatMap(m=>m.small))].sort();const low=[...new Set(table.flatMap(m=>m.low))].sort();const heads={};for(const m of table)for(const k in m.heads)heads[k]=(heads[k]||0)+m.heads[k];

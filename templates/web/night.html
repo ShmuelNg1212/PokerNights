@@ -16,7 +16,7 @@
 <div class="night-layout{% if night.is_closed and outcome.plan %} night-settle{% endif %}"{% if stamp %} data-state-url="{% url 'night_state' night.pk %}" data-stamp="{{ stamp }}"{% endif %}>
   <div class="night-overview">
     <section class="felt hero" data-unit="{{ unit }}">
-      <div class="row"><h1 class="grow" data-carry="title">{{ night.table.name }}</h1>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% elif night.is_closed %}<span class="badge">Session closed</span>{% else %}<span class="badge">In progress</span>{% endif %}</div>
+      <div class="row"><h1 class="grow" data-carry="title">{{ night.table.name }}</h1>{% if night.is_archived %}<span class="badge">Archived</span>{% elif night.is_closed and outcome.plan %}{% include "web/_settle_badge.html" with status=outcome.status label=outcome.status_label %}{% elif night.is_closed %}<span class="badge">Session closed</span>{% elif not_started %}<span class="badge">Not started</span>{% else %}<span class="badge">In progress</span>{% endif %}</div>
       <p class="where">{{ night.game_date|short_date }}{% if night.location %} · {{ night.location }}{% endif %}{% if unit == 'chips' %} · Chips game{% endif %}</p>
       {% if night.is_closed and outcome.plan %}
       {% include "web/_night_lead.html" %}
@@ -122,9 +122,9 @@
       <h2 id="sets-title">Sets</h2>
       <ul class="list night-sets">{% for s in sets %}<li class="row"><span class="grow"><a class="set-link" href="{% url 'session' s.pk %}">Set {{ s.set_number }}</a>{% if s.started_at %}<br><span class="muted small">Timer: {% clock_value s.play_seconds s.clock_running %}</span>{% endif %}</span><span class="badge {% if s.state == 'running' %}badge-live{% endif %}">{{ s.state|state_word }}</span></li>{% empty %}<li class="muted">No visible sets yet.</li>{% endfor %}</ul>
       {% if total_play_seconds is not None %}<p class="muted small">Play time over all sets: {{ total_play_seconds|duration }}.</p>{% endif %}
-      <p class="muted small">Game: {{ night.get_game_type_display }}.</p>
     </section>
     {% endif %}
+    <p class="muted small night-game">Game: {{ night.get_game_type_display }}.</p>
     {% if outcome.payments %}
     <section aria-labelledby="payments-title">
       <details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">{{ outcome.payments|length }}</span></h2>{% icon 'chevron-down' %}</summary>

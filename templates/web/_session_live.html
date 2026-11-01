@@ -57,6 +57,7 @@
       </details>
       {% else %}
       <dl class="set-totals prep-facts">
+        <div><dt>Game</dt><dd>{{ session.get_game_type_display }}</dd></div>
         <div><dt>Blinds</dt><dd>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</dd></div>
         <div><dt>Buy-in</dt><dd>{{ settings.min_buy_in|amount:unit }} to {{ settings.max_buy_in|amount:unit }}</dd></div>
       </dl>

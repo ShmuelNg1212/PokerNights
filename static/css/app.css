@@ -91,7 +91,7 @@ p { margin: 0.5rem 0; }
 /* Cards and lists */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 12px 0; }
 .panel { border-top: 1px solid var(--rule); padding: var(--s-4) 0; margin: var(--s-3) 0; }
-.tabs + .panel, h2 + .panel, h3 + .panel { border-top: 0; margin-top: 0; padding-top: 0; }
+h2 + .panel { border-top: 0; margin-top: 0; padding-top: 0; }
 .panel > :first-child { margin-top: 0; }
 .panel > :last-child { margin-bottom: 0; }
 .list { list-style: none; margin: 0; padding: 0; }
@@ -253,6 +253,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .host-controls > * { margin: 0; }
 .host-controls h2 { margin-top: 0; font-size: var(--h-part); }
 .host-controls .next-action { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: calc(100% - 32px); z-index: 5; box-shadow: var(--shadow-primary), 0 8px 24px oklch(0 0 0 / .6); }
+.host-controls .next-action:not(.btn-primary) { box-shadow: none; }
 .host-more > summary { color: var(--muted); font-size: .875rem; }
 .sheet { width: min(100%, 440px); max-height: 85dvh; margin: auto auto 0; padding: 16px 20px 24px; border: 0; border-radius: var(--r-sheet) var(--r-sheet) 0 0; color: var(--bone); background: var(--rail); box-shadow: 0 -12px 48px oklch(0 0 0 / .5); overflow-y: auto; }
 .sheet::backdrop { background: oklch(0.1 0.01 60 / .7); }
@@ -267,7 +268,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .sheet .form-row { flex-wrap: wrap; }
 .sheet .form-row .grow { min-width: 140px; }
 .sheet-error { color: var(--down); margin: 8px 0; }
-.just-changed:not(.panel) { border-radius: var(--r-bar); }
+.just-changed { border-radius: var(--r-bar); }
 .just-changed { outline: 2px solid var(--brass); outline-offset: 2px; background-color: color-mix(in oklch, var(--brass) 12%, transparent); animation: accepted-change var(--t-focal) var(--ease-out); }
 .pot-main.just-changed { outline: 0; box-shadow: 0 2px 0 var(--brass); background: transparent; }
 .toast { position: fixed; bottom: max(80px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: fit-content; max-width: calc(100% - 32px); margin: auto; z-index: 10; display: flex; align-items: center; gap: 12px; animation: toast-open var(--t-fast) var(--ease-out); }
@@ -308,12 +309,11 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .table-page { padding-bottom: 128px; }
   .table-bar { gap: 8px; }
   .table-bar > a { flex: 1; min-width: 0; }
-  .table-bar .live-status { flex: none; max-width: 7.5rem; font-size: .8125rem; }
+  .table-bar .live-status { flex: none; max-width: 9.5rem; font-size: .8125rem; line-height: 1.2; }
   .table-layout .host-controls-heading, .table-layout .host-controls > p { display: none; }
   .table-layout .host-controls { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; background: var(--ground); padding: 12px 16px max(6px,env(safe-area-inset-bottom)); z-index: 5; border-top: 1px solid var(--rule); max-height: 75dvh; overflow: auto; }
   .table-layout .host-more > summary { justify-content: center; font-size: .8125rem; }
   .table-layout .host-controls .next-action { position: static; width: 100%; }
-  .table-layout .host-controls .next-action:not(.btn-primary) { box-shadow: none; }
   .player-identity > .badge { font-size: .8125rem; padding: 0 6px; }
   .table-bar { padding-top: 0; padding-bottom: 0; }
   .felt { padding-top: var(--s-5); }
@@ -435,6 +435,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-layout, .night-overview, .night-detail { min-width: 0; }
 .night-detail section { margin-top: var(--s-6); }
 .night-detail h2 { margin-bottom: var(--s-2); }
+.night-game { margin: var(--s-4) 0 0; }
 .night-page h1, .night-page strong, .night-page .grow { overflow-wrap: anywhere; }
 .night-mine { border-top: 1px solid var(--felt-ink); margin-top: var(--s-5); padding-top: var(--s-4); }
 .night-mine h2 { margin: 0 0 8px; }
@@ -643,11 +644,12 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 @container sessions (min-width:700px) {
   .table-cards { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .table-cards > li:only-child { grid-column:1 / -1; }
+  .table-cards > li:nth-child(-n+2) > .table-card, .table-cards > .coming-card:nth-child(-n+2) { border-top:0; }
 }
 .table-cards .table-card { flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; flex-wrap:nowrap; gap:var(--s-2); min-width:0; min-height:0; padding:var(--s-4) 0; border-top:1px solid var(--rule); color:var(--text); -webkit-tap-highlight-color:transparent; }
-.table-cards > li:first-child > .table-card, .table-cards > li:has(> .felt) + li > .table-card { border-top:0; }
+.table-cards > li:first-child > .table-card, .table-cards > li:has(> .felt) + li > .table-card, .table-cards > .coming-card:first-child { border-top:0; }
 .table-cards .table-card.felt { margin:0; padding:var(--s-4); border:0; border-radius:var(--r-sheet); background-color:var(--felt); }
-.table-cards .table-card:is(:active, .is-going) { margin-inline:calc(-1 * var(--s-2)); padding-inline:var(--s-2); border-radius:var(--r-row); box-shadow:inset 0 0 0 100vmax var(--pressed); }
+.table-cards .table-card:is(:active, .is-going) { margin-inline:calc(-1 * var(--s-2)); padding-inline:var(--s-2); border-radius:var(--r-row); background-color:transparent; box-shadow:inset 0 0 0 100vmax var(--pressed); }
 .table-cards .table-card.felt:is(:active, .is-going) { margin:0; padding:var(--s-4); border-radius:var(--r-sheet); background-color:var(--felt); }
 .table-card:not(.felt) :is(.token-stack .chip, .chip-more) { box-shadow:0 0 0 3px var(--ground); }
 @media (hover: hover) and (pointer: fine) { .table-cards .table-card:hover .table-card-title strong { color:var(--brass); } }
@@ -666,7 +668,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 
 /* RSVP (2026-10-27). "Coming up" cards hold their answer buttons, so the card is not one link and does not
    darken when pressed; the title is the link. The same viewer block sits on the session page. */
-.table-cards .coming-card:is(:active, .is-going) { box-shadow:none; }
+.table-cards .coming-card:is(:active, .is-going) { margin-inline:0; padding-inline:0; border-radius:0; box-shadow:none; }
 .coming-card .table-card-title a { color:inherit; text-decoration:none; }
 @media (hover: hover) and (pointer: fine) { .coming-card .table-card-title a:hover strong { color:var(--brass); } }
 .rsvp-you { display:flex; align-items:center; gap:var(--s-2); margin:var(--s-1) 0 0; font-weight:700; }
@@ -1390,7 +1392,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .player-head .chip { flex: none; width: 56px; height: 56px; font-size: 1.25rem; }
 .player-head h1 { margin: 0; overflow-wrap: anywhere; }
 .player-head p { margin: 2px 0 0; }
-.player-lead { display: grid; gap: var(--s-2); padding: var(--s-5) var(--s-4); }
+.player-lead { display: grid; gap: var(--s-2); padding: var(--s-5) 0; }
 .player-lead > * { margin: 0; }
 .player-rank { color: var(--muted); font-weight: 600; }
 .chart-none { margin: var(--s-3) 0 0; }
@@ -1401,7 +1403,7 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .stat-tile-figure { font-size: 1.25rem; font-weight: 750; font-stretch: 88%; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .stat-tile-note { color: var(--muted); font-size: .8125rem; }
 .player-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4) var(--s-3); margin: var(--s-3) 0; }
-.player-highlights a { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); min-height: var(--tap); align-content: center; color: inherit; text-decoration: none; }
+.player-highlights a { display: inline-flex; flex-direction: column; justify-content: center; min-height: var(--tap); color: inherit; text-decoration: none; }
 .player-highlights a:hover .muted { text-decoration: underline; }
 .player-sessions > li { padding: 0; }
 .player-sessions a.row { flex-wrap: nowrap; min-height: 64px; padding: var(--s-3) var(--s-2); margin: 0 calc(var(--s-2) * -1); border-radius: var(--r-row); color: inherit; text-decoration: none; transition: background var(--t-fast); }
@@ -1409,15 +1411,15 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .player-sessions .grow { min-width: 0; }
 
 /* Charts. Positions come from web/charts.py as percentages of the box. */
-.chart { padding: var(--s-4); outline-offset: 2px; }
+.chart { outline-offset: 2px; }
 .chart-head { margin: 0 0 var(--s-3); font-size: var(--h-section); }
 .chart-plot { position: relative; touch-action: pan-y; cursor: crosshair; }
 .chart-line { position: relative; height: 176px; }
 .chart-line svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; animation: chart-draw var(--t-focal) var(--ease-out) both; }
 .chart-path { fill: none; stroke: var(--bone); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .chart-zero { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
-.chart-y { position: absolute; left: 0; transform: translateY(-50%); padding: 0 6px 0 0; background: var(--ground); color: var(--muted); font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; }
-.chart-end, .chart-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--bone); box-shadow: 0 0 0 2px var(--surface); }
+.chart-y { position: absolute; left: 0; transform: translateY(-50%); text-shadow: 0 0 3px var(--ground), 0 0 3px var(--ground), 0 0 3px var(--ground); color: var(--muted); font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; }
+.chart-end, .chart-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--bone); box-shadow: 0 0 0 2px var(--ground); }
 .chart-end { animation: chart-pop 240ms var(--ease-out) 480ms both; }
 .chart-dot { background: var(--brass); }
 .chart-sub { margin: var(--s-4) 0 var(--s-2); color: var(--muted); font-size: .8125rem; font-weight: 600; }
@@ -1645,8 +1647,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .prep .felt-hint { color: var(--muted); }
 .prep-open .prep-step[data-state=done] { min-height: 0; padding: var(--s-1) 0; }
 .prep-open .prep-step[data-state=done] .prep-line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.row-hint { margin: var(--s-3) 0 0; text-align: center; }
-.row-hint-lead { margin: var(--s-1) 0 0; text-align: left; }
+.row-hint { margin: var(--s-1) 0 0; }
 
 /* Count-up, one line per player (count-v2). DESIGN.md, "Count-up in one line" (2026-10-10). */
 .count-v2 .count-row { padding: 7px 0; }
@@ -2228,7 +2229,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .profile-setting[open] > summary .icon, .settings-row[open] > summary .icon { transform: rotate(180deg); }
 .profile-setting > form { padding: 0 0 var(--s-4); }
 /* Settings (2026-11-01): one row each, in the Profile's row shape. Each says its current state and opens its own form. */
-.panel.settings-rows { padding-block: 0; }
+.panel.settings-rows { margin-top: 0; padding-block: 0; border-top: 0; }
 .settings-row > summary h2 { flex: none; margin: 0 auto 0 0; font-size: var(--h-part); font-weight: 600; }
 .settings-body { display: grid; gap: var(--s-3); padding: 0 0 var(--s-4); min-width: 0; }
 .settings-body > * { margin: 0; min-width: 0; }

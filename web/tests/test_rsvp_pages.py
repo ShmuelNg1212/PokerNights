@@ -65,6 +65,21 @@ class RsvpPageTests(TestCase):
         self.assertEqual(self.client.get(reverse("session", args=[self.first.pk])).status_code, 404)
         self.assertIn("Coming up", self.tab())
 
+    def test_a_session_before_play_says_not_started_and_names_its_game(self):
+        services.announce_night(self.night.pk, self.host)
+        self.as_(self.ana)
+        page = self.client.get(reverse("night", args=[self.night.pk])).content.decode()
+        self.assertIn('<span class="badge">Not started</span>', page)
+        self.assertNotIn('<span class="badge">In progress</span>', page)
+        self.assertIn("Game: No-Limit Hold", page)
+
+    def test_a_set_being_prepared_names_its_game_to_a_player(self):
+        services.transition(self.first.pk, self.host, "open")
+        services.announce_night(self.night.pk, self.host)
+        self.as_(self.ana)
+        page = self.client.get(reverse("session", args=[self.first.pk])).content.decode()
+        self.assertIn("<dt>Game</dt><dd>No-Limit Hold", page)
+
     def test_another_group_gets_404(self):
         services.announce_night(self.night.pk, self.host)
         _, stranger = make_group("zed", "Other")

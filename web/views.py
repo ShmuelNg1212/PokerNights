@@ -518,6 +518,7 @@ def night(request, night_id):
         one.play_seconds, one.clock_running = timers.get(one.pk, (None, False))
     timed = [one.play_seconds for one in sets if one.play_seconds is not None]
     context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context["not_started"] = not any(s.started_at for s in by_number)
     context["chip_values"] = chip_views.denominations(night)
     context["total_play_seconds"] = sum(timed) if timed else None
     context["total_rake"] = ledger_queries.rake_total([s.pk for s in sets])

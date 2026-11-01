@@ -35,7 +35,7 @@ const B=await user('ben');
 await B.go('/');
 check('Your groups asks Ben "Are you in?" with the time',await B.js(`/Are you in\\?.*Friday table.*8:00 PM/.test(document.querySelector('.home-ask').textContent.replace(/\\s+/g,' '))`));
 await B.go(tab);
-check('Coming up follows In progress',await B.js(`[...document.querySelectorAll('.group-sessions h2')].map(h=>h.textContent.trim()).join('|').startsWith('In progress|Coming up')`));
+check('Coming up follows Nobody is playing',await B.js(`[...document.querySelectorAll('.group-sessions h2')].map(h=>h.textContent.trim()).join('|').startsWith('Nobody is playing|Coming up')`));
 check('the card gives date, time, seats and waiting',await B.js(`/8:00 PM/.test(document.querySelector('.coming-card .table-card-when').textContent)&&/3 of 3 seats · 1 waiting/.test(document.querySelector('.coming-card .table-card-facts').textContent)`));
 await B.go(friday);
 check('a player who has not answered has one main action on the session page',await B.js(`[...document.querySelectorAll('main .btn-primary')].filter(e=>e.getClientRects().length).length===1&&!document.querySelector('.hero a.btn-primary')`),await B.js(`[...document.querySelectorAll('main .btn-primary')].filter(e=>e.getClientRects().length).map(e=>e.textContent.trim())`));

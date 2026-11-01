@@ -78,7 +78,7 @@ try{
  // A real tap at the toast's centre: it reaches the control underneath and sends the toast away.
  const message=(words)=>`(()=>{const m=document.querySelector('#main > .messages')||(()=>{const u=document.createElement('ul');u.className='messages';u.setAttribute('role','status');document.getElementById('main').prepend(u);return u})();const l=document.createElement('li');l.className='message message-success';l.textContent=${JSON.stringify(words)};m.append(l);document.dispatchEvent(new CustomEvent('inplace:updated',{detail:{}}))})()`;
  await H.go('/s/3/');
- await H.js(`(()=>{window.__hit=0;const b=[...document.querySelectorAll('main .player-row button')].find(x=>x.textContent.trim()==='Rebuy');b.addEventListener('click',e=>{window.__hit++;e.preventDefault();e.stopPropagation()},true);window.__b=b})()`);
+ await H.js(`(()=>{document.documentElement.style.minHeight='200vh';window.__hit=0;const b=[...document.querySelectorAll('main .player-row button')].find(x=>x.textContent.trim()==='Rebuy');b.addEventListener('click',e=>{window.__hit++;e.preventDefault();e.stopPropagation()},true);window.__b=b})()`);
  await H.js(message('Payment recorded.'));await sleep(400);
  const spot=await H.js(`(()=>{const t=document.querySelector('.toast.message-success').getBoundingClientRect();const y=t.top+t.height/2;scrollBy(0,window.__b.getBoundingClientRect().top+window.__b.getBoundingClientRect().height/2-y);const r=window.__b.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}})()`);
  await sleep(150);

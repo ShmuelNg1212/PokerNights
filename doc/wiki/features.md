@@ -183,7 +183,7 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 - The card then reads "You're in", "Waitlist · 2nd in line" or "You said you can't make it", with one quiet button to change it.
 - When a confirmed player drops out, the first in line gets the seat and a notice: "A seat opened. You're in."
 - The session page shows **Who's coming**: the confirmed, the waitlist in order, and folded lists of who can't make it and (for hosts) who has not answered. A host can **Mark in**, **Mark out**, **Seat now** (adds a seat) and change the seats. A tap on a row opens a short confirmation under it; the pill reads **Cancel** while it is open. The answer updates the page in place, and the player glides to their new list. The seats cannot go below the number coming.
-- Answers stop when set 1 is in play. While set 1 is Joining, the session is under both Coming up and Now playing.
+- Answers stop when set 1 is in play. While set 1 is Joining, the session is under both Coming up and In progress.
 - Set 1's **Add players** ticks the confirmed players first, no more than the free seats, and shows the waitlist with each place.
 
 
@@ -754,7 +754,7 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 
 The group's Sessions tab leads with the viewer's own table, then lists their past nights. [Plan](../plan/1792243014_sessions_tab_redesign.md).
 
-- **Now playing.** One card for each session in progress. A card shows the table, the location and the date ("Today" for today in Manila), the latest set and its state, up to six seated players' chips with "+N", "N at the table", and the clock while the set is in play. A set in play is felt; every other state is a neutral panel.
+- **In progress.** One card for each session in progress. A card shows the table, the location and the date ("Today" for today in Manila), the latest set and its state, up to six seated players' chips with "+N", "N at the table", and the clock while the set is in play. A set in play is felt; every other state is a neutral panel.
 - **Order.** Sets in play where the viewer sits, other sets in play, the viewer's open or ended sets, other open or ended sets, then drafts (hosts only). Inside each band: the earliest date, then the oldest session.
 - **Your table.** A card where the viewer sits says "You're playing" (or "You're at this table" before play). The first such card has the one bone action: **Go to the table**, **Go to set N** or **Go to the session**. Another card of the viewer's has the same label in the secondary style.
 - **Where a card leads.** The latest set while it is unfinished, else the session. The group card on Your groups uses the same rule (`web.sessions_tab.destination`).

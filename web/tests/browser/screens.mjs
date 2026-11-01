@@ -102,7 +102,7 @@ try {
  // Four tabs on the smallest phone: every word whole, on one line, inside the bar.
  const N=await user('hana',320);await N.go('/g/1/?view=players');
  check('320px: four tabs fit, each word on one line and at 48px',await N.js(`(()=>{const bar=document.querySelector('.tabs'),tabs=[...bar.querySelectorAll('a')],b=bar.getBoundingClientRect();return tabs.length===4&&document.documentElement.scrollWidth<=320&&tabs.every(a=>{const r=a.getBoundingClientRect(),w=document.createRange();w.selectNodeContents(a);return r.left>=b.left&&r.right<=b.right&&r.height>=48&&w.getClientRects().length<=2&&w.getBoundingClientRect().width<=r.width})})()`));
- check('320px: the marker fills the chosen tab',await N.js(`(()=>{const a=document.querySelector('.tabs a[aria-current]').getBoundingClientRect(),m=document.querySelector('.tab-marker').getBoundingClientRect();return Math.abs(a.width-m.width)<1&&Math.abs(a.left-m.left)<1})()`));
+ check('320px: the marker fills the chosen tab',await N.js(`(()=>{const a=document.querySelector('.tabs a[aria-current]').getBoundingClientRect(),m=document.querySelector('.tab-marker').getBoundingClientRect();return Math.abs(a.width-16-m.width)<1&&Math.abs(a.left+8-m.left)<1})()`));
  await N.shot('tabs-four-320');
 
  // An old address of Group settings still arrives.

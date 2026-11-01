@@ -110,7 +110,7 @@ Since 2026-10-28 these scripts pass on `main` again: `rack.mjs` (20), `end_set.m
 - The pot is `.pot-main .display-amount`. An open set without money has no `.prep-money` line.
 - A zero count leaves no "still to count" line. An override set reads "Off by …, covered by an override …".
 - Forms for tables, presets, the roster, invites and renames are on the group's `?view=settings` tab. The roster box is `names`.
-- New session follows the Now playing cards. Sign up has one password field.
+- New session follows the In progress cards. Sign up has one password field.
 - An invite link can be used more than once; its row reads "Used 1 of …".
 - The session page polls its own state, so `navigate.mjs` counts only the set's polls. Its walk is seven rounds of card, Back, Back, then a card: 22 screen changes. A set page has the same number of sheets as after a fresh load.
 - Hidden elements are not measured for 48 px targets.
@@ -350,3 +350,9 @@ Since 2026-11-01 (UI revamp Slice D):
 - `screens.mjs` has 75 checks: four tabs, also at 320 px, and old addresses. `journey.mjs` has 15 checks, with the two taps to Invite.
 - Words: `table`, `home` and others read Joining, Go to and In progress.
 - `copy.mjs` needs `INVITE_LINKS_SHOWN=False`, because its invite branch checks the link shown once. `rake_extra.mjs` runs after `rake.mjs`, on the same database.
+
+Since 2026-11-01 (UI revamp Slice E):
+
+- Seed a fresh temporary database with `seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_remaining.py`, `seed_opening.py` and `seed_surfaces.py`, then run `node web/tests/browser/surfaces.mjs` (505 checks). It writes nothing. It captures each page and state at 390 px, some at 320 and 1280 px, sheets open, and a dimmed set of captures for a dim room. It checks one container level, an underside only on a primary, no text under 13 px, 4.5:1 contrast, headings and gaps on the scale, the title's 20 px, the way back's words, the head and tabs by 180 px, and the first-time states. `PN_SURFACES_REPORT=1` prints the figures without failing.
+- A secondary button sinks 1 px on a press, so `motion.mjs` asks only that it sinks.
+- `screens.mjs` allows for the tab bar's 8 px inset. `roster.mjs` reads Players. `end_set.mjs` reads Finalized. `rsvp.mjs` reads "Nobody is playing" over Coming up. `door.mjs` rounds a target's height, as `entry.mjs` does.

@@ -38,7 +38,7 @@ async function page(opts={}){const {browserContextId}=await send('Target.createB
  await size(390);return {s,js,go,click,shot,size,type,back};}
 const results=[];const check=(name,ok,note='')=>{results.push({name,ok:!!ok});console.log(`${ok?'PASS':'FAIL'} ${name}${note?'  ('+note+')':''}`)};
 const text=t=>`document.body.textContent.includes(${JSON.stringify(t)})`;
-const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>el.getBoundingClientRect().height>=48)`;
+const targets=`[...document.querySelectorAll('main a.btn, main button, main input:not([type=hidden]), main .entry-alt a, main .entry-invite a')].filter(el=>el.getClientRects().length).every(el=>Math.round(el.getBoundingClientRect().height)>=48)`;
 // WCAG contrast of an element's text against the surface it sits on, via canvas so oklch resolves.
 const contrast=(sel,on)=>`(()=>{const c=document.createElement('canvas').getContext('2d');const rgb=v=>{c.fillStyle='#000';c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=([r,g,b])=>{const f=x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4};return .2126*f(r)+.7152*f(g)+.0722*f(b)};const el=document.querySelector(${JSON.stringify(sel)});const a=lum(rgb(getComputedStyle(el).color)),b=lum(rgb(getComputedStyle(document.querySelector(${JSON.stringify(on)})).backgroundColor));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)})()`;
 // The angle a part of the chip is turned to, in degrees, and where its middle is on the screen.

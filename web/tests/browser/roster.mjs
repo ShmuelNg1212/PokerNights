@@ -44,7 +44,7 @@ try {
 
  // The way there and back.
  await A.click(`${row('Ben')}.querySelector('a.roster-link')`);
- check('a row opens the player, and the way back names Players',await A.js(`location.pathname.includes('/players/')&&document.querySelector('.back-words').textContent.endsWith('players')`));
+ check('a row opens the player, and the way back names Players',await A.js(`location.pathname.includes('/players/')&&document.querySelector('.back-words').textContent.trim()==='Players'`));
  check('Manage is above the record and closed',await A.js(`(()=>{const m=${manage};return !m.open&&m.getBoundingClientRect().bottom<=innerHeight&&m.querySelector('summary').textContent.trim()==='Manage Ben'})()`));await A.shot('roster-player-page-390');
  await A.click(`document.querySelector('.table-bar a')`);
  check('the way back lands on the row',await A.js(`location.search==='?view=players'&&location.hash.startsWith('#member-')&&!!${row('Ben')}`));
