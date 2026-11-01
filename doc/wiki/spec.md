@@ -69,11 +69,11 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Show each player their own net result and what they owe or are owed, clearly.
 - Mark each transfer as paid. Unpaid transfers stay visible, and each session reads Settled, Partly settled or Unsettled.
 - Before a session closes, the host can record a payment made at the table, for example to a player who leaves early. Closing subtracts it from what is still owed. Results do not change ([ADR 0002](../adr/0002-payments-at-the-table.md)).
-- When closing a session, the host can carry earlier unpaid transfers between two of its players into the new settle-up. They are netted with the night's results into one list.
+- When closing a session, the host can carry earlier unpaid transfers between two of its players into the new settle-up. They start selected. They are netted with the night's results into one list.
 - Any member can share a closed session's results to the group chat as one picture and as text. The app sends nothing itself.
 
 ### 4. Roster and history
-- A group's page has the tabs Sessions, Players, Stats and Settings. Stats appears after the first closed session.
+- A group's page always shows Sessions, Players, Stats and Settings to active members. Before the first closed session, Stats says, "Players appear here once a session closes." Its action is Go to sessions ([ADR 0011](../adr/0011-stats-before-the-first-closed-session.md)).
 - Saved player roster for fast session setup. A roster player needs no login.
 - The Players tab holds Invite and adding names at its top, then one row per player. A row leads to the player's page. A host manages another player on that page; a player can change only their own name there.
 - The Settings tab has one row each for Tables, Presets, Chip presets and Rake, and for hosts Group name and Manage. Each row opens its own form.

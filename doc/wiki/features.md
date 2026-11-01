@@ -114,7 +114,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 - Rake: only the chosen rule's amount field is drawn, by CSS on the checked choice (`.rake-settings:has(...)` in `app.css`). Both fields are always posted; `RakeFields.clean` reads the chosen one.
 - Draft set: the Stakes and rake step's button reads "Change" (its accessible name still says "Choose rake before buy-ins" while rake can be chosen). Its line is three `.fact` spans. A host's empty Players section has no sentence.
 - Add players: the roster form comes first. The new-player form is still the page's first `form.form-section`, which the browser checks rely on.
-- "More host controls" flies out (`fly()` in `static/js/dock.js`): see DESIGN.md. It is skipped under reduced motion and while the dock slides.
+- "More host controls" uses the native disclosure height transition described below. `dock.js` still moves the dock itself when its bar opens or closes.
 - Browser check: `session_setup.mjs` with `seed_setup.py` (see `web/tests/browser/README.md`).
 
 ## Add players in one send (2026-10-14)
@@ -333,7 +333,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Sessions shows the sessions in progress as table cards, then the past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
 - **Players** holds invite links and adding names at its top, then the roster, with a search from 11 players.
 - **Settings** holds one row each: Tables, Presets, Chip presets, Rake, and for hosts Group name and Manage. Each row states its current value and opens its own form. A write comes back with its row open, and a refused form keeps its typing there. Players read the same lists without host forms.
-- Stats appears once the group has a closed session. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately.
+- Stats is always visible to active group members. With no closed session, it says "Players appear here once a session closes" and offers Go to sessions. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately. [ADR 0011](../adr/0011-stats-before-the-first-closed-session.md).
   - Only closed sessions count, using the current frozen results of their finalized sets. Canceled sets and open sessions are excluded.
   - A player's sets are added per session first. Several sets in one session count as one session.
   - Profit or loss is the result after rake. It is not the settle-up balance.
@@ -350,21 +350,28 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Reduced motion, no JavaScript, or a Motion file that fails to load: the app works as before.
 - Code: `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
 
+## Native disclosures (2026-11-01)
+
+- Native disclosures animate their content height in 200 ms where `::details-content` and `interpolate-size` are supported. More host controls and set Details use this same treatment. Other browsers keep the native snap. Reduced motion also snaps.
+- The stylesheet supplies this behavior. More host controls and set Details need no separate opening script. Rapid taps reverse the current height transition.
+- Code: the native disclosure block in `static/css/app.css`. Checks: `web/tests/browser/fluid.mjs` and `web/tests/browser/table.mjs`.
+
 ## Motion between screens (stage 3 of the motion overhaul)
 
-- A tapped link that goes deeper (Your groups → group → session → set → set log or a form) shifts the screen one way; a link that goes back shifts it the other way. A group's tabs shift their content sideways and slide the marker. The phone's own Back and Forward keep the plain cross-fade.
-- The group's name and the session's table name travel from the card or row that was tapped to the next screen's heading, and back. Players' chips travel between a session's results and a set's rows. The top bar stays still.
+- A tapped link that goes deeper (Your groups → group → session → set → set log or a form) shifts the screen one way; a link that goes back shifts it the other way. A group's tabs shift their content sideways and slide the marker. Browser Back from a set returns its title and chips to that set's card. Other browser Back and Forward changes keep the plain cross-fade.
+- The group's name and the session's table name travel from the card or row that was tapped to the next screen's heading, and back. Players' chips travel between a session's results and a set's rows. A session card supplies only its own chips; they travel to matching player rows in the set. The top bar stays still.
 - A movement lasts at most 260ms and a tap during it is followed.
 - Reduced motion, no JavaScript, or a browser without the feature (an iPhone before iOS 18): screens change at once.
 - Code: `static/js/turbo-setup.js` (direction, carried names, the transition itself), the last block of `static/css/app.css`, `data-depth` / `data-tab` / `data-carry` in the templates, `data-m` on chips. Check: `web/tests/browser/screens.mjs`. The table of movements is in DESIGN.md.
 
 ## Motion on the live set page (stage 2 of the motion overhaul)
 
-- A change on the set page is shown as movement, whether you made it or another person did: a new player's row fades in and rises; rows slide to their place when a row above changes height; a new buy-in edge drops onto its stack; badges spring in; the brass mark fades out instead of vanishing; the "Still in play" underline draws; a new set state fades in; the books balancing draws its rule and then raises its words, once per set per browser.
+- A change on the set page is shown as movement, whether you made it or another person did. A new player's row fades in and rises. Rows slide to their place when a row above changes height. A new buy-in edge drops onto its stack. Badges spring in. The brass mark fades out. The "Still in play" underline draws. Balanced books draw their rule and raise their words once per set and browser.
+- **Start.** The existing felt sweep takes 500 ms. Side facts and player rows settle after it. Figures stay at their accepted value. A localStorage mark keeps this once per set and browser; reload and Resume do not replay it. Refused storage leaves the start static.
+- **State changes.** Counting and Final keep the title in place. Their workspace moves 12 px and fades into place in 220 ms. Resume play moves the other way. A state-changing morph uses this movement without a second fade on the whole region. A blocked Motion file keeps the former browser fade.
 - Figures show their accepted value from the first frame. Rows never reorder.
-- Nothing moves on first sight of a set, while you type, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load.
-- Code: `static/js/flow.js`, `static/js/changes.js`, the last block of `static/css/app.css`. Check: `web/tests/browser/flow.mjs`. The events table is in DESIGN.md.
-- Next stages (each with its own plan): the live set page, moving between screens, results and settle-up.
+- These Motion effects do not run on first sight of a set, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load. Native disclosure motion follows the CSS support rule above.
+- Code: `static/js/flow.js`, `static/js/table.js`, `static/js/changes.js` and `static/css/app.css`. Checks: `web/tests/browser/flow.mjs` and `web/tests/browser/fluid.mjs`. The events table is in DESIGN.md.
 
 ## The pot's figure rolls (2026-10-11)
 
@@ -413,7 +420,7 @@ From the [critique](../study/1791201933_host_gaps_numpad_count_up.md) of the end
 - **A player** reads “Who pays whom comes when the host settles up.” and **Go to the session**.
 - **The session page** shows **Go to set N** only for the latest set that is not finished. The rake row shows only when rake was collected. “Results so far” has a “Not final” badge.
 - **On a phone** “Found a mistake?” and **Reopen set** follow the results, so the choice stands alone under the proof.
-- **Motion.** The two cards rise 8 px and fade in once per set and browser, 60 ms apart, after finalizing. A press during the rise takes over. Reduced motion, a blocked Motion file and a reload show them at once.
+- **Motion.** The two cards rise 8 px and fade in once per set and browser after finalizing. Each takes 220 ms, with 30 ms between them, so both finish by 250 ms. Arrival and press use the same `y` property, so a press takes over the rise. Opacity has separate cleanup. Reduced motion, a blocked Motion file and a reload show them at once.
 - **Live.** A final set's poll version also carries the session's set states and status, so the choice changes when another set moves or the session closes.
 - Code: `templates/web/_next_step.html`, `templates/web/_carry_pick.html`, `web.views.next_step`, `web.views.live_version`, `static/js/nextstep.js`, the “What next?” block at the end of `static/css/app.css`.
 
@@ -552,7 +559,8 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 
 - `templates/web/_session_live.html` chooses the page: the felt panel with `details.set-facts` in play, and the `.prep` checklist for a draft or an open set. `web/prep.py` works out each step's state from the summary the page already has; no query is added.
 - `_player_row.html` is one row and its sheet sources. `sheets.js` can swap one sheet's content for another's inside the open dialog (`data-sheet-swap`); that is how Cash out is reached on a phone.
-- `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` holds the movement and remembers the steps in `sessionStorage` to know what changed.
+- `dock.js` folds the host menu on first sight of a set in play and keeps the host's choice as `open` or `collapsed`. `table.js` remembers the steps in `sessionStorage` to know what changed.
+- **Completed step.** Its visible tick draws in 80 ms. A newly completed fold stays open for those 80 ms, then closes in 200 ms. The next title lights at 260 ms and reaches Brass by 300 ms. A tap interrupts the automatic fold; a fold the person opened stays open. A poll does not save the temporary open as a user choice. Optional steps draw their own tick. Reduced motion shows the finished state at once.
 - `GameSession.state_word` gives the words Draft, Joining, In play, Counting up, Finalized and Canceled to templates (`state_word` filter) and to refusal messages. No migration.
 - The `TABLE_REVAMP` switch and the earlier set page were removed on 2026-10-12, after the human accepted the new one. Check: `web/tests/browser/table.mjs`. [Plan](../plan/1791549025_set_page_revamp.md).
 

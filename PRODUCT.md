@@ -162,3 +162,7 @@ A new group names its first table on New session. New session starts from the ch
 The group page has four tabs: Sessions, Players, Stats and Settings. Players has its own tab, with Invite and adding names first, so a new host reaches Invite in two taps from Your groups. A roster row leads to the player's page, and a host's management is there. Settings is six rows, each opening its own form. Stats states its unit and period in one control that opens a sheet. This revises the 2026-10-04 addendum, which split the page into Sessions, Stats and Group settings.
 
 Words: a set is Draft, Joining, In play, Counting up, Finalized or Canceled. The host's action is "Let players join". Moving says "Go to". A session that is not closed is "In progress". This revises the 2026-10-09 addendum, which fixed the states as Draft, Open and In play.
+
+## 2026-11-01 addendum — Stable group tabs
+
+Show Stats before a group's first closed session. Explain the empty board: players appear once a session closes. Give one action, Go to sessions. Keep all four tab positions stable. Only closed sessions supply stats. The human also confirmed the existing selected defaults for earlier unpaid transfers and the Not started badge. [Decision](doc/adr/0011-stats-before-the-first-closed-session.md).
