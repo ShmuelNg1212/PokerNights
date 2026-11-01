@@ -23,7 +23,7 @@
 - [ ] E: Your smallest phone: "1 buy-in", "bought in" and every badge are readable, and no row is crowded.
 - [ ] E: A new group: a stack of chips, one sentence, New session. A new player's group has no button.
 
-## Phone checks, unreleased (Slice F)
+## Phone checks, released 2026-11-01 (Slice F)
 
 - [ ] Start on two phones: the felt spreads once, rows settle, and figures are exact. Reload and Resume do not replay the start.
 - [ ] Counting and Final: the title stays still. Resume moves back. What next can be pressed while it arrives.
