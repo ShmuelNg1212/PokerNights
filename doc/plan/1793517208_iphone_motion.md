@@ -4,7 +4,7 @@ Mode: mixed. Direction: refine The Rack. Base: `976b889`.
 
 Study: [installed iPhone motion](../study/1793517118_iphone_motion.md).
 
-Status: approved on 2026-11-01. Work is saved on `fix/iphone-motion`, from `b969b2a`. Rendezvous stopped after two failed rechecks. Ask the human before another round. This branch is not yet verified.
+Status: release authorized on 2026-11-01 after the 58/60 report. Source commits are `b287f66` and `af5daa2`, on `fix/iphone-motion` from `b969b2a`. Release gates and doc sync are complete. The plan is frozen with the verification limits below. Merge and push are authorized.
 
 ## OPEN QUESTIONS
 
@@ -78,15 +78,15 @@ Complete when the failing header check and the related interaction checks pass.
 
 ### 4. Rendezvous — tests: alongside
 
-- [ ] Run the affected Django tests before each code commit. Run the SQLite suite before completion.
-- [ ] Run header, motion, fluid, table and dock browser checks sequentially. Use fresh synthetic fixtures for checks that consume records.
-- [ ] Compare any existing failure by name with the base. Do not waive a new failure because the suite already had failures.
-- [ ] Exercise the first signed-in action: open a player's sheet, close during entry, reopen, and make one synthetic buy-in. Verify one accepted record and exact displayed amount.
-- [ ] Check group settings and More host controls by real touch where possible. Check navigation to a set and Back. Keep no-navigation-rewrite scope unless a separate defect is reproduced.
-- [ ] Run a WebKit check in available automation or desktop Safari. Record the engine and version. A Chromium capability override is supplementary evidence.
-- [ ] Inspect phone-width screenshots and frame samples. Test reduced motion, blocked Motion, no JavaScript, long content and a live refresh.
-- [ ] Run independent read-only standards/spec and motion reviews under the AGENTS.md rendezvous rules. Request verdict, evidence and file:line for each finding.
-- [ ] Allow two fix-and-recheck rounds. If a check still fails, stop and ask. Record all verdicts below.
+- [x] Run the affected Django tests before each code commit. Run the SQLite suite before completion.
+- [x] Run header, motion, fluid, table and dock browser checks sequentially. Use fresh synthetic fixtures for checks that consume records.
+- [x] Compare any existing failure by name with the base. Do not waive a new failure because the suite already had failures.
+- [x] Exercise the first signed-in action: open a player's sheet, close during entry, reopen, and make one synthetic buy-in. Verify one accepted record and exact displayed amount.
+- [x] Check group settings and More host controls by real touch where possible. Check navigation to a set and Back. Keep no-navigation-rewrite scope unless a separate defect is reproduced.
+- [x] Run a WebKit check in available automation or desktop Safari. Record the engine and version. A Chromium capability override is supplementary evidence.
+- [x] Inspect phone-width screenshots and frame samples. Test reduced motion, blocked Motion, no JavaScript, long content and a live refresh.
+- [x] Run independent read-only standards/spec and motion reviews under the AGENTS.md rendezvous rules. Request verdict, evidence and file:line for each finding.
+- [x] Allow two fix-and-recheck rounds. If a check still fails, stop and ask. Record all verdicts below.
 
 Acceptance: the new regression checks pass. Existing behavior remains correct. No unexplained new failure remains. Record every unverified phone behavior explicitly.
 
@@ -94,12 +94,12 @@ Complete when the local feature branch is verified and the checks below are reco
 
 ### 5. Sync docs — tests: alongside
 
-- [ ] Update DESIGN.md and the relevant wiki behavior text. Delete the stale unconditional snap statement.
-- [ ] Add the first-frame sheet case to the existing motion footgun if the source fix confirms it.
-- [ ] Update TODO.md with unreleased phone checks. Keep it at 40 lines or fewer.
-- [ ] Update the browser README with the new regression command and fixture needs.
-- [ ] Run `graphify update .` after source changes. Keep graph artifacts out of commits.
-- [ ] Record final commits and checks in this plan. Freeze it after rendezvous.
+- [x] Update DESIGN.md and the relevant wiki behavior text. Delete the stale unconditional snap statement.
+- [x] Add the first-frame sheet case to the existing motion footgun if the source fix confirms it.
+- [x] Update TODO.md with unreleased phone checks. Keep it at 40 lines or fewer.
+- [x] Update the browser README with the new regression command and fixture needs.
+- [x] Run `graphify update .` after source changes. Keep graph artifacts out of commits.
+- [x] Record final commits and checks in this plan. Freeze it after rendezvous.
 
 Complete when the docs match the code, the branch is clean, and this plan has the verification record.
 
@@ -118,7 +118,7 @@ After release, the phone checks are:
 
 ## Verification record
 
-Task 1: the new checks failed on the old source (34/40). With the source fix and fresh fixtures, motion passed 40/40. The 7 in-place rendering tests passed. A first repeat used consumed fixtures and failed two write checks; reject that run. The fresh run passed those checks. Code and motion reviews remain for rendezvous.
+Task 1: the new checks failed on the old source (34/40). With the source fix and fresh fixtures, motion passed 40/40. The 7 in-place rendering tests passed. A first repeat used consumed fixtures and failed two write checks; reject that run. The fresh run passed those checks. Standards, spec and motion reviews later approved the source. The motion review correction is recorded below.
 
 
 ### Rendezvous checkpoint, 2026-11-01
@@ -137,4 +137,20 @@ Task 1: the new checks failed on the old source (34/40). With the source fix and
 - The final sequential controller stopped at the mobile probe. Fluid, table, dock and the post-fallback motion rerun have not run. Do not record them as passed.
 - The physical iPhone and installed mode remain unverified. No merge or push was made.
 
-Next: obtain permission for another diagnosis/recheck round. Isolate the close-indicator probe discrepancy. Then complete the remaining browser suites, sync docs, and record a verified branch. The plan is still editable because rendezvous is incomplete.
+The agent stopped at the two-round limit. The human then said “shp it”. This authorizes the release after the stated 58/60 report. The timing assertion remains unresolved. The release record below keeps that limit explicit.
+
+
+### Release checks, 2026-11-01
+
+- Human authorization: “shp it”, after the known browser-check limit was reported.
+- PostgreSQL: 1,670 tests passed. No skips.
+- Vercel-style SQLite: 1,670 tests passed, 17 PostgreSQL-only skips. A second run with DEBUG disabled also passed all 1,670 tests with the same skips.
+- Header: 106/106 passed. Table: 60/60 passed. Dock: 226/228. Its only failures are the known baseline checks `toggle keeps focus across live update` and `bar verdict follows typing`.
+- Fluid: 23/24. The failure was `poll: the completed tick is visible before the fold closes`. Released `main` at `976b889` failed the same assertion with the same closed fold and missing tick. This is a baseline failure, separate from the unresolved new Chromium assertion.
+- Independent standards and spec reviews found no actionable issue. Motion review approved after the bounded closing-state correction.
+- Three doc agents each updated one wiki page. The main agent checked the text against the code. DESIGN.md and the browser README now describe the fallback and first-frame fix. TODO.md keeps the phone checks in 40 lines.
+- The physical iPhone and installed-app experience remain phone checks. The new cross-browser probe is still 58/60. It is not a full pass.
+
+- Final sheet motion rerun: 40/40 passed after the disclosure fallback changes. The first real sheet action added exactly one 50,000-centavo buy-in. The request ID was unique. The final database had three expected additions from normal, reduced-motion and blocked-library actions. All request IDs were distinct.
+- Source commits: `b287f66` fixes the sheet's first frame. `af5daa2` adds compatible disclosure motion and isolates menu owners. No money, schema, permission or navigation rule changed.
+- The local feature tree is ready for the authorized fast-forward merge and push. Production build and serving status must be checked after that push. Keep those results in work state. Do not rewrite this frozen task board.

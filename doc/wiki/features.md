@@ -114,7 +114,7 @@ A game without accepted buy-ins can be canceled with a reason. A canceled game d
 - Rake: only the chosen rule's amount field is drawn, by CSS on the checked choice (`.rake-settings:has(...)` in `app.css`). Both fields are always posted; `RakeFields.clean` reads the chosen one.
 - Draft set: the Stakes and rake step's button reads "Change" (its accessible name still says "Choose rake before buy-ins" while rake can be chosen). Its line is three `.fact` spans. A host's empty Players section has no sentence.
 - Add players: the roster form comes first. The new-player form is still the page's first `form.form-section`, which the browser checks rely on.
-- "More host controls" uses the native disclosure height transition described below. `dock.js` still moves the dock itself when its bar opens or closes.
+- "More host controls" uses the disclosure height motion described below, with a measured-height fallback. `dock.js` still moves the dock itself when its bar opens or closes.
 - Browser check: `session_setup.mjs` with `seed_setup.py` (see `web/tests/browser/README.md`).
 
 ## Add players in one send (2026-10-14)
@@ -347,14 +347,18 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 
 - Buttons sink under a finger and spring back. A sent control shows a running brass line until the answer arrives; an accepted one pulses once; a refusal nudges the field or message that explains it.
 - Sheets rise from the bottom edge with a spring and can be closed mid-rise. Toasts arrive, stack without overlapping, and drop away when dismissed. The host dock opens with the same spring.
+- With motion on, a sheet's inline transform places it below the screen before it can paint. This prevents a frame at its final position before the rise. Cleanup waits two frames after motion ends. It clears the transform only if that animation is still the latest one for the sheet.
 - Reduced motion, no JavaScript, or a Motion file that fails to load: the app works as before.
-- Code: `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
+- Code: `static/js/sheets.js`, `static/js/motion.js`, `static/js/vendor/motion-14.0.0.js`, the "Motion system" block at the end of `static/css/app.css`. Check: `web/tests/browser/motion.mjs`.
 
 ## Native disclosures (2026-11-01)
 
-- Native disclosures animate their content height in 200 ms where `::details-content` and `interpolate-size` are supported. More host controls and set Details use this same treatment. Other browsers keep the native snap. Reduced motion also snaps.
-- The stylesheet supplies this behavior. More host controls and set Details need no separate opening script. Rapid taps reverse the current height transition.
-- Code: the native disclosure block in `static/css/app.css`. Checks: `web/tests/browser/fluid.mjs` and `web/tests/browser/table.mjs`.
+- In-flow disclosures animate their content height in 200 ms. More host controls and set Details use this treatment. Browsers with both `::details-content` and `interpolate-size` use the native CSS transition.
+- Where either CSS feature is absent, `disclosures.js` measures the height and uses the Web Animations API. Native disclosure semantics remain. Account overlays and RSVP confirmations keep their own motion owner.
+- Rapid taps reverse from the current height. The fallback restores the requested open state and the original inline height and overflow when it ends. It also finishes before a live update, when the page is hidden, when the motion preference changes, or when the page is left.
+- A closing fallback holds the content open until motion ends. Its `data-disclosure-closing` marker excludes that temporary open state from saved choices. Completed setup steps use the same disclosure owner to fold after the tick.
+- Reduced motion changes the state at once. Without JavaScript, native disclosures still work. Where native CSS motion and the Web Animations API are unavailable, the state changes at once.
+- Code: `static/js/disclosures.js`, `static/js/table.js`, `static/js/live.js` and the native disclosure block in `static/css/app.css`. Checks: `web/tests/browser/fluid.mjs`, `web/tests/browser/table.mjs` and `web/tests/browser/mobile_motion.mjs`.
 
 ## Motion between screens (stage 3 of the motion overhaul)
 
@@ -370,7 +374,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - **Start.** The existing felt sweep takes 500 ms. Side facts and player rows settle after it. Figures stay at their accepted value. A localStorage mark keeps this once per set and browser; reload and Resume do not replay it. Refused storage leaves the start static.
 - **State changes.** Counting and Final keep the title in place. Their workspace moves 12 px and fades into place in 220 ms. Resume play moves the other way. A state-changing morph uses this movement without a second fade on the whole region. A blocked Motion file keeps the former browser fade.
 - Figures show their accepted value from the first frame. Rows never reorder.
-- These Motion effects do not run on first sight of a set, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load. Native disclosure motion follows the CSS support rule above.
+- These Motion effects do not run on first sight of a set, in a hidden tab, under reduced motion, without JavaScript or if the Motion file does not load. Disclosure height motion follows the support rules above.
 - Code: `static/js/flow.js`, `static/js/table.js`, `static/js/changes.js` and `static/css/app.css`. Checks: `web/tests/browser/flow.mjs` and `web/tests/browser/fluid.mjs`. The events table is in DESIGN.md.
 
 ## The pot's figure rolls (2026-10-11)

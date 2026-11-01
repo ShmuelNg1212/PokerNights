@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks, released 2026-10-31 and 2026-11-01 (Slices A to E)
+## Phone checks, released 2026-10-31 and 2026-11-01 (Slices A to F and iPhone motion)
 
 - [ ] A/B: Starting a set: no "Rebuy added" and no box. A success is one small pill you can tap through. One Confirm button in the bottom bar.
 - [ ] A/B: Forms: the way back is the arrow in the top bar, and swipe back moves the right way. Your groups on the smallest phone: every initial is whole.
@@ -22,15 +22,15 @@
 - [ ] E: A set in play as host: "Tap a player to cash out" is above the first row. Nothing moves at the first cash-out.
 - [ ] E: Your smallest phone: "1 buy-in", "bought in" and every badge are readable, and no row is crowded.
 - [ ] E: A new group: a stack of chips, one sentence, New session. A new player's group has no button.
-
-## Phone checks, released 2026-11-01 (Slice F)
-
 - [ ] Start on two phones: the felt spreads once, rows settle, and figures are exact. Reload and Resume do not replay the start.
 - [ ] Counting and Final: the title stays still. Resume moves back. What next can be pressed while it arrives.
 - [ ] Details and More host controls: open and close smoothly. Rapid taps reverse them. Reduced motion stays still.
 - [ ] Tap a session card, then Back: the name and matching chips travel. Safari stays smooth.
 - [ ] Add players: the tick draws, the step folds, and the next title lights. A tap can keep the fold open.
 - [ ] A new group has Stats with an explanation. Earlier unpaid transfers start selected. Keep Not started before play.
+- [ ] iPhone motion: launch the installed app. Open and close the account menu. Reverse it during close. The pointer stays on the account chip.
+- [ ] iPhone motion: open Settings, Details and More host controls. Reverse the folds. Go to a set and Back. Repeat with Reduce Motion on.
+- [ ] iPhone motion: open a player, then cash-out or buy-in. Close during entry and reopen. No flash appears. The keyboard does not move the page unexpectedly.
 
 ## Next (each needs its own study and plan)
 

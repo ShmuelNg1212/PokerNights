@@ -1,5 +1,28 @@
 # Browser checks
 
+## iPhone motion and browser support
+
+`mobile_motion.mjs` checks phone-width Chromium and WebKit. It uses a separate Playwright test tool. Playwright is not an application dependency. Install that tool outside the repository:
+
+```sh
+npm install --prefix /private/tmp/pn-browser-tools playwright
+PLAYWRIGHT_BROWSERS_PATH=/private/tmp/pn-browser-binaries node /private/tmp/pn-browser-tools/node_modules/playwright/cli.js install webkit
+```
+
+Use a fresh temporary database. Migrate it. Seed `seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_opening.py` and `seed_mobile_motion.py`, in that order. Start Django on `127.0.0.1:8765` with that database. Then run:
+
+```sh
+PN_PLAYWRIGHT=/private/tmp/pn-browser-tools/node_modules/playwright PLAYWRIGHT_BROWSERS_PATH=/private/tmp/pn-browser-binaries node web/tests/browser/mobile_motion.mjs
+```
+
+`PN_ENGINES=webkit` runs WebKit alone. `PN_REVIEW_DIR` selects the captures. `PN_BROWSER_URL` selects another server. The fixture creates one draft for each engine and capability path. Each draft is consumed by one completion check. Reset the database before a repeat.
+
+The 60 checks cover native interpolation and its measured-height fallback, rapid reversal, live close state, sheet first frames, interrupted entry, swap focus, caret alignment, touch navigation, reduced motion, completion during polling and no JavaScript. A forced fallback removes the CSS enhancement as well as the JavaScript capability. No check claims to run an installed app or a physical iPhone.
+
+Known limit on 2026-11-01: 58/60 passed. The 50 ms closing-caret assertion failed in both Chromium paths. WebKit passed both paths. A focused Chrome probe showed the caret moving correctly. That discrepancy remains unresolved. Do not report the complete probe as green.
+
+`motion.mjs` also samples three sheet openings from their first visible frame. The old 60 ms sample missed the flash at rest. The entry checks require a rising sheet and no stale inline transform after it settles.
+
 ## Session chip values
 
 Use a fresh temporary database for this flow. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py` with that database selected. Start the local server with the same database. Run `node web/tests/browser/chip_values.mjs`.
