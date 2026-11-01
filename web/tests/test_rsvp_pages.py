@@ -73,6 +73,13 @@ class RsvpPageTests(TestCase):
         self.assertNotIn('<span class="badge">In progress</span>', page)
         self.assertIn("Game: No-Limit Hold", page)
 
+    def test_a_session_whose_only_set_was_canceled_has_begun(self):
+        services.transition(self.first.pk, self.host, "open")
+        services.transition(self.first.pk, self.host, "cancel", "Rained out")
+        self.as_(self.host)
+        page = self.client.get(reverse("night", args=[self.night.pk])).content.decode()
+        self.assertNotIn('<span class="badge">Not started</span>', page)
+
     def test_a_set_being_prepared_names_its_game_to_a_player(self):
         services.transition(self.first.pk, self.host, "open")
         services.announce_night(self.night.pk, self.host)
