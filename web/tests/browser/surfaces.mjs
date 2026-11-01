@@ -53,7 +53,7 @@ const MEASURE=`(()=>{
  const scale=[0,4,8,12,16,24,32,48];const gaps=[];for(const e of main.querySelectorAll('section,.panel,.page-heading,.tabs,.form-section,h1,h2,.section-heading')){if(!shown(e)||e.closest('dialog,summary,.visually-hidden'))continue;const c=getComputedStyle(e);for(const k of ['marginTop','marginBottom','paddingTop','paddingBottom']){const v=parseFloat(c[k]);if(!scale.includes(Math.round(v)))gaps.push((e.className||e.tagName).toString().slice(0,24)+' '+k+' '+v)}}
  const bare=/Session: |Back to /.test(backWords);
  const firsts=[...main.querySelectorAll('.empty-state,.home-first')].filter(shown).map(e=>({sentences:[...e.querySelectorAll(':scope > p.muted:not(.small)')].map(p=>p.textContent.trim().split(/[.!?](?:\\s|$)/).filter(Boolean).length).reduce((a,b)=>a+b,0),actions:[...e.querySelectorAll('a.btn,button.btn')].filter(shown).length,drawn:!!e.querySelector('img,.first-chips')}));
- return{firsts,gaps:[...new Set(gaps)],bare,small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight};
+ return{firsts,gaps:[...new Set(gaps)],bare,small:[...new Set(small)],low:[...new Set(low)],heads,frames:frames.length,deepest,deep:[...new Set(deep)],title:h1?h1.textContent.trim().replace(/\\s+/g,' ').slice(0,60):'',titleSize:h1?getComputedStyle(h1).fontSize:'',titleGap:range?Math.round(range.getBoundingClientRect().top-hb):null,back:backWords,tabsEnd:tabs?Math.round(tabs.getBoundingClientRect().bottom+scrollY):null,undersides,scrollW:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight};
 })()`;
 const host=[['home','/'],['group-sessions','/g/1/'],['group-players','/g/1/?view=players'],['group-stats','/g/1/?view=stats'],['group-settings','/g/1/?view=settings'],
  ['set-draft-empty','/s/4/'],['set-joining',`/s/${OPENING.default.set}/`],['set-in-play','/s/3/'],['set-counting','/s/2/'],['set-counting-chips','/s/6/'],['set-balanced','/s/8/'],['set-recount','/s/9/'],['set-final','/s/1/'],['set-large','/s/11/'],
@@ -62,7 +62,7 @@ const host=[['home','/'],['group-sessions','/g/1/'],['group-players','/g/1/?view
 const player=[['player-home','/'],['player-group','/g/1/'],['player-set-in-play','/s/3/'],['player-set-final','/s/1/'],['player-session',`/n/${NIGHTS.partly}/`]];
 const empty=[['nora',[['empty-home','/']]],['owen',[['empty-group',`/g/${EMPTY}/`],['empty-players',`/g/${EMPTY}/?view=players`],['empty-stats',`/g/${EMPTY}/?view=stats`],['empty-settings',`/g/${EMPTY}/?view=settings`],['empty-new-session',`/g/${EMPTY}/sessions/new/`]]],['pia',[['empty-player-group',`/g/${EMPTY}/`],['empty-player-stats',`/g/${EMPTY}/?view=stats`]]],['rae',[['empty-roster',`/g/${FIRST.solo}/?view=players`]]]];
 const table=[];const rows={};
-async function walk(U,list,prefix=''){for(const[name,path]of list){await U.go(path);const m=await U.js(MEASURE);m.name=prefix+name;rows[prefix+name]=m;table.push(m);await U.shot(prefix+name,true);await U.js(`document.querySelector('html').style.filter='brightness(.45)'`);if(U.width===390&&/^(group-sessions|set-joining|set-in-play|set-counting|session-closed-partly|group-settings)$/.test(name))await U.shot('dim-'+name);await U.js(`document.querySelector('html').style.filter=''`)}}
+async function walk(U,list,prefix=''){for(const[name,path]of list){await U.go(path);const m=await U.js(MEASURE);m.name=prefix+name;m.overflow=m.scrollW>U.width;rows[prefix+name]=m;table.push(m);await U.shot(prefix+name,true);await U.js(`document.querySelector('html').style.filter='brightness(.45)'`);if(U.width===390&&/^(group-sessions|set-joining|set-in-play|set-counting|session-closed-partly|group-settings)$/.test(name))await U.shot('dim-'+name);await U.js(`document.querySelector('html').style.filter=''`)}}
 try{
  const H=await user('hana');await walk(H,host);
  await walk(H,[['empty-past','/g/1/?past=mine']]);
@@ -73,7 +73,7 @@ try{
  const P=await user('ben');await walk(P,player);
  for(const[n,list]of empty){const U=await user(n);await walk(U,list)}
  // Sheets are read open, for their type and contrast.
- const sheet=async(U,name,path,open)=>{await U.go(path);await U.js(open);await sleep(500);const m=await U.js(MEASURE);m.name=name;m.titleGap=null;m.sheet=true;table.push(m);await U.shot(name)};
+ const sheet=async(U,name,path,open)=>{await U.go(path);await U.js(open);await sleep(500);const m=await U.js(MEASURE);m.name=name;m.overflow=m.scrollW>U.width;m.titleGap=null;m.sheet=true;table.push(m);await U.shot(name)};
  await sheet(H,'sheet-rebuy','/s/3/',`[...document.querySelectorAll('.player-row button')].find(b=>b.textContent.trim()==='Rebuy').click()`);
  await sheet(H,'sheet-player','/s/3/',`document.querySelector('.player-opener').click()`);
  await sheet(H,'sheet-recap',`/n/${NIGHTS.partly}/`,`document.querySelector('.recap-opener').click()`);
@@ -94,7 +94,7 @@ try{
   check(`${m.name}: text at 4.5:1 or more${m.low.length?': '+m.low.join(' | '):''}`,!m.low.length);
   check(`${m.name}: headings on the scale (${Object.keys(m.heads).filter(k=>!allowed.test(k)).join(', ')})`,Object.keys(m.heads).every(k=>allowed.test(k)));
   check(`${m.name}: gaps on the scale${m.gaps.length?': '+m.gaps.join(' | '):''}`,!m.gaps.length);
-  check(`${m.name}: no sideways scroll`,!m.overflow);
+  check(`${m.name}: no sideways scroll (${m.scrollW}px)`,!m.overflow);
   if(m.sheet)continue;
   for(const f of m.firsts||[])check(`${m.name}: an empty state has one sentence and at most one action (${f.sentences}, ${f.actions})`,f.sentences<=1&&f.actions<=1);
   if(/^empty-(home|group|stats|player-group|player-stats)$/.test(m.name))check(`${m.name}: a bare page has the mark or drawn chips`,(m.firsts||[]).some(f=>f.drawn));

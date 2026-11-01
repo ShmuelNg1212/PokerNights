@@ -22,7 +22,8 @@ shown();
 // browser scrolls to what takes focus and its only button is its last line.
 function focusStart(source) {
 var field = "sheetReads" in source.dataset ? S.dialog.querySelector(".sheet-head button") : S.body.querySelector("[data-sheet-focus]") || S.body.querySelector("input:not([type=hidden]), button");
-if (field) { field.focus(); if (field.select) field.select(); }
+// A confirmation reads from its top: its safe button can be its last line, so focus moves no scroll.
+if (field) { field.focus({preventScroll: field.matches("[data-sheet-focus]")}); if (field.select) field.select(); }
 }
 // Other scripts prepare a sheet's content when it shows (share.js draws the card).
 function shown() { document.dispatchEvent(new CustomEvent("sheet:shown", {detail: {key: S.key, body: S.body}})); }

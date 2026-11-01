@@ -234,7 +234,7 @@ class CountPageTests(TestCase):
         self.night.cash("B", 700)
         page = self.client.get(self.page_url)
         for text in ('data-status="ready">Ready to cash out', 'data-status="cashed_out">Cashed out', 'data-status="awaiting">Awaiting count',
-                     "Counted ₱1,600", "Payment: at the end of the session", "Confirm all counts"):
+                     "Counted ₱1,600", "Payments come at the end of the session", "Confirm all counts"):
             self.assertContains(page, text)
 
     def test_zero_is_accepted_and_empty_is_refused(self):

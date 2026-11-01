@@ -29,8 +29,8 @@
 <section aria-labelledby="highlights-heading">
   <h2 id="highlights-heading">Highlights</h2>
   <dl class="player-highlights panel">
-    <div><dt>Best night</dt><dd><a href="{% url 'night' best.night_id %}">{% include "web/_stat_figure.html" with figure=best_figure class="" %} <span class="muted small">{{ best.date|date:"M j, Y" }}</span></a></dd></div>
-    <div><dt>Worst night</dt><dd><a href="{% url 'night' worst.night_id %}">{% include "web/_stat_figure.html" with figure=worst_figure class="" %} <span class="muted small">{{ worst.date|date:"M j, Y" }}</span></a></dd></div>
+    <div><dt>Best night</dt><dd><a href="{% url 'night' best.night_id %}">{% include "web/_stat_figure.html" with figure=best_figure class="" %} <span class="muted small">{{ best.date|short_date }}</span></a></dd></div>
+    <div><dt>Worst night</dt><dd><a href="{% url 'night' worst.night_id %}">{% include "web/_stat_figure.html" with figure=worst_figure class="" %} <span class="muted small">{{ worst.date|short_date }}</span></a></dd></div>
     <div><dt>Current run</dt><dd>{{ run }}</dd></div>
     <div><dt>Longest winning run</dt><dd>{{ longest }} session{{ longest|pluralize }}</dd></div>
   </dl>
@@ -40,7 +40,7 @@
   <ul class="list player-sessions">
     {% for s in sessions %}
     <li><a class="row" href="{% url 'night' s.result.night_id %}">
-      <span class="grow"><strong>{{ s.result.date|date:"M j, Y" }}</strong><span class="roster-activity">{{ s.result.table }} · bought in {{ s.result.bought_in|amount:unit }}{% if s.result.seconds %} · {{ s.result.seconds|duration }}{% endif %}</span></span>
+      <span class="grow"><strong>{{ s.result.date|short_date }}</strong><span class="roster-activity">{{ s.result.table }} · bought in {{ s.result.bought_in|amount:unit }}{% if s.result.seconds %} · {{ s.result.seconds|duration }}{% endif %}</span></span>
       {% include "web/_stat_figure.html" with figure=s.figure class="" %}
     </a></li>
     {% endfor %}

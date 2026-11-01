@@ -63,7 +63,7 @@ h1 { font-size: var(--h-page); line-height: 1.15; margin: 0.25rem 0 0.75rem; }
 h2 { font-size: var(--h-section); margin: 1.5rem 0 0.5rem; }
 h3 { font-size: var(--h-part); margin: 1rem 0 0.25rem; }
 p { margin: 0.5rem 0; }
-:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; scroll-margin-block: 80px calc(var(--dock-h, 0px) + var(--s-4)); }
 
 .skip-link { position: absolute; left: -999px; }
 .skip-link:focus { left: 8px; top: 8px; background: var(--surface); padding: 8px; z-index: 10; }
@@ -186,9 +186,11 @@ a { text-underline-offset: .22em; }
 h1, h2 { text-wrap: balance; }
 .btn { gap: .5rem; transition: transform var(--t-press) var(--ease-out), background var(--t-fast); }
 .btn-primary { box-shadow: var(--shadow-primary); }
-.btn:hover { background: color-mix(in oklch, var(--surface-2) 75%, var(--bone)); }
-.btn-primary:hover { background: oklch(0.99 0.01 85); }
-.btn:active { transform: translateY(1px); }
+@media (hover: hover) {
+  .btn:hover { background: color-mix(in oklch, var(--surface-2) 75%, var(--bone)); }
+  .btn-primary:hover { background: oklch(0.99 0.01 85); }
+}
+.btn:active { transform: translateY(1px); filter: brightness(.85); }
 .btn-primary:active { transform: translateY(3px); box-shadow: none; }
 .btn:disabled { transform: none; }
 .btn[aria-busy=true] { color: var(--brass); background: var(--rail-2); }
@@ -211,6 +213,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .pot-label { font-size: var(--h-label); }
 .felt .where { margin: 4px 0 16px; }
 .pot { display: grid; grid-template-columns: minmax(0,1fr) 116px; align-items: end; gap: 8px; }
+/* At a zoom this far the figure and the clock need a line each. */
+@media (max-width: 279px) { .pot { grid-template-columns: minmax(0,1fr); } }
 .display-amount { font-size: 4rem; line-height: 1.05; font-stretch: var(--w-money); font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .pot-side { display: grid; justify-content: space-between; gap: 10px; text-align: right; }
 .pot-side strong { display: block; font-size: 1.6875rem; line-height: 1.2; font-stretch: var(--w-money); font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -253,7 +257,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .host-controls > * { margin: 0; }
 .host-controls h2 { margin-top: 0; font-size: var(--h-part); }
 .host-controls .next-action { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 16px; right: 16px; width: calc(100% - 32px); z-index: 5; box-shadow: var(--shadow-primary), 0 8px 24px oklch(0 0 0 / .6); }
-.host-controls .next-action:not(.btn-primary) { box-shadow: none; }
+.host-controls .next-action:not(.btn-primary), .host-controls .next-action:active { box-shadow: none; }
 .host-more > summary { color: var(--muted); font-size: .875rem; }
 .sheet { width: min(100%, 440px); max-height: 85dvh; margin: auto auto 0; padding: 16px 20px 24px; border: 0; border-radius: var(--r-sheet) var(--r-sheet) 0 0; color: var(--bone); background: var(--rail); box-shadow: 0 -12px 48px oklch(0 0 0 / .5); overflow-y: auto; }
 .sheet::backdrop { background: oklch(0.1 0.01 60 / .7); }
@@ -435,7 +439,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-layout, .night-overview, .night-detail { min-width: 0; }
 .night-detail section { margin-top: var(--s-6); }
 .night-detail h2 { margin-bottom: var(--s-2); }
-.night-game { margin: var(--s-4) 0 0; }
+.night-game { margin: var(--s-2) 0 0; }
+.night-sets + .muted { margin: 0; padding-top: var(--s-3); border-top: 1px solid var(--rule); }
 .night-page h1, .night-page strong, .night-page .grow { overflow-wrap: anywhere; }
 .night-mine { border-top: 1px solid var(--felt-ink); margin-top: var(--s-5); padding-top: var(--s-4); }
 .night-mine h2 { margin: 0 0 8px; }
@@ -481,7 +486,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-results .row { flex-wrap: wrap; }
 @media (max-width:359px) { .night-results .amount { font-size: 1.125rem; } }
 .night-sets li, .payment-records li { padding: 12px 0; overflow-wrap: anywhere; }
-.set-link { display: inline-flex; align-items: center; min-height: var(--tap); }
+.set-link { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); }
+.table-page > .center a { display: inline-flex; align-items: center; min-height: var(--tap); }
 .recap-opener { display: none; margin-top: 16px; }
 .sheets-enabled .recap-opener { display: flex; }
 .recap { display: grid; gap: var(--s-5); }

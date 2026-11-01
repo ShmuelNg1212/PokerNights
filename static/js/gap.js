@@ -53,6 +53,8 @@
     event.preventDefault();
     // No record to point at: the tap opens where to look, so it always shows something new.
     var where = !el.hasAttribute("data-suspect") && document.querySelector("#live .discrepancy-where");
+    // Where to look already open: the next place is the players' rows, where a record can be corrected.
+    if (where && where.open) el = document.querySelector("#live .count-row") || el;
     if (where) where.open = true;
     var room = band(), box = el.getBoundingClientRect(), gap = 16;
     var whole = box.top >= room.top && box.bottom <= room.bottom;

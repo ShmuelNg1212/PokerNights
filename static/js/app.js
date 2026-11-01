@@ -37,6 +37,13 @@
     event.stopPropagation();
     var notice = noticeEl();
     if (notice) { notice.classList.remove("nudge"); void notice.offsetWidth; notice.classList.add("nudge"); }
+    // The notice sits behind a sheet's backdrop, so a sheet says it in its own form, as a failed send does.
+    if (event.target.closest("dialog[open]")) {
+      var note = event.target.querySelector(".sheet-error") || document.createElement("p");
+      note.className = "sheet-error"; note.setAttribute("role", "alert");
+      note.textContent = "You're offline. That wasn't sent.";
+      event.target.prepend(note);
+    }
   }, true);
 
   // Full-screen mode has no reload button. A page that does not refresh itself reloads when

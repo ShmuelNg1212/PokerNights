@@ -35,7 +35,7 @@
         <p class="muted small">Bought in {{ line.buy_in_total|amount:unit }}. Enter what {{ p.member.display_name }} takes off the table.</p>
         {% include "web/_cash_out_form.html" %}</div>
       </details>{% endif %}
-      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}" data-title="{{ p.member.display_name }} · details">
+      <details class="sheet-source" data-key="player-{{ p.pk }}" data-sheet-source="player-{{ p.pk }}"{% if not line.can_cash_out_now %} data-sheet-reads{% endif %} data-title="{{ p.member.display_name }} · details">
         <summary>Details</summary><div class="sheet-content">
         {% if line.can_cash_out_now %}<button hidden type="button" class="btn btn-primary btn-block sheet-swap" data-sheet-swap="cash-{{ p.pk }}">{% icon 'arrow-up-right' %}Cash out</button>{% endif %}
         <p class="sheet-summary">Bought in <strong>{{ line.buy_in_total|amount:unit }}</strong>{% if line.has_cash_out %} · cashed out <strong>{{ line.cashed_out|amount:unit }}</strong>{% endif %}</p>

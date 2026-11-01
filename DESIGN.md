@@ -51,7 +51,7 @@ typography:
     lineHeight: 1.45
   label:
     fontFamily: "Archivo, ArchivoFallback, system-ui, sans-serif"
-    fontSize: ".75rem"
+    fontSize: ".8125rem"
     fontWeight: 500
   amount-input:
     fontFamily: "Archivo, ArchivoFallback, system-ui, sans-serif"
@@ -1302,3 +1302,8 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Cash-out on a phone.** While a host's set is in play, "Tap a player to cash out or correct an entry." sits under the Players heading, before the rows. It stays there for the whole set, so no row moves when someone cashes out.
 - **Disclosures.** Every disclosure has a chevron that turns. A summary with no icon of its own draws one in CSS.
 - **Badges.** A session that has begun says "In progress", one with no set started yet "Not started", a set on its final page "Finalized". Results keep "Final" and "Not final". Host is a neutral badge everywhere, since green means up.
+- **Pot figure.** A pesos figure of 8 characters or more takes the smaller step, so "₱125,000" clears the timer at 360 px. Below 280 px, which only zoom reaches, the figure and the clock stack.
+- **Press and hover.** A pressed flat button dims to 85%, so it answers with reduced motion too. Hover is only for a pointer that hovers, so a tint does not stay after a tap.
+- **Focus.** A control reached by keyboard stops 80 px under the top and clear of the dock.
+- **Sheets that are read.** A confirmation, and a player's details, open at their top. On a phone, no keyboard rises over the records until a field is tapped.
+- **Books off.** The first press on the main button opens Where to look. The next leads to the players' rows, where a record can be corrected. A sheet tells a person they are offline, inside its own form.
