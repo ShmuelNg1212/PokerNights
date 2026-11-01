@@ -34,7 +34,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] Decide: should a closing session's earlier unpaid transfers start ticked, should the Stats tab show before the first closed session, and is the "Not started" badge right?
+- [ ] Draw seats from a draft: approved, ready to build after Slice F ([plan](doc/plan/1793514402_draw_from_draft.md)).
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
