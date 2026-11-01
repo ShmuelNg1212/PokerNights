@@ -31,7 +31,8 @@ const LOG=`addEventListener('DOMContentLoaded',()=>{window.__runs=[];window.__er
  // Motion starts an animation on the frame after it is asked, before anything is painted; that frame is the first one seen.
  document.addEventListener('live:updated',()=>requestAnimationFrame(()=>{const live=document.getElementById('live');if(!live)return;const msg=live.querySelector('.books-message');
   window.__at=performance.now();
-  __f.push({region:+getComputedStyle(live).opacity,runs:__runs.length,msg:msg?+getComputedStyle(msg).opacity:null,
+  const head=live.querySelector('[data-carry=title]'),work=live.querySelector('.count-workspace,.table-players,.final-results');
+  __f.push({region:+getComputedStyle(live).opacity,runs:__runs.length,msg:msg?+getComputedStyle(msg).opacity:null,head:head?{o:+getComputedStyle(head).opacity,x:m(head).m41}:null,work:work?{o:+getComputedStyle(work).opacity,x:m(work).m41}:null,
    rows:[...live.querySelectorAll('li[data-watch]')].map(r=>({k:r.dataset.watch,o:+getComputedStyle(r).opacity,y:Math.round(m(r).m42),t:(r.querySelector('.player-figure')||r).textContent.replace(/\\s+/g,' ').trim()}))});
   if(window.__tap){const b=[...live.querySelectorAll('.buy-opener')].at(-1);window.__tapAt=Math.round(m(b.closest('li')).m42);b.click();window.__tap=false}}))})`;
 async function user(name,width=390,setup){const {browserContextId}=await send('Target.createBrowserContext');const{targetId}=await send('Target.createTarget',{url:'about:blank',browserContextId});const{sessionId:s}=await send('Target.attachToTarget',{targetId,flatten:true});
@@ -127,7 +128,7 @@ try {
  const K=M.count,H=await user('hana');await H.go(`/s/${K.set}/`);await sleep(300);
  other(`games.transition(${K.set},host,'end')`);
  f=await H.redraw();
- check('state change: the new state starts transparent and no row moves by itself',f.region<0.2&&f.rows.every(r=>r.y===0)&&await H.js(`__runs.length===1&&__runs[0].keys.join()==='opacity'`));
+ check('state change: the head stays visible while the count workspace advances',f.region===1&&f.head.o===1&&f.head.x===0&&f.work.o<1&&f.work.x>0&&f.work.x<=12&&f.rows.every(r=>r.y===0));
  await H.shot('flow-state');await sleep(500);
  check('state change: ends opaque with no inline style',await H.js(`getComputedStyle(document.getElementById('live')).opacity==='1'&&!document.getElementById('live').style.opacity`));
  // While you type, the redraw waits and nothing moves.

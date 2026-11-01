@@ -357,3 +357,26 @@ Since 2026-11-01 (UI revamp Slice E):
 - A secondary button sinks 1 px on a press, so `motion.mjs` asks only that it sinks.
 - `books_gap.mjs` has 36 checks: with no suspect record, the first press opens Where to look and the next leads to the rows. In mobile emulation `innerWidth` grows to fit the content, so `surfaces.mjs` compares `scrollWidth` with the width it asked for.
 - `screens.mjs` allows for the tab bar's 8 px inset. `roster.mjs` reads Players. `end_set.mjs` reads Finalized. `rsvp.mjs` reads "Nobody is playing" over Coming up. `door.mjs` rounds a target's height, as `entry.mjs` does.
+
+## UI revamp: fluid motion (2026-11-01)
+
+Use a fresh temporary database. Migrate it, then seed `seed.py` and `seed_fluid.py`. Serve that database on port 8765. Run:
+
+```sh
+PN_DB=/private/tmp/pn-fluid-check.sqlite3 node web/tests/browser/fluid.mjs
+```
+
+Set `DATABASE_URL=sqlite:////private/tmp/pn-fluid-check.sqlite3` for migration, both seeds and the server. `PN_BROWSER_URL` selects another server. `PN_REVIEW_DIR` selects the captures. The script uses Chrome port 9359 and its own profile. It consumes its synthetic fixtures.
+
+The 24 checks make real host writes. They read Start on its first frame and on another player's browser. They check the exact pot, the existing 500 ms sweep, row cleanup, count-up, Resume in the other direction, Final, and a held press during What next arrival. They also check the visible checklist tick, the next title, rapid disclosure taps, and a poll during the automatic fold. Reduced motion and a blocked Motion file keep the write path working.
+
+Measure a disclosure's computed `::details-content` block size before, during and after opening. Chrome does not include that pseudo-element's height transition in `details.getAnimations({subtree:true})`. A chevron's 180 ms transition is a different animation.
+
+Changed checks:
+
+- `table.mjs` reads native Details height instead of the old script's opacity fade. Its first-frame Start and no-JavaScript checks stay.
+- `flow.mjs` reads a still, opaque heading and the workspace's signed horizontal movement instead of a fade on the whole live region.
+- `screens.mjs` adds 20 card-to-set and browser-Back changes. Only the tapped card supplies the name and chips. The title goes to the heading; chips go to matching player rows. It has 77 checks.
+- `dock.mjs` still checks the dock's transform, keyboard, clearance and native host controls. The separate More host controls flight script is gone.
+
+Run scripts with the same debugging port sequentially. Use a fresh database file for each script. Use SQLite's backup API for fixture copies; do not copy a database over a file with old WAL sidecars. Restart the server between fixture copies to clear template caches.

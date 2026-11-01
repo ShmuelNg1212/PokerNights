@@ -1161,6 +1161,29 @@ legend { padding: 0; }
 @keyframes back-out-right { to { opacity: 0; transform: translateX(8px); } }
 @keyframes back-in-left { from { opacity: 0; transform: translateX(-8px); } }
 
+/* Native disclosures own their height. Intrinsic-size interpolation is local to details;
+   unsupported browsers keep the native snap. Height is the accordion's layout exception. */
+@supports (interpolate-size: allow-keywords) and selector(details::details-content) {
+  @media (prefers-reduced-motion: no-preference) {
+    details { interpolate-size: allow-keywords; }
+    details::details-content {
+      block-size: 0;
+      overflow: clip;
+      transition: block-size 200ms var(--ease-out), content-visibility 200ms allow-discrete;
+    }
+    details[open]::details-content { block-size: auto; }
+    details.prep-completing::details-content { transition: none; }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .prep-ticked .icon path { stroke-dasharray: 24; animation: tick-draw 80ms var(--ease-out) both; }
+  .prep-completing .prep-steps > :not([data-step=players]) { display: none; }
+  .prep-folding .prep-steps > :not([data-step=players]) { display: none; }
+  .prep-next-ready { color: var(--brass); transition: color 40ms var(--ease-out); }
+  .prep-next-waiting { color: var(--bone); }
+}
+
 /* In-app numpad (numpad.js): twelve keys that write into the number field above them. The slot is in the form;
    it takes no room until the keys are in it. */
 [data-numpad-slot]:empty { display: none; }

@@ -1307,3 +1307,15 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Focus.** A control reached by keyboard stops 80 px under the top and clear of the dock.
 - **Sheets that are read.** A confirmation, and a player's details, open at their top. On a phone, no keyboard rises over the records until a field is tapped.
 - **Books off.** The first press on the main button opens Where to look. The next leads to the players' rows, where a record can be corrected. A sheet tells a person they are offline, inside its own form.
+
+### 2026-11-01 addendum — Dynamic and fluid (UI revamp, Slice F)
+
+Mode: Operate, inside The Rack. [Plan](doc/plan/1793431937_ui_revamp.md). This replaces the older set-state fade and scripted disclosure movement.
+
+- **Start.** Keep the existing left-to-right felt sweep: 500 ms with the existing ease-out curve. The side facts and player rows settle after it. The last row ends by 740 ms. Money is at its accepted value throughout. A localStorage mark makes the start play once per set and browser. A refused store keeps the static state. A real phone must justify any change to the sweep's direction or shape.
+- **Progress.** Counting and Final leave the set title still. The workspace moves 12 px into place in 220 ms, with opacity and the existing ease-out curve. Resume play reverses the direction. A state-changing morph uses this movement alone. A blocked Motion file keeps the former browser fade.
+- **Disclosures.** Native details interpolate their content height in 200 ms where `::details-content` and `interpolate-size` are supported. Other browsers snap. More host controls and set Details use the same native treatment. Reduced motion snaps. No disclosure needs its own opening script.
+- **Card to set.** Only the tapped card supplies a carried title and player tokens. The title goes to the set heading. Tokens go to matching player rows, where those identities already appear. Browser Back returns them to that card. Do not add a second token stack to the compact set head.
+- **Checklist.** The visible tick draws in 80 ms. A newly completed fold stays open for those 80 ms, then closes in 200 ms. The next title lights at 260 ms and reaches Brass by 300 ms. A tap interrupts the automatic fold. A poll does not save that temporary open as a person's choice. Optional steps keep their own tick. Reduced motion shows the finished state at once.
+- **What next.** The two choices rise 8 px in 220 ms, 30 ms apart. Arrival and press keep the same `y` owner, as the existing interruption rule requires. Opacity has its own cleanup. The signature stays once per set and browser.
+- **Empty Stats.** All four group tabs stay visible. An empty Stats tab says, "Players appear here once a session closes", with Go to sessions. Earlier unpaid transfers stay selected by default. Not started stays the badge for a session with no set begun.

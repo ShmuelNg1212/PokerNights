@@ -31,7 +31,18 @@
     var was = before, arrivals = 0;
     before = null;
     if (!region || !was || !moving()) return;
-    if (was.state !== region.dataset.state) { go(region, { opacity: [0, 1] }, "fade"); return; }
+    if (was.state !== region.dataset.state) {
+      // Keep the title and state in place. The work below them moves in the direction of
+      // progress; Resume play reverses it. The start has its own felt sweep in table.js.
+      if (region.dataset.state === "running" && /^(setup|open)$/.test(was.state)) return;
+      var stages = { setup: 0, open: 1, running: 2, reconciliation: 3, finalized: 4, canceled: 4 };
+      var x = stages[region.dataset.state] < stages[was.state] ? -12 : 12;
+      region.querySelectorAll(".table-players, .count-workspace, .final-results, .end-balance, .session-next").forEach(function (el) {
+        el.style.opacity = "0"; el.style.transform = "translateX(" + x + "px)";
+        go(el, { opacity: [0, 1], transform: ["translateX(" + x + "px)", "translateX(0px)"] }, "progress");
+      });
+      return;
+    }
     rows().forEach(function (row) {
       var old = was.tops[row.dataset.watch];
       if (old === undefined) {

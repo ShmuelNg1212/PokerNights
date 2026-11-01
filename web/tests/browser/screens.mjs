@@ -92,6 +92,16 @@ try {
  await A.go('/s/3/');const n=await A.js(`__vt.length`);
  await A.js(`(()=>{[...document.querySelectorAll('[data-sheet-open^=buy]')].at(-1).click();const f=document.querySelector('dialog.sheet [name=amount]');f.value='500';f.form.requestSubmit(f.form.querySelector('[type=submit]'))})()`);await sleep(1500);
  check('an action on the set page sets no direction',await A.js(`__vt.slice(${n}).every(x=>x.go==='')&&!document.documentElement.dataset.go`));
+ // Only the tapped live card carries its chips, including browser Back. Twenty changes.
+ await A.go('/g/1/'); const cards=[];
+ for(let i=0;i<10;i++) {
+  await A.js(`document.querySelector('a.table-card[href="/s/3/"]').scrollIntoView({block:'center'})`);
+  const onward=await A.hop('a.table-card[href="/s/3/"]');
+  const home=await A.hop('!history.back()');cards.push(onward,home);
+ }
+ const carries=r=>r.ok&&has(r,'group(title)')&&r.anims.some(a=>a.p.startsWith('group(chip-'));
+ check('twenty card changes: name and tokens go to the set and Back to its own card',cards.every(carries)&&cards.every(clean),cards.find(r=>!carries(r)));
+ check('twenty card changes: no errors or duplicate transition names',await A.js(`__errors.length===0&&__vt.every(r=>r.ok)`));
  // Twenty changes leave nothing behind.
  await A.go('/');for(let i=0;i<10;i++){await A.hop('.group-home h2 a');await A.hop('.table-bar a')}
  check('twenty changes: no marker, no temporary name, no error',await A.js(`!document.documentElement.dataset.go&&document.querySelectorAll('[style*="view-transition-name"]').length===0&&__errors.length===0&&__vt.every(x=>x.ok)`));

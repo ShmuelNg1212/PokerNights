@@ -17,9 +17,9 @@
       // The first keyframe is written before Motion starts (footgun: motion starts a frame late).
       card.style.opacity = "0"; card.style.transform = "translateY(8px)";
       // Two animations: a press takes over y and clears transform when it ends; nothing touches opacity.
-      var delay = { delay: 0.08 + index * 0.06 };
-      var fade = M.run(card, { opacity: [0, 1] }, "arrive", delay);
-      M.settle(card, M.run(card, { y: [8, 0] }, "arrive", delay), ["transform"]);
+      var delay = { delay: index * 0.03 };
+      var fade = M.run(card, { opacity: [0, 1] }, "progress", delay);
+      M.settle(card, M.run(card, { y: [8, 0] }, "progress", delay), ["transform"]);
       M.after(fade, function () { requestAnimationFrame(function () { requestAnimationFrame(function () { card.style.opacity = ""; }); }); });
     });
   }

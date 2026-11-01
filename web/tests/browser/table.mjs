@@ -52,8 +52,8 @@ try {
  await H.shot('table-play-390');
  // The facts behind one line.
  check('the line states bought in and cashed out',await H.js(`/₱12,500 bought in · ₱2,650 cashed out/.test(document.querySelector('.facts-line').textContent)&&!document.querySelector('.set-facts').open`));
- await H.click(`document.querySelector('.set-facts > summary')`,60);const fading=await H.js(`document.querySelector('.facts-body').getAnimations().length`);await sleep(450);
- check('Details opens the rest, and they fade in',fading>0&&await H.js(`document.querySelector('.set-facts').open&&${text('Total bought in')}&&${text('(10 buy-ins)')}&&${text('Rake is Off.')}&&!document.querySelector('.facts-body').getAttribute('style')`),`${fading} movement`);
+ await H.click(`document.querySelector('.set-facts > summary')`,60);const folding=await H.js(`parseFloat(getComputedStyle(document.querySelector('.set-facts'),'::details-content').blockSize)`);await sleep(250);
+ check('Details opens its native content height in 200ms',folding>0&&await H.js(`document.querySelector('.set-facts').open&&parseFloat(getComputedStyle(document.querySelector('.set-facts'),'::details-content').blockSize)>${folding}&&${text('Total bought in')}&&${text('(10 buy-ins)')}&&${text('Rake is Off.')}&&!document.querySelector('.facts-body').getAttribute('style')`),`${folding}px while opening`);
  check('no rake rows on a set without rake',await H.js(`!${text('Collected rake')}`));
  // The row opens the player's sheet; Cash out is inside it.
  const amountAt=await H.js(`(()=>{const r=document.querySelector('.player-row .player-figure').getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]})()`);

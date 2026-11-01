@@ -62,16 +62,16 @@
   }
   // A player's chip is carried between a session and one of its sets when it is the only chip
   // of that player in the list on each screen and looks the same on both.
-  function chips(from, to) {
-    function list(main) {
+  function chips(from, to, fromCard, toCard) {
+    function list(main, card) {
       var found = {};
-      main.querySelectorAll(".night-results .chip[data-m], #live .chip[data-m]").forEach(function (chip) {
+      (card || main).querySelectorAll(card ? ".token-stack .chip[data-m]" : ".night-results .chip[data-m], #live .chip[data-m]").forEach(function (chip) {
         var m = chip.dataset.m;
         found[m] = m in found ? null : chip;
       });
       return found;
     }
-    var before = list(from), after = list(to), count = 0;
+    var before = list(from, fromCard), after = list(to, toCard), count = 0;
     Object.keys(before).forEach(function (m) {
       var a = before[m], b = after[m];
       if (!a || !b || count >= 12 || a.className !== b.className || a.textContent !== b.textContent) return;
@@ -84,7 +84,13 @@
     settle(); change += 1;
     var link = tapped, from = document.getElementById("main"), to = newBody.querySelector("#main"), told = onward;
     tapped = null; onward = "";
-    if (!document.startViewTransition || still.matches || action === "restore" || !from || !to) return;
+    if (!document.startViewTransition || still.matches || !from || !to) return;
+    var fromCard = link && link.matches(".table-card") ? link : null;
+    var set = from.querySelector("#live"), setPath = set && set.dataset.url.replace(/state\/$/, "");
+    var toCard = setPath && Array.from(to.querySelectorAll("a.table-card")).find(function (card) { return card.getAttribute("href") === setPath; });
+    // Browser Back from a set returns its chips to that one card. Other history changes
+    // keep their existing cross-fade. Never collect chips from neighbouring cards.
+    if (action === "restore" && !toCard) return;
     var a = depth(from), b = depth(to), go = null;
     if (a === null || b === null) return;
     if (told) go = told; else if (b > a) go = "deeper"; else if (b < a) go = "back";
@@ -95,9 +101,9 @@
     if (!go) return;
     root.dataset.go = go;
     var was = (go === "deeper" && source(link)) || from.querySelector("[data-carry=title]");
-    var now = (go === "back" && origin(to)) || to.querySelector("[data-carry=title]");
+    var now = (go === "back" && (toCard ? toCard.querySelector("strong") : origin(to))) || to.querySelector("[data-carry=title]");
     if (was && now && words(was) && (words(now).indexOf(words(was)) === 0 || words(was).indexOf(words(now)) === 0)) carry(was, now, "title");
-    if ((a === 2 && b === 3) || (a === 3 && b === 2)) chips(from, to);
+    if (fromCard || toCard || (a === 2 && b === 3) || (a === 3 && b === 2)) chips(from, to, fromCard, toCard);
   }
   // --- Screen changes. A swapped page stops the scripts of the page that is leaving and
   // starts them for the one that arrives (see page.js). An in-place update of the same page
@@ -112,6 +118,10 @@
     if (morph) { if (region) region.dispatchEvent(new Event("live:updating", { bubbles: true })); }
     else direct(event.detail.newBody);
     var leave = function () { if (!morph) window.pokerPage.stop(); };
+    // flow.js owns a set's state change. A second root fade would also fade its fixed head
+    // and would obscure the first frames of the felt sweep and the completed checklist.
+    var next = event.detail.newBody.querySelector("#live");
+    if (morph && region && next && region.dataset.state !== next.dataset.state && window.pokerMotion && window.pokerMotion.on() && !document.hidden) return;
     if (!document.startViewTransition || still.matches || root.dataset.go === "filter") { leave(); settle(); return; }
     event.preventDefault();
     var shown = new Promise(function (done) { drawn = done; setTimeout(done, 2000); });

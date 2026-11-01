@@ -16,7 +16,8 @@
     // The set page (flow.js, changes.js). Rows carry money, so they move without bounce.
     shift: { type: "spring", visualDuration: 0.26, bounce: 0 },
     drop: { type: "spring", visualDuration: 0.22, bounce: 0.35 },
-    fade: { duration: 0.18, ease: "easeOut" }
+    fade: { duration: 0.18, ease: "easeOut" },
+    progress: { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
   };
 
   function on() { return !!window.Motion && !reduce.matches; }
