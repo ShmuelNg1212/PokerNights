@@ -7,14 +7,14 @@
 - [ ] New group, then New session: name the table there, and Create lands on the set. The home-screen suggestion comes only now.
 - [ ] A repeat game fits one screen and matches last session. Start the set from the draft: the felt sweeps, and four players show above the bar.
 
-## Phone checks, unreleased (`feat/ui-revamp-c-finish`)
+## Phone checks, released 2026-11-01 (UI revamp Slice C)
 
 - [ ] Confirm counts that balance: the bottom bar says Review and finish, and the review has one button, Finish set 1. One tap lands on the final set.
 - [ ] Confirm counts that do not balance: the review warns and says Cash out N players. Nothing finishes.
 - [ ] A final set of six: best result first, one short row each, and a tap on the row opens its facts. The chevron turns.
 - [ ] Close a session: the recap opens. Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
 
-## Phone checks, unreleased (`feat/ui-revamp-d-group`)
+## Phone checks, released 2026-11-01 (UI revamp Slice D)
 
 - [ ] The group page has four tabs. On the smallest phone every word is whole, and the marker slides between them.
 - [ ] From Your groups, tap a group, then Players: Invite is at the top. Copy and Share work.
@@ -23,7 +23,7 @@
 - [ ] Stats: the first ranked row is near the top. Tap the period control: a sheet rises. Choose This year: the sheet closes and the control says so. All five orders scroll beside it.
 - [ ] New session is above the cards. A set that lets players join says Joining.
 
-## Phone checks, unreleased (`feat/ui-revamp-e-surfaces`)
+## Phone checks, released 2026-11-01 (UI revamp Slice E)
 
 - [ ] In a dim room, a set in play: Rebuy still reads as a button, with no hard underside. Only the bright button has one, and a press still feels like a press.
 - [ ] The group page: tabs are words on a line, and the bar slides. A set in play is the only blue card. The rest are ruled rows.
@@ -34,7 +34,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] Decide: should a closing session's earlier unpaid transfers start ticked, and should the Stats tab show before the first closed session?
+- [ ] Decide: should a closing session's earlier unpaid transfers start ticked, should the Stats tab show before the first closed session, and is the "Not started" badge right?
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
