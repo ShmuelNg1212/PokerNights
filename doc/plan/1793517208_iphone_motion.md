@@ -4,11 +4,11 @@ Mode: mixed. Direction: refine The Rack. Base: `976b889`.
 
 Study: [installed iPhone motion](../study/1793517118_iphone_motion.md).
 
-Status: awaiting human approval. No application source has changed.
+Status: approved on 2026-11-01. Execute on `fix/iphone-motion`, from `b969b2a`.
 
 ## OPEN QUESTIONS
 
-Approve the bounded scope below. The iPhone model, iOS version and worst affected button are still unknown. These details can refine the checks. They do not block the confirmed sheet and caret fixes.
+The human approved this scope on 2026-11-01. The iPhone model, iOS version and worst affected button are still unknown. These details can refine the checks. They do not block the confirmed sheet and caret fixes.
 
 Do not treat this plan as authority to change an unrelated navigation path. If a separate hitch needs another change area, report the repro and ask to extend the scope.
 
@@ -35,11 +35,11 @@ Approval also permits a narrow DESIGN.md update. It will replace the Slice F sta
 
 ### 1. Fix the sheet's first frame — tests: alongside
 
-- [ ] Add a regression check at the real sheet opener. Sample from before opening. Fail if no sheet opens. Fail if it first appears at rest and then jumps to its entry position.
-- [ ] Confirm failure on the current source. The study failed three of three runs.
-- [ ] Set the sheet's entry position before Motion can draw its first frame. Use the existing sheet preset.
-- [ ] Clear the style after completion, close, interruption and page cleanup. Prevent an older completion from clearing a newer movement.
-- [ ] Check a rapid close during entry, reopening, and swapping from player details to cash-out. Check keyboard focus and typed values.
+- [x] Add a regression check at the real sheet opener. Sample from before opening. Fail if no sheet opens. Fail if it first appears at rest and then jumps to its entry position.
+- [x] Confirm failure on the current source. The study failed three of three runs.
+- [x] Set the sheet's entry position before Motion can draw its first frame. Use the existing sheet preset.
+- [x] Clear the style after completion, close, interruption and page cleanup. Prevent an older completion from clearing a newer movement.
+- [x] Check a rapid close during entry, reopening, and swapping from player details to cash-out. Check keyboard focus and typed values.
 
 Files: `static/js/sheets.js`, `web/tests/browser/motion.mjs`. Extend an existing helper only when needed.
 
@@ -118,4 +118,4 @@ After release, the phone checks are:
 
 ## Verification record
 
-Pending implementation.
+Task 1: the new checks failed on the old source (34/40). With the source fix and fresh fixtures, motion passed 40/40. The 7 in-place rendering tests passed. A first repeat used consumed fixtures and failed two write checks; reject that run. The fresh run passed those checks. Code and motion reviews remain for rendezvous.

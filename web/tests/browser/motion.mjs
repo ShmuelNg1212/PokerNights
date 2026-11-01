@@ -40,6 +40,15 @@ try {
  await A.mouse('mouseReleased',btn);await sleep(700);
  check('release: the button is back with no inline transform',await A.js(`${ty(btn)}===0&&${btn}.style.transform===''`));
  check('busy control runs the progress line',await A.js(`(()=>{const b=${btn};b.setAttribute('aria-busy','true');const ok=getComputedStyle(b,'::after').animationName==='busy-line';b.removeAttribute('aria-busy');return ok})()`));
+ // Read the first visible frame, before the old 60ms sample could miss a flash at rest.
+ for(let attempt=0;attempt<3;attempt++){
+  await A.js(`window.__sheetFrames=[];window.__sheetSampling=true;(function frame(){const d=${dialog};if(d.open)__sheetFrames.push({y:new DOMMatrix(getComputedStyle(d).transform).m42,opacity:+getComputedStyle(d).opacity});if(__sheetSampling)requestAnimationFrame(frame)})()`);
+  await A.js(`${opener}.click()`);await sleep(750);
+  const frames=await A.js(`(__sheetSampling=false,__sheetFrames)`);
+  check(`sheet first frame ${attempt+1}: starts below the screen, then rises`,frames.length>1&&frames[0].y>20&&frames.at(-1).y===0);
+  check(`sheet entry ${attempt+1}: no inline transform remains`,await A.js(`${dialog}.style.transform===''`));
+  await A.js(`${dialog}.querySelector('.sheet-head button').click()`);await sleep(450);
+ }
  // Sheets: rise with a spring, rest at the bottom edge, close from wherever they are.
  await A.js(`${opener}.click()`);await sleep(60);
  check('sheet: open at once and rising',await A.js(`${dialog}.open&&${ty(dialog)}>20`));await A.shot('motion-sheet-rising');

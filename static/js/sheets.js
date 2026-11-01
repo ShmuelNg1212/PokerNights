@@ -13,7 +13,13 @@ if (window.pokerNumpad) window.pokerNumpad.prepare(S.body); // the number keys a
 watchBars(S);
 S.dialog.showModal();
 S.dialog.scrollTop = 0;
-if (window.pokerMotion) window.pokerMotion.run(S.dialog, { transform: ["translateY(" + S.dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");
+var M = window.pokerMotion;
+if (M && M.on() && !document.hidden) {
+// Motion applies keyframes on its next frame. Set the entry position before the dialog can paint.
+var from = "translateY(" + S.dialog.offsetHeight + "px)";
+S.dialog.style.transform = from;
+M.settle(S.dialog, M.run(S.dialog, { transform: [from, "translateY(0px)"] }, "sheet"));
+}
 // A sheet that confirms something says where focus starts, so a stray Enter does not confirm it.
 focusStart(source);
 shown();
