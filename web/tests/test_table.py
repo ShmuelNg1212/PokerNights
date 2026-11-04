@@ -282,7 +282,7 @@ class PreparationTests(TestCase):
     def test_a_draft_with_players_is_ready_to_start(self):
         self.seat(self.ana, self.ben)
         page = self.page()
-        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done"})
+        self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "seats": "optional"})
         self.assertIn("2 added ·", page)
         self.assertIn('<button class="btn btn-primary btn-block next-action" name="action" value="start">Start the set</button>', page)
         self.assertIn('name="action" value="open">Let players join first</button>', page)

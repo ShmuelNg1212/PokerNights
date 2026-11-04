@@ -273,7 +273,7 @@ For the seat draw, seed a fresh temporary database with `seed_seat_draw.py` alon
 PN_DB=/private/tmp/pn-seat-draw-check.sqlite3 node web/tests/browser/seat_draw.mjs
 ```
 
-`PN_DB` is the served SQLite file. A host and two players sit side by side; the script clicks through the draw, the seat and the seating and plays some host actions through the services. The dealer is drawn at random, so one check runs only when Ben or Cara wins (45 or 46 checks). It takes about a minute and a half and uses up the fixture.
+`PN_DB` is the served SQLite file. A host and two players sit side by side; the script clicks through the draw, the seat and the seating and plays some host actions through the services. The dealer is drawn at random, so one check runs only when Ben or Cara wins. It takes about a minute and a half and uses up the fixture.
 
 
 For carried transfers, seed a fresh temporary database with `seed_carried.py` alone, serve it, then:
@@ -286,7 +286,7 @@ PN_DB=/private/tmp/pn-carried-check.sqlite3 node web/tests/browser/carried_debts
 
 Since carried transfers, `night.mjs` unticks the earlier transfers before its own close: its fixture's other sessions have unpaid transfers between the same players, and carrying them (the default) turned rows of another fixture session into "Carried".
 
-Since the table's new look (2026-10-12) `seat_draw.mjs` has 49 or 50 checks. It resizes the stage's table to the page's proportions for one check, to compare where the server and the browser put each seat.
+Since the draw from a draft (2026-11-04) `seat_draw.mjs` has 62 or 63 checks: two drafts in the fixture are drawn from and started without a draw. It resizes the stage's table to the page's proportions for one check, to compare where the server and the browser put each seat.
 
 For several new names at once on Add players, seed a fresh temporary database with `seed.py` and `seed_new_names.py` (an open set at a 12-seat table with Miguel seated, and a removed player named Gone; the set's id goes to `/private/tmp/pn-new-names-manifest.json`), then run `new_names.mjs 390`, `new_names.mjs 1280` and `new_names.mjs 390 reduce` (18 checks each, a fresh database for each run). It checks one form and one button, the preview of each typed name and its first frame, every clash the preview names, "Tick … instead", the seats counted for ticks and names together, a mixed send, the arrivals' mark and rise on the set page (or the mark alone under reduced motion), that they are brought into sight above the dock, and that the next view marks no one.
 

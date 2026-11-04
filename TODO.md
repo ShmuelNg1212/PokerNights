@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks, released 2026-10-31 and 2026-11-01 (Slices A to F and iPhone motion)
+## Phone checks: Slices A to F and iPhone motion (released), draw from a draft (unreleased)
 
 - [ ] A/B: Starting a set: no "Rebuy added" and no box. A success is one small pill you can tap through. One Confirm button in the bottom bar.
 - [ ] A/B: Forms: the way back is the arrow in the top bar, and swipe back moves the right way. Your groups on the smallest phone: every initial is whole.
@@ -10,12 +10,11 @@
 - [ ] C: Confirm counts that do not balance: the review warns and says Cash out N players. Nothing finishes.
 - [ ] C: A final set of six: best result first, one short row each, and a tap on the row opens its facts. The chevron turns.
 - [ ] C: Close a session: the recap opens. Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
-- [ ] D: The group page has four tabs. On the smallest phone every word is whole, and the marker slides between them.
+- [ ] D: The group page has four tabs. On the smallest phone every word is whole, and the marker slides between them. New session is above the cards. A set that lets players join says Joining.
 - [ ] D: From Your groups, tap a group, then Players: Invite is at the top. Copy and Share work.
 - [ ] D: Tap a player: Manage is above the record. Create a reset link: the link is on the screen, not above it. The arrow goes back to the same row.
 - [ ] D: Settings is six short rows. Open Tables and add a table: it comes back open. Refuse a table: the typing stays.
 - [ ] D: Stats: the first ranked row is near the top. Tap the period control: a sheet rises. Choose This year: the sheet closes and the control says so. All five orders scroll beside it.
-- [ ] D: New session is above the cards. A set that lets players join says Joining.
 - [ ] E: In a dim room, a set in play: Rebuy still reads as a button, with no hard underside. Only the bright button has one, and a press still feels like a press.
 - [ ] E: The group page: tabs are words on a line, and the bar slides. A set in play is the only blue card. The rest are ruled rows.
 - [ ] E: A set's top bar says Session and the page says the table. On a closed session the date is short and the game type is gone from the head.
@@ -31,10 +30,11 @@
 - [ ] iPhone motion: launch the installed app. Open and close the account menu. Reverse it during close. The pointer stays on the account chip.
 - [ ] iPhone motion: open Settings, Details and More host controls. Reverse the folds. Go to a set and Back. Repeat with Reduce Motion on.
 - [ ] iPhone motion: open a player, then cash-out or buy-in. Close during entry and reopen. No flash appears. The keyboard does not move the page unexpectedly.
+- [ ] Unreleased, draw from a draft: add two players to a new set. Seat draw shows without opening a menu, and the step says that players see the set when you draw.
+- [ ] Unreleased: tap Draw. The draw plays, the set says Joining, and a player's phone gets the notice and shows the same draw. On another new set, tap Start the set without a draw: it starts as before.
 
 ## Next (each needs its own study and plan)
 
-- [ ] Draw seats from a draft: approved, ready to build after Slice F ([plan](doc/plan/1793514402_draw_from_draft.md)).
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).

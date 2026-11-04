@@ -44,7 +44,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - The host records any buy-in. A player with a login records their own rebuy from their phone; the host can reverse it. One rebuy sent from two phones is recorded once.
 - Each set has its own timer.
 - **Rake (optional):** off, a flat amount or a percentage, taken from every buy-in and rebuy. It is chosen before a set accepts money and is locked after that. The group keeps a running total of rake collected, with pesos and chips separate. Each group chooses how settle-up treats the rake: returned to each player who paid it (default), or paid into the group's Rake fund (ADR 0007).
-- **Seat draw (optional):** before a set starts the host can draw the dealer and the seats. Every phone shows the same draw.
+- **Seat draw (optional):** before a set starts the host can draw the dealer and the seats. A draw from a draft opens the set, so its players see it ([ADR 0012](../adr/0012-draw-seats-from-a-draft.md)). Every phone shows the same draw.
 - On a phone, numbers are typed with the app's own number keys.
 - **RSVP** ([ADR 0003](../adr/0003-rsvp-with-a-waitlist.md)): a host announces a session with an optional start time and a seat limit (the table's seats by default). Players answer In or Out. Players past the limit wait in line; when a seat opens, the first in line gets it and is told. A host can answer for any player, seat a waiting player over the limit, or mark a player out. Answers count until set 1 is in play. Set 1's Add players starts with the confirmed players ticked. A host can also announce from New session ([ADR 0008](../adr/0008-new-session-options.md)).
 

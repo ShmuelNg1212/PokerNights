@@ -74,8 +74,8 @@ The form in `_session_live.html` already shows when `can_draw_seats` is true and
 
 `tests: first`. Put the view tests in `web/tests/test_seat_draw.py`. Put the service tests in `games/tests/test_start_from_draft.py`, or in a new file beside it.
 
-- [ ] Make a feature branch `feat/draw-from-draft`. Stack it on `feat/ui-revamp-f-motion` if Slice F is not released. Otherwise, start from `main`.
-- [ ] Write these tests and see them fail:
+- [x] Make a feature branch `feat/draw-from-draft`. Stack it on `feat/ui-revamp-f-motion` if Slice F is not released. Otherwise, start from `main`.
+- [x] Write these tests and see them fail:
   - A draw on a draft with 2 players opens the set and makes one current draw.
   - The audit log has `session.open` and `seats.drawn`.
   - The version rises by two.
@@ -88,11 +88,11 @@ The form in `_session_live.html` already shows when `can_draw_seats` is true and
   - A draw on an archived session is refused as it is now.
   - The draft page offers Draw to a host with 2 players, and not with 1.
   - The draft page does not show an earlier draw.
-- [ ] Change `draw_seats` and update its docstring.
-- [ ] Change the view.
-- [ ] Change the refusal text in `draw_seats` to "Seats are drawn before the set starts." Search the tests for the old text first.
-- [ ] Add this to the step line on a draft: "Players see the set when you draw." The host must know this before the tap. Keep the current line on an open set.
-- [ ] Remove "You can draw seats then." from the note under "Let players join first".
+- [x] Change `draw_seats` and update its docstring.
+- [x] Change the view.
+- [x] Change the refusal text in `draw_seats` to "Seats are drawn before the set starts." Search the tests for the old text first.
+- [x] Add this to the step line on a draft: "Players see the set when you draw." The host must know this before the tap. Keep the current line on an open set.
+- [x] Remove "You can draw seats then." from the note under "Let players join first".
 
 Done when: all these tests pass, and the full SQLite and PostgreSQL suites pass.
 
@@ -100,11 +100,11 @@ Done when: all these tests pass, and the full SQLite and PostgreSQL suites pass.
 
 `tests: alongside`. Extend `web/tests/browser/seat_draw.mjs` and `web/tests/browser/seed_seat_draw.py` with a draft set.
 
-- [ ] On a phone-width page, sign in as the host on a draft with 2 or more players. See the Seat draw step. Tap Draw.
-- [ ] See the stage open at once on the host's page, and see the set's badge change to Joining.
-- [ ] Sign in as a seated player. See that the draft is a 404 before the draw. See the set and the draw after it.
-- [ ] As the host, choose a seat and tap Start the set. See the seats on the running set.
-- [ ] Add a draft with 2 players to a host flow and tap Start the set without a draw. See that this flow does not change.
+- [x] On a phone-width page, sign in as the host on a draft with 2 or more players. See the Seat draw step. Tap Draw.
+- [x] See the stage open at once on the host's page, and see the set's badge change to Joining.
+- [x] Sign in as a seated player. See that the draft is a 404 before the draw. See the set and the draw after it.
+- [x] As the host, choose a seat and tap Start the set. See the seats on the running set.
+- [x] Add a draft with 2 players to a host flow and tap Start the set without a draw. See that this flow does not change.
 
 Done when: the script passes, and the existing `seat_draw` checks still pass. The first check must fail on the code before task 1.
 
@@ -112,11 +112,11 @@ Done when: the script passes, and the existing `seat_draw` checks still pass. Th
 
 `tests: alongside`. Commit these with task 1, except the checks record.
 
-- [ ] Add `doc/adr/0011-draw-seats-from-a-draft.md`. It revises ADR 0009 on "A seat draw still needs an open set" and on the extra choice in its Consequences. Do not edit ADR 0009.
-- [ ] Update the Seat draw rule in `doc/wiki/spec.md`. This plan is the approval for that change.
-- [ ] Update "Where" and add a line on the draft in the Seat draw section of `doc/wiki/features.md`.
-- [ ] Add the phone checks below to `TODO.md`. Keep the file at 40 lines or fewer.
-- [ ] Run `graphify update .`.
+- [x] Add `doc/adr/0011-draw-seats-from-a-draft.md`. Built as `doc/adr/0012-draw-seats-from-a-draft.md`: 0011 was taken by the stats ADR. It revises ADR 0009 on "A seat draw still needs an open set" and on the extra choice in its Consequences. Do not edit ADR 0009.
+- [x] Update the Seat draw rule in `doc/wiki/spec.md`. This plan is the approval for that change.
+- [x] Update "Where" and add a line on the draft in the Seat draw section of `doc/wiki/features.md`.
+- [x] Add the phone checks below to `TODO.md`. Keep the file at 40 lines or fewer. Built as two lines; two released D lines became one to make room.
+- [x] Run `graphify update .`.
 
 Done when: no wiki page says that a draw needs an open set.
 

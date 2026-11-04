@@ -1019,10 +1019,12 @@ def _current_draw(session):
 
 @transaction.atomic
 def draw_seats(session_id, actor: Member, request_id) -> SeatDraw:
-    """Draw the dealer and the order around the table for an open set. A host's action.
+    """Draw the dealer and the order around the table for a draft or an open set. A host's action.
 
-    The first drawn player is the dealer; the others sit 1, 2, 3… places clockwise. An
-    earlier draw is kept and stops being the current one. A repeated request draws nothing.
+    A draft opens first, in this transaction, so its players see the set and hear that it is
+    ready. The first drawn player is the dealer; the others sit 1, 2, 3… places clockwise. An
+    earlier draw is kept and stops being the current one. A repeated request draws nothing
+    and opens nothing.
     """
     require_host(actor)
     if not settings.SEAT_DRAW:
@@ -1034,11 +1036,13 @@ def draw_seats(session_id, actor: Member, request_id) -> SeatDraw:
         if again.session_id != session.pk:
             raise RuleError("That request belongs to another set.")
         return again
-    if session.state != State.OPEN:
-        raise RuleError("Seats are drawn while players are joining, before the set starts.")
+    if session.state not in (State.SETUP, State.OPEN):
+        raise RuleError("Seats are drawn before the set starts.")
     players = list(session.participants.filter(status=Participant.Status.JOINED).select_related("member").order_by("join_order"))
     if len(players) < 2:
         raise RuleError("A seat draw needs at least two players at the table.")
+    if session.state == State.SETUP:
+        session = transition(session_id, actor, "open")
     secrets.SystemRandom().shuffle(players)
     number = session.seat_draws.count() + 1
     session.seat_draws.filter(is_current=True).update(is_current=False)

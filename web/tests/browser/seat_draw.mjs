@@ -184,6 +184,41 @@ const W=await user('hana',{width:1280,height:800});await W.go('/s/'+M.twelve+'/'
 await W.js(`document.querySelector('[data-seat-replay]').click()`);await W.until(`${LINE}==='Seats are set'`,12000);await sleep(300);await W.shot('seats-twelve-1280');
 check('at 1280px the stage is a centred panel and the table sits in the left column',await W.js(`(()=>{const d=document.querySelector('.seat-stage').getBoundingClientRect(),t=document.querySelector('#live .seats').getBoundingClientRect();return d.width<=520&&d.left>300&&t.right<640})()`));
 
+// --- A draft: the host draws, and the draw opens the set.
+const BADGE=`document.querySelector('h1').closest('.row').querySelector('.badge').textContent.trim()`;
+const status=(who,path)=>who.js(`fetch(${JSON.stringify(path)}).then(r=>r.status)`);
+const draft='/s/'+M.draft+'/',DH=await user('hana'),DB=await user('ben');
+await DH.go(draft);await DB.go('/');
+check('a player gets 404 on the draft before the draw',(await status(DB,draft))===404);
+check('a draft with three players offers the draw as an optional step and says players see the set',await DH.js(`(()=>{const s=document.querySelector('.prep-step[data-step=seats][data-state=optional]');return !!s&&!!s.querySelector('form[action$="/draw/"] .btn-quiet')&&/Players see the set when you draw\\./.test(s.textContent)&&document.querySelector('.host-controls .next-action').textContent.trim()==='Start the set'})()`)&&(await DH.js(BADGE))==='Draft',await DH.js(BADGE));
+await DH.js(`document.querySelector('.prep-step[data-step=seats] form button').click()`);
+const drafted=await DH.until(OPEN,3000);
+check('the stage opens at once on the host\'s page',drafted>0,drafted);
+check('the set\'s badge says Joining',await DH.until(`${BADGE}==='Joining'`,4000)>0,await DH.js(BADGE));
+const fromDraft=server(M.draft);
+check('the server opened the set and holds one draw',py(`print(GameSession.objects.get(pk=${M.draft}).state)`)==='open'&&fromDraft&&fromDraft.state==='choosing'&&fromDraft.order.length===3,fromDraft);
+check('the player can see the set after the draw',(await status(DB,draft))===200);
+await DB.go(draft);
+const seen=await DB.until(`${OPEN}&&${LINE}.includes('has the dealer seat')`,9000);
+check('the player sees the same draw',seen>0&&(await DB.js(LINE))===fromDraft.dealer+' has the dealer seat',seen);
+await DH.until(`${LINE}.includes('has the dealer seat')`,9000);await DH.until(`/Tap a seat/.test(${SUB})`,6000);
+await DH.js(`document.querySelectorAll('.stage-seats button')[1].click()`);
+await DH.until(`${LINE}==='Seats are set'`,9000);
+await DH.js(`document.querySelector('[data-stage-done]').click()`);await sleep(300);
+await DH.js(`document.querySelector('.host-controls .next-action').click()`);
+check('the host starts the set after the draw',await DH.until(`${BADGE}==='In play'`,6000)>0,await DH.js(BADGE));
+const drawnRun=server(M.draft);
+check('the running set keeps the chosen seat',py(`print(GameSession.objects.get(pk=${M.draft}).state)`)==='running'&&drawnRun.state==='seated'&&drawnRun.by_seat[1]===drawnRun.dealer&&drawnRun.draw===fromDraft.draw,drawnRun);
+await DH.js(`if(document.querySelector('dialog.seat-stage[open]'))document.querySelector('[data-stage-close]').click()`);await sleep(300);
+check('the running page shows the seats',await DH.js(`(()=>{const d=document.querySelector('#live details.seats-fold');return !!d&&d.querySelector('summary').textContent.includes(${JSON.stringify(drawnRun.dealer)}+' dealt first')})()`));
+await DH.shot('seats-draft-running');
+
+// --- A draft started without a draw does what it did.
+const plain='/s/'+M.plain+'/';await DH.go(plain);
+await DH.js(`document.querySelector('.host-controls .next-action').click()`);
+check('Start the set on a draft starts it with no draw',await DH.until(`${BADGE}==='In play'`,6000)>0&&py(`print(GameSession.objects.get(pk=${M.plain}).state)`)==='running'&&server(M.plain)===null);
+check('a running set without a draw offers no draw',await DH.js(`!document.querySelector('form[action$="/draw/"]')&&!document.querySelector('#live [data-seats]')`));
+
 // --- Without scripts: ordinary forms and a still table.
 const N=await user('hana',{scripts:false});await N.go('/s/'+M.two+'/');
 await N.js(`document.querySelector('.prep-step[data-step=seats] form button').click()`);await sleep(900);

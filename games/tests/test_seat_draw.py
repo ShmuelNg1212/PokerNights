@@ -108,7 +108,7 @@ class DrawTests(TestCase):
             services.draw_seats(night.session.pk, player, uuid.uuid4())
 
     def test_refused_outside_an_open_set_and_with_one_player(self):
-        with self.assertRaisesMessage(RuleError, "while players are joining"):
+        with self.assertRaisesMessage(RuleError, "Seats are drawn before the set starts."):
             night = table(3, state="running")
             services.draw_seats(night.session.pk, night.host, uuid.uuid4())
         with self.assertRaisesMessage(RuleError, "at least two players"):

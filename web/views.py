@@ -310,11 +310,14 @@ def session_context(session, me, *, later=UNSET) -> dict:
     context["later_set"], context["live_version"] = later, live_version(session, later)
     if later is not None:
         context["at_later_table"] = later.participants.filter(member=me, status=Participant.Status.JOINED).exists()
-    if settings.SEAT_DRAW and session.state in ("open", "running"):
-        seating = seat_draws.seating(session, participants) if getattr(session, "has_seat_draw", True) else None
+    if settings.SEAT_DRAW and session.state in ("setup", "open", "running"):
+        # A draft shows no draw: one from before the set went back to draft is out of date. Drawing opens the draft.
+        drafted = session.state == "setup"
+        has_draw = not drafted and getattr(session, "has_seat_draw", True)
+        seating = seat_draws.seating(session, participants) if has_draw else None
         live = not session.night.is_archived
         context["seating"] = seating
-        context["can_draw_seats"] = live and me.is_host and session.state == "open" and seated >= 2
+        context["can_draw_seats"] = live and me.is_host and session.state in ("setup", "open") and seated >= 2
         context["can_choose_seat"] = (
             live and seating is not None and seating.state == "choosing" and session.state == "open"
             and (me.is_host or seating.dealer.member_id == me.pk)

@@ -65,7 +65,7 @@
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
   {% if session.state == 'setup' %}<form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}" class="host-action" data-once>{% csrf_token %}
     <button class="btn btn-quiet btn-block" name="action" value="open">Let players join first</button>
-    <p class="small muted">Players see the set and join. You can draw seats then.</p>
+    <p class="small muted">Players see the set and join.</p>
   </form>{% endif %}
   {# A step back is rare: on the new page it waits here, so Start has the menu to itself. #}
   {% if prep and session.state == 'open' %}<form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}

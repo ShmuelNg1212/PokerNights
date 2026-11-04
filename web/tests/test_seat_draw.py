@@ -8,7 +8,8 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from games import seats, services as games
-from groups.tests.helpers import make_group
+from games.tests.helpers import make_session
+from groups.tests.helpers import add_player, make_group
 from ledger.tests.helpers import Night
 
 
@@ -163,3 +164,85 @@ class SeatDrawPageTests(TestCase):
         self.assertNotContains(page, 'data-step="seats"')
         self.client.post(self.draw_url, {"request_id": str(uuid.uuid4())})
         self.assertIsNone(seats.seating(self.night.session))
+
+
+class DraftSeatDrawPageTests(TestCase):
+    """A host draws from a draft. The draw opens the set first."""
+
+    def setUp(self):
+        self.group, self.host = make_group()
+        self.ben = add_player(self.group, "ben")
+        self.cara = add_player(self.group, "cara")
+        self.session = make_session(self.host)
+        self.url = reverse("session", args=[self.session.pk])
+        self.draw_url = reverse("seat_draw", args=[self.session.pk])
+
+    def seat(self, *members):
+        for member in members:
+            games.add_participant(self.session.pk, self.host, member.pk)
+
+    def state(self):
+        self.session.refresh_from_db()
+        return self.session.state
+
+    def test_a_draft_with_two_players_offers_the_draw_and_says_players_see_the_set(self):
+        self.seat(self.ben, self.cara)
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.url)
+        self.assertContains(page, 'data-step="seats" data-state="optional"')
+        self.assertContains(page, 'aria-label="Draw seats"')
+        self.assertContains(page, "Players see the set when you draw.")
+
+    def test_a_draft_with_one_player_does_not_offer_it(self):
+        self.seat(self.ben)
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.url)
+        self.assertNotContains(page, 'aria-label="Draw seats"')
+        self.assertNotContains(page, 'data-step="seats"')
+
+    def test_the_open_set_keeps_its_own_line(self):
+        self.seat(self.ben, self.cara)
+        games.transition(self.session.pk, self.host, "open")
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.url)
+        self.assertContains(page, 'aria-label="Draw seats"')
+        self.assertNotContains(page, "Players see the set when you draw.")
+
+    def test_the_host_draws_from_the_draft_and_the_set_opens(self):
+        self.seat(self.ben, self.cara)
+        self.client.force_login(self.host.user)
+        self.assertRedirects(self.client.post(self.draw_url, {"request_id": str(uuid.uuid4())}), self.url)
+        self.assertEqual(self.state(), "open")
+        page = self.client.get(self.url)
+        self.assertContains(page, 'data-state="choosing"')
+        self.client.force_login(self.ben.user)
+        self.assertContains(self.client.get(self.url), 'data-state="choosing"')
+
+    def test_a_player_gets_404_on_a_draft_and_it_stays_a_draft(self):
+        self.seat(self.ben, self.cara)
+        self.client.force_login(self.ben.user)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+        self.assertEqual(self.client.post(self.draw_url, {"request_id": str(uuid.uuid4())}).status_code, 404)
+        self.assertEqual(self.state(), "setup")
+        self.assertIsNone(seats.seating(self.session))
+
+    def test_a_draft_does_not_show_an_earlier_draw(self):
+        # An open set held a draw, lost its players and went back to draft.
+        self.seat(self.ben, self.cara)
+        games.transition(self.session.pk, self.host, "open")
+        games.draw_seats(self.session.pk, self.host, uuid.uuid4())
+        for participant in self.session.participants.all():
+            games.withdraw_participant(self.session.pk, self.host, participant.pk)
+        games.transition(self.session.pk, self.host, "close")
+        self.seat(add_player(self.group, "dee"), add_player(self.group, "eve"))
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.url)
+        self.assertNotContains(page, "data-seats")
+        self.assertNotContains(page, "The table changed.")
+        self.assertContains(page, 'aria-label="Draw seats"')
+
+    def test_the_join_first_note_no_longer_promises_the_draw(self):
+        self.client.force_login(self.host.user)
+        page = self.client.get(self.url)
+        self.assertContains(page, "Let players join first")
+        self.assertNotContains(page, "You can draw seats then.")
