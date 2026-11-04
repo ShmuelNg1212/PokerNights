@@ -1,11 +1,12 @@
 """A host draws seats from a draft: the set opens and the seats are drawn in one transaction."""
 import uuid
+from unittest import mock
 
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from audit.models import AuditEvent
-from games import services
+from games import seats, services
 from games.models import GameSession, SeatDraw
 from games.tests.helpers import make_session
 from groups.errors import NotAllowed, RuleError
@@ -97,12 +98,9 @@ class DrawFromDraftTests(TestCase):
             original(*args, **kwargs)
             raise RuleError("refused after the opening")
 
-        with self.assertRaisesMessage(RuleError, "refused after the opening"):
-            services.transition = open_then_fail
-            try:
+        with mock.patch.object(services, "transition", open_then_fail):
+            with self.assertRaisesMessage(RuleError, "refused after the opening"):
                 self.draw()
-            finally:
-                services.transition = original
         self.assertEqual(self.state(), State.SETUP)
         self.assertEqual(self.actions(), [])
         self.assertFalse(Notice.objects.filter(session_id=self.session.pk).exists())
@@ -126,6 +124,20 @@ class DrawFromDraftTests(TestCase):
         with self.assertRaisesMessage(RuleError, "Seats are drawn before the set starts."):
             self.draw()
         self.assertFalse(SeatDraw.objects.filter(session=self.session).exists())
+
+    def test_back_to_draft_retires_the_draw_so_a_start_shows_none(self):
+        # An open set held a draw, lost its players and went back to draft. New players start it with no draw.
+        self.seat(self.ben, self.cara)
+        services.transition(self.session.pk, self.host, "open")
+        old = self.draw()
+        for participant in self.session.participants.all():
+            services.withdraw_participant(self.session.pk, self.host, participant.pk)
+        services.transition(self.session.pk, self.host, "close")
+        old.refresh_from_db()
+        self.assertFalse(old.is_current)
+        self.seat(add_player(self.group, "dee"), add_player(self.group, "eve"))
+        services.transition(self.session.pk, self.host, "start", request_id=uuid.uuid4())
+        self.assertIsNone(seats.seating(GameSession.objects.get(pk=self.session.pk)))
 
     def test_an_archived_session_is_refused(self):
         self.seat(self.ben, self.cara)

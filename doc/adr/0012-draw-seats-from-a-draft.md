@@ -13,7 +13,7 @@ Since ADR 0009, a host adds players to a draft and taps Start the set. The set g
 - Seated players with a login hear that the set is ready to join, as when a set opens. The host who drew does not.
 - The step on a draft says "Players see the set when you draw." The host knows this before the tap.
 - A refused draw changes nothing: the set stays a draft and nobody is told. A repeated request returns the first draw. It does not open the set or tell anyone again.
-- A draft shows no earlier draw. An open set can hold a draw and go back to draft after its players are removed. That draw is out of date.
+- A draft holds no draw. An open set can hold a draw and go back to draft after its players are removed. That draw is out of date: Back to draft makes it not current, and the log keeps it. The page also shows no draw on a draft, for drafts that went back before this change.
 - "Let players join first" stays. It is the way to let players join by themselves.
 
 ## Consequences

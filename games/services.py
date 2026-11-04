@@ -374,6 +374,9 @@ def transition(session_id, actor: Member, action: str, reason: str = "", *,
                 hook(session, actor, request_id)
         session.start_request_id = request_id
     now = timezone.now()
+    if action == "close":
+        # A draft holds no draw: one made for the players who were taken off is out of date. The log keeps it.
+        SeatDraw.objects.filter(session=session, is_current=True).update(is_current=False)
     if action == "start":
         # A draw nobody chose a seat for: the dealer takes the top seat, so play never waits for it.
         SeatDraw.objects.filter(session=session, is_current=True, stale=False, dealer_seat__isnull=True).update(dealer_seat=0, chosen_at=now)
