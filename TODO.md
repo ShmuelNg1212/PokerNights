@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: Slices A to F and iPhone motion (released), draw from a draft (unreleased)
+## Phone checks: Slices A to F and iPhone motion, draw from a draft (released 2026-11-04)
 
 - [ ] A/B: Starting a set: no "Rebuy added" and no box. A success is one small pill you can tap through. One Confirm button in the bottom bar.
 - [ ] A/B: Forms: the way back is the arrow in the top bar, and swipe back moves the right way. Your groups on the smallest phone: every initial is whole.
@@ -30,8 +30,8 @@
 - [ ] iPhone motion: launch the installed app. Open and close the account menu. Reverse it during close. The pointer stays on the account chip.
 - [ ] iPhone motion: open Settings, Details and More host controls. Reverse the folds. Go to a set and Back. Repeat with Reduce Motion on.
 - [ ] iPhone motion: open a player, then cash-out or buy-in. Close during entry and reopen. No flash appears. The keyboard does not move the page unexpectedly.
-- [ ] Unreleased, draw from a draft: add two players to a new set. Seat draw shows without opening a menu, and the step says that players see the set when you draw.
-- [ ] Unreleased: tap Draw. The draw plays, the set says Joining, and a player's phone gets the notice and shows the same draw. On another new set, tap Start the set without a draw: it starts as before.
+- [ ] Draw from a draft: add two players to a new set. Seat draw shows without opening a menu, and the step says that players see the set when you draw.
+- [ ] Draw from a draft: tap Draw. The draw plays, the set says Joining, and a player's phone gets the notice and shows the same draw. On another new set, tap Start the set without a draw: it starts as before.
 
 ## Next (each needs its own study and plan)
 
