@@ -136,6 +136,6 @@ Done when: no wiki page says that a draw needs an open set.
 
 Record the checks here. Then leave a verified branch. Merge only on "ship".
 
-- [ ] Tests:
-- [ ] Review skills:
-- [ ] Browser probe:
+- [x] Tests: SQLite 1689 pass (17 PostgreSQL-only skipped). PostgreSQL 1689 pass. New: 12 service tests in `games/tests/test_draw_from_draft.py`, 7 view tests in `web/tests/test_seat_draw.py`. `web/tests/test_table.py` now expects the optional seats step on a draft with two players. A mutation check: without the draft guard in `web/views.py`, "a draft does not show an earlier draw" fails.
+- [x] Review skills: `code-review` (medium) found 6 items. Fixed 2: (1) a set started from a draft that went back from open showed the out-of-date draw, with no way to draw again. `transition("close")` now makes the current draw not current; a test proves it failed first. (5) The rollback test uses `mock.patch.object`. Kept 4: "Drew seats again" after a close is true history; the second lock and the `has_seat_draw` query on a draft are small costs on a rare action; the README count matches the run (63 of 63), not the reviewer's count.
+- [x] Browser probe: `seat_draw.mjs`, 63 of 63 pass on the fix, round two. On the code before task 1, "a draft with three players offers the draw" fails, as required. The host draws on a 390 px draft: the stage opens at once and the badge says Joining. A player gets 404 before the draw and the same dealer after it. The host chooses a seat and starts; the running set keeps the seat. A second draft starts without a draw, as before.
