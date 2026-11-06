@@ -72,6 +72,8 @@ try {
  // ===== Six players with a seated draw: the seat order, and the button to the first dealer.
  // Ben watches the same set at 1280px, where every row is on the screen; at 390px the host's dealer row may be under the dock.
  const D=await page({width:1280,height:800});await D.login('ben');await D.go(`/s/${SET.drawn}/`);await D.js(`document.querySelector('dialog[open]')?.close()`);await D.js(SAMPLER);
+ // Ben has a player's sheet open when the start arrives: the overture waits until he closes it.
+ await sleep(300);await D.js(`document.querySelector('.player-row .player-opener').click()`);await sleep(500);const sheetOpen=await D.js(`!!document.querySelector('dialog[open]')`);
  const homeOf=`(()=>{const li=[...document.querySelectorAll('[data-seats] .seat-order > li .chip')];const by={};document.querySelectorAll('#live .player-row .chip').forEach(c=>by[c.dataset.m]=c);const d=by[li[0].dataset.m].getBoundingClientRect();return {order:li.map(c=>c.textContent.trim()),home:{x:d.left+d.width/2+d.width*.42,y:d.top+d.height/2-d.height*.36}}})()`;
  const dealerCheck=async(P,f,label)=>{const seat=await P.js(homeOf),floor=await floorOf(P),under=seat.home.y>floor-12;
   check(`${label}: the chips come in clockwise from the dealer`,JSON.stringify(f.first.chips.map(c=>c.text.trim()))===JSON.stringify(seat.order),JSON.stringify({chips:f.first.chips.map(c=>c.text),seat:seat.order}));
@@ -80,7 +82,10 @@ try {
  check('drawn: the start is accepted',await start(H,SET.drawn));
  await H.until(`__ov.n>0&&!document.querySelector('.overture')`,5000);
  const underHost=await dealerCheck(H,await H.js('({first:__ov.first,last:__ov.last})'),'drawn at 390px');
- check("drawn at 1280px: the player's phone plays it",await D.until(`__ov.n>0`,8000)&&await D.until(`!document.querySelector('.overture')`,4000));
+ await D.until(`document.getElementById('live').dataset.state==='running'`,8000);await sleep(600);
+ check("drawn at 1280px: with a sheet open, the player's phone waits",sheetOpen&&await D.js(`__ov.n===0&&!document.querySelector('.overture')&&!!document.querySelector('dialog[open]')`));
+ await D.js(`document.querySelector('dialog[open]').close()`);
+ check("drawn at 1280px: closing the sheet plays it",await D.until(`__ov.n>0`,2000)&&await D.until(`!document.querySelector('.overture')`,4000));
  const underWide=await dealerCheck(D,await D.js('({first:__ov.first,last:__ov.last})'),'drawn at 1280px');
  check('drawn: the fixture checks both ends: behind the dock at 390px, at rest on the dealer at 1280px',underHost&&!underWide,JSON.stringify({underHost,underWide}));
  check('drawn: at rest nothing is left',await H.js(rest));
@@ -95,6 +100,12 @@ try {
  await H.js(`document.querySelector('.player-row .buy-opener').click()`);await sleep(500);
  check('two: the next tap works: Rebuy opens its sheet',await H.js(`!!document.querySelector('dialog.sheet[open]')`));
 
+ // ===== The key skip: Enter on a focused Rebuy ends it and does not press the Rebuy.
+ check('keys: the start is accepted',await start(H,SET.keys));await H.until(`__ov.n>0`,1500);await sleep(500);
+ await H.js(`document.querySelector('.player-row .buy-opener').focus()`);
+ for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,...(type==='keyDown'?{text:'\r'}:{})},H.s);
+ check('keys: Enter ends it in the same frame',await H.js(`!document.querySelector('.overture')&&!document.documentElement.hasAttribute('data-overture')`));await sleep(500);
+ check('keys: Enter did not also press the focused Rebuy',await H.js(`!document.querySelector('dialog[open]')&&document.activeElement.matches('.buy-opener')`));
  // ===== Twelve players at 320 × 568: every chip stays on the screen while it circles.
  const T=await page({width:320,height:568});await T.login('hana');
  check('twelve: the start is accepted',await start(T,SET.twelve));await T.until(`__ov.n>0`,1500);await sleep(800);await T.shot('twelve-orbit-320');
@@ -107,8 +118,11 @@ try {
  // ===== 1280 × 800: the rows are in the right column.
  const W=await page({width:1280,height:800});await W.login('hana');
  check('wide: the start is accepted',await start(W,SET.wide));await W.until(`__ov.n>0`,1500);await sleep(700);await W.shot('wide-orbit-1280');
+ // live.js without Turbo replaces #live outright: every node captured at the start is gone when the chips fly.
+ const replaced=await W.js(`(async()=>{const r=document.getElementById('live');const s=await (await fetch(r.dataset.url+'?v=0',{headers:{'X-Requested-With':'fetch'},cache:'no-store'})).json();const old=r.querySelector('.player-row .chip');r.innerHTML=s.html;return !old.isConnected&&!!document.querySelector('.overture')})()`);
+ check('wide: a full replacement of the set during the overture leaves the stage playing',replaced);
  await W.until(`__ov.n>0&&!document.querySelector('.overture')`,4000);const lw=landed(await W.js('__ov.last'),await floorOf(W));
- check('wide at 1280px: each chip ends on its row token',lw.visible===lw.shown&&lw.shown>0&&lw.worst<=1.5,JSON.stringify(lw));
+ check('wide at 1280px: each chip ends on its row token, found again after the replacement',lw.visible===lw.shown&&lw.shown>0&&lw.worst<=1.5,JSON.stringify(lw));
  check('wide: at rest nothing is left',await W.js(rest));await W.shot('wide-rest-1280');
 
  // ===== Fail safe.

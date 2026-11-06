@@ -6,9 +6,9 @@
 // <html> while it plays. Any tap or key, or a hidden tab, ends it in the same frame.
 (function () {
 "use strict";
-var S = null;
+var S = null, pending = null;
 var OUT = [0.16, 1, 0.3, 1], INOUT = [0.55, 0, 0.2, 1];
-var EXIT_AT = 1300, FLY = 0.46, LAND_GAP = 0.028, CHIP = 44, DISC = 64;
+var EXIT_AT = 1300, FLY = 0.46, LAND_GAP = 0.028, CHIP = 44, DISC = 64, WAIT_FOR_SHEET_MS = 30000;
 var HIDE = "data-overture";
 
 function motion() { return window.pokerMotion; }
@@ -24,11 +24,11 @@ function at(point, scale, turn) {
 function centre(el) { var r = el.getBoundingClientRect(); return {x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height}; }
 function later(ms, act) { S.timers.push(setTimeout(act, ms)); }
 
-// What the page says, read once: the players in the order the chips take, the dealer if a draw seated
-// one, the set's label and the blinds. Nothing on the stage says what the page does not.
+// What the page says now: the players in the order the chips take, the dealer if a draw seated one, the
+// set's label, the badge and the blinds. Read at the start and again when the chips fly, since a poll may
+// have replaced the nodes in between. Nothing on the stage says what the page does not.
 function read(region) {
-  var rows = Array.prototype.slice.call(region.querySelectorAll(".player-row"));
-  var tokens = rows.map(function (row) { return row.querySelector(".chip"); }).filter(Boolean);
+  var tokens = Array.prototype.slice.call(region.querySelectorAll(".player-row .chip"));
   var byMember = {};
   tokens.forEach(function (token) { if (token.dataset.m) byMember[token.dataset.m] = token; });
   var order = [], dealer = null, seated = region.querySelector('[data-seats][data-state="seated"]');
@@ -41,9 +41,9 @@ function read(region) {
     });
   }
   tokens.forEach(function (token) { if (order.indexOf(token) < 0) order.push(token); });
-  var label = region.querySelector('[data-carry="title"] small'), badge = region.querySelector(".badge-live");
-  var blinds = region.querySelector(".pot-side > div:last-child strong");
-  return {order: order, dealer: dealer, label: label, badge: badge, set: label ? label.textContent.trim() : "", blinds: blinds ? blinds.textContent.trim() : ""};
+  var label = region.querySelector('[data-carry="title"] small'), blinds = region.querySelector('[data-fact="blinds"]');
+  return {order: order, byMember: byMember, dealer: dealer, label: label, badge: region.querySelector(".badge-live"),
+    set: label ? label.textContent.trim() : "", blinds: blinds ? blinds.textContent.trim() : ""};
 }
 
 function build(page) {
@@ -58,38 +58,64 @@ function build(page) {
   return stage;
 }
 
+// A key that ends the overture does only that: Enter or Space must not also press the focused control.
+function key(event) {
+  if (event.key === "Enter" || event.key === " ") event.preventDefault();
+  finish(event);
+}
 // Ends the overture at once, from any point: the page underneath is already complete.
 function finish(event) {
+  if (pending) { pending.dialog.removeEventListener("close", pending.go); pending = null; }
   if (!S) return;
   var me = S; S = null;
   me.timers.forEach(clearTimeout);
   me.controls.forEach(function (controls) { try { controls.stop(); } catch (_) {} });
   document.removeEventListener("pointerdown", finish, true);
-  document.removeEventListener("keydown", finish, true);
+  document.removeEventListener("keydown", key, true);
   document.removeEventListener("visibilitychange", finish);
   document.documentElement.removeAttribute(HIDE);
-  // A skipping tap must not become a tap on the page: the stage stays, unseen, to take the click that follows.
+  // A skipping tap must not become a tap on the page: the stage stays, unseen, for the click that follows.
+  // A tap that is cancelled (a drag) sends no click, so the stage also goes then, and after 350ms at most.
   if (event && event.type === "pointerdown" && me.stage.contains(event.target)) {
     me.stage.classList.add("is-gone");
     var gone = function () { me.stage.remove(); };
     me.stage.addEventListener("click", gone, {once: true});
-    setTimeout(gone, 600);
+    document.addEventListener("pointercancel", gone, {once: true, capture: true});
+    setTimeout(gone, 350);
   } else me.stage.remove();
+}
+
+// A sheet or the seat draw stage has the screen: the overture waits until it is closed, for a while.
+function waitFor(dialog, region) {
+  if (pending) return;
+  var since = Date.now();
+  pending = {dialog: dialog, go: function () {
+    pending = null;
+    if (Date.now() - since > WAIT_FOR_SHEET_MS || !region.isConnected || region.dataset.state !== "running") return;
+    setTimeout(function () { play(region); }, 0);
+  }};
+  dialog.addEventListener("close", pending.go, {once: true});
 }
 
 function play(region) {
   var M = motion();
-  if (S || !region || !M || !M.on() || document.hidden || document.querySelector("dialog[open]")) return;
+  if (S || !region || !M || !M.on() || document.hidden) return;
+  var sheet = document.querySelector("dialog[open]");
+  if (sheet) { waitFor(sheet, region); return; }
   var page = read(region);
   if (!page.label) return;
-  var stage = build(page);
-  S = {stage: stage, controls: [], timers: []};
+  S = {stage: build(page), controls: [], timers: []};
+  // A guard first: whatever happens below, the page is never left hidden.
+  later(4000, finish);
   document.documentElement.setAttribute(HIDE, "");
   document.addEventListener("pointerdown", finish, true);
-  document.addEventListener("keydown", finish, true);
+  document.addEventListener("keydown", key, true);
   document.addEventListener("visibilitychange", finish);
+  try { perform(region, page); } catch (_) { finish(); }
+}
 
-  var width = window.innerWidth, height = window.innerHeight, mid = {x: width / 2, y: height * 0.44};
+function perform(region, page) {
+  var stage = S.stage, width = window.innerWidth, height = window.innerHeight, mid = {x: width / 2, y: height * 0.44};
   var rx = Math.min(150, width * 0.36), ry = Math.min(150, height * 0.18);
   function ring(angle, reach) { return {x: mid.x + Math.cos(angle) * rx * (reach || 1), y: mid.y + Math.sin(angle) * ry * (reach || 1)}; }
   var q = function (name) { return stage.querySelector(name); };
@@ -106,11 +132,13 @@ function play(region) {
   run(facts, {opacity: [0, 1]}, "fade", {delay: 0.66});
   run(hint, {opacity: [0, 1]}, "fade", {delay: 0.3});
 
-  // Each chip sweeps in from outside the ring, 45ms apart, then they all circle the button a little.
+  // Each chip sweeps in from outside the ring, then they all circle the button a little. The stagger is 45ms
+  // and shrinks for a large table, so the last chip still has its full arrival before the chips fly.
+  var count = page.order.length, gap = Math.min(0.045, 0.36 / Math.max(1, count - 1)), arrive = 0.44;
   var chips = page.order.map(function (token, index) {
     var chip = token.cloneNode(true); chip.removeAttribute("data-m"); chip.classList.add("ov-chip"); stage.appendChild(chip);
-    var start = 0.14 + index * 0.045, angle = -Math.PI / 2 + index * 2 * Math.PI / page.order.length, steps = 6, sweep = 0.7;
-    var path = [at(ring(angle - 0.9, 2.4), 0.6)], times = [0], ease = [OUT], arrive = 0.44, length = EXIT_AT / 1000 - start;
+    var start = 0.14 + index * gap, angle = -Math.PI / 2 + index * 2 * Math.PI / count, steps = 6, sweep = 0.7;
+    var path = [at(ring(angle - 0.9, 2.4), 0.6)], times = [0], ease = [OUT], length = EXIT_AT / 1000 - start;
     for (var step = 0; step <= steps; step++) {
       path.push(at(ring(angle + sweep * step / steps)));
       times.push((arrive + (length - arrive) * step / steps) / length);
@@ -118,43 +146,52 @@ function play(region) {
     }
     run(chip, {transform: path}, {duration: length, times: times, ease: ease, delay: start});
     run(chip, {opacity: [0, 1]}, {duration: 0.2, ease: OUT, delay: start});
-    return {el: chip, token: token, from: path[path.length - 1]};
+    return {el: chip, member: token.dataset.m, from: path[path.length - 1]};
   });
 
-  // Everything goes to its place on the page. Targets are measured now, not at the start: a poll may
-  // have moved the rows since. A row under the host dock or off the screen takes its chip behind that edge.
+  // Everything goes to its place on the page, measured now from what the page says now. A row under the
+  // host dock or off the screen takes its chip, or the button, behind that edge.
   later(EXIT_AT, function () {
     if (!S || S.stage !== stage) return;
-    var dock = document.querySelector(".host-controls"), floor = height;
+    try { leave(); } catch (_) { finish(); }
+  });
+  function leave() {
+    var now = read(region), dock = document.querySelector(".host-controls"), floor = height;
     if (dock && getComputedStyle(dock).position === "fixed") floor = dock.getBoundingClientRect().top;
+    function edge(point) {
+      if (point.y > floor - 12) return {x: point.x, y: floor + 10, w: point.w, gone: true};
+      if (point.y < 0) return {x: point.x, y: -30, w: point.w, gone: true};
+      return point;
+    }
     run(ground, {opacity: [1, 0]}, {duration: 0.36, ease: OUT, delay: 0.06});
     run(pool, {opacity: [1, 0], transform: ["scale(1)", "scale(2.6)"]}, {duration: 0.4, ease: OUT});
-    run(call, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut"});
-    run(facts, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut"});
-    run(hint, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut"});
+    [call, facts, hint].forEach(function (el) { run(el, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut"}); });
     chips.forEach(function (chip, index) {
-      var to = centre(chip.token), delay = index * LAND_GAP;
-      if (to.y > floor - 12) to = {x: to.x, y: floor + 10, w: CHIP * 0.8, gone: true};
-      else if (to.y < 0) to = {x: to.x, y: -30, w: CHIP * 0.8, gone: true};
-      run(chip.el, {transform: [chip.from, at(to, to.w / CHIP)]}, {duration: FLY, ease: INOUT, delay: delay});
+      var token = now.byMember[chip.member], delay = index * LAND_GAP;
+      // A player no longer on the page: the chip fades where it is.
+      if (!token) { run(chip.el, {opacity: [1, 0]}, {duration: 0.2, ease: "easeOut", delay: delay}); return; }
+      var to = edge(centre(token));
+      run(chip.el, {transform: [chip.from, at(to, (to.gone ? 0.8 * CHIP : to.w) / CHIP)]}, {duration: FLY, ease: INOUT, delay: delay});
       if (to.gone) run(chip.el, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut", delay: delay + FLY - 0.16});
     });
-    var label = centre(page.label), own = centre(title);
-    run(title, {transform: ["translate(0px, 0px) scale(1)", "translate(" + (label.x - own.x).toFixed(1) + "px, " + (label.y - own.y).toFixed(1) + "px) scale(" + (label.h / own.h).toFixed(3) + ")"]}, {duration: FLY, ease: INOUT});
+    if (now.label) {
+      var label = centre(now.label), own = centre(title);
+      run(title, {transform: ["translate(0px, 0px) scale(1)", "translate(" + (label.x - own.x).toFixed(1) + "px, " + (label.y - own.y).toFixed(1) + "px) scale(" + (label.h / own.h).toFixed(3) + ")"]}, {duration: FLY, ease: INOUT});
+    } else run(title, {opacity: [1, 0]}, {duration: 0.16, ease: "easeOut"});
     // The button goes to the dealer a draw seated; without a draw it goes into the badge and claims nobody.
-    var home = page.dealer ? centre(page.dealer) : page.badge ? centre(page.badge) : mid;
-    if (page.dealer) home = {x: home.x + home.w * 0.42, y: home.y - home.h * 0.36, w: 22};
-    else home.w = Math.min(home.h || 22, 22);
-    // A dealer under the dock or off the screen: the button goes behind that edge, as the chips do.
-    var hidden = !page.dealer || home.y > floor - 12 || home.y < 0;
-    if (page.dealer && home.y > floor - 12) home.y = floor + 10;
-    else if (page.dealer && home.y < 0) home.y = -30;
+    var dealer = page.dealer && now.byMember[page.dealer.dataset.m], home, hidden = true;
+    if (dealer) {
+      var token = centre(dealer);
+      home = edge({x: token.x + token.w * 0.42, y: token.y - token.h * 0.36, w: 22});
+      hidden = !!home.gone;
+    } else if (now.badge) {
+      var badge = centre(now.badge);
+      home = {x: badge.x, y: badge.y, w: Math.min(badge.h || 22, 22)};
+    } else home = {x: mid.x, y: mid.y, w: 22};
     run(disc, {transform: [at(mid, 1, 0), at(home, home.w / DISC, 360)]}, {duration: FLY, ease: INOUT});
     if (hidden) run(disc, {opacity: [1, 0]}, {duration: 0.14, ease: "easeOut", delay: FLY - 0.14});
     later((FLY + Math.max(0, chips.length - 1) * LAND_GAP) * 1000 + 40, finish);
-  });
-  // A guard: whatever happens to the timers above, the page is never left hidden.
-  later(4000, finish);
+  }
 }
 
 window.pokerOverture = {play: play, finish: finish};

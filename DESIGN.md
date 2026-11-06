@@ -1066,11 +1066,12 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 - **Order and the dealer.** With a seated seat draw, the chips come in clockwise from the dealer and the button goes to the first dealer's token, at 22px. Without one, the chips come in row order and the button shrinks into the In play badge. It never marks as dealer a player who was not drawn.
 - **Off the screen.** A row under the host dock or past the screen edge takes its chip, or the button, behind that edge, fading. Nothing rests on the dock.
 - **Under the stage.** The row tokens, the title's "Set {N}" and the badge are hidden by `data-overture` on `<html>`, not by inline styles: a poll morphs `#live` and removes inline styles there. The stage's copies land on them and the page shows them in the same frame.
-- **It does not play** under reduced motion, without Motion, in a hidden tab, while a sheet or the seat draw stage is open, on a reload, on Resume play, or when storage is refused. The page is complete at once in each case.
-- **A skipping tap** never becomes a tap on the page: the stage stays, unseen, to take the click that follows, then goes.
+- **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload, on Resume play, or when storage is refused. The page is complete at once in each case.
+- **A sheet or the seat draw stage has the screen.** The overture waits and plays when it is closed, if that is within 30 seconds and the set is still in play. A player who watched the draw to the end still gets the start.
+- **A skip does only that.** A skipping tap never becomes a tap on the page: the stage stays, unseen, for the click that follows, and goes after a cancelled tap or 350ms. Enter or Space ends the overture and does not press the focused control.
 - Only `transform` and `opacity` move. The pool, the ring, the button and each chip are their own elements.
 
-**Measured.** `overture.mjs`, 40 checks: the first frame, the words, each chip within 1.5px of its token at 390 and 1280px, the button into the badge and onto a drawn dealer (behind the dock at 390px, at rest at 1280px), the seat order, a poll during the overture, a player's phone, no replay, a tap on a Rebuy skips without opening it, twelve chips inside 320 × 568, reduced motion, a blocked Motion file, and no frame over 50ms with the processor slowed four times (worst 17ms). `table.mjs`: 59 checks.
+**Measured.** `overture.mjs`, 45 checks: the first frame, the words, each chip within 1.5px of its token at 390 and 1280px, the button into the badge and onto a drawn dealer (behind the dock at 390px, at rest at 1280px), the seat order, a poll's morph and a full replacement of the set during the overture, a player's phone with a sheet open, no replay, a tap on a Rebuy and Enter on a focused Rebuy both skip without pressing it, twelve chips inside 320 × 568, reduced motion, a blocked Motion file, and no frame over 50ms with the processor slowed four times (worst 17ms). `table.mjs`: 59 checks. WebKit (Playwright) at 390px: four starts, every chip on its token, worst frame 25ms. No physical iPhone was used.
 
 ### Carried transfers (2026-10-11)
 

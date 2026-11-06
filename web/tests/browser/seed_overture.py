@@ -1,7 +1,7 @@
 """Fixture for the set start overture. Run alone on a fresh temporary SQLite database.
 
 Open sets of one group, each consumed by one start: eight players without a draw, six with a seated draw
-whose dealer is the last to join, two (the skip), twelve (320px), eight at 1280px, and three for reduced
+whose dealer is the last to join, two (the tap skip), two (the key skip), twelve (320px), eight at 1280px, and three for reduced
 motion, a blocked Motion file and a slowed processor. Ben has a login and sits at every table, so a player's phone can watch.
 """
 import json, uuid
@@ -41,7 +41,7 @@ def table(name, count, draw=False):
 manifest = {
     "eight": table("Garage table", 8), "drawn": table("Drawn table", 6, draw=True), "two": table("Kitchen table", 2),
     "twelve": table("Long table", 12), "wide": table("Wide table", 8), "calm": table("Calm table", 4),
-    "blocked": table("Blocked table", 4), "slow": table("Slow table", 8),
+    "blocked": table("Blocked table", 4), "slow": table("Slow table", 8), "keys": table("Key table", 2),
 }
 open("/private/tmp/pn-overture-manifest.json", "w").write(json.dumps(manifest))
 print("OVERTURE_IDS", manifest)

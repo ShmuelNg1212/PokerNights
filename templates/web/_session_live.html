@@ -7,7 +7,7 @@
       <div class="row"><h1 class="grow" data-carry="title">{{ session.table.name }} <small>Set {{ session.set_number }}</small></h1><span class="badge badge-live">{{ session.state|state_word }}</span></div>
       <div class="pot">
         <div class="pot-main" data-watch="in-play" data-value="{{ summary.in_play }}"><div class="pot-label">Still in play</div>{% with shown=summary.in_play|amount:unit %}<div class="display-amount{% if unit == 'chips' and shown|length > 14 or unit != 'chips' and shown|length > 7 %} amount-long{% endif %}">{{ summary.in_play|display_amount:unit }}</div>{% endwith %}</div>
-        <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong>{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
+        <div class="pot-side"><div><div class="pot-label">Set timer</div><strong>{% clock_value set_seconds set_running %}</strong></div><div><div class="pot-label">Blinds</div><strong data-fact="blinds">{{ settings.small_blind|amount:unit }} / {{ settings.big_blind|amount:unit }}</strong></div></div>
       </div>
       {# One line while play goes on; the rest is one tap away. From 900px dock.js opens it, where the column has room. #}
       <details class="set-facts" data-key="set-facts" data-wide-open>
