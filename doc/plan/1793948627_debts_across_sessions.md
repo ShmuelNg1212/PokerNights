@@ -51,11 +51,13 @@ Checks: model import failed before implementation. SQLite full suite: 1691 tests
 
 ### 2. Queries — tests: first
 
-- [ ] Add `cleared_ids()` to `settlement/queries.py`: the transfers with an active `ClearedTransfer`, as a subquery.
-- [ ] Exclude `cleared_ids()` in `unpaid_transfers`, `unpaid_in` and `carryable`.
-- [ ] `settle_states` and `NightOutcome`: count a cleared transfer as done, as `carried` is counted now. Add `cleared` and `cleared_amount`. `status` uses `paid + carried + cleared`.
-- [ ] Add `debts(group, viewer)`. It returns rows of `(unit, member A, member B, net, transfers)`, one per pair and unit with at least one unpaid transfer. `net > 0` means A pays B. A player gets only the pairs that contain them. A host gets every pair. Rake fund transfers are separate rows with no netting, for hosts and for their payer.
-- [ ] Order: the viewer's own rows first, then by the largest amount, then by name.
+Checks: missing public query failed first. SQLite full suite: 1697 pass, 17 skips. Six debt tests cover netting, units, visibility, exclusions, zero, rake and fixed one-query cost. Carry regression tests pass.
+
+- [x] Add `cleared_ids()` to `settlement/queries.py`: the transfers with an active `ClearedTransfer`, as a subquery.
+- [x] Exclude `cleared_ids()` in `unpaid_transfers`, `unpaid_in` and `carryable`.
+- [x] `settle_states` and `NightOutcome`: count a cleared transfer as done, as `carried` is counted now. Add `cleared` and `cleared_amount`. `status` uses `paid + carried + cleared`.
+- [x] Add `debts(group, viewer)`. It returns rows of `(unit, member A, member B, net, transfers)`, one per pair and unit with at least one unpaid transfer. `net > 0` means A pays B. A player gets only the pairs that contain them. A host gets every pair. Rake fund transfers are separate rows with no netting, for hosts and for their payer.
+- [x] Order: the viewer's own rows first, then by the largest amount, then by name.
 - **Acceptance:** tests cover: one transfer; two transfers in one direction (sum); two transfers in opposite directions (net); an exact cancel (net 0); pesos and chips apart; a paid, a carried and a cleared transfer each left out; an archived session left out; a player who sees only their pairs; a host who sees all; the rake fund row.
 - **Done when:** the tests pass, and the number of queries for `debts` does not grow with the number of sessions (`assertNumQueries`).
 

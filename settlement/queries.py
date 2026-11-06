@@ -11,7 +11,7 @@ from groups.models import Member
 from ledger.models import Finalization, PlayerResult
 
 from . import services
-from .models import CarriedTransfer, Payment, SettlementPlan, Transfer
+from .models import CarriedTransfer, ClearedTransfer, Payment, SettlementPlan, Transfer
 
 
 def best_first(rows, member):
@@ -77,6 +77,11 @@ def carried_ids():
     return CarriedTransfer.objects.filter(plan__is_current=True).values("transfer_id")
 
 
+def cleared_ids():
+    """Transfers closed by a standing clearance, as a subquery."""
+    return ClearedTransfer.objects.filter(active=True).values("transfer_id")
+
+
 def carryable(night, member_ids=None) -> list:
     """Unpaid transfers of earlier sessions that closing this session may take over, oldest first.
 
@@ -94,7 +99,7 @@ def carryable(night, member_ids=None) -> list:
             plan__night__status=GameNight.Status.CLOSED, plan__night__archived_at__isnull=True,
             payer_id__in=member_ids, payee_id__in=member_ids,
         )
-        .exclude(plan__night=night).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids())
+        .exclude(plan__night=night).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).exclude(pk__in=cleared_ids())
         .select_related("payer", "payee", "plan__night__table")
         .order_by("plan__night__game_date", "plan__night_id", "position")
     )
@@ -120,10 +125,12 @@ class SettleState:
     paid_amount: int = 0
     carried: int = 0  # taken over by a later session: neither paid nor still to pay
     carried_amount: int = 0
+    cleared: int = 0
+    cleared_amount: int = 0
 
     @property
     def status(self) -> str:
-        return settle_status(self.transfers, self.paid + self.carried)
+        return settle_status(self.transfers, self.paid + self.carried + self.cleared)
 
     @property
     def label(self) -> str:
@@ -131,7 +138,7 @@ class SettleState:
 
     @property
     def still_to_pay(self) -> int:
-        return self.total_to_pay - self.paid_amount - self.carried_amount
+        return self.total_to_pay - self.paid_amount - self.carried_amount - self.cleared_amount
 
 
 def settle_states(night_ids) -> dict:
@@ -152,15 +159,17 @@ def settle_states(night_ids) -> dict:
         state.transfers, state.total_to_pay = row["count"], row["total"]
     from django.db.models import Q
 
-    paid, carried = Q(pk__in=paid_ids()), Q(pk__in=carried_ids())
-    done = transfers.filter(paid | carried).values("plan__night_id").annotate(
+    paid, carried, cleared = Q(pk__in=paid_ids()), Q(pk__in=carried_ids()), Q(pk__in=cleared_ids())
+    done = transfers.filter(paid | carried | cleared).values("plan__night_id").annotate(
         paid=Count("pk", filter=paid), paid_total=Sum("amount", filter=paid),
         carried=Count("pk", filter=carried & ~paid), carried_total=Sum("amount", filter=carried & ~paid),
+        cleared=Count("pk", filter=cleared & ~paid & ~carried), cleared_total=Sum("amount", filter=cleared & ~paid & ~carried),
     )
     for row in done:
         state = states[row["plan__night_id"]]
         state.paid, state.paid_amount = row["paid"], row["paid_total"] or 0
         state.carried, state.carried_amount = row["carried"], row["carried_total"] or 0
+        state.cleared, state.cleared_amount = row["cleared"], row["cleared_total"] or 0
     return states
 
 
@@ -218,8 +227,16 @@ class NightOutcome:
         return sum(t.amount for t in self.transfers if t.carried and not t.paid)
 
     @property
+    def cleared_amount(self):
+        return sum(t.amount for t in self.transfers if t.cleared and not t.paid and not t.carried)
+
+    @property
+    def cleared_count(self):
+        return sum(1 for t in self.transfers if t.cleared and not t.paid and not t.carried)
+
+    @property
     def still_to_pay(self):
-        return self.total_to_pay - self.paid_amount - self.carried_amount
+        return self.total_to_pay - self.paid_amount - self.carried_amount - self.cleared_amount
 
     @property
     def paid_count(self) -> int:
@@ -233,7 +250,7 @@ class NightOutcome:
     def status(self) -> str:
         """``settled``, ``partly`` or ``unsettled``. Derived from the paid marks and from what a later
         session took over; never stored."""
-        return settle_status(len(self.transfers), self.paid_count + self.carried_count)
+        return settle_status(len(self.transfers), self.paid_count + self.carried_count + self.cleared_count)
 
     def makeup_for(self, member_id):
         """How a member's figure in this list is made up, when an earlier transfer of theirs was taken over:
@@ -259,8 +276,8 @@ class NightOutcome:
         mine = self.transfers_for(member_id)
         return ViewerPart(
             transfers=mine,
-            to_pay=sum(t.amount for t in mine if t.payer_id == member_id and not t.paid and not t.carried),
-            to_receive=sum(t.amount for t in mine if t.payee_id == member_id and not t.paid and not t.carried),
+            to_pay=sum(t.amount for t in mine if t.payer_id == member_id and not t.paid and not t.carried and not t.cleared),
+            to_receive=sum(t.amount for t in mine if t.payee_id == member_id and not t.paid and not t.carried and not t.cleared),
         )
 
 
@@ -283,7 +300,7 @@ def night_outcome(night) -> NightOutcome:
     # Whether a carry touches a list rides on this read, so a session without one pays nothing to learn that.
     touching = CarriedTransfer.objects.filter(Q(plan=OuterRef("pk")) | Q(transfer__plan=OuterRef("pk"), plan__is_current=True))
     plans = list(
-        SettlementPlan.objects.filter(night=night).select_related("voided_by").annotate(has_carry=Exists(touching))
+        SettlementPlan.objects.filter(night=night).select_related("voided_by").annotate(has_carry=Exists(touching), has_clearance=Exists(ClearedTransfer.objects.filter(transfer__plan=OuterRef("pk"), active=True)))
         .order_by("created_at", "id")
     )
     found.plan = next((plan for plan in plans if plan.is_current), None)
@@ -315,7 +332,13 @@ def night_outcome(night) -> NightOutcome:
         ) if found.plan.has_carry else []
         found.carried_in = [carry for carry in carries if carry.plan_id == found.plan.pk]
         away = {carry.transfer_id: carry for carry in carries if carry.plan_id != found.plan.pk}
+        clearances = {
+            link.transfer_id: link.clearance for link in
+            ClearedTransfer.objects.filter(transfer__plan=found.plan, active=True)
+            .select_related("clearance__payer", "clearance__payee", "clearance__recorded_by")
+        } if found.plan.has_clearance else {}
         for transfer in found.transfers:
+            transfer.cleared = clearances.get(transfer.pk)
             transfer.paid = paid.get(transfer.pk)
             transfer.carried = away.get(transfer.pk)
             transfer.payer_token = identities[transfer.payer_id]
@@ -570,8 +593,8 @@ def unpaid_transfers(member_ids) -> list:
 
     return list(
         Transfer.objects.filter(Q(payer_id__in=member_ids) | Q(payee_id__in=member_ids))
-        .filter(plan__is_current=True, plan__night__archived_at__isnull=True)
-        .exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids())
+        .filter(plan__is_current=True, plan__night__status=GameNight.Status.CLOSED, plan__night__archived_at__isnull=True)
+        .exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).exclude(pk__in=cleared_ids())
         .select_related("payer", "payee", "plan__night__table")
         .order_by("plan__night__game_date", "plan__night_id", "position")
     )
@@ -702,10 +725,72 @@ def night_has_records(night) -> bool:
 
 def unpaid_in(night) -> list:
     """The transfers of this session that nobody has marked paid and no later session has taken over."""
-    return list(Transfer.objects.filter(plan__night=night, plan__is_current=True).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).select_related("payer", "payee").order_by("position"))
+    return list(Transfer.objects.filter(plan__night=night, plan__is_current=True).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).exclude(pk__in=cleared_ids()).select_related("payer", "payee").order_by("position"))
 
 
 def session_players(night) -> list:
     """The people a table payment can name (``services.payable_seats``), in the order they first joined."""
     seats = services.payable_seats(night).order_by("session__set_number", "join_order")
     return list({seat.member_id: seat.member for seat in seats}.values())
+
+
+@dataclass
+class Debt:
+    """A canonical pair in one unit. Positive net means A pays B; zero still closes records."""
+
+    unit: str
+    member_a: Member
+    member_b: object
+    net: int = 0
+    transfers: list = field(default_factory=list)
+
+    @property
+    def amount(self):
+        return abs(self.net)
+
+    @property
+    def payer(self):
+        return self.member_a if self.net >= 0 else self.member_b
+
+    @property
+    def payee(self):
+        return self.member_b if self.net >= 0 else self.member_a
+
+
+def debt_rows(transfers, viewer):
+    """Group already-loaded unpaid transfers, with no extra database reads."""
+    pairs = {}
+    for transfer in transfers:
+        if not viewer.is_host and viewer.pk not in (transfer.payer_id, transfer.payee_id):
+            continue
+        unit = transfer.plan.night.unit
+        if transfer.to_rake_fund:
+            key = (unit, transfer.pk, None)
+            a, b = transfer.payer, None
+        else:
+            a, b = sorted((transfer.payer, transfer.payee), key=lambda m: m.pk)
+            key = (unit, a.pk, b.pk)
+        row = pairs.setdefault(key, Debt(unit, a, b))
+        row.net += transfer.amount if transfer.payer_id == a.pk else -transfer.amount
+        row.transfers.append(transfer)
+    return sorted(pairs.values(), key=lambda row: (
+        viewer.pk not in (row.member_a.pk, row.member_b.pk if row.member_b else None),
+        -row.amount, row.member_a.display_name.casefold(),
+        row.member_b.display_name.casefold() if row.member_b else "", row.unit,
+    ))
+
+
+def debts(group, viewer):
+    """One read, regardless of session count. Hosts see all pairs; players see their own."""
+    from django.db.models import Q
+
+    if viewer.group_id != group.pk or viewer.status != Member.Status.ACTIVE:
+        return []
+    transfers = Transfer.objects.filter(
+        plan__night__group=group, plan__night__status=GameNight.Status.CLOSED,
+        plan__night__archived_at__isnull=True, plan__is_current=True,
+    ).exclude(pk__in=paid_ids()).exclude(pk__in=carried_ids()).exclude(pk__in=cleared_ids())
+    if not viewer.is_host:
+        transfers = transfers.filter(Q(payer=viewer) | Q(payee=viewer))
+    return debt_rows(transfers.select_related("payer", "payee", "plan__night__table")
+                     .order_by("plan__night__game_date", "plan__night_id", "position"), viewer)
