@@ -532,6 +532,11 @@ DEBTS_CHANGED = "These debts changed. Look again."
 def _debt_actor(group_id, actor):
     if not settings.DEBTS_VIEW:
         raise RuleError("Debts are turned off.")
+    # Access changes take this same lock. Check permission only after any earlier change commits.
+    # It also serializes request ids, including retries that name disjoint sessions.
+    group = GameGroup.objects.select_for_update().filter(pk=group_id).first()
+    if group is None or group.archived_at is not None:
+        raise NotAllowed("You are not an active member of this group.")
     current = Member.objects.select_related("user").filter(
         pk=actor.pk, group_id=group_id, status=Member.Status.ACTIVE,
         group__archived_at__isnull=True, user__isnull=False,
@@ -564,8 +569,6 @@ def settle_pair(group_id, actor, unit, member_a_id, member_b_id, transfer_ids, n
         raise RuleError(DEBTS_CHANGED)
     payer_id, payee_id = (a_id, b_id) if net >= 0 else (b_id, a_id)
     _can_clear(actor, payer_id, payee_id, abs(net))
-    # Serialize group request ids, including retries that name disjoint sessions.
-    GameGroup.objects.select_for_update().get(pk=group_id)
     repeated = Clearance.objects.filter(group_id=group_id, request_id=request_id).first()
     if repeated is not None:
         if (repeated.payer_id, repeated.payee_id, repeated.unit, repeated.amount) != (payer_id, payee_id, unit, abs(net)):
@@ -606,7 +609,6 @@ def settle_pair(group_id, actor, unit, member_a_id, member_b_id, transfer_ids, n
 def undo_clearance(group_id, actor, clearance_id, reason):
     """Restore all linked debts. Keep the original record and one reversal."""
     actor = _debt_actor(group_id, actor)
-    GameGroup.objects.select_for_update().get(pk=group_id)
     clearance = Clearance.objects.filter(pk=clearance_id, group_id=group_id).first()
     if clearance is None:
         raise RuleError("That clearance is not in this group.")
