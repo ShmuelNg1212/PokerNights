@@ -75,7 +75,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 #### Debts across sessions
 
-- The `DEBTS_VIEW` switch controls the new debt views and actions. Its default is False. This feature is not yet released or enabled.
+- The `DEBTS_VIEW` switch controls the new debt views and actions. Its default is False. Production sets it to True from the 2026-11-06 release.
 - With the switch on, Debts appears at the top of a group's Sessions tab when the viewer has debts to see. A player sees only their own pairs. A host sees all pairs in the group.
 - Each row nets the unpaid transfers between two players in one unit. It uses only current settle-up lists from closed sessions that are not archived. Paid, carried and cleared transfers are left out. Pesos and chips stay separate.
 - A row shows the direction, net amount and number of sessions. Opening it shows each original transfer with its amount, direction and session link.

@@ -1,6 +1,6 @@
 # TODO
 
-## Unreleased: debts across sessions (`DEBTS_VIEW` off)
+## Phone checks: debts across sessions (released 2026-11-06, `DEBTS_VIEW` on)
 
 - [ ] Debts: a player sees only their net rows. A host sees every pair. Expand a row and check the sum and separate units.
 - [ ] Debts: as receiver, tap Got, then Settle. The row leaves and all source sessions say Settled. The payer has no confirm button. Focus returns to Debts.

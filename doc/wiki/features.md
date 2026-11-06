@@ -206,9 +206,9 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 - Hosts and players see the same settlement facts. Archived views have no actions. With `DEBTS_VIEW=False`, payment actions are host only. With it on, the receiver can confirm payment, and a host or its recorder can undo it. Only a host can confirm a rake fund payment.
 - Who pays whom cards adapt to their available width. Below 440px, payer and payee each have a full-width row; wider cards show them side by side. Chips align with the first name line. Amount, payment state and action have explicit grid positions, so a paid timestamp grows below the badge. Complete amounts and units stay on one line.
 
-## Debts across sessions (2026-11-06, unreleased)
+## Debts across sessions (released 2026-11-06)
 
-[Plan](../plan/1793948627_debts_across_sessions.md). [ADR 0013](../adr/0013-clearances-across-sessions.md). `DEBTS_VIEW` defaults to `False`. These features and receiver permissions apply when it is `True`.
+[Plan](../plan/1793948627_debts_across_sessions.md). [ADR 0013](../adr/0013-clearances-across-sessions.md). `DEBTS_VIEW` defaults to `False`. Production sets it to `True`. These features and receiver permissions apply when it is `True`.
 
 - **Where.** Debts is at the top of Group → Sessions. A player sees only their own pairs. A host sees every pair in the group. With no rows for the viewer, the section is absent.
 - **Net.** Each row combines unpaid transfers between two people in one unit over closed, unarchived sessions. Opposite directions cancel. Pesos and chips stay separate. The row shows the direction, net and number of sessions. Open its disclosure to see the original transfers, their amounts and directions, and links to their session dates. Paid, carried and cleared transfers are left out. Rake fund transfers stay separate and have no pair-settlement action.

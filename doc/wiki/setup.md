@@ -34,7 +34,7 @@ cp .env.example .env
 | `DEBTS_VIEW` | no | Enables debts across sessions and receiver payment confirmation. Default `False` |
 | `LOG_LEVEL` | no | Level for `pokernights.*` loggers. Default `INFO` |
 
-Debts across sessions is unreleased. It is not enabled on Vercel. Keep `DEBTS_VIEW=False` for release unless the human opts in at ship time.
+Debts across sessions was released on 2026-11-06. Production on Vercel sets `DEBTS_VIEW=True`. Local development keeps the default `False` unless you set it.
 
 Migration `settlement.0011` adds clearance records. Run the normal migration command. No manual backfill is needed.
 

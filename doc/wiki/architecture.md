@@ -413,7 +413,7 @@ Browser-side, with one signal from the server. [Plan](../plan/1791703670_install
 
 ## Cross-session clearances
 
-[ADR 0013](../adr/0013-clearances-across-sessions.md); [plan](../plan/1793948627_debts_across_sessions.md). Built on the unreleased feature branch. `DEBTS_VIEW` defaults to `False`.
+[ADR 0013](../adr/0013-clearances-across-sessions.md); [plan](../plan/1793948627_debts_across_sessions.md). Released 2026-11-06. `DEBTS_VIEW` defaults to `False`. Production sets it to `True`.
 
 - **Record the net once.** `Clearance` records one pair, group, unit and net amount, including zero. `ClearedTransfer` links every original transfer that it closes. A partial unique constraint permits one active link per transfer. This records the net payment without creating gross `Payment` rows for money that did not move. Results and original transfers stay intact.
 - **Undo as one action.** `ClearanceReversal` is one append-only reason per clearance. `undo_clearance()` turns off the clearance and all its links in one transaction. It restores all linked debts together. A host or the original recorder can undo it. Repeated undo returns the first reversal.
