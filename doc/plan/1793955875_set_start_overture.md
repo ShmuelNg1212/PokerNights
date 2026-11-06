@@ -31,7 +31,7 @@ When a set starts, each phone on the set page plays a short overture once. The s
 | A tap, a key press or Escape during the overture | Every part goes to its end at once. The page is complete in that frame |
 | A poll during the overture | No effect. The stage is outside the live region. Targets are measured again when the chips start to fly |
 | The tab is hidden during the overture | The overture ends at once |
-| A sheet or the seat draw stage is open | No overture. It is marked as seen |
+| A sheet or the seat draw stage is open | The overture waits and plays when it is closed, within 30 s, if the set is still in play. (Changed in rendezvous: the first version skipped it, so a player who watched the draw lost the start) |
 | The page is left during the overture | The stage is removed and nothing keeps running |
 | Resume play, a reload, a new tab | No replay. The existing `rack-start:{url}` key in localStorage records the start |
 | Storage refused | No overture, as today |
@@ -86,7 +86,7 @@ Acceptance: every row of Behaviour holds on 390 and 1280 px. Completion: task 2'
 ### 4. Phone checks (tests: alongside)
 
 - [x] Add to TODO.md: start a set on the host's phone with two other phones on the page. Check that the overture plays on all three, that a tap skips it, and that a Rebuy right after it works.
-- [ ] Run `mobile_motion.mjs`'s WebKit setup against the overture, as a WebKit frame check.
+- [x] Run `mobile_motion.mjs`'s WebKit setup against the overture, as a WebKit frame check.
 
 Completion: the TODO lines exist; the WebKit result is recorded in Checks.
 
@@ -104,4 +104,14 @@ Completion: the TODO lines exist; the WebKit result is recorded in Checks.
 
 ## Checks
 
-Empty until rendezvous.
+Rendezvous, 2026-11-06, on `feat/set-start-overture`.
+
+| Check | Result |
+|---|---|
+| Django suite, SQLite | 1,736 tests OK, 23 skipped. Also OK with `DEBTS_VIEW=True` |
+| `overture.mjs` (fresh `seed_overture.py`) | 45 of 45 |
+| `table.mjs` (seed, end set, night, opening) | 59 of 59 |
+| WebKit at 390 px, Playwright 1.49.1 (scratch probe) | 4 starts: every chip on its token (0 px), page complete at rest, no script error, worst frame 25 ms, none over 34 ms. A screenshot taken mid-overture made the one late frame in the first runs |
+| Code review, medium | 9 findings. Fixed 7: the guard was set last; 18 or more players broke the keyframe times; a sheet open at the start used up the overture; nodes replaced by a poll gave zero targets; Enter or Space also pressed the focused control; an unseen stage could take the next tap; the blinds were read by position. Kept 2: the first-frame helper repeats the one in `table.js` (as in four modules today), and `mid` shared with `home` (removed in the rewrite) |
+| Checks that can fail | Run against the code before each fix: the dealer-on-dock check failed (button at rest on the dock), the sheet check failed, Enter opened the Rebuy, and chips landed 557 px away after a replacement |
+| Not checked | A physical iPhone or Android phone. These are in TODO.md |
