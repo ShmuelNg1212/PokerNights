@@ -39,11 +39,13 @@ Each question has a default. The executor uses the default unless the human chan
 
 ### 1. Records — tests: first
 
-- [ ] Add `Clearance` to `settlement/models.py`: `group` (FK), `unit`, `payer` (Member, paid the net), `payee` (Member, received the net), `amount` (BigInteger, `>= 0`), `request_id` (UUID), `recorded_by`, `created_at`, `active` (default True).
-- [ ] Constraints on `Clearance`: unique `(group, request_id)`; `amount >= 0`; `payer != payee`.
-- [ ] Add `ClearedTransfer`: `clearance` (FK), `transfer` (FK, `related_name="clearances"`), `active`. Partial unique constraint: one active row per `transfer`. Unique `(clearance, transfer)`.
-- [ ] Add `ClearanceReversal`: one-to-one `clearance`, `reason` (255), `recorded_by`, `created_at`.
-- [ ] Migration. Read [footguns/partial_unique_constraints_are_not_deferrable.md](../wiki/footguns/partial_unique_constraints_are_not_deferrable.md) first.
+Checks: model import failed before implementation. SQLite full suite: 1691 tests pass, 17 PostgreSQL-only skips. PostgreSQL model tests: 2 pass. Both test databases applied migration 0011.
+
+- [x] Add `Clearance` to `settlement/models.py`: `group` (FK), `unit`, `payer` (Member, paid the net), `payee` (Member, received the net), `amount` (BigInteger, `>= 0`), `request_id` (UUID), `recorded_by`, `created_at`, `active` (default True).
+- [x] Constraints on `Clearance`: unique `(group, request_id)`; `amount >= 0`; `payer != payee`.
+- [x] Add `ClearedTransfer`: `clearance` (FK), `transfer` (FK, `related_name="clearances"`), `active`. Partial unique constraint: one active row per `transfer`. Unique `(clearance, transfer)`.
+- [x] Add `ClearanceReversal`: one-to-one `clearance`, `reason` (255), `recorded_by`, `created_at`.
+- [x] Migration. Read [footguns/partial_unique_constraints_are_not_deferrable.md](../wiki/footguns/partial_unique_constraints_are_not_deferrable.md) first.
 - **Acceptance:** model tests show that the database refuses a second active `ClearedTransfer` for one transfer, a negative amount, and a repeated `request_id` in one group.
 - **Done when:** the migration applies on SQLite and PostgreSQL, and the tests pass.
 

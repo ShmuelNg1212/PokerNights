@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 
-from games.models import GameNight
+from games.models import GameNight, Unit
 from groups.models import Member
 
 # Settle-up belongs to a session (GameNight), not to one set: it nets each
@@ -162,3 +162,47 @@ class PaymentReversal(models.Model):
 
     def __str__(self):
         return f"Reversal of payment {self.payment_id}"
+
+
+class Clearance(models.Model):
+    """The net money between two people that closes transfers across sessions (ADR 0013)."""
+
+    group = models.ForeignKey('groups.GameGroup', on_delete=models.PROTECT, related_name='clearances')
+    unit = models.CharField(max_length=5, choices=Unit.choices)
+    payer = models.ForeignKey(Member, on_delete=models.PROTECT, related_name='clearances_paid')
+    payee = models.ForeignKey(Member, on_delete=models.PROTECT, related_name='clearances_received')
+    amount = models.BigIntegerField()
+    request_id = models.UUIDField()
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'request_id'], name='clearance_request_once'),
+            models.CheckConstraint(condition=Q(amount__gte=0), name='clearance_amount_nonnegative'),
+            models.CheckConstraint(condition=~Q(payer=F('payee')), name='clearance_different_people'),
+        ]
+
+
+class ClearedTransfer(models.Model):
+    """A transfer closed by a clearance. Only its active marker can change."""
+
+    clearance = models.ForeignKey(Clearance, on_delete=models.PROTECT, related_name='links')
+    transfer = models.ForeignKey(Transfer, on_delete=models.PROTECT, related_name='clearances')
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['transfer'], condition=Q(active=True), name='cleared_transfer_one_active'),
+            models.UniqueConstraint(fields=['clearance', 'transfer'], name='clearance_transfer_once'),
+        ]
+
+
+class ClearanceReversal(models.Model):
+    """An append-only explanation for undoing a clearance."""
+
+    clearance = models.OneToOneField(Clearance, on_delete=models.PROTECT, related_name='reversal')
+    reason = models.CharField(max_length=255)
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
