@@ -1,0 +1,387 @@
+<title>Set Start Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+/* Layout: a control column beside one phone-sized copy of the set page; stacked on a phone. */
+:root {
+  --ground: oklch(0.17 0.012 60); --rail: oklch(0.215 0.014 60); --rail-2: oklch(0.265 0.016 60);
+  --line: oklch(0.55 0.018 60); --rule: oklch(0.33 0.018 60);
+  --bone: oklch(0.93 0.025 85); --bone-dim: oklch(0.74 0.028 80); --ink: oklch(0.19 0.02 60);
+  --felt: oklch(0.34 0.095 265); --felt-deep: oklch(0.25 0.08 265); --felt-ink: oklch(0.86 0.04 265);
+  --brass: oklch(0.82 0.13 85); --up: oklch(0.82 0.13 160); --warn-bg: oklch(0.26 0.03 85);
+  --c1: #9e3038; --c2: #285aa8; --c3: #267449; --c4: #e4bd48; --c5: #82409b; --c6: #d48d48; --c7: #70b9bd; --c8: #dd86a1;
+  --font: Archivo, "Arial Narrow", Arial, system-ui, sans-serif;
+  --r-sheet: 26px; --r-btn: 15px; --r-pill: 999px; --tap: 48px;
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
+  --felt-cloth: repeating-linear-gradient(45deg, oklch(1 0 0 / .025) 0 1px, transparent 1px 7px), repeating-linear-gradient(-45deg, oklch(0 0 0 / .08) 0 1px, transparent 1px 7px), var(--felt);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--bone); font: 500 1rem/1.45 var(--font); }
+.wrap { display: grid; grid-template-columns: minmax(0, 420px) 390px; gap: 40px; justify-content: center; align-items: start;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-block: 16px 40px; } }
+
+/* ---------- The control column ---------- */
+.intro h1 { margin: 0; font-size: 1.75rem; font-stretch: 88%; font-weight: 800; line-height: 1.1; text-wrap: balance; }
+.intro p { margin: 8px 0 0; color: var(--bone-dim); font-size: .9375rem; max-width: 60ch; }
+.picker { display: grid; gap: 8px; margin-top: 20px; }
+.pick { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 56px; padding: 8px 14px 8px 10px; border: 1px solid var(--rule);
+  border-radius: 14px; background: var(--rail); color: var(--bone); font: inherit; text-align: left; cursor: pointer; }
+.pick:hover { background: var(--rail-2); }
+.pick:focus-visible, .ctl:focus-visible, .phone button:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+.pick[aria-pressed=true] { border-color: var(--brass); background: var(--rail-2); }
+.pick .key { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-stretch: 88%; background: var(--ground); border: 1px solid var(--rule); }
+.pick[aria-pressed=true] .key { background: var(--brass); color: var(--ink); border-color: var(--brass); }
+.pick b { display: block; font-weight: 700; }
+.pick small { display: block; color: var(--bone-dim); font-size: .8125rem; }
+.pick .len { color: var(--bone-dim); font-size: .8125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ctls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.ctl { min-height: var(--tap); padding: 0 16px; border-radius: var(--r-btn); border: 1px solid var(--line); background: transparent; color: var(--bone); font: 600 .9375rem var(--font); cursor: pointer; }
+.ctl[aria-pressed=true] { background: var(--bone); color: var(--ink); border-color: var(--bone); }
+.ctl.go { background: var(--bone); color: var(--ink); border-color: var(--bone); box-shadow: 0 3px 0 oklch(0.65 0.035 80); }
+.notes { margin-top: 18px; padding: 16px; border-radius: 14px; background: var(--rail); border: 1px solid var(--rule); }
+.notes h2 { margin: 0; font-size: 1.125rem; font-weight: 750; }
+.notes dl { margin: 10px 0 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: .875rem; }
+.notes dt { color: var(--bone-dim); }
+.notes dd { margin: 0; min-width: 0; }
+.notes p { margin: 10px 0 0; font-size: .875rem; color: var(--bone-dim); }
+.foot { margin-top: 14px; font-size: .8125rem; color: var(--bone-dim); }
+
+/* ---------- The phone: a copy of the set page ---------- */
+.phone { position: relative; width: 100%; max-width: 390px; height: 780px; margin: 0 auto; overflow: hidden; border-radius: 34px; background: var(--ground);
+  box-shadow: 0 0 0 10px oklch(0.12 0.01 60), 0 0 0 11px var(--rule), 0 30px 60px oklch(0 0 0 / .5); isolation: isolate; }
+@media (max-width: 520px) { .phone { border-radius: 22px; box-shadow: 0 0 0 1px var(--rule); height: 740px; } }
+.bar { position: relative; z-index: 6; display: flex; align-items: center; gap: 10px; height: 68px; padding: 0 16px; background: var(--ground); border-bottom: 1px solid var(--rule); }
+.bar .back { font-weight: 700; font-size: 1.0625rem; display: flex; align-items: center; gap: 8px; }
+.bar .back svg { width: 22px; height: 22px; }
+.bar .live { margin-left: auto; color: var(--bone-dim); font-size: .9375rem; display: flex; align-items: center; gap: 6px; }
+.bar .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--up); }
+.screen { position: relative; }
+.panel { position: relative; z-index: 4; padding: 18px 16px 4px; border-radius: 0 0 var(--r-sheet) var(--r-sheet); overflow: hidden; isolation: isolate; }
+.panel.hero { background: var(--rail); border-bottom: 1px solid var(--rule); --felt-ink: var(--bone-dim); }
+.panel.felt { background: var(--felt-cloth); }
+.panel.washing { background: transparent; z-index: 7; }
+.phone:has(.washing) .bar { z-index: 8; }
+.panel > * { position: relative; z-index: 2; }
+.ptitle { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ptitle h1 { margin: 0; font-size: 1.375rem; font-stretch: 88%; font-weight: 800; line-height: 1.25; }
+.ptitle h1 small { color: var(--felt-ink); font-size: .9375rem; font-weight: 700; display: inline-block; }
+.badge { flex: none; padding: 3px 12px; border-radius: var(--r-pill); font-size: .875rem; font-weight: 650; }
+.badge.outline { border: 1px solid var(--line); color: var(--bone-dim); }
+.badge.solid { background: var(--bone); color: var(--ink); }
+.where { margin: 4px 0 12px; color: var(--felt-ink); font-size: .84375rem; }
+.ready { margin: 0; font-size: 1.0625rem; font-weight: 750; }
+.muted { margin: 2px 0 10px; color: var(--bone-dim); font-size: .875rem; }
+.pot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 12px; }
+.label { display: block; color: var(--felt-ink); font-size: .84375rem; }
+.figure { display: block; font-size: 4rem; line-height: .95; font-stretch: 62%; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.side { text-align: right; display: grid; gap: 0; }
+.side strong { font-size: 1.375rem; font-stretch: 62%; font-weight: 800; line-height: 1.15; margin-bottom: 6px; }
+.facts { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: var(--tap); margin-top: 12px; border-top: 1px solid var(--line); color: var(--felt-ink); font-size: .875rem; }
+.panel.hero .facts { border-top-color: var(--rule); }
+.facts strong { color: var(--bone); }
+.rows-head { padding: 14px 16px 2px; }
+.rows-head h2 { margin: 0; font-size: 1.125rem; font-weight: 750; }
+.rows-head p { margin: 0; color: var(--bone-dim); font-size: .875rem; }
+.rows { list-style: none; margin: 0; padding: 0 16px 200px; }
+.row { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.row.marked::after { content: ""; position: absolute; inset: 2px -8px; border: 2px solid var(--brass); border-radius: 12px; background: oklch(0.82 0.13 85 / .07); pointer-events: none; }
+.chip { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; font-weight: 800; font-size: 1rem; backface-visibility: hidden; }
+.chip::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 8deg, var(--bone) 0 13deg, transparent 13deg 45deg);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 61%, #000 84%, transparent 85%); mask: radial-gradient(circle, transparent 60%, #000 61%, #000 84%, transparent 85%); }
+.who b { display: block; font-size: 1.0625rem; font-weight: 700; line-height: 1.2; }
+.who span { color: var(--bone-dim); font-size: .8125rem; }
+.who .tag { display: inline-block; margin-top: 2px; padding: 0 6px; border: 1px solid var(--brass); border-radius: 6px; color: var(--brass); font-size: .6875rem; font-weight: 650; }
+.amt { position: relative; text-align: right; }
+.amt b { display: block; font-size: 1.0625rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+.amt span { color: var(--bone-dim); font-size: .8125rem; }
+.amt .glint { position: absolute; left: 0; right: 0; bottom: -3px; height: 2px; background: var(--brass); border-radius: 2px; opacity: 0; transform-origin: right; }
+.rbtn { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 12px; border-radius: var(--r-btn); border: 1px solid var(--line); background: var(--rail); color: var(--bone); font: 650 .9375rem var(--font); }
+.dock { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; padding: 12px 16px 18px; background: var(--ground); border-top: 1px solid var(--rule); }
+.dock .head { display: flex; justify-content: space-between; font-weight: 750; font-size: 1.0625rem; margin-bottom: 10px; }
+.dock label { display: flex; gap: 10px; align-items: center; font-size: .9375rem; margin-bottom: 12px; }
+.dock label i { flex: none; width: 24px; height: 24px; border-radius: 5px; background: var(--bone); color: var(--ink); display: grid; place-items: center; font-style: normal; font-weight: 900; font-size: .875rem; }
+.primary { width: 100%; min-height: 52px; border: 0; border-radius: var(--r-btn); background: var(--bone); color: var(--ink); font: 700 1.0625rem var(--font); box-shadow: 0 3px 0 oklch(0.65 0.035 80); cursor: pointer; }
+.primary:active { transform: translateY(3px); box-shadow: none; }
+
+/* ---------- Effect layers. Each is its own element, moved by transform or faded by opacity. ---------- */
+.fx { position: absolute; pointer-events: none; }
+.panel .dim { inset: 0; z-index: 1; background: oklch(0.13 0.012 60 / .92); }
+.panel .beam { left: -20%; right: -20%; top: -60%; height: 170%; z-index: 1; background: radial-gradient(50% 45% at 50% 40%, oklch(0.93 0.025 85 / .22), transparent 70%); }
+.panel .sheen { top: -20%; bottom: -20%; left: 0; width: 38%; z-index: 3; background: linear-gradient(100deg, transparent 20%, oklch(0.97 0.03 85 / .26) 50%, transparent 80%); mix-blend-mode: soft-light; }
+.panel .halo { inset: 0; z-index: 3; border-radius: inherit; box-shadow: inset 0 0 0 2px var(--brass), inset 0 -18px 30px -18px var(--brass); }
+.panel .rule { left: 16px; right: 16px; bottom: 0; height: 3px; z-index: 3; background: var(--brass); border-radius: 3px; transform-origin: left; }
+.wash { inset: 0; z-index: 6; overflow: hidden; }
+.wash .cloth { position: absolute; inset: 0; background: var(--felt-cloth); border-radius: 0 0 var(--r-sheet) var(--r-sheet); }
+.wash .disc { position: absolute; border-radius: 50%; background: var(--felt-cloth); }
+.dbtn { z-index: 7; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 30%, oklch(0.98 0.02 85), var(--bone) 60%, oklch(0.8 0.03 80)); color: var(--ink); font-weight: 900; font-size: .8125rem;
+  box-shadow: 0 0 0 1.5px var(--ink), inset 0 0 0 3px var(--bone), inset 0 0 0 4.5px var(--brass), 0 3px 6px oklch(0 0 0 / .45); }
+.stage { inset: 0; z-index: 20; pointer-events: auto; cursor: pointer; }
+.stage .bg { position: absolute; inset: 0; background: oklch(0.12 0.012 60 / .97); }
+.stage .pool { position: absolute; left: 50%; top: 44%; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%; background: var(--felt-cloth);
+  -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%); mask: radial-gradient(circle, #000 30%, transparent 70%); }
+.stage .ring { position: absolute; left: 50%; top: 44%; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; border: 3px solid var(--brass); }
+.stage .big { position: absolute; left: 0; right: 0; top: 44%; text-align: center; }
+.stage .eyebrow { position: absolute; left: 0; right: 0; top: 13%; text-align: center; color: var(--brass); font-weight: 700; font-size: .9375rem; letter-spacing: .08em; text-transform: uppercase; }
+.stage .title { position: absolute; left: 0; right: 0; top: 17%; text-align: center; font-size: 5.5rem; line-height: 1; font-stretch: 62%; font-weight: 850; }
+.stage .sub { position: absolute; left: 0; right: 0; top: 72%; text-align: center; color: var(--bone-dim); font-size: .9375rem; }
+.stage .sub b { color: var(--bone); }
+.stage .chip { position: absolute; left: 0; top: 0; margin: -22px 0 0 -22px; box-shadow: 0 6px 14px oklch(0 0 0 / .5); }
+.stage .dbtn { width: 64px; height: 64px; margin: -32px 0 0 -32px; font-size: 1.75rem; left: 50%; top: 44%; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 6px var(--bone), inset 0 0 0 9px var(--brass), 0 10px 24px oklch(0 0 0 / .55); }
+.stage .skip { position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; color: var(--bone-dim); font-size: .8125rem; }
+@media (prefers-reduced-motion: reduce) { .primary:active { transform: none; } }
+</style>
+
+<div class="wrap">
+  <div>
+    <div class="intro">
+      <h1>Starting a set: five ways to play it</h1>
+      <p>A copy of the set page for a host with eight players at the table. Tap <b>Start the set</b> in the phone, or Replay. Money shows its accepted value from the first frame in every direction.</p>
+    </div>
+    <div class="picker" role="group" aria-label="Direction" id="picker"></div>
+    <div class="ctls">
+      <button class="ctl go" id="replay" type="button">Replay</button>
+      <button class="ctl" id="slow" type="button" aria-pressed="false">Slow ×4</button>
+      <button class="ctl" id="view" type="button" aria-pressed="false">Seen by a player</button>
+    </div>
+    <div class="notes" id="notes" aria-live="polite"></div>
+    <p class="foot">This is an exploration, not a build. It uses the app's tokens, Archivo and spring curves, and moves only transform and opacity. If your phone uses reduced motion, the start is shown at once, as the app does.</p>
+  </div>
+  <div class="phone" id="phone"></div>
+</div>
+
+<script>
+(function () {
+"use strict";
+var PLAYERS = [["Miguel","M",1],["Carlo","C",2],["Hana","H",3],["Ben","B",4],["Lia","L",5],["Paolo","P",6],["Jo","J",7],["Rey","R",8]];
+var SPRING = {
+  arrive: "linear(0, 0.0651, 0.2139, 0.3929, 0.568, 0.72, 0.8406, 0.9288, 0.9879, 1.0232, 1.0408, 1.046, 1.0435, 1.0369, 1.0287, 1.0206, 1.0135, 1.0078, 1.0036, 1.0008, 0.999, 0.9982, 1)",
+  sheet: "linear(0, 0.1154, 0.3348, 0.5501, 0.721, 0.8412, 0.9182, 0.9636, 0.9881, 0.9997, 1.0041, 1.005, 1.0043, 1.0032, 1.0022, 1.0013, 1.0008, 1)",
+  turn: "linear(0, 0.0433, 0.1429, 0.2661, 0.3928, 0.5114, 0.6161, 0.7048, 0.7776, 0.8358, 0.8812, 0.9159, 0.9419, 0.961, 0.9747, 0.9844, 0.991, 0.9954, 0.9982, 0.9999, 1.0009, 1)"
+};
+var OUT = "cubic-bezier(0.16,1,0.3,1)", IN = "cubic-bezier(0.4,0,1,1)", INOUT = "cubic-bezier(0.55,0,0.2,1)";
+if (!CSS.supports("animation-timing-function", "linear(0, 1)")) { SPRING.arrive = SPRING.sheet = SPRING.turn = OUT; }
+
+var DIRS = [
+  {key: "0", name: "Today's sweep", line: "Felt wipes left to right; rows rise 8px", len: "0.78 s", run: sweep,
+   notes: [["What moves", "The felt is revealed left to right (clip), then the timer side and the rows settle."], ["Budget", "Inside the 900 ms rule."], ["Reads as", "A state change. Correct, but small for the start of the night."]],
+   take: "The baseline. Its hard vertical edge reads as a loading wipe more than an occasion."},
+  {key: "A", name: "Lights up", line: "The room brightens over the felt; the badge stamps", len: "1.2 s", run: lights,
+   notes: [["What moves", "A dark layer lifts off the felt, a soft light falls from above, a glint crosses the figure, the rail flashes brass once, In play stamps in, each chip turns over."], ["Budget", "About 1.2 s. Needs a recorded exception to the 900 ms rule."], ["Stays", "In place. Nothing covers the controls."]],
+   take: "The most Rack-like. It reuses the seat draw's light and dimming, so it reads as the same world, louder."},
+  {key: "B", name: "Felt from the tap", line: "Felt floods from the Start button, then lifts into the panel", len: "1.1 s", run: flood,
+   notes: [["What moves", "A felt disc grows from the finger to fill the screen, holds a beat, then lifts up into the panel's shape. Rows rise out from under it."], ["Budget", "About 1.1 s. Needs the exception."], ["Player phones", "No tap, so it grows from the In play badge instead (toggle 'Seen by a player')."]],
+   take: "The clearest cause and effect: this tap started the night. It covers the rows for about 0.4 s."},
+  {key: "C", name: "Shuffle up and deal", line: "A short overture: the button spins, chips orbit and fly to their rows", len: "2.0 s", run: overture,
+   notes: [["What moves", "The screen dims to a pool of felt. The dealer button drops and spins, the players' chips sweep in and circle it, the set number stamps, then everything flies to its place on the page."], ["Budget", "About 2 s, any tap skips. Same kind of exception as the seat draw."], ["Covers", "The whole page until it ends or is tapped."]],
+   take: "The grand one. It earns its length only once a night, so I would play it for the first set only."},
+  {key: "D", name: "Deal them in", line: "The dealer button hops down the list; each chip turns over as it passes", len: "1.6 s", run: dealIn,
+   notes: [["What moves", "A quick felt reveal, then the dealer button runs down the rows. Each chip turns over and its amount is underlined in brass as the button reaches it."], ["Budget", "About 1.6 s with eight players, shorter with fewer."], ["Ties to", "The seat draw's dealer button, so a drawn set and an undrawn set end on the same picture."]],
+   take: "Makes the players the event, not the panel. With 12 players the run is long; cap the steps."}
+];
+
+var phone = document.getElementById("phone"), picker = document.getElementById("picker"), notes = document.getElementById("notes");
+var current = 1, state = "before", anims = [], rate = 1, asPlayer = false, cleanup = [];
+var reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function chip(p) { return '<span class="chip" style="--c:var(--c' + p[2] + ')">' + p[1] + '</span>'; }
+
+function render() {
+  var after = state === "after";
+  var panel = after
+    ? '<section class="panel felt" id="panel"><div class="ptitle"><h1 id="ptitle">Friday game <small id="setno">Set 1</small></h1><span class="badge solid" id="badge">In play</span></div>' +
+      '<div class="pot"><div id="figbox"><span class="label">Still in play</span><strong class="figure" id="figure">₱7,500</strong></div><div class="side" id="side"><span class="label">Set timer</span><strong>under 1 min</strong><span class="label">Blinds</span><strong>₱10 / ₱20</strong></div></div>' +
+      '<div class="facts"><span><strong>₱7,500</strong> bought in · <strong>₱0</strong> cashed out</span><span>Details ⌄</span></div></section>'
+    : '<section class="panel hero" id="panel"><div class="ptitle"><h1 id="ptitle">Friday game <small id="setno">Set 1</small></h1><span class="badge outline" id="badge">Joining</span></div>' +
+      '<p class="where">Fri, Nov 6 · Miguel\'s place</p><h2 class="ready">Ready to start</h2><p class="muted">The timer starts for everyone at the table.</p>' +
+      '<div class="facts"><span><strong>₱500</strong> bought in · 1 buy-in</span></div></section>';
+  var rows = PLAYERS.map(function (p, i) {
+    var paid = after || i === 0, amount = i === 0 ? "₱500" : "₱1,000";
+    var meta = paid ? '<span>1 buy-in</span>' + (after && i ? '<br><span class="tag">Buy-in added</span>' : "") : '<span>No buy-in yet</span>';
+    return '<li class="row' + (after && i ? " marked" : "") + '" data-i="' + i + '">' + chip(p) + '<div class="who"><b>' + esc(p[0]) + ' ›</b>' + meta + '</div>' +
+      '<div class="amt">' + (paid ? '<b>' + amount + '</b><span>bought in</span><i class="glint"></i>' : "") + '</div><span class="rbtn">' + (paid ? "+ Rebuy" : "+ Buy-in") + '</span></li>';
+  }).join("");
+  var dock = asPlayer ? "" : after
+    ? '<div class="dock"><div class="head">Host controls <span>⌄</span></div><button class="primary" type="button" tabindex="-1">End play and count up</button></div>'
+    : '<div class="dock"><div class="head">Host controls <span>⌄</span></div><label><i>✓</i>Add usual buy-in (₱1,000) for players without a buy-in</label><button class="primary" type="button" id="start">Start the set</button></div>';
+  phone.innerHTML = '<div class="bar"><span class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>Session</span><span class="live">Live</span></div>' +
+    '<div class="screen" id="screen">' + panel + '<div class="rows-head"><h2>Players</h2><p>8 · 1 seat free</p></div><ul class="rows" id="rows">' + rows + '</ul></div>' + dock;
+  var start = document.getElementById("start");
+  if (start) start.addEventListener("click", function (event) { begin(event.currentTarget); });
+}
+
+// ---------- Animation helpers. fill "backwards" holds the first frame through any delay; at rest the element's own style shows. ----------
+function A(el, frames, options) {
+  if (!el) return null;
+  var a = el.animate(frames, Object.assign({fill: "backwards", easing: "linear"}, options));
+  a.playbackRate = rate; anims.push(a); return a;
+}
+function stopAll() { anims.splice(0).forEach(function (a) { try { a.cancel(); } catch (_) {} }); cleanup.splice(0).forEach(function (f) { f(); }); }
+function finishAll() { anims.slice().forEach(function (a) { try { a.finish(); } catch (_) {} }); }
+function whenDone(f) { Promise.all(anims.map(function (a) { return a.finished.catch(function () {}); })).then(function () { f(); }); }
+function fx(parent, cls, html) { var el = document.createElement("div"); el.className = "fx " + cls; if (html) el.innerHTML = html; parent.appendChild(el); cleanup.push(function () { el.remove(); }); return el; }
+function rel(el) { var p = phone.getBoundingClientRect(), r = el.getBoundingClientRect(); return {x: r.left - p.left + r.width / 2, y: r.top - p.top + r.height / 2, w: r.width, h: r.height, top: r.top - p.top, bottom: r.bottom - p.top, left: r.left - p.left, right: r.right - p.left}; }
+function tr(x, y, s, extra) { return "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px) scale(" + (s === undefined ? 1 : s) + ")" + (extra || ""); }
+function $(id) { return document.getElementById(id); }
+function rowsEls() { return Array.prototype.slice.call(phone.querySelectorAll(".row")); }
+
+// ---------- 0. Today's sweep (static/js/table.js) ----------
+function sweep() {
+  A($("panel"), [{clipPath: "inset(0 100% 0 0)"}, {clipPath: "inset(0 0% 0 0)"}], {duration: 500, easing: OUT});
+  A($("side"), [{opacity: 0, transform: "translateY(8px)"}, {opacity: 1, transform: "none"}], {duration: 260, delay: 280, easing: SPRING.sheet});
+  rowsEls().forEach(function (row, i) { A(row, [{transform: "translateY(8px)"}, {transform: "none"}], {duration: 220, delay: 280 + Math.min(i, 8) * 30, easing: OUT}); });
+}
+
+// ---------- A. Lights up ----------
+function lights() {
+  var panel = $("panel");
+  var dim = fx(panel, "dim"), beam = fx(panel, "beam"), sheen = fx(panel, "sheen"), halo = fx(panel, "halo");
+  A(dim, [{opacity: 1}, {opacity: 1, offset: .15}, {opacity: 0}], {duration: 760, easing: "ease-out", fill: "both"});
+  A(beam, [{opacity: 0, transform: "translateY(-30%) scale(.55)"}, {opacity: 1, transform: "translateY(0) scale(1)", offset: .45}, {opacity: 0, transform: "translateY(4%) scale(1.05)"}], {duration: 1150, easing: "ease-out", fill: "both"});
+  A(sheen, [{transform: "translateX(-120%) skewX(-12deg)"}, {transform: "translateX(320%) skewX(-12deg)"}], {duration: 620, delay: 420, easing: INOUT, fill: "both"});
+  A(halo, [{opacity: 0}, {opacity: 1, offset: .25}, {opacity: 0}], {duration: 700, delay: 380, easing: "ease-out", fill: "both"});
+  A($("badge"), [{opacity: 0, transform: "scale(1.7) rotate(-6deg)"}, {opacity: 1, transform: "none"}], {duration: 420, delay: 520, easing: SPRING.arrive});
+  A($("figbox"), [{transform: "translateY(6px) scale(.97)"}, {transform: "none"}], {duration: 420, delay: 160, easing: SPRING.sheet});
+  rowsEls().forEach(function (row, i) {
+    A(row.querySelector(".chip"), [{transform: "perspective(400px) rotateY(-180deg)"}, {transform: "perspective(400px) rotateY(0)"}], {duration: 500, delay: 560 + Math.min(i, 8) * 45, easing: SPRING.turn});
+  });
+}
+
+// ---------- B. Felt from the tap ----------
+function flood(origin) {
+  var panel = $("panel"), p = phone.getBoundingClientRect(), pr = rel(panel);
+  var from = origin && !asPlayer ? rel(origin) : rel($("badge"));
+  var far = Math.max(Math.hypot(from.x, from.y), Math.hypot(p.width - from.x, from.y), Math.hypot(from.x, p.height - from.y), Math.hypot(p.width - from.x, p.height - from.y));
+  panel.classList.add("washing"); cleanup.push(function () { panel.classList.remove("washing"); });
+  var wash = fx(phone, "wash"), disc = document.createElement("div"), cloth = document.createElement("div");
+  disc.className = "disc"; cloth.className = "cloth"; wash.appendChild(cloth); wash.appendChild(disc);
+  disc.style.cssText = "left:" + (from.x - far) + "px;top:" + (from.y - far) + "px;width:" + 2 * far + "px;height:" + 2 * far + "px";
+  var lift = p.height - pr.bottom;
+  A(disc, [{transform: "scale(0.03)"}, {transform: "scale(1)"}], {duration: 440, easing: "cubic-bezier(0.5,0,0.3,1)", fill: "both"});
+  A(disc, [{opacity: 1}, {opacity: 0}], {duration: 1, delay: 440, fill: "forwards"});
+  A(cloth, [{opacity: 0}, {opacity: 1}], {duration: 1, delay: 439, fill: "both"});
+  A(cloth, [{transform: "translateY(0)"}, {transform: "translateY(-" + lift + "px)"}], {duration: 520, delay: 560, easing: SPRING.sheet, fill: "both"});
+  A(wash, [{opacity: 1}, {opacity: 0}], {duration: 1, delay: 1100, fill: "forwards"});
+  var rule = fx(panel, "rule");
+  A(rule, [{opacity: 1, transform: "scaleX(0)"}, {opacity: 1, transform: "scaleX(1)", offset: .55}, {opacity: 0, transform: "scaleX(1)"}], {duration: 700, delay: 900, easing: OUT, fill: "both"});
+  A($("badge"), [{opacity: 0, transform: "scale(1.5)"}, {opacity: 1, transform: "none"}], {duration: 420, delay: 300, easing: SPRING.arrive});
+  rowsEls().forEach(function (row, i) { A(row, [{transform: "translateY(18px)", opacity: .4}, {transform: "none", opacity: 1}], {duration: 360, delay: 880 + Math.min(i, 8) * 35, easing: SPRING.sheet}); });
+  whenDone(function () { panel.classList.remove("washing"); });
+}
+
+// ---------- C. Shuffle up and deal: an overture over the page ----------
+function overture() {
+  var stage = fx(phone, "stage", '<div class="bg"></div><div class="pool"></div><div class="ring"></div><p class="eyebrow">Shuffle up and deal</p><p class="title">Set 1</p>' +
+    '<p class="sub"><b>8 players</b> · ₱10 / ₱20 · timer running</p><p class="skip">Tap to skip</p>');
+  stage.addEventListener("pointerdown", finishAll);
+  var p = phone.getBoundingClientRect(), cx = p.width / 2, cy = p.height * 0.44, rx = Math.min(140, p.width * 0.36), ry = 150;
+  var bg = stage.querySelector(".bg"), pool = stage.querySelector(".pool"), ring = stage.querySelector(".ring");
+  var eyebrow = stage.querySelector(".eyebrow"), title = stage.querySelector(".title"), sub = stage.querySelector(".sub"), skipLine = stage.querySelector(".skip");
+  var END = 1950;
+  A(bg, [{opacity: 0}, {opacity: 1, offset: .12}, {opacity: 1, offset: .7}, {opacity: 0, offset: .9}, {opacity: 0}], {duration: END, easing: "ease-out", fill: "both"});
+  A(pool, [{opacity: 0, transform: "scale(.3)"}, {opacity: 1, transform: "scale(1)", offset: .3}, {opacity: 1, transform: "scale(1.05)", offset: .66}, {opacity: 0, transform: "scale(2.6)"}], {duration: 1700, easing: OUT, fill: "both"});
+  A(ring, [{opacity: 0, transform: "scale(.7)"}, {opacity: .9, transform: "scale(.7)", offset: .01}, {opacity: 0, transform: "scale(3.4)"}], {duration: 640, delay: 620, easing: OUT, fill: "both"});
+  A(skipLine, [{opacity: 0}, {opacity: 1, offset: .2}, {opacity: 1, offset: .7}, {opacity: 0}], {duration: 1500, fill: "both"});
+  A(eyebrow, [{opacity: 0, transform: "translateY(8px)"}, {opacity: 1, transform: "none", offset: .2}, {opacity: 1, transform: "none", offset: .62}, {opacity: 0, transform: "translateY(-10px)", offset: .8}, {opacity: 0}], {duration: END, delay: 0, easing: "ease-out", fill: "both"});
+  A(sub, [{opacity: 0}, {opacity: 0, offset: .3}, {opacity: 1, offset: .42}, {opacity: 1, offset: .62}, {opacity: 0, offset: .74}, {opacity: 0}], {duration: END, fill: "both"});
+  // The set number stamps, then flies to the panel's "Set 1".
+  var setno = $("setno"), to = rel(setno), tr0 = rel(title), scale = to.h / tr0.h;
+  A(title, [{opacity: 0, transform: "scale(1.5)", easing: SPRING.arrive}, {opacity: 0, transform: "scale(1.5)", offset: .26}, {opacity: 1, transform: "scale(1)", offset: .42, easing: "linear"},
+    {opacity: 1, transform: "scale(1)", offset: .64, easing: INOUT}, {opacity: 1, transform: tr(to.x - tr0.x, to.y - tr0.y, scale), offset: .82}, {opacity: 0, transform: tr(to.x - tr0.x, to.y - tr0.y, scale), offset: .86}, {opacity: 0, transform: tr(to.x - tr0.x, to.y - tr0.y, scale)}], {duration: END, fill: "both"});
+  A(setno, [{opacity: 0}, {opacity: 0, offset: .81}, {opacity: 1, offset: .86}, {opacity: 1}], {duration: END});
+  var dockEl = phone.querySelector(".dock"), floor = dockEl ? rel(dockEl).top : phone.clientHeight;
+  // The dealer button drops and spins, then goes to the dealer's row.
+  var dbtn = document.createElement("div"); dbtn.className = "fx dbtn"; dbtn.textContent = "D"; stage.appendChild(dbtn);
+  var rows = rowsEls(), lead = rel(rows[0].querySelector(".chip")), bx = lead.right + 2 - cx, by = lead.top + 4 - cy;
+  A(dbtn, [{opacity: 0, transform: "scale(.2) rotate(-620deg)", easing: OUT}, {opacity: 1, transform: "scale(1) rotate(0deg)", offset: .33}, {transform: "scale(1) rotate(0deg)", offset: .66, easing: INOUT},
+    {opacity: 1, transform: tr(bx, by, .38, " rotate(360deg)"), offset: .9}, {opacity: 0, transform: tr(bx, by, .38, " rotate(360deg)")}], {duration: END, fill: "both"});
+  // Each chip sweeps in from outside, circles the button a little, then flies to its row.
+  PLAYERS.forEach(function (player, i) {
+    var el = document.createElement("span"); el.className = "chip"; el.style.setProperty("--c", "var(--c" + player[2] + ")"); el.textContent = player[1]; stage.appendChild(el);
+    var start = 140 + i * 45, arrive = start + 440, orbitEnd = 1300, land = 1720 + i * 28, dur = land - start, at = function (t) { return (t - start) / dur; };
+    var angle = -Math.PI / 2 + i * 2 * Math.PI / PLAYERS.length;
+    function point(a, k) { return {x: cx + Math.cos(a) * rx * (k || 1), y: cy + Math.sin(a) * ry * (k || 1)}; }
+    var target = rel(rows[i].querySelector(".chip")), outP = point(angle - .9, 2.4);
+    var frames = [{offset: 0, opacity: 0, transform: tr(outP.x, outP.y, .6), easing: OUT}];
+    var sweepTo = .7, steps = 6;
+    for (var s = 0; s <= steps; s++) {
+      var t = arrive + (orbitEnd - arrive) * s / steps, pt = point(angle + sweepTo * s / steps);
+      frames.push({offset: at(t), opacity: 1, transform: tr(pt.x, pt.y, 1), easing: s === steps ? INOUT : "linear"});
+    }
+    // A row under the dock: the chip goes down behind its edge and fades, rather than piling up on it.
+    if (target.y > floor - 12) frames.push({offset: 1, opacity: 0, transform: tr(target.x, floor + 10, .8)});
+    else frames.push({offset: 1, opacity: 1, transform: tr(target.x, target.y, target.w / 44)});
+    A(el, frames, {duration: dur, delay: start, fill: "both"});
+    A(el, [{opacity: 1}, {opacity: 0}], {duration: 1, delay: land, fill: "forwards"});
+    A(rows[i].querySelector(".chip"), [{opacity: 0}, {opacity: 1}], {duration: 1, delay: land});
+  });
+  rows.forEach(function (row) { A(row.querySelector(".amt"), [{opacity: 0, transform: "translateX(8px)"}, {opacity: 1, transform: "none"}], {duration: 300, delay: 1640, easing: SPRING.sheet}); });
+  A($("badge"), [{opacity: 0, transform: "scale(1.5)"}, {opacity: 1, transform: "none"}], {duration: 420, delay: 1660, easing: SPRING.arrive});
+  // The stage takes taps while it plays; once everything has landed it goes, so the page underneath works.
+  whenDone(function () { if (stage.isConnected) stage.remove(); });
+}
+
+// ---------- D. Deal them in ----------
+function dealIn() {
+  var dockEl = phone.querySelector(".dock"), floor = dockEl ? rel(dockEl).top : phone.clientHeight;
+  var panel = $("panel"), rows = rowsEls(), shown = rows.filter(function (row) { return rel(row.querySelector(".chip")).bottom < floor; });
+  A(panel, [{opacity: 0, transform: "translateY(-10px)"}, {opacity: 1, transform: "none"}], {duration: 360, easing: SPRING.sheet});
+  A($("badge"), [{opacity: 0, transform: "scale(1.5)"}, {opacity: 1, transform: "none"}], {duration: 420, delay: 200, easing: SPRING.arrive});
+  var dbtn = fx(phone, "dbtn"); dbtn.textContent = "D";
+  var START = 380, HOP = 115, frames = [], points = shown.map(function (row) { var c = rel(row.querySelector(".chip")); return {x: c.right - 2, y: c.top + 6}; });
+  var total = START + HOP * (points.length - 1) + 420;
+  frames.push({offset: 0, opacity: 0, transform: tr(points[0].x, points[0].y - 30, 1.4), easing: SPRING.arrive});
+  frames.push({offset: (START + 40) / total, opacity: 1, transform: tr(points[0].x, points[0].y, 1)});
+  points.forEach(function (pt, i) {
+    if (!i) return;
+    var prev = points[i - 1], t0 = START + 40 + HOP * (i - 1), mid = t0 + HOP * .5;
+    frames.push({offset: mid / total, opacity: 1, transform: tr(pt.x + 6, (prev.y + pt.y) / 2 - 4, 1.22)});
+    frames.push({offset: (t0 + HOP) / total, opacity: 1, transform: tr(pt.x, pt.y, 1)});
+  });
+  var last = points[points.length - 1];
+  frames.push({offset: (total - 160) / total, opacity: 1, transform: tr(last.x, last.y, 1)});
+  frames.push({offset: 1, opacity: 0, transform: tr(last.x, last.y, .6)});
+  frames.sort(function (a, b) { return a.offset - b.offset; });
+  A(dbtn, frames, {duration: total, fill: "both"});
+  rows.forEach(function (row, i) {
+    var when = START + 40 + HOP * Math.max(0, Math.min(i, points.length - 1) - (i ? 0.35 : 0));
+    A(row.querySelector(".chip"), [{transform: "perspective(400px) rotateY(-180deg) scale(.9)"}, {transform: "perspective(400px) rotateY(0) scale(1)"}], {duration: 460, delay: when, easing: SPRING.turn});
+    A(row.querySelector(".glint"), [{opacity: 1, transform: "scaleX(0)"}, {opacity: 1, transform: "scaleX(1)", offset: .4}, {opacity: 0, transform: "scaleX(1)"}], {duration: 700, delay: when + 80, easing: OUT});
+  });
+}
+
+// ---------- Running a direction ----------
+function begin(origin) {
+  stopAll(); state = "after"; render();
+  if (reduced.matches) return;
+  DIRS[current].run(origin);
+}
+function reset() { stopAll(); state = "before"; render(); }
+function replay() {
+  reset();
+  // On a phone the copy of the page is below the list: bring it into view before it plays.
+  if (matchMedia("(max-width: 900px)").matches) phone.scrollIntoView({block: "start", behavior: reduced.matches ? "auto" : "smooth"});
+  var start = $("start");
+  setTimeout(function () { begin(start); }, 450);
+}
+function showNotes() {
+  var d = DIRS[current];
+  notes.innerHTML = '<h2>' + esc(d.key === "0" ? "Today: " : d.key + ". ") + esc(d.name) + '</h2><dl>' + d.notes.map(function (n) { return '<dt>' + esc(n[0]) + '</dt><dd>' + esc(n[1]) + '</dd>'; }).join("") + '</dl><p>' + esc(d.take) + '</p>';
+}
+DIRS.forEach(function (d, i) {
+  var b = document.createElement("button"); b.type = "button"; b.className = "pick"; b.id = "pick-" + d.key;
+  b.innerHTML = '<span class="key">' + d.key + '</span><span><b>' + esc(d.name) + '</b><small>' + esc(d.line) + '</small></span><span class="len">' + d.len + '</span>';
+  b.addEventListener("click", function () { current = i; sync(); replay(); });
+  picker.appendChild(b);
+});
+function sync() { picker.querySelectorAll(".pick").forEach(function (b, i) { b.setAttribute("aria-pressed", String(i === current)); }); showNotes(); }
+$("replay").addEventListener("click", replay);
+$("slow").addEventListener("click", function () { rate = rate === 1 ? .25 : 1; this.setAttribute("aria-pressed", String(rate !== 1)); anims.forEach(function (a) { a.playbackRate = rate; }); });
+$("view").addEventListener("click", function () { asPlayer = !asPlayer; this.setAttribute("aria-pressed", String(asPlayer)); if (asPlayer) { reset(); setTimeout(function () { begin(null); }, 450); } else replay(); });
+sync(); render();
+})();
+</script>

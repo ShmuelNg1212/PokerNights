@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-10-14T05:23:22.211Z",
         "reason": "agent: splash.html has no animation or gradient; the findings come from the linked shared app.css, and the rendered launch image is flat Ground with the static mark"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "doc/study/1793955255_set_start_motion_assets/prototype.html"
+        ],
+        "createdAt": "2026-11-06T08:59:18.348Z",
+        "reason": "agent: detector resolved the page ground as #ffffff; the study prototype's body is --ground (dark) and the artifact skeleton supplies <body>"
       }
     ]
   }
