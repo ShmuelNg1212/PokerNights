@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: felt light after the overture (unreleased, `feat/felt-lights`)
+
+- [ ] Start a set: as the button lands in the In play badge, a Brass ring spreads from it across the felt and a soft light crosses behind it, then the felt is still. Nothing spills past the felt's corners. The words stay crisp over it. Tap to skip the overture: no light. Reduce Motion on: no light.
+
 ## Phone checks: set start overture (released 2026-11-06)
 
 - [ ] Start a set with two other phones on the page: "Shuffle up and deal" plays once on each, and each chip lands on its row. Tap during it: it ends at once and nothing opens. Rebuy right after works. With a seat draw: the chips circle from the dealer and the button lands on the first dealer. Reload and Resume play: no replay. Reduce Motion on: no overture.
