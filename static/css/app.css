@@ -35,7 +35,7 @@
   --shadow-primary: 0 3px 0 oklch(0.65 0.035 80);
   --w-money: 70%; --tap: 48px;
   --t-press: 110ms; --t-fast: 180ms; --t-sheet: 320ms; --t-focal: 600ms;
-  --ease-out: cubic-bezier(0.16,1,0.3,1); --ease-in: cubic-bezier(0.4,0,1,1);
+  --ease-out: cubic-bezier(0.16,1,0.3,1); --ease-in: cubic-bezier(0.4,0,1,1); --ease-in-out: cubic-bezier(0.55,0,0.2,1); --ease-out-cubic: cubic-bezier(0.33,1,0.68,1);
   /* The app's springs for CSS, sampled by Motion's spring(): sheet (300ms, bounce .14), arrive (420ms, bounce .3),
      shift (260ms, none), turn (500ms, bounce .1). Each runs for the duration written beside it, which includes the settle. */
   --spring-sheet: linear(0, 0.1154, 0.3348, 0.5501, 0.721, 0.8412, 0.9182, 0.9636, 0.9881, 0.9997, 1.0041, 1.005, 1.0043, 1.0032, 1.0022, 1.0013, 1.0008, 1);
@@ -2099,6 +2099,18 @@ html[data-overture] #live :is(.player-row .chip, [data-carry="title"] small, .ba
 .ov-facts { top: calc(44% + 210px); color: var(--bone-dim); font-size: .9375rem; }
 .ov-skip { bottom: max(24px, env(safe-area-inset-bottom)); color: var(--bone-dim); font-size: .8125rem; }
 @media (max-height: 700px) { .ov-set { top: 8%; font-size: 4.25rem; } .ov-call { top: calc(44% + 150px); font-size: 1.5rem; } .ov-facts { top: calc(44% + 186px); } }
+/* The felt lights as the overture lands. overture.js sets data-felt-lit on <html> for one pass, with the badge's
+   place on the felt in --lit-x and --lit-y and its reach to the farthest corner in --lit-r. One Brass ring spreads
+   from the badge (::after) and one band of light crosses the cloth behind it (::before), both under the words and
+   clipped to the felt. The light's gradient is horizontal, so it is clear at both of its edges at every height;
+   its slant is a skew in the same transform. Only transform and opacity move; at rest both layers are gone with the attribute. */
+html[data-felt-lit] #live .felt { position: relative; isolation: isolate; overflow: hidden; }
+html[data-felt-lit] #live .felt::before, html[data-felt-lit] #live .felt::after { content: ""; position: absolute; z-index: -1; pointer-events: none; opacity: 0; }
+html[data-felt-lit] #live .felt::before { top: 0; bottom: 0; left: 0; width: 70%; background: linear-gradient(90deg, transparent 10%, oklch(1 0 0 / .14) 50%, transparent 90%); animation: felt-light 620ms var(--ease-in-out) 80ms both; }
+html[data-felt-lit] #live .felt::after { left: var(--lit-x); top: var(--lit-y); width: calc(2 * var(--lit-r)); height: calc(2 * var(--lit-r)); margin: calc(-1 * var(--lit-r)) 0 0 calc(-1 * var(--lit-r)); border-radius: 50%;
+  background: radial-gradient(closest-side, transparent 89%, color-mix(in oklch, var(--brass) 60%, transparent) 97%, transparent 100%); animation: felt-ring 600ms var(--ease-out-cubic) both; }
+@keyframes felt-light { from { opacity: 0; transform: translateX(-115%) skewX(-12deg); } 20%, 70% { opacity: 1; } to { opacity: 0; transform: translateX(158%) skewX(-12deg); } }
+@keyframes felt-ring { from { opacity: 1; transform: scale(.04); } 55% { opacity: .75; } to { opacity: 0; transform: scale(1); } }
 
 /* Carried transfers (DESIGN.md, "Carried transfers"). Paid is green, not paid is brass; carried is
    neither, so it is bone with an arrow that points on to the session that took it. */

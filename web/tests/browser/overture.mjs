@@ -31,16 +31,19 @@ async function page({width=390,height=844,reduce=false,block=false}={}){
  return {s,js,go,login,until,shot,tap};}
 const results=[];const check=(name,ok,note='')=>{results.push({name,ok:!!ok});console.log(`${ok?'PASS':'FAIL'} ${name}${note?'  ('+note+')':''}`)};
 // Every frame while the stage is on the page: the ground, each chip, the disc, the row tokens, the badge.
-const SAMPLER=`window.__ov={n:0,first:null,last:null,gaps:[],shots:[]};(()=>{let prev=0;const at=c=>{if(!c)return null;const r=c.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height,l:r.left,r:r.right,t:r.top,b:r.bottom,o:+getComputedStyle(c).opacity,text:c.textContent}};
+// The felt's light after the landing: when data-felt-lit comes and goes, the ring's origin against the badge, the
+// properties its layers animate, and the frame times while it is lit.
+const SAMPLER=`window.__lit={on:null,off:null,stage:null,origin:null,badge:null,props:[],names:[],gaps:[]};window.__ov={n:0,first:null,last:null,gaps:[],shots:[]};(()=>{let prev=0,litPrev=0;
+ const litTick=now=>{const h=document.documentElement,on=h.hasAttribute('data-felt-lit');if(on){if(litPrev)__lit.gaps.push(now-litPrev);litPrev=now;if(__lit.on===null){__lit.on=now;__lit.stage=!!document.querySelector('.overture:not(.is-gone)');const felt=document.querySelector('#live .felt').getBoundingClientRect(),b=document.querySelector('#live .badge-live').getBoundingClientRect(),cs=getComputedStyle(h);__lit.origin={x:felt.left+parseFloat(cs.getPropertyValue('--lit-x')),y:felt.top+parseFloat(cs.getPropertyValue('--lit-y')),r:parseFloat(cs.getPropertyValue('--lit-r'))};__lit.badge={x:b.left+b.width/2,y:b.top+b.height/2};__lit.felt={w:felt.width,h:felt.height};const a=document.getAnimations().filter(x=>x.effect&&x.effect.pseudoElement&&x.effect.target.matches('#live .felt'));__lit.names=a.map(x=>x.animationName+x.effect.pseudoElement);__lit.props=[...new Set(a.flatMap(x=>x.effect.getKeyframes().flatMap(k=>Object.keys(k).filter(n=>!['offset','easing','composite','computedOffset'].includes(n)))))]}}else if(__lit.on!==null&&__lit.off===null){__lit.off=now;litPrev=0}};const at=c=>{if(!c)return null;const r=c.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height,l:r.left,r:r.right,t:r.top,b:r.bottom,o:+getComputedStyle(c).opacity,text:c.textContent}};
  const tick=now=>{const o=document.querySelector('.overture:not(.is-gone)');if(o){if(prev)__ov.gaps.push(now-prev);prev=now;const f={t:now,ground:+getComputedStyle(o.querySelector('.ov-ground')).opacity,chips:[...o.querySelectorAll('.ov-chip')].map(at),disc:at(o.querySelector('.ov-disc')),
-  tokens:[...document.querySelectorAll('#live .player-row .chip')].map(at),badge:at(document.querySelector('#live .badge-live')),words:[...o.querySelectorAll('p')].map(p=>p.textContent.trim()).join(' '),figure:(document.querySelector('#live .display-amount')||{}).textContent};if(!__ov.first)__ov.first=f;__ov.last=f;__ov.n++;__ov.shots.push(f)}else prev=0;requestAnimationFrame(tick)};requestAnimationFrame(tick)})()`;
+  tokens:[...document.querySelectorAll('#live .player-row .chip')].map(at),badge:at(document.querySelector('#live .badge-live')),words:[...o.querySelectorAll('p')].map(p=>p.textContent.trim()).join(' '),figure:(document.querySelector('#live .display-amount')||{}).textContent};if(!__ov.first)__ov.first=f;__ov.last=f;__ov.n++;__ov.shots.push(f)}else prev=0;litTick(now);requestAnimationFrame(tick)};requestAnimationFrame(tick)})()`;
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 // Each chip still visible at the end sits on a row token; the others were hidden under the dock.
 const landed=(f,floor)=>{const shown=f.tokens.filter(t=>t.y<floor-12);const on=f.chips.filter(c=>c.o>0.5).map(c=>Math.min(...f.tokens.map(t=>dist(c,t))));return {shown:shown.length,visible:on.length,worst:Math.max(0,...on)}};
 const floorOf=P=>P.js(`(()=>{const d=document.querySelector('.host-controls');return d&&getComputedStyle(d).position==='fixed'?d.getBoundingClientRect().top:innerHeight})()`);
 // A seat draw this browser has not watched opens its stage on arrival; the host closes it, as after watching.
 async function start(P,set,{arm=true}={}){await P.go(`/s/${set}/`);await P.js(`document.querySelector('dialog[open]')?.close()`);await sleep(200);if(arm)await P.js(SAMPLER);await P.js(`document.querySelector('.host-controls button[value=start]').click()`);return P.until(`document.getElementById('live').dataset.state==='running'`,8000)}
-const rest=`!document.querySelector('.overture')&&!document.documentElement.hasAttribute('data-overture')&&[...document.querySelectorAll('#live .player-row .chip, #live [data-carry=title] small, #live .badge-live')].every(e=>!e.getAttribute('style')&&getComputedStyle(e).opacity==='1')`;
+const rest=`!document.querySelector('.overture')&&!document.documentElement.hasAttribute('data-overture')&&!document.documentElement.hasAttribute('data-felt-lit')&&!document.documentElement.style.getPropertyValue('--lit-r')&&[...document.querySelectorAll('#live .player-row .chip, #live [data-carry=title] small, #live .badge-live')].every(e=>!e.getAttribute('style')&&getComputedStyle(e).opacity==='1')`;
 try {
  // ===== Eight players, no draw, with a player's phone watching and a poll landing mid-overture.
  const B=await page();await B.login('ben');await B.go(`/s/${SET.eight}/`);await B.js(SAMPLER);
@@ -58,6 +61,12 @@ try {
  check('eight: each chip ends on its row token; the rest went under the dock',l8.visible===l8.shown&&l8.worst<=1.5&&e8.last.chips.length===8,JSON.stringify(l8));
  check('eight: without a draw the button goes into the In play badge',dist(e8.last.disc,e8.last.badge)<=2&&e8.last.disc.o<0.3,JSON.stringify({disc:e8.last.disc,badge:e8.last.badge}));
  check('eight: about two seconds from first to last frame',e8.span>=1650&&e8.span<=2300,`${Math.round(e8.span)}ms`);
+ await H.until(`__lit.off!==null`,2000);const lit8=await H.js('({lit:__lit,end:__ov.last.t})');const L8=lit8.lit;
+ check('eight: the felt lights once the button is home, while the stage is still leaving',L8.on!==null&&L8.stage&&L8.on<lit8.end,JSON.stringify({on:L8.on,end:lit8.end,stage:L8.stage}));
+ check('eight: the ring starts on the In play badge and reaches the farthest corner of the felt',dist(L8.origin,L8.badge)<=1.5&&L8.origin.r>=Math.hypot(L8.felt.w,L8.felt.h)/2,JSON.stringify(L8.origin));
+ check('eight: two layers, the light and the ring, moving only transform and opacity',L8.names.sort().join()==='felt-light::before,felt-ring::after'&&L8.props.every(n=>n==='transform'||n==='opacity'),JSON.stringify({names:L8.names,props:L8.props}));
+ check('eight: the light is over within about 700ms',L8.off-L8.on>=650&&L8.off-L8.on<=850,`${Math.round(L8.off-L8.on)}ms`);
+ check('eight: no animation is left on the felt',await H.js(`document.getAnimations().filter(a=>a.effect&&a.effect.target&&a.effect.target.matches&&a.effect.target.matches('#live .felt')).length===0`));
  check('eight: at rest nothing is left, and every token, the label and the badge show',await H.js(rest));
  const figureAfter=await H.js(`document.querySelector('.display-amount').textContent`);
  check('eight: money is at its accepted value from the first frame to the last',e8.first.figure===figureAfter&&e8.last.figure===figureAfter&&/₱8,000/.test(figureAfter),JSON.stringify([e8.first.figure,e8.last.figure,figureAfter]));
@@ -97,6 +106,7 @@ try {
  check('two: the tap ends it in the same frame: tokens, label and badge show',await H.js(`!document.documentElement.hasAttribute('data-overture')&&!document.querySelector('.overture:not(.is-gone)')`));
  await sleep(700);
  check('two: the skipping tap did not open a sheet, and the stage is gone',await H.js(`!document.querySelector('dialog[open]')&&${rest}`));
+ await sleep(1200);check('two: a skipped overture does not light the felt',await H.js(`__lit.on===null`));
  await H.js(`document.querySelector('.player-row .buy-opener').click()`);await sleep(500);
  check('two: the next tap works: Rebuy opens its sheet',await H.js(`!!document.querySelector('dialog.sheet[open]')`));
 
@@ -109,6 +119,10 @@ try {
  // ===== Twelve players at 320 × 568: every chip stays on the screen while it circles.
  const T=await page({width:320,height:568});await T.login('hana');
  check('twelve: the start is accepted',await start(T,SET.twelve));await T.until(`__ov.n>0`,1500);await sleep(800);await T.shot('twelve-orbit-320');
+ // live.js without Turbo replaces #live outright while the felt is lit: the light stops, it does not start again.
+ await T.until(`document.documentElement.hasAttribute('data-felt-lit')`,4000);
+ const relit=await T.js(`(async()=>{const r=document.getElementById('live');const s=await (await fetch(r.dataset.url+'?v=0',{headers:{'X-Requested-With':'fetch'},cache:'no-store'})).json();r.innerHTML=s.html;r.dispatchEvent(new CustomEvent('live:updated',{bubbles:true}));await new Promise(f=>requestAnimationFrame(()=>requestAnimationFrame(f)));return {lit:document.documentElement.hasAttribute('data-felt-lit'),anims:document.getAnimations().filter(a=>a.effect&&a.effect.pseudoElement).length}})()`);
+ check('twelve: a full replacement of the felt while it is lit stops the light',!relit.lit&&relit.anims===0,JSON.stringify(relit));
  await T.until(`__ov.n>0&&!document.querySelector('.overture')`,4000);
  const inside=await T.js(`(()=>{const f=__ov.shots.filter(s=>s.t-__ov.first.t>700&&s.t-__ov.first.t<1250);return {frames:f.length,out:f.flatMap(s=>s.chips.filter(c=>c.o>0.5&&(c.l<0||c.r>innerWidth||c.t<0||c.b>innerHeight))).length,words:__ov.first.words}})()`);
  check('twelve at 320px: twelve chips circle inside the screen',inside.frames>5&&inside.out===0,JSON.stringify(inside));
@@ -123,19 +137,20 @@ try {
  check('wide: a full replacement of the set during the overture leaves the stage playing',replaced);
  await W.until(`__ov.n>0&&!document.querySelector('.overture')`,4000);const lw=landed(await W.js('__ov.last'),await floorOf(W));
  check('wide at 1280px: each chip ends on its row token, found again after the replacement',lw.visible===lw.shown&&lw.shown>0&&lw.worst<=1.5,JSON.stringify(lw));
+ check('wide: after the replacement the felt still lights, and then goes out',await W.until(`__lit.off!==null`,2000)&&await W.js(`__lit.on!==null`));
  check('wide: at rest nothing is left',await W.js(rest));await W.shot('wide-rest-1280');
 
  // ===== Fail safe.
  const R=await page({reduce:true});await R.login('hana');check('reduced motion: the start is accepted',await start(R,SET.calm));await sleep(2500);
- check('reduced motion: no overture, the running set at once',await R.js(`__ov.n===0&&${rest}&&document.querySelector('.felt .badge').textContent==='In play'`));
+ check('reduced motion: no overture, the running set at once',await R.js(`__ov.n===0&&__lit.on===null&&${rest}&&document.querySelector('.felt .badge').textContent==='In play'`));
  const X=await page({block:true});await X.login('hana');const errorsBefore=errors.length;check('Motion blocked: the start is accepted',await start(X,SET.blocked));await sleep(2500);
  check('Motion blocked: no overture, no script error',await X.js(`!window.Motion&&__ov.n===0&&${rest}`)&&errors.length===errorsBefore,errors.slice(errorsBefore).join('; '));
 
  // ===== Frames with the processor slowed four times, over the whole overture.
  const L=await page();await L.login('hana');await L.go(`/s/${SET.slow}/`);await send('Emulation.setCPUThrottlingRate',{rate:4},L.s);await L.js(SAMPLER);
  await L.js(`document.querySelector('.host-controls button[value=start]').click()`);await L.until(`__ov.n>0`,12000);await L.until(`!document.querySelector('.overture')`,8000);
- const gaps=await L.js('__ov.gaps');const worst=Math.round(Math.max(...gaps)),late=gaps.filter(g=>g>50).length;
- check('slowed four times: no frame over 50ms while it plays',late===0,`${gaps.length} frames, ${late} over 50ms, worst ${worst}ms`);
+ await L.until(`__lit.off!==null`,4000);const gaps=await L.js('__ov.gaps.concat(__lit.gaps)');const worst=Math.round(Math.max(...gaps)),late=gaps.filter(g=>g>50).length;
+ check('slowed four times: no frame over 50ms while it plays and the felt is lit',late===0,`${gaps.length} frames, ${late} over 50ms, worst ${worst}ms`);
  check('no script error anywhere',errors.length===0,errors.join('; '));
  writeFileSync(`${OUT}/overture.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close').catch(()=>{});ws.close();chrome.kill()}

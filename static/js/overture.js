@@ -9,7 +9,7 @@
 var S = null, pending = null;
 var OUT = [0.16, 1, 0.3, 1], INOUT = [0.55, 0, 0.2, 1];
 var EXIT_AT = 1300, FLY = 0.46, LAND_GAP = 0.028, CHIP = 44, DISC = 64, WAIT_FOR_SHEET_MS = 30000;
-var HIDE = "data-overture";
+var HIDE = "data-overture", LIT = "data-felt-lit", LIT_MS = 760, lit = null;
 
 function motion() { return window.pokerMotion; }
 // The first keyframe is written before Motion starts (doc/wiki/footguns/motion_starts_a_frame_late.md).
@@ -83,6 +83,39 @@ function finish(event) {
     document.addEventListener("pointercancel", gone, {once: true, capture: true});
     setTimeout(gone, 350);
   } else me.stage.remove();
+}
+
+// The felt lights as the overture lands: one Brass ring spreads from the badge and one band of light crosses
+// the cloth behind it (app.css, "data-felt-lit"). It is CSS keyed on <html>, because a poll morphs #live and
+// removes inline styles there. The ring starts at the badge's place on the felt and reaches its farthest corner.
+// Only an overture that played to its landing lights the felt: a skip clears this timer with the others.
+function light(region) {
+  var felt = region.isConnected && region.querySelector(".felt");
+  if (!felt || document.hidden) return;
+  var box = felt.getBoundingClientRect();
+  if (box.bottom <= 0 || box.top >= window.innerHeight || !box.width) return;
+  var badge = region.querySelector(".badge-live"), from = badge ? centre(badge) : {x: box.left + box.width / 2, y: box.top + box.height / 2};
+  var x = from.x - box.left, y = from.y - box.top;
+  var reach = Math.max(Math.hypot(x, y), Math.hypot(box.width - x, y), Math.hypot(x, box.height - y), Math.hypot(box.width - x, box.height - y));
+  unlight();
+  var root = document.documentElement;
+  root.style.setProperty("--lit-x", x.toFixed(1) + "px");
+  root.style.setProperty("--lit-y", y.toFixed(1) + "px");
+  root.style.setProperty("--lit-r", Math.ceil(reach) + "px");
+  root.setAttribute(LIT, "");
+  // A full replacement of the felt would start the light again on the new node: it stops instead.
+  var replaced = function () { if (lit && region.querySelector(".felt") !== felt) unlight(); };
+  document.addEventListener("live:updated", replaced);
+  lit = {timer: setTimeout(unlight, LIT_MS), replaced: replaced};
+}
+function unlight() {
+  if (!lit) return;
+  clearTimeout(lit.timer);
+  document.removeEventListener("live:updated", lit.replaced);
+  lit = null;
+  var root = document.documentElement;
+  root.removeAttribute(LIT);
+  ["--lit-x", "--lit-y", "--lit-r"].forEach(function (name) { root.style.removeProperty(name); });
 }
 
 // A sheet or the seat draw stage has the screen: the overture waits until it is closed, for a while.
@@ -190,10 +223,12 @@ function perform(region, page) {
     } else home = {x: mid.x, y: mid.y, w: 22};
     run(disc, {transform: [at(mid, 1, 0), at(home, home.w / DISC, 360)]}, {duration: FLY, ease: INOUT});
     if (hidden) run(disc, {opacity: [1, 0]}, {duration: 0.14, ease: "easeOut", delay: FLY - 0.14});
+    // The button is home: the felt lights from the badge.
+    later(FLY * 1000, function () { light(region); });
     later((FLY + Math.max(0, chips.length - 1) * LAND_GAP) * 1000 + 40, finish);
   }
 }
 
 window.pokerOverture = {play: play, finish: finish};
-window.pokerPage.register(function () { return finish; });
+window.pokerPage.register(function () { return function () { finish(); unlight(); }; });
 })();
