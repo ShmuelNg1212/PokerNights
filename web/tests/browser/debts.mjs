@@ -12,7 +12,7 @@ for(const engine of (process.env.PN_ENGINES||'chromium,webkit').split(',')){
  const browser=await(engine==='webkit'?webkit:chromium).launch(engine==='webkit'?{}:{executablePath:process.env.PN_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
  try{
   const f=fixtures[engine],context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage(),errors=[];
-  page.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERROR',page.url(),e.stack)});await login(page,f.receiver);await page.goto(`${BASE}/g/${f.group}/`);
+  page.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERROR',page.url(),JSON.stringify({message:e.message,stack:e.stack}))});await login(page,f.receiver);await page.goto(`${BASE}/g/${f.group}/`);
   check(engine,'receiver sees one net pair of 200 from three sessions',await page.locator('[data-debt]').count()===1 && (await page.locator('#debts').innerText()).includes('₱200') && (await page.locator('#debts').innerText()).includes('from 3 sessions'));
   if(process.env.PN_BASELINE==='1'){await context.close();continue;}
   await page.evaluate(()=>window.__debtSentinel=42);

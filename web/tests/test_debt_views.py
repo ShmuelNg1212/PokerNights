@@ -91,3 +91,18 @@ class DebtViewTests(TestCase):
         response = self.client.get(reverse('group', args=[n.group.pk]))
         self.assertContains(response, 'pays the Rake fund')
         self.assertContains(response, 'A host confirms when paid.')
+
+    def test_viewer_without_debts_has_no_debts_section(self):
+        from groups import services as groups
+        member = groups.add_roster_player(self.club.host, 'Eli')
+        member.user = get_user_model().objects.create_user(username='no-debts')
+        member.save(update_fields=['user'])
+        self.client.force_login(member.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.context['debt_rows'], [])
+        self.assertNotContains(response, 'id="debts"')
+
+    def test_exact_cancel_has_a_zero_clear_button(self):
+        self.club.closed({'Ana': 200, 'Ben': -200})
+        self.client.force_login(self.ana.user)
+        self.assertContains(self.client.get(self.url), 'Clear ₱0: these cancel out')

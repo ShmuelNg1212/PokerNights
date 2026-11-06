@@ -2499,3 +2499,8 @@ p.alerts-text:last-child { margin-bottom: 0; }
 }
 
 .sheets-enabled .debt-cancel-fallback { display: none; }
+
+.debt-confirm-direction { overflow-wrap: anywhere; }
+.sheet:has(.debt-confirm-direction) .sheet-head h2 { min-width: 0; overflow-wrap: anywhere; }
+.clearance-undo { grid-column: 1 / -1; }
+.sheet:has(.debt-confirm-direction) .sheet-head .btn-round { flex: none; }

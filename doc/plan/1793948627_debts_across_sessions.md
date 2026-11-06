@@ -125,8 +125,12 @@ Checks: SQLite full suite: 1727 pass, 17 skips. Five new page tests and existing
 
 ### 8. Design pass
 
-- [ ] Run `design-taste-frontend` on the Debts section and the confirm sheet against DESIGN.md. Fix what it finds that is inside DESIGN.md's tokens.
-- [ ] Check worst cases: 20 pairs; a long name; a net of ₱1,000,000.50; a chips game and a pesos game in one group; a viewer with no debts (the section is not shown).
+Checks: full SQLite suite 1729 pass, 17 skips. Full PostgreSQL suite 1729 pass, no skips. Chromium and WebKit design probe: 42 checks pass. Maximum-length names, 20 pairs, ₱1,000,000.50, mixed units, native actions, safe focus, 48 px targets, disclosure movement, section movement and reduced motion pass. A long name overflowed its sheet; wrapping and a nonshrinking close target fix it. New movement uses the existing shift preset, transforms and opacity, with first-frame placement and cleanup. Empty and zero-net view tests pass.
+
+Recorded limit: at 200 percent text on WebKit, the existing group tab row extends to 439 px on a 320 px viewport. The Debts section fits. This is outside the new surface. A probe against local main fails at the missing Debts section, as required. Screenshots were inspected at 320 and 390 px. Physical installed-iPhone checks remain for the human after release.
+
+- [x] Run `design-taste-frontend` on the Debts section and the confirm sheet against DESIGN.md. Fix what it finds that is inside DESIGN.md's tokens.
+- [x] Check worst cases: 20 pairs; a long name; a net of ₱1,000,000.50; a chips game and a pesos game in one group; a viewer with no debts (the section is not shown).
 - **Done when:** the findings are fixed or recorded here with a reason.
 
 ### 9. Docs
