@@ -91,7 +91,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
 9. **Override.** If the error cannot be found, the host records a note and who absorbs the difference: one named player or all players equally.
 10. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
-11. **Close the session.** The app lists who pays whom with the minimum number of transfers, after it subtracts the payments made at the table. The host marks each transfer paid, and can undo it. The session shows unsettled, partly settled or settled.
+11. **Close the session.** The app lists who pays whom with the minimum number of transfers, after it subtracts the payments made at the table. The host marks each transfer paid, and can undo it. With `DEBTS_VIEW=True`, the receiver can also confirm a payment; see "Debts across sessions". The session shows unsettled, partly settled or settled.
 12. **Set log.** Each member can read the players, settings, each buy-in, reversal and cash-out, overrides, results, and who did what and when. Transfers and payment records are on the linked session page.
 
 A game without accepted buy-ins can be canceled with a reason. A canceled game does not count.
@@ -200,11 +200,25 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 
 ## Settle status of a session
 
-- A closed session is Settled when every transfer has an active payment (or it has no transfer), Partly settled when some do, Unsettled when none do. Nothing is stored: `settlement.queries.settle_status` is the one rule.
+- A closed session is Settled when every transfer is paid, carried to a later session or cleared across sessions (or it has no transfer). It is Partly settled when some transfers are done, and Unsettled when none are done. Nothing is stored: `settlement.queries.settle_status` is the one rule.
 - Group → Sessions → Past sessions states the status in words on each row: "Settled" with a check, "₱500 still to pay", or "Partly paid, ₱200 still to pay". The heading counts the sessions not settled. The "Not settled" chip shows only those (see "Filters on past sessions"). `settlement.queries.settle_states(night_ids)` reads any number of sessions in two queries.
 - The session page shows the same status in its top bar and in its overview.
-- Hosts and players see the same settlement facts. Hosts have Mark paid and Undo actions; player and archived views have no action column.
+- Hosts and players see the same settlement facts. Archived views have no actions. With `DEBTS_VIEW=False`, payment actions are host only. With it on, the receiver can confirm payment, and a host or its recorder can undo it. Only a host can confirm a rake fund payment.
 - Who pays whom cards adapt to their available width. Below 440px, payer and payee each have a full-width row; wider cards show them side by side. Chips align with the first name line. Amount, payment state and action have explicit grid positions, so a paid timestamp grows below the badge. Complete amounts and units stay on one line.
+
+## Debts across sessions (2026-11-06, unreleased)
+
+[Plan](../plan/1793948627_debts_across_sessions.md). [ADR 0013](../adr/0013-clearances-across-sessions.md). `DEBTS_VIEW` defaults to `False`. These features and receiver permissions apply when it is `True`.
+
+- **Where.** Debts is at the top of Group → Sessions. A player sees only their own pairs. A host sees every pair in the group. With no rows for the viewer, the section is absent.
+- **Net.** Each row combines unpaid transfers between two people in one unit over closed, unarchived sessions. Opposite directions cancel. Pesos and chips stay separate. The row shows the direction, net and number of sessions. Open its disclosure to see the original transfers, their amounts and directions, and links to their session dates. Paid, carried and cleared transfers are left out. Rake fund transfers stay separate and have no pair-settlement action.
+- **Confirm.** The receiver sees **Got ₱200 from Ana**. A host sees **Settle ₱200**. The payer sees **Ana confirms when paid**, with no confirm button. A receiver can also mark a single session transfer paid. A rake fund transfer stays host only. A host or the person who recorded a paid mark can undo it.
+- **Review.** The action opens **Settle with Ana?**, with the net, direction and original transfers. Focus starts on **Not yet**. Confirming writes one clearance for all shown transfers. If the transfers changed, the server refuses and asks the person to look again. Without JavaScript, the same review opens in place and uses a native form.
+- **Zero.** When both directions cancel exactly, either person or a host can select **Clear ₱0: these cancel out**. This clears the transfers with no amount to pay.
+- **After confirmation.** The row leaves. A status line says **Settled with Ana: ₱200**. A host or the recorder can select **Undo** there. The line survives polling updates until a full page reload. When the confirmed row is gone, focus returns to the Debts heading.
+- **Session pages.** Each affected transfer says **Settled with {name} on {date}** and has no Paid button. A host or the clearance recorder sees **Undo** there. Undo restores every transfer in the clearance. Clearances count as done in settle status, Still to pay, past-session lines and the Not settled filter. They are excluded from carry choices. Undo the clearance before reopening an affected session.
+- **Live updates.** Your groups, Group → Sessions and session pages poll for clearances and undo. Another person's confirmation changes the displayed debts and session labels without a reload.
+- **Layout and motion.** The section uses one column on phones, wrapping names and 48 px action targets. Row and section changes use the existing shift preset with transforms and opacity. Placement is set before the first frame and cleared after movement. Amounts show their accepted value. Reduced motion changes state without movement. The confirm sheet uses the shared sheet controls and focus return.
 
 ## Stakes forms
 
@@ -293,15 +307,15 @@ The layout and several details below changed on 2026-10-05; “Count-up, review 
 ## Session and settle-up design (slice 3)
 
 - Open sessions lead with the current set action and show Results so far over finalized sets. Host close controls explain unfinished sets. Closed sessions lead with Still to pay and settled/partly settled/unsettled status.
-- Still to pay sums unpaid transfers. The progress bar measures paid amounts against all transfer amounts; the paid transfer count is labelled separately. A fully paid session says Settled in words instead of ₱0. With no transfers, the page says Nobody owes anything and shows no bar. Paying or undoing a transfer does not change frozen poker results.
-- Each transfer is a card with payer, payee, tokens, amount and Paid / Not paid. Only hosts see Mark paid and Undo. Payment records retain undone rows and name the recorder. Session results use signed figures, directional icons and a Final tag only after closing.
+- Still to pay sums unpaid transfers. The progress bar measures paid amounts against all transfer amounts; the paid transfer count is labelled separately. A fully settled session says Settled in words instead of ₱0. With no transfers, the page says Nobody owes anything and shows no bar. Paying or undoing a transfer does not change frozen poker results.
+- Each transfer shows payer, payee, tokens, amount and payment state. Payment actions follow the rules in "Settle status of a session". A cleared transfer shows its clearance instead of a Paid button. Payment records retain undone rows and name the recorder. Session results use signed figures, directional icons and a Final tag only after closing.
 - Initial tokens use session standings' first-appearance order, keyed by member. They may have different colours from an individual set. Full names stay visible.
 - The closing recap opens automatically once per session, signed-in viewer and browser. Closing it leaves Who pays whom in view with focus on its heading, and no toast stands over the list. View session recap reopens it manually, and closing it then returns focus to that button. It opens at its top with focus on Close (the source is marked `data-sheet-reads`; without that the focus would go to its only button, "Share results", its last line, and the browser would scroll there). A sheet reached from another sheet also starts at its top. Close, backdrop tap and Escape dismiss it; Tab stays in the modal, and focus returns to the trigger. Reduced motion is static. Storage refusal skips automatic opening; manual access remains. Without JavaScript, the recap is inline and native payment/close/next-set forms still work.
 - Recap Recorded play time sums known finalized-set durations, says Not recorded if none are known, and marks a partial sum. It excludes canceled sets. Total bought in across finalized sets sums frozen buy-in snapshots, so money bought in again in another set is counted again. Top session result names all tied winners; break-even sessions say Everyone broke even.
 - The recap has five sections ([plan](../plan/1791625392_session_recap_details.md)): the top result with the session's facts (total bought in, rake if any, players, finalized sets, number of buy-ins, play time); Your night, for a viewer who played (result, bought in, cashed out, buy-ins, time, the result of each set when there are several, and their transfers); Everyone's results, ranked best first with ties sharing a place and losses included; Highlights; and Set by set (players, bought in, time and who finished ahead, with a link to the set).
 - Highlights are Most buy-ins (left out when every player bought in equally often), Biggest win in one set (left out with one finalized set or no winner) and Longest at the table (left out unless at least two players have recorded, unequal times). Ties name everyone. None states a loss, and the recap shows no percentage.
 - "Cashed out" in the recap includes a player's share of a host override. Results are after rake. Canceled sets and superseded finalizations count nowhere.
-- The page is one column on phones and 400 px / flexible columns from 900 px. Long settlement amounts use a smaller fixed type size to preserve the whole numeric value on one line. This page still requires reload to see another client's payment changes.
+- The page is one column on phones and 400 px / flexible columns from 900 px. Long settlement amounts use a smaller fixed type size to preserve the whole numeric value on one line. The page polls for other clients' payment and clearance changes. Those changes appear without a reload.
 
 The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice 4; [slice 2](../plan/1791050738_redesign_slice_2.md) and [slice 3](../plan/1791053204_redesign_slice_3.md) record verification.
 
@@ -319,8 +333,8 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 ## Your groups home
 
 - The first page lists each group with its players, one status band and one next action for the viewer: **Go to the table** for a set in play, **Go to set N** for a draft, joining or counting set, **Go to the session** when every set is finished, and **New session** or **Add a table** for a host in a quiet group. A player in a quiet group gets no button.
-- A set in play shows players at the table and the timer on the blue felt band. Money still in play is not shown here; the page does not refresh by itself.
-- **To settle** lists the viewer's unpaid transfers from closed sessions ("You owe Miguel ₱425", "Jerome owes you ₱1,375"), three at most, each linking to its session. Nobody sees another member's debts here.
+- A set in play shows players at the table and the timer on the blue felt band. Money still in play is not shown here. The page polls for changes.
+- **To settle** shows only the viewer's own debts, three rows at most. With `DEBTS_VIEW=False`, each row is an unpaid transfer linked to its session. With it on, transfers are netted per person and unit. **See all debts** opens the group's Debts section. Rake fund transfers stay separate.
 - **Your record** shows profit or loss, sessions and wins per unit, by the same rules as Stats. **Last session** shows the viewer's result in the latest closed session, or "You did not play".
 - Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
 - Create a group is a closed section under the groups. A person with no group gets a first-group screen.
@@ -330,7 +344,7 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 ## Group page, stats and branding (UI evolution)
 
 - The group page has tabs on the one group address: **Sessions** (default), **Players**, **Stats** and **Settings** (`?view=players`, `?view=stats`, `?view=settings`). An unknown `view` shows Sessions. An old `?view=settings#players` or `#invites` address goes on to Players; without JavaScript the Settings page says where they went.
-- Sessions shows the sessions in progress as table cards, then the past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
+- Sessions shows Debts first when `DEBTS_VIEW=True` and the viewer has debt rows. It then shows sessions in progress as table cards, followed by past sessions (see "Sessions tab" below). With none in progress, a neutral card, "Nobody is playing", gives one next action for the viewer: New session, Add a table (host without tables), or a note that a host starts it.
 - **Players** holds invite links and adding names at its top, then the roster, with a search from 11 players.
 - **Settings** holds one row each: Tables, Presets, Chip presets, Rake, and for hosts Group name and Manage. Each row states its current value and opens its own form. A write comes back with its row open, and a refused form keeps its typing there. Players read the same lists without host forms.
 - Stats is always visible to active group members. With no closed session, it says "Players appear here once a session closes" and offers Go to sessions. It ranks players by profit or loss, with sessions played and win rate, for all time or one month, and for pesos or chips separately. [ADR 0011](../adr/0011-stats-before-the-first-closed-session.md).
@@ -481,7 +495,7 @@ On count confirmation, a visible typed field keeps its position when the accepte
 - After the confirmation the player reads "The host confirmed your count." or "The host confirmed ₱1,400. You entered ₱1,500."
 - Clearing a count, or resuming play, retires the player's statement; they can enter again.
 
-**Unchanged:** confirming and clearing counts, cash-outs, the balance check, overrides, finalizing and settle-up are host-only.
+**Unchanged:** confirming and clearing counts, cash-outs, the balance check, overrides, finalizing and closing a session are host-only.
 
 - **Switch:** `PLAYER_ENTRIES=False` removes both player actions and ignores numbers already sent.
 - Code: `ledger.services.record_buy_in` (the player path and `seen_count`), `enter_count`, `confirm_counts(entries=…)`; `ledger.models.CountEntry` and `FinalCount.entry`; `PlayerLine.entered`; `templates/web/_players.html`, `_players_count.html`; `static/js/counts.js`. Check: `web/tests/browser/player_entries.mjs`. [Plan](../plan/1791266619_player_rebuys_and_counts.md).
@@ -588,7 +602,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 
 - Order: overview, Who pays whom, Session results, Sets, Payment records (closed), then View session recap and Manage this session.
 - The overview's headline is the viewer's own part: You pay, You receive, You're settled or Nothing to pay. The host's is Still to pay for the table, or Settled. The amount is what is still unpaid.
-- A transfer is one row: payer, arrow, payee, amount; beneath it Not paid, or Paid with the time and "marked by the host". The host's Mark paid or Undo is on the row. The viewer's own rows are marked "(you)". The order is the plan's.
+- A transfer is one row: payer, arrow, payee and amount, with its payment state below. A paid row shows its time. With `DEBTS_VIEW=True`, it names the recorder. With the switch off, it says "marked by the host". Payment and clearance actions follow "Settle status of a session" and "Debts across sessions". The viewer's own rows are marked "(you)". The order is the plan's.
 - "How this is worked out" holds the notes on netting and rake.
 - When Mark paid is accepted the row settles and the bar moves; when the last transfer is paid, "Settled" arrives once per session per browser (`settled:<session>` in localStorage; a player's own key adds their member id).
 - `templates/web/night.html`, `_night_lead.html`, `static/js/settle.js`; `settlement.queries.NightOutcome.part_for()` gives the viewer's part from the transfers already loaded.
@@ -601,7 +615,7 @@ A host can take back a finalized set or a closed session to correct a mistake or
 
 - **Reopen set.** On a finalized set's page, under “Found a mistake?”. A sheet lists what happens and asks what needs correcting; the reason is required. The set returns to counting up. Reverse a cash-out or a buy-in, count again, cash out, and finalize: the results are revision 2. The earlier revision stays in the set log, struck and marked Replaced, with the reason.
 - **A missed buy-in.** While a reopened set is counting up, a player's sheet has “Add a missed buy-in” for the host. It adds the buy-in (and its rake) and leaves the player's cash-out as it is. An ordinary count-up still refuses buy-ins.
-- **Reopen session.** In “Manage this session” on a closed session. Refused while any transfer is marked paid: mark those unpaid first. The session is open again: start another set, or reopen a set. The transfer list is retired and kept under “Earlier transfer lists”; closing writes a new one, every transfer unpaid.
+- **Reopen session.** In “Manage this session” on a closed session. Refused while any transfer is marked paid or cleared across sessions. Undo those payments or clearances first. The session is open again: start another set, or reopen a set. The transfer list is retired and kept under “Earlier transfer lists”; closing writes a new one, every transfer unpaid.
 - **Order.** A set of a closed session cannot be reopened by itself. Its page says to reopen the session first.
 - **While reopened.** A reopened set is left out of the session's results. A reopened session is left out of the stats and of “to settle” on the home page. Both return, corrected, after finalize and close.
 - **What everyone sees.** A brass line on the page: “Reopened to correct.” with the reason, who and when; “Corrected.” on the final page of a set finalized again; “Reopened.” on the open session. On a set page the line's rule draws once per reopening and browser.
@@ -765,7 +779,7 @@ A person on Your groups or on a group's Sessions tab sees what someone else does
 
 ## Sessions tab
 
-The group's Sessions tab leads with the viewer's own table, then lists their past nights. [Plan](../plan/1792243014_sessions_tab_redesign.md).
+The group's Sessions tab shows Debts first when enabled and there are rows for the viewer. It then leads with the viewer's own table and lists past nights. [Plan](../plan/1792243014_sessions_tab_redesign.md).
 
 - **In progress.** One card for each session in progress. A card shows the table, the location and the date ("Today" for today in Manila), the latest set and its state, up to six seated players' chips with "+N", "N at the table", and the clock while the set is in play. A set in play is felt; every other state is a neutral panel.
 - **Order.** Sets in play where the viewer sits, other sets in play, the viewer's open or ended sets, other open or ended sets, then drafts (hosts only). Inside each band: the earliest date, then the oldest session.

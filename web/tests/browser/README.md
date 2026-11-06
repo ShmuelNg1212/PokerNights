@@ -403,3 +403,13 @@ Changed checks:
 - `dock.mjs` still checks the dock's transform, keyboard, clearance and native host controls. The separate More host controls flight script is gone.
 
 Run scripts with the same debugging port sequentially. Use a fresh database file for each script. Use SQLite's backup API for fixture copies; do not copy a database over a file with old WAL sidecars. Restart the server between fixture copies to clear template caches.
+
+## Debts across sessions
+
+Use the isolated Playwright tool described above. Create a fresh temporary database. Set `DEBUG=True`, `DEBTS_VIEW=True` and its `DATABASE_URL` for migration, seed and server. Run `manage.py shell < web/tests/browser/seed_debts.py`. The seed writes `/private/tmp/pn-debts-manifest.json`. It creates one three-session net per browser engine, plus 20 pairs for layout checks. All names and credentials are synthetic.
+
+Run `node web/tests/browser/debts.mjs`, then `node web/tests/browser/debts_design.mjs`. Each probe settles and undoes its fixture. Do not run them together. Set `PN_PLAYWRIGHT` to the isolated module path. `PN_BROWSER_URL`, `PN_ENGINES` and `PN_REVIEW_DIR` select the server, engines and captures. A failed write check can leave a fixture cleared. Use a fresh database for a repeat after a failure.
+
+The flow probe checks 34 outcomes in Chromium and WebKit. It checks the hand sum (₱500 + ₱100 − ₱400 = ₱200), receiver and payer controls, safe focus, in-place settlement, the other phone's live update, all three session labels, and undo. The design probe checks 42 outcomes. It covers 320, 390 and 1280 px, mixed units, ₱1,000,000.50, a maximum-length name, 48 px targets, enlarged text, native forms, movement and reduced motion. Captures are under `/private/tmp/pn-debts-review/` by default. They do not prove physical iPhone behavior.
+
+Known limits from 2026-11-06: WebKit's existing group tabs overflow at 200 percent text on a 320 px viewport. The Debts section fits. Chromium can emit `Transition was aborted because of invalid state. ViewTransition opt-in disabled` while leaving login. The same event occurs on unchanged `main`. The flow probe records only that exact empty-stack event at the pre-feature home arrival as known. Other page errors fail the probe.

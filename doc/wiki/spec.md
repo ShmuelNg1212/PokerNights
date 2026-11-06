@@ -1,6 +1,6 @@
 # Poker Home Game App (Cash Games): Project Spec
 
-Updated 2026-10-28 to match the app as built. Counts can use optional session chip denominations. There is no chip-to-cash exchange rate. The history of each change is in `doc/study/` and `doc/plan/`.
+Updated 2026-11-06 to match the app as built. Cross-session debts are implemented but remain off by default. Counts can use optional session chip denominations. There is no chip-to-cash exchange rate. The history of each change is in `doc/study/` and `doc/plan/`.
 
 ## Overview
 
@@ -23,6 +23,7 @@ A mobile-friendly app for running **home cash games**. The main job is replacing
 - A **session** is one gathering: a date, a table and a location.
 - A **set** is one round of play inside a session. A session has one or more sets. Money records, counts, the timer and results belong to a set. Settle-up belongs to the session.
 - The **unit** of a session is pesos or chips. A pesos game counts in centavos. A chips game counts whole chips and has no peso value: nothing converts chips to pesos.
+- A **clearance** records the net amount that settles all unpaid transfers between two players in one group and unit. It keeps links to the original transfers ([ADR 0013](../adr/0013-clearances-across-sessions.md)).
 
 ## Build order
 
@@ -60,17 +61,32 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - Assignments lock after the first chip-based count is submitted, including a player's count that awaits host confirmation. Clearing a count or reopening a set or session does not unlock them. Before that, only a host can edit them. A form with an old assignment revision is refused.
 - **Balance check:** remaining stacks plus cash-outs plus collected rake must equal total bought in. If not, show the discrepancy amount and its direction (short or over) so the table can find the error. Finalizing is blocked until the books balance, or the host overrides with a note and assigns the difference to one named player or as an equal share.
 - Finalizing a set asks for confirmation once. When the confirmed counts balance the books, the review page is that confirmation: its one button, Finish set, records the cash-outs and finalizes together, or records nothing ([ADR 0010](../adr/0010-finish-a-set-in-one-action.md)).
-- A host can reopen a finalized set, or a closed session, with a reason that everyone sees. Earlier results are kept and marked as replaced. A session with a transfer marked paid is not reopened until the mark is removed.
+- A host can reopen a finalized set, or a closed session, with a reason that everyone sees. Earlier results are kept and marked as replaced. A session with a paid or cleared transfer cannot reopen until the paid mark or clearance is undone.
 - Money records are never edited or removed. A correction is a reversal or a new record with a reason.
 
 ### 3. Settle-up calculator
 - Compute each player's net result over all sets of the session (cash-outs minus buy-ins; rake counts as part of the loss). Under the default rake rule the fee is not charged again: settle-up returns each player's own fee. Under the Rake fund rule each player settles their result as the standings show it, and the Rake fund receives the session's rake.
 - Produce the **minimum number of transfers** to settle all debts (who pays whom, how much).
 - Show each player their own net result and what they owe or are owed, clearly.
-- Mark each transfer as paid. Unpaid transfers stay visible, and each session reads Settled, Partly settled or Unsettled.
+- Record that a transfer was paid. Unpaid transfers stay visible. Each session reads Settled, Partly settled or Unsettled. Paid, carried and cleared transfers count as settled.
 - Before a session closes, the host can record a payment made at the table, for example to a player who leaves early. Closing subtracts it from what is still owed. Results do not change ([ADR 0002](../adr/0002-payments-at-the-table.md)).
 - When closing a session, the host can carry earlier unpaid transfers between two of its players into the new settle-up. They start selected. They are netted with the night's results into one list.
 - Any member can share a closed session's results to the group chat as one picture and as text. The app sends nothing itself.
+
+#### Debts across sessions
+
+- The `DEBTS_VIEW` switch controls the new debt views and actions. Its default is False. This feature is not yet released or enabled.
+- With the switch on, Debts appears at the top of a group's Sessions tab when the viewer has debts to see. A player sees only their own pairs. A host sees all pairs in the group.
+- Each row nets the unpaid transfers between two players in one unit. It uses only current settle-up lists from closed sessions that are not archived. Paid, carried and cleared transfers are left out. Pesos and chips stay separate.
+- A row shows the direction, net amount and number of sessions. Opening it shows each original transfer with its amount, direction and session link.
+- A host or the net receiver can confirm settlement of the pair. The payer cannot confirm a nonzero net. If the net is zero, either player or a host can clear the pair.
+- The confirmation shows the net and every transfer it will settle. If the transfers or net changed, the app refuses the action and asks the viewer to look again. It records one clearance for the accepted net. It closes the original transfers without recording each gross amount as paid. Player results do not change.
+- A Rake fund transfer stays separate. It is not netted with player debts. Only a host can mark it paid on its session page.
+- A cleared transfer shows who it was settled with and when. It cannot be marked paid or carried into another session. Undo the clearance first.
+- A host or the person who recorded a clearance can undo it with a reason. Undo restores all linked transfers as unpaid. The original clearance and its reversal stay in the log.
+- With the switch on, a host or a transfer's receiver can mark that transfer paid on its session page. A host or the person who recorded the paid mark can undo it.
+- Your groups shows up to three of the viewer's net rows per group and a See all debts link to the Debts section.
+- With the switch off, the aggregate debt views are hidden. New clearances and clearance undo are refused. Paid marks and their undo stay host only. Your groups keeps its transfer rows. Existing clearances still count in settlement status and unpaid totals.
 
 ### 4. Roster and history
 - A group's page always shows Sessions, Players, Stats and Settings to active members. Before the first closed session, Stats says, "Players appear here once a session closes." Its action is Go to sessions ([ADR 0011](../adr/0011-stats-before-the-first-closed-session.md)).
@@ -111,7 +127,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 
 ## Data model
 
-The built model is described in [doc/wiki/architecture.md](doc/wiki/architecture.md). In the code a session is `GameNight` and a set is `GameSession`.
+The built model is described in [architecture.md](architecture.md). In the code a session is `GameNight` and a set is `GameSession`.
 
 Store all money as **integers in the session's unit** (centavos or whole chips), never floats.
 

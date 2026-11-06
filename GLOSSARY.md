@@ -17,3 +17,5 @@ Words of the product, as screens and docs use them. The code names are in bracke
 - **Confirmed**: an In that has a seat. Screens say "Coming" and "You're in".
 - **Waitlist**: the Ins without a seat, in the order of their answers. Screens say "Waitlist · 2nd in line".
 - **Rake fund** (`GroupRakeAccount`, `Transfer.to_rake_fund`): the group's collected rake as a party in settle-up. It only receives. Used when the group's rake rule is "At settle-up, into the rake fund" (ADR 0007); otherwise settle-up returns each player's own fee.
+- **Debt**: an unpaid transfer viewed across closed sessions. Debts between two players are netted within one group and one unit.
+- **Clearance**: a record of the net amount settled between two players. It closes the linked debts across sessions, including when they cancel to zero.

@@ -20,7 +20,7 @@ cp .env.example .env
 
 ## Configure (`.env`)
 
-`.env` is gitignored. `.env.example` lists each variable.
+`.env` is gitignored. `.env.example` lists common variables.
 
 | Variable | Required | Purpose |
 |---|---|---|
@@ -31,7 +31,14 @@ cp .env.example .env
 | `DB_CONN_MAX_AGE` | no | Seconds to keep a database connection. Default 60 |
 | `HTTPS_ONLY` | no | Secure cookies, HSTS and HTTPS redirect |
 | `SIGNUP_REQUIRES_INVITE` | no | Sign-up only from a usable invite link. Default: on at Vercel, off locally |
+| `DEBTS_VIEW` | no | Enables debts across sessions and receiver payment confirmation. Default `False` |
 | `LOG_LEVEL` | no | Level for `pokernights.*` loggers. Default `INFO` |
+
+Debts across sessions is unreleased. It is not enabled on Vercel. Keep `DEBTS_VIEW=False` for release unless the human opts in at ship time.
+
+Migration `settlement.0011` adds clearance records. Run the normal migration command. No manual backfill is needed.
+
+With the flag off, stored clearances still count in settlement totals. New clearances and clearance undo are disabled. Only hosts can mark a transfer paid or undo a payment.
 
 ## Run
 
@@ -42,28 +49,32 @@ cp .env.example .env
 
 To let phones on the same Wi-Fi reach it: add the machine's address to `ALLOWED_HOSTS` and run `manage.py runserver 0.0.0.0:8000`. This is for a test at home only. `runserver` is not a production server.
 
+To test debts across sessions locally:
+
+```sh
+DEBUG=True DEBTS_VIEW=True .venv/bin/python manage.py runserver
+```
+
 ## Test
 
 ```sh
-.venv/bin/python manage.py test
+DEBUG=True .venv/bin/python manage.py test
 ```
 
-465 tests (ten PostgreSQL-only skips on SQLite). SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored) so that threads see real locking.
+The test runner reports the current test count. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored). This lets test threads share a database. SQLite skips PostgreSQL-only row-lock tests.
 
 To run the same suite on PostgreSQL:
 
 ```sh
 /opt/homebrew/opt/postgresql@17/bin/pg_ctl -D /opt/homebrew/var/postgresql@17 -l /tmp/pn_postgres.log -w start
 /opt/homebrew/opt/postgresql@17/bin/createdb pokernights        # once
-DATABASE_URL=postgres://$USER@127.0.0.1:5432/pokernights .venv/bin/python manage.py test --noinput
+DEBUG=True DATABASE_URL=postgres://$USER@127.0.0.1:5432/pokernights .venv/bin/python manage.py test --noinput
 /opt/homebrew/opt/postgresql@17/bin/pg_ctl -D /opt/homebrew/var/postgresql@17 stop
 ```
 
-The concurrency tests are in `web/tests/test_concurrency.py`. They must pass on PostgreSQL before a release. See [footguns/sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md).
+Run the full PostgreSQL suite before a release. Its row-lock tests must pass. See [footguns/sqlite_hides_missing_locks.md](footguns/sqlite_hides_missing_locks.md).
 
-Both engines passed on 2026-10-04: 472 tests on PostgreSQL; 472 on SQLite with ten PostgreSQL-only skips. Rake controls add seven regression tests.
-
-End-of-set browser fixtures and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.
+Browser fixtures, test tools and commands are in [the browser README](../../web/tests/browser/README.md). Use a fresh temporary database for each flow run. Install the separate browser test tool outside the repository. It is not an application dependency. See [mobile overflow checks](footguns/mobile_browser_overflow_checks.md) when checking narrow layouts.
 
 ## Back up the dev database
 

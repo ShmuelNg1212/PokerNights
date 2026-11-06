@@ -21,6 +21,8 @@ A person sees, in one place per group, what they owe each other person and what 
 
 ## OPEN QUESTIONS
 
+Approval on 2026-11-06 accepted defaults 1 to 4. No override was given.
+
 Each question has a default. The executor uses the default unless the human changes it before approval.
 
 1. **Undo.** Who can undo a clearance or a paid mark? Default: a host, or the person who recorded it.
@@ -135,20 +137,20 @@ Recorded limit: at 200 percent text on WebKit, the existing group tab row extend
 
 ### 9. Docs
 
-- [ ] ADR 0013: clearances across sessions (study, options and choice). Mention that ADR 0002 stays: a `Payment` still belongs to one session.
-- [ ] `doc/wiki/spec.md`: the Debts section, the payee rule, the clearance. Approved by the human on this plan.
-- [ ] `GLOSSARY.md`: **Clearance**, **Debt** (an unpaid transfer seen across sessions).
-- [ ] `doc/wiki/features.md`, `architecture.md` (the new records), a footgun file if one appears.
-- [ ] TODO.md: phone checks for this feature, under the unreleased heading.
+- [x] ADR 0013: clearances across sessions (study, options and choice). Mention that ADR 0002 stays: a `Payment` still belongs to one session.
+- [x] `doc/wiki/spec.md`: the Debts section, the payee rule, the clearance. Approved by the human on this plan.
+- [x] `GLOSSARY.md`: **Clearance**, **Debt** (an unpaid transfer seen across sessions).
+- [x] `doc/wiki/features.md`, `architecture.md` (the new records), a footgun file if one appears.
+- [x] TODO.md: phone checks for this feature, under the unreleased heading.
 - **Done when:** the wiki matches the code.
 
 ## Rendezvous
 
-- [ ] Full test suite on SQLite and on PostgreSQL.
-- [ ] Review: code review of the branch; security review (money, permission and user data change).
-- [ ] First user action: with `DEBTS_VIEW=True` locally, log in as a player who is owed money from two sessions and owes money from a third. Open the group, check the net against a hand sum, tap "Got …", confirm. Then log in as the payer and check that the row is gone and that the three session pages say Settled. Undo as the recorder and check that all three are unpaid again.
-- [ ] Record each check here with its result.
-- [ ] Two fix-and-recheck rounds at most. After that, stop and ask the human.
+- [x] Full test suite on SQLite and on PostgreSQL.
+- [x] Review: code review of the branch; security review (money, permission and user data change).
+- [x] First user action: with `DEBTS_VIEW=True` locally, log in as a player who is owed money from two sessions and owes money from a third. Open the group, check the net against a hand sum, tap "Got …", confirm. Then log in as the payer and check that the row is gone and that the three session pages say Settled. Undo as the recorder and check that all three are unpaid again.
+- [x] Record each check here with its result.
+- [x] Two fix-and-recheck rounds at most. After that, stop and ask the human.
 
 ## Release
 
@@ -162,3 +164,41 @@ Recorded limit: at 200 percent text on WebKit, the existing group tab row extend
 - As the payer: no button; the row says the other person confirms.
 - As a host: every pair shows, with Settle.
 - Undo: the transfers are unpaid again.
+
+
+## Execution record — 2026-11-06 (frozen)
+
+The approved scope is complete on `feat/debts-across-sessions`. Main was `3490904` when execution began. Eight task commits implement records, queries, services, receiver marks, stamps, the group section, page summaries and design. Two review fixes follow: `3345e4e` checks access under the group lock; `9a2679f` returns focus to the Debts heading. The branch is local. Nothing was merged or pushed.
+
+### Final checks
+
+| Check | Result |
+|---|---|
+| Full SQLite suite | 1735 tests pass. 23 PostgreSQL-only tests skipped. |
+| Full PostgreSQL suite | 1735 tests pass. No skips. Migration 0011 applies. |
+| Standards review | Pass. All changed code areas reviewed. No material finding. |
+| Spec review | Pass for approved tasks 1 to 8. No material mismatch. |
+| Security review | Pass after the access-race fix and its re-review. |
+| Motion review | Pass after the explicit focus return and its re-review. |
+| Two-phone browser flow | 34 checks pass in Chromium and WebKit. |
+| Design and native fallback | 42 checks pass in Chromium and WebKit. |
+| Main comparison | The receiver probe fails on local main at the missing Debts section. |
+| Wiki sync | Spec, features, architecture, setup, glossary and ADR 0013 checked against the code. A clearance-undo footgun is recorded. |
+| Phone checks | Added under Unreleased in TODO.md. Physical iPhone checks are not claimed. |
+
+The first user action used a receiver owed ₱500 and ₱100 from two sessions, who owed ₱400 from a third. The shown net was ₱200. The receiver expanded the three original transfers, opened Got ₱200 from Ana, confirmed, and saw the row leave. The payer's session page changed through polling. Each source session showed Settled. Undo as the recorder restored all three transfers. The payer had no confirmation action. Focus started on Not yet and returned to Debts after the settled row left.
+
+### Review fixes and rechecks
+
+1. The security review reproduced a receiver waiting for the group lock while a host removed them. The waiting action could still settle. Three real PostgreSQL contention tests failed for removal before settle, removal before undo, and group archive before settle. `_debt_actor` now locks the group before fresh membership, role and archive checks. The same check serves flag-enabled paid marks. Those regressions pass. Three more races cover competing clearances, same-request retries and payment versus clearance.
+2. The motion review found no return target after the confirmed row was removed. The shared sheet now accepts an explicit focus target on the Debts heading. The first recheck sampled before the native close event and failed. The second check waits for that event's focus result. Both engines pass. No unresolved required check remains.
+
+### Recorded limits
+
+- At 200 percent text on WebKit, the existing group tabs overflow a 320 px viewport. The Debts section fits. This is outside the new surface.
+- Chromium can report an empty-stack native ViewTransition abort at the home arrival after login. The same exact event was captured on unchanged main. The browser probe records only this exact pre-feature login event as known. Other page errors fail the probe.
+- Physical touch, keyboard and installed-iPhone behavior remain on the human's phone checklist.
+
+### Release state
+
+`DEBTS_VIEW` remains False by default. The feature is not released. At ship time, ask whether to keep it off or enable it. No Vercel setting was changed.

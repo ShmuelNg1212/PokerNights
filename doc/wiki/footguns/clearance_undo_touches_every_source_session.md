@@ -1,0 +1,7 @@
+# Clearance undo affects every source session
+
+- **Trigger:** Undo a clearance that includes transfers from more than one session.
+- **Observed behavior:** Undo restores every linked debt. It does not restore only the transfer shown in one source session. The service locks all source sessions in id order. If any source session is archived, the whole undo fails. `DEBTS_VIEW` must be on for both clearance and undo. Existing clearances still count as done when the switch is off.
+- **Impact:** A cleared transfer cannot be marked paid or carried into another session. Its session cannot reopen until the whole clearance is undone. A clearance records the net amount between the two players. The number of settled transfers does not show how much money moved. For example, debts of ₱600 and ₱400 in opposite directions need a net payment of ₱200.
+- **Evidence:** [Clearance and undo services](../../../settlement/services.py), [settlement queries](../../../settlement/queries.py), and [archived-session write lock](../../../games/services.py). [Service tests](../../../settlement/tests/test_clearance_services.py) cover whole-clearance undo, write restrictions, and the switch. See [ADR 0013](../../adr/0013-clearances-across-sessions.md) for the net record decision.
+- **Remedy:** Check every source session before undo. Restore all archived source sessions first. A host or the person who recorded the clearance can undo it with a reason. Then correct the affected transfers or reopen the required session. Use the clearance amount to describe the net settlement.
