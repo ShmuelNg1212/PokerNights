@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: set start overture (unreleased, `feat/set-start-overture`)
+## Phone checks: set start overture (released 2026-11-06)
 
 - [ ] Start a set with two other phones on the page: "Shuffle up and deal" plays once on each, and each chip lands on its row. Tap during it: it ends at once and nothing opens. Rebuy right after works. With a seat draw: the chips circle from the dealer and the button lands on the first dealer. Reload and Resume play: no replay. Reduce Motion on: no overture.
 
