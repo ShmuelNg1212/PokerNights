@@ -23,6 +23,14 @@ Known limit on 2026-11-01: 58/60 passed. The 50 ms closing-caret assertion faile
 
 `motion.mjs` also samples three sheet openings from their first visible frame. The old 60 ms sample missed the flash at rest. The entry checks require a rising sheet and no stale inline transform after it settles.
 
+## Set start overture
+
+Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_overture.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/overture.mjs`. Each start consumes its set: reseed before a repeat. Copying the database file is not a reset.
+
+The fixture makes eight open sets for host `hana`, with player `ben` at each. The drawn set is drawn again in the seed until its dealer is the last to join, so the dealer's row is under the dock at 390 px and on the screen at 1280 px.
+
+A sampler reads every frame while the stage is up. The 40 checks cover the first frame, the words, each chip within 1.5 px of its row token, the dealer button into the badge or onto a drawn dealer, the seat order, a poll's morph during the overture, a player's phone, no replay, a skipping tap on a Rebuy, twelve chips at 320 × 568, 1280 px, reduced motion, a blocked Motion file and frames with the processor slowed four times. Captures are in `/private/tmp/pn-overture-review/`, or `PN_REVIEW_DIR`.
+
 ## Session chip values
 
 Use a fresh temporary database for this flow. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py` with that database selected. Start the local server with the same database. Run `node web/tests/browser/chip_values.mjs`.

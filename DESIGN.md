@@ -871,7 +871,7 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 | Moment | Movement |
 |---|---|
 | A step is completed | Its mark arrives with the tick (`arrive`); the new Next mark pulses once |
-| The set starts | Felt sweeps across the panel from the left in 500ms and the timer side rises, once, 780ms in all. The pot is at its value on the first frame |
+| The set starts | Superseded on 2026-11-06 by "Set start overture" |
 | Details opened by a tap | The facts fade in over 6px (`fade`). Opened by a live update or a wide screen: nothing |
 | Cash out in the sheet | The sheet's content fades to the form (`shift`) |
 
@@ -1045,6 +1045,32 @@ Only `transform` and `opacity` are animated by Motion. Reduced motion and a miss
 The light, the dimming, the glow and the ring are their own elements, moved by `transform` or faded by `opacity`; the felt is never repainted. Reduced motion shows the table still.
 
 **Measured.** `seat_draw.mjs`, 50 checks: the racetrack and its parts, chairs outside their seats and facing out, the page and the stage agreeing on every place to a fifth of a percent, one brighter moment, twelve seats at 320px, and no frame over 50ms with the processor slowed four times.
+
+### Set start overture (2026-11-06)
+
+[Plan](doc/plan/1793955875_set_start_overture.md), [study](doc/study/1793955255_set_start_motion.md). Mode: Operate, with one Experience moment. It replaces the felt sweep at the start of a set. No new colour, font, raster file or dependency.
+
+**A second recorded exception to "a signature moment within 900ms".** The human asked for a grander start and chose this direction from a prototype ("i like shuffle up and deal"). It takes about two seconds and covers the page. It plays on every set, once per set and browser (the human: "Every set"). Any tap or key press ends it at once. There is no vibration and no sound.
+
+**The stage.** A layer over the whole screen, in `#table-sheets`, outside the live region. The page under it is already the running set: every figure is at its accepted value in every frame. The page shows faintly through Ground at 97%. In the middle is a pool of felt with the 64px dealer button. "Set {N}" is at the top (5.5rem, compressed, weight 850). Under the ring is "Shuffle up and deal" (Brass, 1.75rem) and one muted line, "{count} players · Blinds {blinds}". "Tap to skip" is at the foot. Every word comes from the page.
+
+| Time | Part |
+|---|---|
+| 0 to 240ms | The ground fades in; the felt pool grows from 30% (`sheet`) |
+| 0 to 640ms | The dealer button drops from 20% and turns 620° to rest |
+| 140 to 1,300ms | Each player's chip sweeps in from outside, 45ms apart, then all circle the button by 40° |
+| 500 to 820ms | "Set {N}" stamps from 150% (`arrive`); the words under the ring rise 8px (`shift`) |
+| 620 to 1,260ms | One Brass ring opens from the button and fades |
+| 1,300 to 1,950ms | The ground and pool fade. Each chip flies to its own row token, 28ms apart. "Set {N}" flies to the title's "Set {N}". The stage goes |
+
+- **Order and the dealer.** With a seated seat draw, the chips come in clockwise from the dealer and the button goes to the first dealer's token, at 22px. Without one, the chips come in row order and the button shrinks into the In play badge. It never marks as dealer a player who was not drawn.
+- **Off the screen.** A row under the host dock or past the screen edge takes its chip, or the button, behind that edge, fading. Nothing rests on the dock.
+- **Under the stage.** The row tokens, the title's "Set {N}" and the badge are hidden by `data-overture` on `<html>`, not by inline styles: a poll morphs `#live` and removes inline styles there. The stage's copies land on them and the page shows them in the same frame.
+- **It does not play** under reduced motion, without Motion, in a hidden tab, while a sheet or the seat draw stage is open, on a reload, on Resume play, or when storage is refused. The page is complete at once in each case.
+- **A skipping tap** never becomes a tap on the page: the stage stays, unseen, to take the click that follows, then goes.
+- Only `transform` and `opacity` move. The pool, the ring, the button and each chip are their own elements.
+
+**Measured.** `overture.mjs`, 40 checks: the first frame, the words, each chip within 1.5px of its token at 390 and 1280px, the button into the badge and onto a drawn dealer (behind the dock at 390px, at rest at 1280px), the seat order, a poll during the overture, a player's phone, no replay, a tap on a Rebuy skips without opening it, twelve chips inside 320 × 568, reduced motion, a blocked Motion file, and no frame over 50ms with the processor slowed four times (worst 17ms). `table.mjs`: 59 checks.
 
 ### Carried transfers (2026-10-11)
 
@@ -1312,7 +1338,7 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 
 Mode: Operate, inside The Rack. [Plan](doc/plan/1793431937_ui_revamp.md). This replaces the older set-state fade and scripted disclosure movement.
 
-- **Start.** Keep the existing left-to-right felt sweep: 500 ms with the existing ease-out curve. The side facts and player rows settle after it. The last row ends by 740 ms. Money is at its accepted value throughout. A localStorage mark makes the start play once per set and browser. A refused store keeps the static state. A real phone must justify any change to the sweep's direction or shape.
+- **Start.** Superseded on 2026-11-06 by "Set start overture". Keep the existing left-to-right felt sweep: 500 ms with the existing ease-out curve. The side facts and player rows settle after it. The last row ends by 740 ms. Money is at its accepted value throughout. A localStorage mark makes the start play once per set and browser. A refused store keeps the static state. A real phone must justify any change to the sweep's direction or shape.
 - **Progress.** Counting and Final leave the set title still. The workspace moves 12 px into place in 220 ms, with opacity and the existing ease-out curve. Resume play reverses the direction. A state-changing morph uses this movement alone. A blocked Motion file keeps the former browser fade.
 - **Disclosures.** In-flow details interpolate their content height in 200 ms where `::details-content` and `interpolate-size` are supported. Otherwise, `disclosures.js` measures the height and moves it in 200 ms with the same ease-out curve. Rapid taps reverse from the current height. More host controls and set Details share this treatment. The account flyout and RSVP confirmations keep their own motion owner. Reduced motion changes the state at once. Without JavaScript, native details still work. A closing marker makes the chevron and summary answer at once, and keeps a poll from saving the temporary open as a choice.
 - **Sheet entry.** Set the entry transform before Motion starts, so the sheet cannot flash at rest before it rises. Use the existing sheet preset. Guard cleanup by the latest animation, so an interrupted entry cannot clear a later close or reopening.

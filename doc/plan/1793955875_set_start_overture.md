@@ -1,6 +1,6 @@
 # Shuffle up and deal: the set start overture
 
-Status: waiting for approval. Date: 2026-11-06, Asia/Manila. Study: [A grander set start](../study/1793955255_set_start_motion.md), direction C. Prototype: <https://claude.ai/artifact/9uzb4dHHQucR93mL5P2TWP>.
+Status: approved 2026-11-06 ("plan is approved"); answers: every set, no haptics. Date: 2026-11-06, Asia/Manila. Study: [A grander set start](../study/1793955255_set_start_motion.md), direction C. Prototype: <https://claude.ai/artifact/9uzb4dHHQucR93mL5P2TWP>.
 
 Mode: design (Operate, with one Experience moment). Visual authority: the built Rack in DESIGN.md. No new colour, font, raster file or dependency. Execute skills: `animate`, `mobile-native`. Rendezvous skills: `review-animations`, `break-ui`, impeccable `critique` and `audit`.
 
@@ -9,10 +9,10 @@ Mode: design (Operate, with one Experience moment). Visual authority: the built 
 - 2026-11-06, the human: "i like shuffle up and deal". This selects direction C and keeps the phrase "Shuffle up and deal".
 - Selecting C accepts its length (about 2 s) and its takeover of the page. These need a recorded exception to the 900 ms rule, as the seat draw has.
 
-## OPEN QUESTIONS
+## Answered questions
 
-1. **Every set, or the first set only?** The default in this plan: every set, once per set and browser. The alternative: the overture on set 1 only, and today's sweep on later sets.
-2. **Vibration?** The default in this plan: none. The alternative: one short vibration on Android phones as the dealer button lands. iPhone Safari has no vibration API for web pages, so iPhones stay silent either way.
+1. **Every set, or the first set only?** Every set, once per set and browser (the human, 2026-11-06: "Every set").
+2. **Vibration?** None (the human, 2026-11-06: "no need for haptics").
 
 ## Outcome
 
@@ -59,33 +59,33 @@ The prototype's timeline, about 1.95 s with eight players. Each layer is its own
 
 ### 1. Record the decision (tests: alongside)
 
-- [ ] DESIGN.md: add "Set start overture (2026-11-06)". It supersedes the start row of the set page motion table (line 874) and the "Start" item of the 2026-10-31 revamp (line 1315).
-- [ ] Record it as a second exception to "a signature moment within 900ms", with the human's words.
-- [ ] State: drawn furniture only (felt, the dealer button, the chips that already are player identity). No cards.
+- [x] DESIGN.md: add "Set start overture (2026-11-06)". It supersedes the start row of the set page motion table (line 874) and the "Start" item of the 2026-10-31 revamp (line 1315).
+- [x] Record it as a second exception to "a signature moment within 900ms", with the human's words.
+- [x] State: drawn furniture only (felt, the dealer button, the chips that already are player identity). No cards.
 
 Acceptance: DESIGN.md describes every row of Behaviour and Motion. Completion: the section is committed with the build.
 
 ### 2. Browser check first (tests: alongside)
 
-- [ ] New `web/tests/browser/overture.mjs` with a seed for an open set of 2, 8 and 12 players, one with a seated draw and one without.
-- [ ] Checks: the first visible frame of the stage is dark and has no chip at rest; each chip ends within 1 px of its row token; the dealer button ends on the dealer's token with a draw and on the badge without one; the stage leaves no element and no running animation; a tap at 600 ms completes the page in one frame; a poll during the overture changes nothing; a player's phone plays it once after its poll; a reload and Resume play do not replay it; reduced motion, a blocked Motion file and no JavaScript show the running set at once; 320, 390 and 1280 px; 12 chips at 320 px stay inside the screen; no frame over 50 ms with the processor slowed four times.
-- [ ] `web/tests/browser/table.mjs:127-134`: replace the felt-sweep and 900 ms checks with "the overture starts" and "the page is complete at the end".
+- [x] New `web/tests/browser/overture.mjs` with a seed for an open set of 2, 8 and 12 players, one with a seated draw and one without.
+- [x] Checks: the first visible frame of the stage is dark and has no chip at rest; each chip ends within 1 px of its row token; the dealer button ends on the dealer's token with a draw and on the badge without one; the stage leaves no element and no running animation; a tap at 600 ms completes the page in one frame; a poll during the overture changes nothing; a player's phone plays it once after its poll; a reload and Resume play do not replay it; reduced motion, a blocked Motion file and no JavaScript show the running set at once; 320, 390 and 1280 px; 12 chips at 320 px stay inside the screen; no frame over 50 ms with the processor slowed four times.
+- [x] `web/tests/browser/table.mjs:127-134`: replace the felt-sweep and 900 ms checks with "the overture starts" and "the page is complete at the end".
 
 Acceptance: the checks fail before task 3 and pass after it. Completion: the probe and its seed are committed and listed in `web/tests/browser/README.md`.
 
 ### 3. Build the overture (tests: alongside)
 
-- [ ] New `static/js/overture.js`, loaded after `table.js` in `templates/base.html`. It exposes one function, `window.pokerOverture.play(region)`, which returns at once when it cannot play.
-- [ ] `static/js/table.js:71-83`: keep the once-per-set key. Replace the sweep with a call to `pokerOverture.play`.
-- [ ] The stage is a `div` in `#table-sheets`, with `aria-hidden="true"`. It is not a dialog and it does not take focus. The page's own state change stays the announcement.
-- [ ] Skip on `pointerdown`, `keydown` and `visibilitychange`. Clean up in the `pokerPage.register` return.
-- [ ] CSS for the stage under one block in `static/css/app.css`, with the existing tokens.
+- [x] New `static/js/overture.js`, loaded after `table.js` in `templates/base.html`. It exposes one function, `window.pokerOverture.play(region)`, which returns at once when it cannot play.
+- [x] `static/js/table.js:71-83`: keep the once-per-set key. Replace the sweep with a call to `pokerOverture.play`.
+- [x] The stage is a `div` in `#table-sheets`, with `aria-hidden="true"`. It is not a dialog and it does not take focus. The page's own state change stays the announcement.
+- [x] Skip on `pointerdown`, `keydown` and `visibilitychange`. Clean up in the `pokerPage.register` return.
+- [x] CSS for the stage under one block in `static/css/app.css`, with the existing tokens.
 
 Acceptance: every row of Behaviour holds on 390 and 1280 px. Completion: task 2's checks pass and the Django suite passes.
 
 ### 4. Phone checks (tests: alongside)
 
-- [ ] Add to TODO.md: start a set on the host's phone with two other phones on the page. Check that the overture plays on all three, that a tap skips it, and that a Rebuy right after it works.
+- [x] Add to TODO.md: start a set on the host's phone with two other phones on the page. Check that the overture plays on all three, that a tap skips it, and that a Rebuy right after it works.
 - [ ] Run `mobile_motion.mjs`'s WebKit setup against the overture, as a WebKit frame check.
 
 Completion: the TODO lines exist; the WebKit result is recorded in Checks.
@@ -93,7 +93,8 @@ Completion: the TODO lines exist; the WebKit result is recorded in Checks.
 ## Not in scope
 
 - Sound.
-- A different overture for later sets (see OPEN QUESTIONS 1).
+- A different overture for later sets.
+- Vibration.
 - The seat draw stage. It does not change.
 
 ## Risks

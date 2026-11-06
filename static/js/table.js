@@ -68,17 +68,11 @@
       var name = step.dataset.step;
       if (now[name] === "done" && was[name] && was[name] !== "done") completed(step);
     });
-    // The set starts, once: felt sweeps across the panel from the left and the timer is running.
+    // The set starts, once per set and browser: overture.js plays "Shuffle up and deal" over the running set.
     if (now.state === "running" && (was.state === "open" || was.state === "setup")) {
       // Resume play never replays the start, including after a reload or a new browser tab.
       try { var started = "rack-start:" + region.dataset.url; if (localStorage.getItem(started)) return; localStorage.setItem(started, "1"); } catch (_) { return; }
-      var felt = region.querySelector(".table-v2 .felt");
-      go(felt, { clipPath: ["inset(0 100% 0 0)", "inset(0 0% 0 0)"] }, { duration: 0.5, ease: [0.16, 1, 0.3, 1] });
-      go(region.querySelector(".table-v2 .pot-side"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.28 });
-      region.querySelectorAll(".player-row").forEach(function (row, index) {
-        // The money stays fully visible. Only the row's position settles after the felt.
-        go(row, { transform: ["translateY(8px)", "translateY(0px)"] }, "progress", { delay: 0.28 + Math.min(index, 8) * 0.03 });
-      });
+      if (window.pokerOverture) window.pokerOverture.play(region);
     }
   }
 

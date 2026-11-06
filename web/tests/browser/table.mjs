@@ -122,16 +122,16 @@ try {
  check('open: the menu holds the option and Start; Back to draft waits under More',await H.js(`!!document.querySelector('#opening-buy-ins')&&${shown('.host-controls > form button[value=close], .host-controls > button[value=close]')}.length===0&&!!document.querySelector('.host-more button[value=close]')`));
  await H.js(`localStorage.removeItem('rack-dock')`);await H.go('/s/4/');
  const dockH=await H.js(`Math.round(document.querySelector('.host-controls').getBoundingClientRect().height)+(document.querySelector('.dock-collapsed')?1000:0)`);check('open: the menu is at most 260px tall',dockH<=260,`${dockH}px`);await H.shot('table-open-390');
- // Start: the one moment.
- await H.js(`window.__seen=null;new MutationObserver(()=>{const f=document.querySelector('.table-v2 .felt');if(f&&!window.__seen){const a=document.getAnimations();window.__seen={figure:document.querySelector('.display-amount').textContent.trim(),clip:getComputedStyle(f).clipPath,styled:f.style.clipPath,timer:document.querySelector('.pot-side strong').textContent.trim()}}}).observe(document.getElementById('live'),{childList:true,subtree:true})`);
+ // Start: the one moment, "Shuffle up and deal" (DESIGN.md, "Set start overture").
+ await H.js(`window.__seen=null;new MutationObserver(()=>{const f=document.querySelector('.table-v2 .felt');if(f&&!window.__seen){window.__seen={figure:document.querySelector('.display-amount').textContent.trim(),stage:!!document.querySelector('.overture'),hidden:document.documentElement.hasAttribute('data-overture')}}}).observe(document.getElementById('live'),{childList:true,subtree:true})`);
  await H.click(`document.querySelector('.host-controls button[value=start]')`,50);
- const started=await H.until(`document.getElementById('live').dataset.state==='running'&&!!window.__seen`);await sleep(120);
- const run=await H.js(`(()=>{const f=document.querySelector('.table-v2 .felt'),a=f.getAnimations();return {n:a.length,end:Math.max(0,...document.getAnimations().map(x=>x.effect.getComputedTiming().endTime))}})()`);const seen=await H.js('window.__seen');
- check('the set starts: felt sweeps across the panel',started&&run.n>0,JSON.stringify({seen,run}));
- check('the start is over within 900ms',run.end>0&&run.end<=900,`${Math.round(run.end)}ms`);await sleep(950);
- check('the figure was at its value on the first frame, and nothing is left at rest',await H.js(`document.querySelector('.display-amount').textContent.trim()===${JSON.stringify(seen.figure)}&&!document.querySelector('.table-v2 .felt').getAttribute('style')&&!document.querySelector('.pot-side').getAttribute('style')&&document.getAnimations().length===0`),seen.figure);
+ const started=await H.until(`document.getElementById('live').dataset.state==='running'&&!!window.__seen`)&&await H.until(`!!document.querySelector('.overture')`,1500);await sleep(120);
+ const run=await H.js(`(()=>{const o=document.querySelector('.overture');return {stage:!!o,chips:o?o.querySelectorAll('.ov-chip').length:0,words:o?o.textContent.replace(/\\s+/g,' ').trim():''}})()`);const seen=await H.js('window.__seen');
+ check('the set starts: the overture plays over the running set, with a chip for each player',started&&run.stage&&run.chips===2&&/Set \d+/.test(run.words)&&/Shuffle up and deal/.test(run.words)&&/2 players/.test(run.words),JSON.stringify({seen,run}));
+ await sleep(2400);
+ check('the figure was at its value on the first frame, and nothing is left at rest',await H.js(`document.querySelector('.display-amount').textContent.trim()===${JSON.stringify(seen.figure)}&&!document.querySelector('.overture')&&!document.documentElement.hasAttribute('data-overture')&&!document.querySelector('.table-v2 .felt').getAttribute('style')&&document.getAnimations().length===0`),seen.figure);
  check('started: the usual buy-in went to both players, the timer runs',await H.js(`document.querySelector('.felt .badge').textContent==='In play'&&/₱/.test(document.querySelector('.display-amount').textContent)&&document.querySelectorAll('.player-row .buy-opener').length===2`));
- await H.go('/s/4/');check('opening the page again does not replay the start',await H.js(`document.getAnimations().length===0&&!document.querySelector('.table-v2 .felt').getAttribute('style')`));
+ await H.go('/s/4/');check('opening the page again does not replay the start',await H.js(`document.getAnimations().length===0&&!document.querySelector('.overture')&&!document.querySelector('.table-v2 .felt').getAttribute('style')`));
  // An open set as a player.
  await P.go(`/s/${OPEN.live.set}/`);
  check('a player on an open set: the stakes, Join first, no checklist',await P.js(`!document.querySelector('.prep-step')&&${text('The host starts the set.')}&&${text('Blinds')}&&document.querySelector('.player-list > li').matches('.join-row')&&!!document.querySelector('.join-row .btn-primary')`));
@@ -143,7 +143,7 @@ try {
  // ===== Fail safe.
  const R=await page();await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},R.s);await R.login('hana');await R.go(`/s/${OPEN.default.set}/`);
  await R.click(`document.querySelector('.host-controls button[value=start]')`,50);await R.until(`document.getElementById('live').dataset.state==='running'`);
- check('reduced motion: the set starts and nothing moves',await R.js(`document.getAnimations().length===0&&!document.querySelector('.table-v2 .felt').getAttribute('style')&&document.querySelector('.felt .badge').textContent==='In play'`));
+ check('reduced motion: the set starts and nothing moves',await R.js(`document.getAnimations().length===0&&!document.querySelector('.overture')&&!document.querySelector('.table-v2 .felt').getAttribute('style')&&document.querySelector('.felt .badge').textContent==='In play'`));
  await R.click(`document.querySelector('.player-row .player-opener')`,400);
  check('reduced motion: the row still opens the sheet',await R.js(`document.querySelector('dialog.sheet').open`));
  const X=await page();await send('Network.enable',{},X.s);await send('Network.setBlockedURLs',{urls:['*vendor/motion-*']},X.s);const before=errors.length;await X.login('hana');await X.go('/s/3/');
@@ -158,12 +158,12 @@ try {
  await N.click(`[...document.querySelectorAll('.player-row details')].find(x=>x.querySelector('summary').textContent.trim()==='Rebuy').querySelector('[type=submit]')`,1500);
  check('no JavaScript: a rebuy from the native form is recorded',await N.js(`location.pathname==='/s/${OPEN.opt_out.set}/'&&/1 rebuy/.test(document.querySelector('.player-row').textContent)`));
  check('no JavaScript: Details on the panel is a native disclosure',await N.js(`document.querySelector('.set-facts > summary').getClientRects().length>0&&!document.querySelector('.set-facts').open`));
- // Late frames on the start, with the processor slowed four times.
+ // Late frames on the start, with the processor slowed four times: the whole overture.
  const L=await page();await L.login('hana');await L.go(`/s/${OPEN.chips.set}/`);await send('Emulation.setCPUThrottlingRate',{rate:4},L.s);
  await L.js(`window.__frames=[];let last=0;const tick=n=>{if(last)window.__frames.push(n-last);last=n;requestAnimationFrame(tick)};requestAnimationFrame(tick)`);
- await L.click(`document.querySelector('.host-controls button[value=start]')`,50);await L.until(`document.getElementById('live').dataset.state==='running'`,12000);await L.js('window.__mark=window.__frames.length');await sleep(1000);
+ await L.click(`document.querySelector('.host-controls button[value=start]')`,50);await L.until(`document.getElementById('live').dataset.state==='running'`,12000);await L.js('window.__mark=window.__frames.length');await sleep(2600);
  const frames=(await L.js('window.__frames.slice(window.__mark)'));const worst=Math.round(Math.max(...frames)),late=frames.filter(d=>d>34).length;
- check('slowed four times: the sweep itself drops at most two frames',late<=2,`${frames.length} frames, ${late} over 34ms, worst ${worst}ms`);
+ check('slowed four times: the overture drops at most two frames',late<=2,`${frames.length} frames, ${late} over 34ms, worst ${worst}ms`);
  check('no script error anywhere',errors.length===0,errors.join('; '));
  writeFileSync(`${OUT}/table.json`,JSON.stringify(results,null,2));
 } finally {await send('Browser.close');ws.close();chrome.kill()}
