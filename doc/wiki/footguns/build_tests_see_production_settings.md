@@ -10,3 +10,7 @@ VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... .venv/bin/python manage.py test
 ```
 
 For markup shared by every page (the header, `base.html`), give it no `role="alert"`, `autofocus` or other page-wide marker until it is used. `web/tests/test_table_alerts.py` checks the bell for this.
+
+**Again (2026-11-06).** The debts release passed 1,735 tests with `DEBTS_VIEW` at its default, `False`. The human set `DEBTS_VIEW=True` for Production before the push. The build's tests then ran with the switch on. `test_order_of_the_page_and_folded_records` expected "marked by the host", but with the switch on a paid row names its recorder. The build failed and production kept the previous release. The test now pins `DEBTS_VIEW=False`, and a sibling test checks the wording with the switch on.
+
+**Remedy for switches.** Before a release that turns a switch on in Vercel, run the full suite with that switch exported, for example `DEBTS_VIEW=True`. A test that depends on a switch sets it with `override_settings`, so it does not read the environment.
