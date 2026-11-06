@@ -544,6 +544,7 @@ def night(request, night_id):
             night, [(s.pk, s.state, s.finalized_at) for s in by_number], outcome.plan.pk if outcome.plan else None,
             len(outcome.replaced), (len(outcome.payments), sum(1 for p in outcome.payments if p.active)),
             sum(1 for t in outcome.transfers if t.carried), rsvp=context["board"].mark if context.get("board") else None,
+            cleared=len({t.cleared.pk for t in outcome.transfers if t.cleared}),
         )
     context["replaced_plans"] = outcome.replaced
     context["my_table_payments"] = [

@@ -608,7 +608,7 @@ def session_nets(night_ids, member_ids) -> dict:
     return {(row["finalization__session__night_id"], row["member_id"]): row["total"] for row in rows}
 
 
-def stamp_from(night, sets, plan_id, replaced, payments, carried=0, rsvp=None) -> str:
+def stamp_from(night, sets, plan_id, replaced, payments, carried=0, rsvp=None, cleared=0) -> str:
     """The session page's mark, from rows the caller holds. ``sets`` are ``(pk, state, finalized_at)``;
     ``replaced`` is the number of transfer lists a reopening retired; ``payments`` are
     ``(how many exist, how many stand)``: paid marks after closing, table payments before."""
@@ -624,6 +624,8 @@ def stamp_from(night, sets, plan_id, replaced, payments, carried=0, rsvp=None) -
     # session nobody carried from keeps the mark it had.
     if plan_id and carried:
         seen += (carried,)
+    if plan_id and cleared:
+        seen += (("cleared", cleared),)
     # Who is coming, once the session is announced (``games.rsvp.Board.mark``). Left out before.
     if rsvp is not None:
         seen += (rsvp,)
@@ -645,10 +647,12 @@ def night_stamp(night) -> str:
     # How many transfers of each list a later session has taken over is counted on the same read.
     plans = list(
         SettlementPlan.objects.filter(night=night)
-        .annotate(taken=Count("transfers__carries", filter=Q(transfers__carries__plan__is_current=True)))
-        .values_list("pk", "is_current", "taken")
+        .annotate(
+            taken=Count("transfers__carries", filter=Q(transfers__carries__plan__is_current=True), distinct=True),
+            cleared=Count("transfers__clearances__clearance", filter=Q(transfers__clearances__active=True), distinct=True),
+        ).values_list("pk", "is_current", "taken", "cleared")
     )
-    plan_id, carried = next(((pk, taken) for pk, current, taken in plans if current), (None, 0))
+    plan_id, carried, cleared = next(((pk, taken, cleared) for pk, current, taken, cleared in plans if current), (None, 0, 0))
     found = Payment.objects.filter(night=night).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
     payments = (found["made"], found["standing"])
     board = None
@@ -656,7 +660,7 @@ def night_stamp(night) -> str:
         from games import rsvp
 
         board = rsvp.boards([night], _nobody(night))[night.pk].mark
-    return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments, carried, rsvp=board)
+    return stamp_from(night, sets, plan_id, len(plans) - (1 if plan_id else 0), payments, carried, rsvp=board, cleared=cleared)
 
 
 def _nobody(night):
@@ -691,10 +695,14 @@ def hub_stamp(group_ids) -> str:
                                    status=Participant.Status.JOINED)
         .values("session_id").annotate(count=Count("pk")).order_by("session_id").values_list("session_id", "count")
     )
-    members = list(
+    member_counts = list(
         Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE)
-        .values("group_id").annotate(count=Count("pk")).order_by("group_id").values_list("group_id", "count")
+        .values("group_id").annotate(
+            count=Count("pk", distinct=True), clearance_made=Count("group__clearances", distinct=True),
+            clearance_standing=Count("group__clearances", filter=Q(group__clearances__active=True), distinct=True),
+        ).order_by("group_id").values_list("group_id", "count", "clearance_made", "clearance_standing")
     )
+    members = [(group, count) for group, count, _, _ in member_counts]
     plans = list(SettlementPlan.objects.filter(night__group_id__in=group_ids).order_by("pk").values_list("pk", "is_current"))
     paid = Payment.objects.filter(night__group_id__in=group_ids).aggregate(made=Count("pk"), standing=Count("pk", filter=Q(active=True)))
     seen = (
@@ -703,6 +711,10 @@ def hub_stamp(group_ids) -> str:
          for pk, state, done, night, status, archived in sets],
         seated, members, plans, paid["made"], paid["standing"],
     )
+    made = sum(made for _, _, made, _ in member_counts)
+    standing = sum(standing for _, _, _, standing in member_counts)
+    if made:
+        seen += (("clearances", made, standing),)
     # Announced sessions and their answers. Left out when there are none, so the mark stays as it was.
     from games import rsvp
     from games.models import Rsvp

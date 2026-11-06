@@ -91,8 +91,10 @@ Checks: payee tests failed under the old host-only rule. Isolated SQLite full su
 
 ### 5. Live stamps — tests: first
 
-- [ ] `night_stamp` and `stamp_from`: add the number of active clearances that touch this session's current plan. Leave it out at zero, so a session that nobody cleared keeps its mark (as `carried` does).
-- [ ] `hub_stamp`: add the count of clearances made and standing in these groups.
+Checks: both stamp tests failed first. SQLite full suite: 1715 pass, 17 skips. PostgreSQL payee, stamps and hub tests: 16 pass. The first full run found one extra poll query. Counts now share the membership read; the existing nine-query poll limit passes. No-clearance marks stay compatible.
+
+- [x] `night_stamp` and `stamp_from`: add the number of active clearances that touch this session's current plan. Leave it out at zero, so a session that nobody cleared keeps its mark (as `carried` does).
+- [x] `hub_stamp`: add the count of clearances made and standing in these groups.
 - **Acceptance:** a test shows that a clearance and its undo each change both stamps, and that a group without clearances keeps the same `hub_stamp` as before this change.
 - **Done when:** the tests pass.
 
