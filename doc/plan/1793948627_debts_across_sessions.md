@@ -81,9 +81,11 @@ Checks: 11 service tests failed before implementation and pass now. SQLite full 
 
 ### 4. The payee may mark paid — tests: first
 
-- [ ] `mark_paid`: allow a host, or the member who is the transfer's payee. A rake fund transfer stays host only.
-- [ ] `mark_unpaid`: allow a host, or the user who recorded that payment (OPEN QUESTION 1).
-- [ ] Behind `DEBTS_VIEW`: with the switch off, the rules are as today (host only).
+Checks: payee tests failed under the old host-only rule. Isolated SQLite full suite: 1713 pass, 17 skips. Five tests cover receiver, payer, third member, recorder undo, host records, rake and switch off. An accidental overlapping SQLite check was stopped; only the clean isolated run counts.
+
+- [x] `mark_paid`: allow a host, or the member who is the transfer's payee. A rake fund transfer stays host only.
+- [x] `mark_unpaid`: allow a host, or the user who recorded that payment (OPEN QUESTION 1).
+- [x] Behind `DEBTS_VIEW`: with the switch off, the rules are as today (host only).
 - **Acceptance:** tests: the payee marks paid; the payer is refused; another player is refused; the payee cannot mark a rake fund transfer; undo by the recorder; undo by another player refused.
 - **Done when:** the tests pass.
 

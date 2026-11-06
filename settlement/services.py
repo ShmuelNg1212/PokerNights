@@ -372,11 +372,16 @@ def _latest_set_id(night):
 @transaction.atomic
 def mark_paid(night_id, actor: Member, transfer_id, request_id) -> Payment:
     """Record that a transfer was paid. Marking it twice changes nothing."""
-    require_host(actor)
+    if settings.DEBTS_VIEW:
+        actor = _debt_actor(actor.group_id, actor)
+    else:
+        require_host(actor)
     night = games.lock_night(night_id, actor.group_id)
     if not night.is_closed:
         raise RuleError("Transfers exist only after the session is closed.")
     transfer = _transfer(night, transfer_id)
+    if not (actor.is_host or (settings.DEBTS_VIEW and not transfer.to_rake_fund and transfer.payee_id == actor.pk)):
+        raise NotAllowed("Only a host or the receiver can mark this transfer paid.")
     cleared = ClearedTransfer.objects.filter(transfer=transfer, active=True).select_related("clearance__payee").first()
     if cleared:
         clearance = cleared.clearance
@@ -401,18 +406,24 @@ def mark_paid(night_id, actor: Member, transfer_id, request_id) -> Payment:
         "transfer.paid", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=transfer,
         summary=f"Marked paid: {_describe(transfer, night.unit)}",
     )
+    _bump_sets(night)
     return payment
 
 
 @transaction.atomic
 def mark_unpaid(night_id, actor: Member, transfer_id, reason: str = "") -> None:
     """Undo a paid mark. The payment row stays, with a reversal."""
-    require_host(actor)
+    if settings.DEBTS_VIEW:
+        actor = _debt_actor(actor.group_id, actor)
+    else:
+        require_host(actor)
     night = games.lock_night(night_id, actor.group_id)
     if not night.is_closed:
         raise RuleError("Transfers exist only after the session is closed.")
     transfer = _transfer(night, transfer_id)
     payment = Payment.objects.filter(transfer=transfer, active=True).first()
+    if not (actor.is_host or (settings.DEBTS_VIEW and payment and payment.recorded_by_id == actor.user_id)):
+        raise NotAllowed("Only a host or the person who recorded it can undo this payment.")
     if payment is None:
         return
     payment.active = False
@@ -422,6 +433,7 @@ def mark_unpaid(night_id, actor: Member, transfer_id, reason: str = "") -> None:
         "transfer.unpaid", actor=actor.user, group_id=night.group_id, session_id=_latest_set_id(night), target=transfer,
         summary=f"Marked unpaid again: {_describe(transfer, night.unit)}", reason=reason,
     )
+    _bump_sets(night)
 
 
 def payable_seats(night):
