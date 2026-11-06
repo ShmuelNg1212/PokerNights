@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: felt light after the overture (unreleased, `feat/felt-lights`)
+## Phone checks: felt light after the overture (released 2026-11-06)
 
 - [ ] Start a set: as the button lands in the In play badge, a Brass ring spreads from it across the felt and a soft light crosses behind it, then the felt is still. Nothing spills past the felt's corners. The words stay crisp over it. Tap to skip the overture: no light. Reduce Motion on: no light.
 
