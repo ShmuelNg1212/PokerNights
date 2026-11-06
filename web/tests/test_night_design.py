@@ -2,7 +2,7 @@
 import uuid
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from games import services as games
@@ -254,6 +254,7 @@ class SettlePageTests(TestCase):
         self.assertIn('name="request_id"', host_row)
         self.assertIn('>Mark paid</button>', host_row)
 
+    @override_settings(DEBTS_VIEW=False)
     def test_order_of_the_page_and_folded_records(self):
         self.closed(ben_cash=600, a_cash=1400)
         transfer = queries.night_outcome(GameNight.objects.get(pk=self.night_id)).transfers[0]
@@ -268,6 +269,15 @@ class SettlePageTests(TestCase):
         self.assertIn('>Undo</button>', html)
         self.assertIn('<span class="paid-word">Paid</span>', html)
         self.assertIn('marked by the host', html)
+
+    @override_settings(DEBTS_VIEW=True)
+    def test_a_paid_row_names_its_recorder_with_debts_view(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        transfer = queries.night_outcome(GameNight.objects.get(pk=self.night_id)).transfers[0]
+        services.mark_paid(self.night_id, self.host, transfer.pk, uuid.uuid4())
+        html = self.page(self.host.user)
+        self.assertIn(f'marked by {self.host.user.username}', html)
+        self.assertNotIn('marked by the host', html)
 
     def test_an_open_session_keeps_its_overview(self):
         night = Night('A')
