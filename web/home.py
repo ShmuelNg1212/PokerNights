@@ -7,6 +7,7 @@ the number of queries does not grow with groups or players.
 import datetime
 from dataclasses import dataclass, field
 
+from django.conf import settings
 from django.db.models import Count, OuterRef, Subquery
 from django.urls import reverse
 
@@ -34,6 +35,8 @@ class Due:
     amount: int
     unit: str
     night: GameNight
+    url: str = ""
+    cancels: bool = False
 
 
 @dataclass
@@ -52,6 +55,7 @@ class Card:
     records: list = field(default_factory=list)  # [(unit, PlayerStats)]
     dues: list = field(default_factory=list)
     more_dues: int = 0
+    debts_view: bool = False
     last_night: GameNight = None
     last_net: object = None
     added: object = None  # the viewer was put in this set and has not opened it yet (a notify.Notice)
@@ -135,14 +139,32 @@ def home_cards(user) -> list:
         mine = records.get(card.me.pk, {})
         card.records = [(unit, mine[unit]) for unit in ("php", "chips") if unit in mine]
 
-    for transfer in settlement_queries.unpaid_transfers(my_ids):
-        night = transfer.plan.night
-        card = cards[night.group_id]
-        owes = transfer.payer_id == card.me.pk
-        if len(card.dues) < DUES_SHOWN:
-            card.dues.append(Due(owes, transfer.payee_party if owes else transfer.payer, transfer.amount, night.unit, night))
-        else:
-            card.more_dues += 1
+    unpaid = settlement_queries.unpaid_transfers(my_ids)
+    if settings.DEBTS_VIEW:
+        by_group = {}
+        for transfer in unpaid:
+            by_group.setdefault(transfer.plan.night.group_id, []).append(transfer)
+        for group_id, card in cards.items():
+            card.debts_view = True
+            rows = settlement_queries.debt_rows(by_group.get(group_id, []), card.me)
+            card.more_dues = max(0, len(rows) - DUES_SHOWN)
+            for row in rows[:DUES_SHOWN]:
+                owes = row.payer.pk == card.me.pk
+                other = row.payee if owes else row.payer
+                if other is None:
+                    from settlement.models import RAKE_FUND_PARTY
+                    other = RAKE_FUND_PARTY
+                card.dues.append(Due(owes, other, row.amount, row.unit, row.transfers[0].plan.night,
+                    reverse("group", args=[group_id]) + "#debts", row.net == 0))
+    else:
+        for transfer in unpaid:
+            night = transfer.plan.night
+            card = cards[night.group_id]
+            owes = transfer.payer_id == card.me.pk
+            if len(card.dues) < DUES_SHOWN:
+                card.dues.append(Due(owes, transfer.payee_party if owes else transfer.payer, transfer.amount, night.unit, night))
+            else:
+                card.more_dues += 1
 
     last = Subquery(
         GameNight.objects.filter(group_id=OuterRef("group_id"), status=GameNight.Status.CLOSED, archived_at__isnull=True)

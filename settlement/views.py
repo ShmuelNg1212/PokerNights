@@ -234,4 +234,8 @@ def debt_undo(request, group_id, clearance_id):
     attempt(request, services.undo_clearance, group_id, actor, clearance_id, request.POST.get("reason", ""),
             success="Settlement undone.")
     from django.urls import reverse
+    from games.models import GameNight
+    from_night = request.POST.get("from_night", "")
+    if from_night.isdecimal() and GameNight.objects.filter(pk=from_night, group_id=group_id).exists():
+        return redirect("night", night_id=int(from_night))
     return redirect(reverse("group", args=[group_id]) + "#debts")

@@ -521,7 +521,7 @@ def night(request, night_id):
     for one in sets:
         one.play_seconds, one.clock_running = timers.get(one.pk, (None, False))
     timed = [one.play_seconds for one in sets if one.play_seconds is not None]
-    context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit}
+    context = {"night": night, "me": me, "sets": sets, "latest_set": sets[-1] if sets else None, "unit": night.unit, "debts_enabled": settings.DEBTS_VIEW}
     context["not_started"] = not any(s.started_at or s.state == GameSession.State.CANCELED for s in by_number)
     context["chip_values"] = chip_views.denominations(night)
     context["total_play_seconds"] = sum(timed) if timed else None
@@ -529,6 +529,22 @@ def night(request, night_id):
     State = GameSession.State
     all_sets = sorted(by_number, key=lambda s: (s.game_date, s.pk), reverse=True)  # the model's own order
     outcome = settlement_queries.night_outcome(night)
+    for transfer in outcome.transfers:
+        transfer.can_pay = not night.is_archived and not (transfer.paid or transfer.carried or transfer.cleared) and (
+            me.is_host or (settings.DEBTS_VIEW and not transfer.to_rake_fund and transfer.payee_id == me.pk)
+        )
+        transfer.can_undo_payment = not night.is_archived and transfer.paid and (
+            me.is_host or (settings.DEBTS_VIEW and transfer.paid.recorded_by_id == me.user_id)
+        )
+        transfer.can_undo_clearance = not night.is_archived and settings.DEBTS_VIEW and transfer.cleared and (
+            me.is_host or transfer.cleared.recorded_by_id == me.user_id
+        )
+        if transfer.cleared:
+            clearance = transfer.cleared
+            transfer.clearance_with = (clearance.payee.display_name if me.pk == clearance.payer_id else
+                clearance.payer.display_name if me.pk == clearance.payee_id else
+                f"{clearance.payer.display_name} and {clearance.payee.display_name}")
+        transfer.has_action = transfer.can_pay or transfer.can_undo_payment or transfer.can_undo_clearance
     context.update({
         "outcome": outcome,
         "my_standing": outcome.standing_for(me.pk),

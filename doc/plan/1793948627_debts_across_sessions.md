@@ -115,9 +115,11 @@ Checks: SQLite full suite: 1722 pass, 17 skips. Seven view tests pass. Chromium 
 
 ### 7. Session page and Your groups — tests: alongside
 
-- [ ] Session page: a cleared transfer shows "Settled with {name} on {date}" with no Paid button. A host or the recorder sees "Undo", which calls `undo_clearance`.
-- [ ] Your groups "To settle": one row per person and unit, netted, three at most, with "See all debts" to the Debts section (OPEN QUESTION 3). With the switch off, the card is as today.
-- [ ] Sessions tab per-session lines: leave cleared transfers out (they leave `unpaid_transfers` by task 2). Check the "Not settled" filter counts.
+Checks: SQLite full suite: 1727 pass, 17 skips. Five new page tests and existing home and Sessions tests pass. Chromium and WebKit: 32 full-flow checks pass, including live clearance on the payer phone, all three session labels, and undo. This completes task 6’s second-phone check. One earlier browser run reported a native ViewTransition abort during navigation; the instrumented repeat had no script errors. Legacy host copy stays unchanged with the flag off.
+
+- [x] Session page: a cleared transfer shows "Settled with {name} on {date}" with no Paid button. A host or the recorder sees "Undo", which calls `undo_clearance`.
+- [x] Your groups "To settle": one row per person and unit, netted, three at most, with "See all debts" to the Debts section (OPEN QUESTION 3). With the switch off, the card is as today.
+- [x] Sessions tab per-session lines: leave cleared transfers out (they leave `unpaid_transfers` by task 2). Check the "Not settled" filter counts.
 - **Acceptance:** view tests for both pages; the existing home and sessions tests still pass with the switch off.
 - **Done when:** the tests pass.
 
