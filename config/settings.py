@@ -249,3 +249,6 @@ LOGGING = {
         "pokernights": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
     },
 }
+
+# Cross-session debts stay off until the human enables them after release checks.
+DEBTS_VIEW = env.bool("DEBTS_VIEW", default=False)

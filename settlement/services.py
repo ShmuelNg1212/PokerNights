@@ -13,15 +13,15 @@ from audit import services as audit
 from games import services as games
 from games.models import GameNight, GameSession
 from groups.access import require_host
-from groups.errors import RuleError
-from groups.models import GroupRakeAccount, Member
+from groups.errors import NotAllowed, RuleError
+from groups.models import GameGroup, GroupRakeAccount, Member
 from ledger import money
 from ledger import queries as ledger_queries
 from ledger import services as ledger
 from ledger.models import CashOutBatch, Finalization, PlayerResult
 
 from . import algorithm
-from .models import CarriedTransfer, Payment, PaymentReversal, SettlementPlan, Transfer
+from .models import CarriedTransfer, Clearance, ClearanceReversal, ClearedTransfer, Payment, PaymentReversal, SettlementPlan, Transfer
 
 State = GameSession.State
 
@@ -125,6 +125,9 @@ def reopen_night(night_id, actor: Member, reason: str = "") -> GameNight:
             f"{paid} transfer{' is' if paid == 1 else 's are'} marked paid. "
             f"Mark {'it' if paid == 1 else 'them'} unpaid first."
         )
+    cleared = ClearedTransfer.objects.filter(transfer__plan=plan, active=True).count() if plan else 0
+    if cleared:
+        raise RuleError(f"{cleared} transfers were settled across sessions. Undo that first.")
     taken = _carried_by(plan) if plan is not None else None
     if taken is not None:
         raise RuleError(
@@ -374,6 +377,13 @@ def mark_paid(night_id, actor: Member, transfer_id, request_id) -> Payment:
     if not night.is_closed:
         raise RuleError("Transfers exist only after the session is closed.")
     transfer = _transfer(night, transfer_id)
+    cleared = ClearedTransfer.objects.filter(transfer=transfer, active=True).select_related("clearance__payee").first()
+    if cleared:
+        clearance = cleared.clearance
+        raise RuleError(
+            f"This transfer was settled with {clearance.payee.display_name} on "
+            f"{timezone.localtime(clearance.created_at):%b %d}. Undo that first."
+        )
     existing = Payment.objects.filter(transfer=transfer, active=True).first()
     if existing is not None:
         return existing
@@ -501,4 +511,111 @@ def reverse_table_payment(night_id, actor: Member, payment_id, reason: str) -> P
         reason=reason,
     )
     _bump_sets(night)
+    return reversal
+
+
+DEBTS_CHANGED = "These debts changed. Look again."
+
+
+def _debt_actor(group_id, actor):
+    if not settings.DEBTS_VIEW:
+        raise RuleError("Debts are turned off.")
+    current = Member.objects.select_related("user").filter(
+        pk=actor.pk, group_id=group_id, status=Member.Status.ACTIVE,
+        group__archived_at__isnull=True, user__isnull=False,
+    ).first()
+    if current is None:
+        raise NotAllowed("You are not an active member of this group.")
+    return current
+
+
+def _can_clear(actor, payer_id, payee_id, amount):
+    if not (actor.is_host or actor.pk == payee_id or (amount == 0 and actor.pk == payer_id)):
+        raise NotAllowed("Only a host or the person receiving the money can settle these debts.")
+
+
+@transaction.atomic
+def settle_pair(group_id, actor, unit, member_a_id, member_b_id, transfer_ids, net, request_id):
+    """Close exactly the shown debts, after locking their sessions and checking the net again."""
+    from django.db.models import Q
+    from . import queries
+
+    actor = _debt_actor(group_id, actor)
+    try:
+        a_id, b_id = int(member_a_id), int(member_b_id)
+        ids = [int(pk) for pk in transfer_ids]
+    except (TypeError, ValueError, OverflowError):
+        raise RuleError(DEBTS_CHANGED) from None
+    if a_id == b_id or unit not in ("php", "chips") or not ids or len(ids) != len(set(ids)):
+        raise RuleError(DEBTS_CHANGED)
+    if not isinstance(net, int) or isinstance(net, bool):
+        raise RuleError(DEBTS_CHANGED)
+    payer_id, payee_id = (a_id, b_id) if net >= 0 else (b_id, a_id)
+    _can_clear(actor, payer_id, payee_id, abs(net))
+    # Serialize group request ids, including retries that name disjoint sessions.
+    GameGroup.objects.select_for_update().get(pk=group_id)
+    repeated = Clearance.objects.filter(group_id=group_id, request_id=request_id).first()
+    if repeated is not None:
+        if (repeated.payer_id, repeated.payee_id, repeated.unit, repeated.amount) != (payer_id, payee_id, unit, abs(net)):
+            raise RuleError(DEBTS_CHANGED)
+        _can_clear(actor, repeated.payer_id, repeated.payee_id, repeated.amount)
+        return repeated
+    pair = Q(payer_id=a_id, payee_id=b_id) | Q(payer_id=b_id, payee_id=a_id)
+    candidates = Transfer.objects.filter(pair, plan__night__group_id=group_id, plan__night__unit=unit)
+    night_ids = sorted(set(candidates.filter(
+        Q(pk__in=ids) | Q(plan__is_current=True, plan__night__status=GameNight.Status.CLOSED,
+                         plan__night__archived_at__isnull=True)
+    ).values_list("plan__night_id", flat=True)))
+    nights = [games.lock_night(pk, group_id) for pk in night_ids]
+    current = list(candidates.filter(
+        plan__is_current=True, plan__night__status=GameNight.Status.CLOSED, plan__night__archived_at__isnull=True,
+    ).exclude(pk__in=queries.paid_ids()).exclude(pk__in=queries.carried_ids())
+      .exclude(pk__in=queries.cleared_ids()).select_related("payer", "payee"))
+    actual_net = sum(t.amount if t.payer_id == a_id else -t.amount for t in current)
+    if set(ids) != {t.pk for t in current} or net != actual_net:
+        raise RuleError(DEBTS_CHANGED)
+    clearance = Clearance.objects.create(
+        group_id=group_id, unit=unit, payer_id=payer_id, payee_id=payee_id,
+        amount=abs(net), request_id=request_id, recorded_by=actor.user,
+    )
+    ClearedTransfer.objects.bulk_create([ClearedTransfer(clearance=clearance, transfer=t) for t in current])
+    audit.record(
+        "debts.cleared", actor=actor.user, group_id=group_id, target=clearance,
+        summary=f"{clearance.payer.display_name} paid {clearance.payee.display_name} "
+                f"{money.format_amount(clearance.amount, unit)} to settle {len(current)} transfers",
+        data={"transfer_ids": sorted(ids), "amount": clearance.amount, "unit": unit},
+    )
+    for night in nights:
+        _bump_sets(night)
+    return clearance
+
+
+@transaction.atomic
+def undo_clearance(group_id, actor, clearance_id, reason):
+    """Restore all linked debts. Keep the original record and one reversal."""
+    actor = _debt_actor(group_id, actor)
+    GameGroup.objects.select_for_update().get(pk=group_id)
+    clearance = Clearance.objects.filter(pk=clearance_id, group_id=group_id).first()
+    if clearance is None:
+        raise RuleError("That clearance is not in this group.")
+    if not (actor.is_host or clearance.recorded_by_id == actor.user_id):
+        raise NotAllowed("Only a host or the person who recorded it can undo this settlement.")
+    night_ids = sorted(set(clearance.links.values_list("transfer__plan__night_id", flat=True)))
+    nights = [games.lock_night(pk, group_id) for pk in night_ids]
+    if not clearance.active:
+        return clearance.reversal
+    reason = " ".join((reason or "").split())[:255]
+    if not reason:
+        raise RuleError("Give a reason for undoing it. It stays in the log.")
+    clearance.active = False
+    clearance.save(update_fields=["active"])
+    clearance.links.update(active=False)
+    reversal = ClearanceReversal.objects.create(clearance=clearance, reason=reason, recorded_by=actor.user)
+    audit.record(
+        "debts.uncleared", actor=actor.user, group_id=group_id, target=clearance,
+        summary=f"Undid settlement with {clearance.payee.display_name}: {money.format_amount(clearance.amount, clearance.unit)}",
+        reason=reason, data={"transfer_ids": list(clearance.links.values_list("transfer_id", flat=True))},
+    )
+    for night in nights:
+        _bump_sets(night)
     return reversal

@@ -63,17 +63,19 @@ Checks: missing public query failed first. SQLite full suite: 1697 pass, 17 skip
 
 ### 3. Settle a pair — tests: first
 
-- [ ] Add `settle_pair(group_id, actor, unit, member_a_id, member_b_id, transfer_ids, net, request_id)` to `settlement/services.py`.
-- [ ] Find the nights of the given transfers. Lock each one with `games.services.lock_night`, sorted by id.
-- [ ] Under the lock, read the unpaid transfers between A and B in this unit again. Refuse with "These debts changed. Look again." if the ids differ from `transfer_ids` or the net differs from `net`.
-- [ ] Permission: a host; or, when `net != 0`, the member who receives the net; or, when `net == 0`, either of the two. Refuse others with `NotAllowed`.
-- [ ] Write one `Clearance` and one `ClearedTransfer` per transfer. A repeated `request_id` returns the first clearance and writes nothing.
-- [ ] `audit.record("debts.cleared", ...)` once, with a summary such as "Ana paid Ben ₱200 to settle 3 transfers", and the transfer ids in `data`.
-- [ ] Bump the version of the sets of each night concerned (`_bump_sets`).
-- [ ] Add `undo_clearance(group_id, actor, clearance_id, reason)`: a host or the recorder (OPEN QUESTION 1). Lock the nights as above. Set `active=False` on the clearance and on its link rows. Write a `ClearanceReversal`. Audit "debts.uncleared". Bump the versions. A second undo changes nothing.
-- [ ] `mark_paid`: refuse a cleared transfer ("This transfer was settled with {name} on {date}. Undo that first."). `close_night` carry: `carryable` already leaves cleared transfers out (task 2).
-- [ ] `reopen_night`: refuse while a transfer of the plan is cleared ("{n} transfers were settled across sessions. Undo that first.").
-- [ ] Switch `DEBTS_VIEW` in `config/settings.py` (env, default False until the phone checks pass). With it off, `settle_pair` and `undo_clearance` refuse.
+Checks: 11 service tests failed before implementation and pass now. SQLite full suite: 1708 pass, 17 skips. PostgreSQL: all 17 debt and service tests pass. Sessions lock in id order. A group row lock also serializes request ids for disjoint pairs.
+
+- [x] Add `settle_pair(group_id, actor, unit, member_a_id, member_b_id, transfer_ids, net, request_id)` to `settlement/services.py`.
+- [x] Find the nights of the given transfers. Lock each one with `games.services.lock_night`, sorted by id.
+- [x] Under the lock, read the unpaid transfers between A and B in this unit again. Refuse with "These debts changed. Look again." if the ids differ from `transfer_ids` or the net differs from `net`.
+- [x] Permission: a host; or, when `net != 0`, the member who receives the net; or, when `net == 0`, either of the two. Refuse others with `NotAllowed`.
+- [x] Write one `Clearance` and one `ClearedTransfer` per transfer. A repeated `request_id` returns the first clearance and writes nothing.
+- [x] `audit.record("debts.cleared", ...)` once, with a summary such as "Ana paid Ben ₱200 to settle 3 transfers", and the transfer ids in `data`.
+- [x] Bump the version of the sets of each night concerned (`_bump_sets`).
+- [x] Add `undo_clearance(group_id, actor, clearance_id, reason)`: a host or the recorder (OPEN QUESTION 1). Lock the nights as above. Set `active=False` on the clearance and on its link rows. Write a `ClearanceReversal`. Audit "debts.uncleared". Bump the versions. A second undo changes nothing.
+- [x] `mark_paid`: refuse a cleared transfer ("This transfer was settled with {name} on {date}. Undo that first."). `close_night` carry: `carryable` already leaves cleared transfers out (task 2).
+- [x] `reopen_night`: refuse while a transfer of the plan is cleared ("{n} transfers were settled across sessions. Undo that first.").
+- [x] Switch `DEBTS_VIEW` in `config/settings.py` (env, default False until the phone checks pass). With it off, `settle_pair` and `undo_clearance` refuse.
 - **Acceptance:** tests cover: settle by a host; settle by the receiver; refusal for the payer and for a third member; a zero net; a stale id list; a stale net; a repeated request; undo, then the transfers are unpaid again and can be settled again; mark paid refused on a cleared transfer; reopen refused while cleared and allowed after undo; carry leaves a cleared transfer out; the switch off.
 - **Done when:** the tests pass on SQLite and on PostgreSQL.
 
