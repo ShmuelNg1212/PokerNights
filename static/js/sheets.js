@@ -163,7 +163,7 @@ putBack(me);
 if (S !== me) return; // the page is being left; there is nothing to focus
 if (me.lands) { me.lands.focus({preventScroll: true}); me.lands = null; return; } // the recap that opened by itself
 var target = me.opener && me.opener.isConnected ? me.opener : me.region.querySelector('[data-sheet-open="' + me.key + '"]');
-if (target) target.focus(); else me.region.querySelector("h1")?.focus();
+if (target) target.focus(); else (me.region.querySelector("[data-sheet-return-focus]") || me.region.querySelector("h1"))?.focus();
 });
 dialog.addEventListener("keydown", function (event) {
 if (event.key !== "Tab") return;

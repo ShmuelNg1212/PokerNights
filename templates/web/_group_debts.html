@@ -1,7 +1,7 @@
 {% load money_tags table_tags %}
 {% if debt_rows or debt_receipt %}
 <section id="debts" class="group-debts group-sessions" aria-labelledby="debts-title" data-sheet-region data-url="{% url 'group' group.pk %}">
-<h2 id="debts-title" tabindex="-1">Debts</h2>
+<h2 id="debts-title" tabindex="-1" data-sheet-return-focus>Debts</h2>
 {% if debt_receipt %}
 <div id="debt-receipt-{{ debt_receipt.pk }}" class="debt-receipt" role="status" data-debt-receipt="{{ debt_receipt.pk }}">
   <p>Settled with {{ debt_receipt.with_name }}: {{ debt_receipt.amount|amount:debt_receipt.unit }}</p>
