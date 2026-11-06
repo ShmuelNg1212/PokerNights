@@ -100,14 +100,16 @@ Checks: both stamp tests failed first. SQLite full suite: 1715 pass, 17 skips. P
 
 ### 6. Debts section — tests: alongside
 
-- [ ] Add `web/debts.py` that builds the section from `settlement.queries.debts`. Add it to `sessions_context` when `DEBTS_VIEW` is on and the group has at least one row for the viewer.
-- [ ] Template `templates/web/_group_debts.html`, at the top of `_group_sessions.html`, above the cards. Title "Debts".
-- [ ] One row per pair and unit: the other person's token and name, the net, and the line "from N sessions". A tap opens the transfers behind it (native disclosure, as the rest of the app): session date with link, direction, amount.
-- [ ] The receiver sees "Got ₱200 from Ana". A host sees "Settle ₱200" on each row. The payer sees no button, only "Ana confirms when paid".
-- [ ] The button opens a confirm sheet: "Settle with Ana?", the net and its direction, the list of transfers, **Settle** and **Not yet** (focus on Not yet). Without scripts, the same content opens in place. The form posts the shown transfer ids, the net and a `request_id`.
-- [ ] After a settle, the row leaves and a short status line says "Settled with Ana: ₱200". Hosts and the recorder see **Undo** on that line until the next reload.
-- [ ] View and URLs in `settlement/views.py` and `settlement/urls.py`: `POST g/<group>/debts/settle/` and `POST g/<group>/debts/<clearance>/undo/`. Resolve the group through the requester's active membership; a miss is 404.
-- [ ] Follow DESIGN.md: dark, one column on phones, 48 px targets, the amount format of rule 8, reduced motion with no movement.
+Checks: SQLite full suite: 1722 pass, 17 skips. Seven view tests pass. Chromium and WebKit: 18 receiver-flow checks pass. A poll removed the Undo status during use; the receipt now survives morphs until a full load. The script-order contract and rake-payer rendering also pass. The second-phone session label check follows task 7. Browser fixtures use only a temporary database.
+
+- [x] Add `web/debts.py` that builds the section from `settlement.queries.debts`. Add it to `sessions_context` when `DEBTS_VIEW` is on and the group has at least one row for the viewer.
+- [x] Template `templates/web/_group_debts.html`, at the top of `_group_sessions.html`, above the cards. Title "Debts".
+- [x] One row per pair and unit: the other person's token and name, the net, and the line "from N sessions". A tap opens the transfers behind it (native disclosure, as the rest of the app): session date with link, direction, amount.
+- [x] The receiver sees "Got ₱200 from Ana". A host sees "Settle ₱200" on each row. The payer sees no button, only "Ana confirms when paid".
+- [x] The button opens a confirm sheet: "Settle with Ana?", the net and its direction, the list of transfers, **Settle** and **Not yet** (focus on Not yet). Without scripts, the same content opens in place. The form posts the shown transfer ids, the net and a `request_id`.
+- [x] After a settle, the row leaves and a short status line says "Settled with Ana: ₱200". Hosts and the recorder see **Undo** on that line until the next reload.
+- [x] View and URLs in `settlement/views.py` and `settlement/urls.py`: `POST g/<group>/debts/settle/` and `POST g/<group>/debts/<clearance>/undo/`. Resolve the group through the requester's active membership; a miss is 404.
+- [x] Follow DESIGN.md: dark, one column on phones, 48 px targets, the amount format of rule 8, reduced motion with no movement.
 - **Acceptance:** view tests: a player sees only their rows; a host sees all; a non-member gets 404; a post from a stale page shows the refusal and keeps the section; the switch off hides the section. Browser probe: log in as a receiver on a phone width, open the group, tap "Got ₱200 from Ana", confirm, and see the row leave. A second browser on the session page sees the transfers change state without a reload.
 - **Done when:** the view tests pass and the browser probe passes. The probe must fail on `main`.
 

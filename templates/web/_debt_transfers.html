@@ -1,0 +1,6 @@
+{% load money_tags %}
+<ul class="debt-transfers">
+  {% for t in row.transfers %}
+  <li><a href="{% url 'night' t.plan.night_id %}">{{ t.plan.night.game_date|date:"M j, Y" }} · {{ t.plan.night.table.name }}</a><span class="debt-transfer-line"><span>{{ t.payer.display_name }} pays {{ t.payee_label }}</span><span class="amount">{{ t.amount|amount:row.unit }}</span></span></li>
+  {% endfor %}
+</ul>

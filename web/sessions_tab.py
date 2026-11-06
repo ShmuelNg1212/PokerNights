@@ -184,7 +184,10 @@ def sessions_context(me, past=None) -> dict:
     rows = past_rows(me, nights)
     past = past if past in PAST_FILTERS else None
     shown = [n for n in rows if PAST_FILTERS[past](n)] if past else rows
+    from . import debts
+
     return {
+        **debts.section(me),
         "coming": coming_cards(me, nights),
         "cards": current_cards(me, nights),
         "past_years": past_years(shown, filtered=past is not None),

@@ -77,6 +77,9 @@ def group(request, group_id):
         context.update(stats_pages.board_context(request, me, periods))
     else:
         context.update(sessions_tab.sessions_context(me, request.GET.get("past")))
+        from . import debts
+
+        context["debt_receipt"] = debts.receipt(request, me)
     return render(request, "web/group.html", context)
 
 

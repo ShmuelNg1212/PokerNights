@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("g/<int:group_id>/debts/settle/", views.debt_settle, name="debt_settle"),
+    path("g/<int:group_id>/debts/<int:clearance_id>/undo/", views.debt_undo, name="debt_undo"),
     path("g/<int:group_id>/members/<int:member_id>/remove/", views.member_remove, name="member_remove"),
     path("s/<int:session_id>/finalize/", views.finalize, name="session_finalize"),
     path("s/<int:session_id>/finish/", views.finish_set, name="session_finish"),

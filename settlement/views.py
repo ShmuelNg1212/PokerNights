@@ -205,3 +205,33 @@ def night_delete(request, night_id):
     context = {"night": night, "mode": "delete", "unit": night.unit, "has_records": games.night_has_records(night),
                "unfinished": games.unfinished_sets(night)}
     return render(request, "settlement/night_manage.html", context)
+
+
+@require_POST
+def debt_settle(request, group_id):
+    actor = member_for(request.user, group_id)
+    if not settings.DEBTS_VIEW:
+        raise Http404("Not found")
+    try:
+        net = int(request.POST.get("net", ""))
+    except (ValueError, TypeError):
+        messages.error(request, services.DEBTS_CHANGED)
+    else:
+        clearance = attempt(request, services.settle_pair, group_id, actor, request.POST.get("unit"),
+            request.POST.get("member_a"), request.POST.get("member_b"), request.POST.getlist("transfer_id"),
+            net, request_id_from(request))
+        if clearance is not None and clearance.active:
+            request.session["debt_receipt"] = {"group": group_id, "id": clearance.pk}
+    from django.urls import reverse
+    return redirect(reverse("group", args=[group_id]) + "#debts")
+
+
+@require_POST
+def debt_undo(request, group_id, clearance_id):
+    actor = member_for(request.user, group_id)
+    if not settings.DEBTS_VIEW:
+        raise Http404("Not found")
+    attempt(request, services.undo_clearance, group_id, actor, clearance_id, request.POST.get("reason", ""),
+            success="Settlement undone.")
+    from django.urls import reverse
+    return redirect(reverse("group", args=[group_id]) + "#debts")

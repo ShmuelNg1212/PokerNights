@@ -1,0 +1,39 @@
+{% load money_tags table_tags %}
+{% if debt_rows or debt_receipt %}
+<section id="debts" class="group-debts group-sessions" aria-labelledby="debts-title" data-sheet-region data-url="{% url 'group' group.pk %}">
+<h2 id="debts-title" tabindex="-1">Debts</h2>
+{% if debt_receipt %}
+<div id="debt-receipt-{{ debt_receipt.pk }}" class="debt-receipt" role="status" data-debt-receipt="{{ debt_receipt.pk }}">
+  <p>Settled with {{ debt_receipt.with_name }}: {{ debt_receipt.amount|amount:debt_receipt.unit }}</p>
+  {% if debt_receipt.can_undo %}<details data-key="undo-clearance-{{ debt_receipt.pk }}"><summary class="btn btn-quiet">Undo</summary><form method="post" data-turbo="true" action="{% url 'debt_undo' group.pk debt_receipt.pk %}" class="stack">{% csrf_token %}<label>Reason<input type="text" name="reason" maxlength="255" required></label><button class="btn btn-danger" type="submit">Undo settlement</button></form></details>{% endif %}
+</div>
+{% endif %}
+{% for row in debt_rows %}
+<div class="debt-row" data-debt="{{ row.key }}">
+  <details class="debt-detail" data-key="{{ row.key }}">
+    <summary class="debt-summary">{% member_token row.token debt_members %}<span class="grow"><strong>{{ row.direction }}</strong><span class="small muted">from {{ row.sessions }} session{{ row.sessions|pluralize }}</span></span><span class="amount debt-amount">{{ row.amount|amount:row.unit }}</span>{% icon 'chevron-down' %}</summary>
+    {% include 'web/_debt_transfers.html' %}
+  </details>
+  {% if row.can_settle %}
+  <button hidden type="button" class="btn btn-block debt-opener" data-sheet-open="{{ row.key }}">{{ row.action }}</button>
+  <details class="sheet-source debt-confirm" data-key="confirm-{{ row.key }}" data-sheet-source="{{ row.key }}" data-title="Settle with {{ row.with_name }}?">
+    <summary class="btn btn-block">{{ row.action }}</summary>
+    <div class="sheet-content stack">
+      <p class="debt-confirm-direction">{{ row.direction }} <strong class="amount">{{ row.amount|amount:row.unit }}</strong>.</p>
+      <p class="small muted">This settles all {{ row.transfers|length }} transfer{{ row.transfers|length|pluralize }} below. The app records this. It does not move money.</p>
+      {% include 'web/_debt_transfers.html' %}
+      <form method="post" action="{% url 'debt_settle' group.pk %}" data-turbo="true" data-once class="stack">{% csrf_token %}{% request_id_field %}
+        <input type="hidden" name="unit" value="{{ row.unit }}"><input type="hidden" name="member_a" value="{{ row.member_a.pk }}"><input type="hidden" name="member_b" value="{{ row.member_b.pk }}"><input type="hidden" name="net" value="{{ row.net }}">
+        {% for t in row.transfers %}<input type="hidden" name="transfer_id" value="{{ t.pk }}">{% endfor %}
+        <button type="submit" class="btn btn-primary btn-block">Settle</button>
+        <a class="btn btn-quiet btn-block debt-cancel-fallback" href="{% url 'group' group.pk %}#debts">Not yet</a>
+        <button hidden type="button" class="btn btn-quiet btn-block debt-cancel" data-sheet-close data-sheet-focus>Not yet</button>
+      </form>
+    </div>
+  </details>
+  {% elif not row.member_b and me.is_host %}<a class="btn btn-quiet btn-block" href="{% url 'night' row.transfers.0.plan.night_id %}">Mark paid on the session</a>
+  {% else %}<p class="small muted debt-waiting">{{ row.waiting }}</p>{% endif %}
+</div>
+{% endfor %}
+</section>
+{% endif %}

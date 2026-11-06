@@ -1,4 +1,4 @@
-{% load money_tags table_tags %}{% if cards and me.is_host %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
+{% load money_tags table_tags %}{% include "web/_group_debts.html" %}{% if cards and me.is_host %}<p class="new-session"><a class="btn btn-block" href="{% url 'session_create' group.pk %}">{% icon 'plus' %}New session</a></p>{% endif %}
 <section class="group-sessions" aria-labelledby="current-sessions">
 {% if cards %}
 <h2 id="current-sessions">In progress</h2>
