@@ -3,7 +3,7 @@
 // set, with every figure at its accepted value: the stage only adds a short overture over it and goes.
 // The stage lives in #table-sheets, outside the live region, because a poll morphs #live and removes
 // inline styles there. The row tokens, the title's "Set N" and the badge are hidden by an attribute on
-// <html> while it plays. Any tap or key, or a hidden tab, ends it in the same frame.
+// <html> while it plays. Any tap or key, or a hidden tab, ends it in the same frame (stage.js).
 (function () {
 "use strict";
 var S = null, pending = null;
@@ -11,18 +11,10 @@ var OUT = [0.16, 1, 0.3, 1], INOUT = [0.55, 0, 0.2, 1];
 var EXIT_AT = 1300, FLY = 0.46, LAND_GAP = 0.028, CHIP = 44, DISC = 64, WAIT_FOR_SHEET_MS = 30000;
 var HIDE = "data-overture", LIT = "data-felt-lit", LIT_MS = 760, lit = null;
 
+var at = window.pokerStage.at, centre = window.pokerStage.centre;
 function motion() { return window.pokerMotion; }
-// The first keyframe is written before Motion starts (doc/wiki/footguns/motion_starts_a_frame_late.md).
-function run(el, frames, options, extra) {
-  Object.keys(frames).forEach(function (name) { el.style[name] = frames[name][0]; });
-  var controls = motion().run(el, frames, options, extra);
-  if (controls) S.controls.push(controls);
-}
-function at(point, scale, turn) {
-  return "translate(" + point.x.toFixed(1) + "px, " + point.y.toFixed(1) + "px) scale(" + (scale === undefined ? 1 : scale) + ")" + (turn ? " rotate(" + turn + "deg)" : "");
-}
-function centre(el) { var r = el.getBoundingClientRect(); return {x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height}; }
-function later(ms, act) { S.timers.push(setTimeout(act, ms)); }
+function run(el, frames, options, extra) { S.run(el, frames, options, extra); }
+function later(ms, act) { S.later(ms, act); }
 
 // What the page says now: the players in the order the chips take, the dealer if a draw seated one, the
 // set's label, the badge and the blinds. Read at the start and again when the chips fly, since a poll may
@@ -46,43 +38,18 @@ function read(region) {
     set: label ? label.textContent.trim() : "", blinds: blinds ? blinds.textContent.trim() : ""};
 }
 
-function build(page) {
-  var stage = document.createElement("div");
-  stage.className = "overture"; stage.setAttribute("aria-hidden", "true");
-  stage.innerHTML = '<span class="ov-ground"></span><span class="ov-pool"></span><span class="ov-ring"></span>' +
-    '<p class="ov-set"></p><p class="ov-call">Shuffle up and deal</p><p class="ov-facts"></p><p class="ov-skip">Tap to skip</p><span class="ov-disc">D</span>';
+var STAGE = '<span class="ov-ground"></span><span class="ov-pool"></span><span class="ov-ring"></span>' +
+  '<p class="ov-set"></p><p class="ov-call">Shuffle up and deal</p><p class="ov-facts"></p><p class="ov-skip">Tap to skip</p><span class="ov-disc">D</span>';
+function words(stage, page) {
   var count = page.order.length;
   stage.querySelector(".ov-set").textContent = page.set;
   stage.querySelector(".ov-facts").textContent = count + " player" + (count === 1 ? "" : "s") + (page.blinds ? " · Blinds " + page.blinds : "");
-  (document.getElementById("table-sheets") || document.body).appendChild(stage);
-  return stage;
 }
 
-// A key that ends the overture does only that: Enter or Space must not also press the focused control.
-function key(event) {
-  if (event.key === "Enter" || event.key === " ") event.preventDefault();
-  finish(event);
-}
 // Ends the overture at once, from any point: the page underneath is already complete.
 function finish(event) {
   if (pending) { pending.dialog.removeEventListener("close", pending.go); pending = null; }
-  if (!S) return;
-  var me = S; S = null;
-  me.timers.forEach(clearTimeout);
-  me.controls.forEach(function (controls) { try { controls.stop(); } catch (_) {} });
-  document.removeEventListener("pointerdown", finish, true);
-  document.removeEventListener("keydown", key, true);
-  document.removeEventListener("visibilitychange", finish);
-  document.documentElement.removeAttribute(HIDE);
-  // A skipping tap must not become a tap on the page: the stage stays, unseen, for the click that follows.
-  // A tap that is cancelled (a drag) sends no click, so the stage also goes then, and after 350ms at most.
-  if (event && event.type === "pointerdown" && me.stage.contains(event.target)) {
-    me.stage.classList.add("is-gone");
-    var gone = function () { me.stage.remove(); };
-    me.stage.addEventListener("click", gone, {once: true});
-    document.addEventListener("pointercancel", gone, {once: true, capture: true});
-    setTimeout(gone, 350);
-  } else me.stage.remove();
+  if (S) S.finish(event);
 }
 
 // The felt lights as the overture lands: one Brass ring spreads from the badge and one band of light crosses
@@ -137,18 +104,14 @@ function play(region) {
   if (sheet) { waitFor(sheet, region); return; }
   var page = read(region);
   if (!page.label) return;
-  S = {stage: build(page), controls: [], timers: []};
-  // A guard first: whatever happens below, the page is never left hidden.
-  later(4000, finish);
-  document.documentElement.setAttribute(HIDE, "");
-  document.addEventListener("pointerdown", finish, true);
-  document.addEventListener("keydown", key, true);
-  document.addEventListener("visibilitychange", finish);
+  S = window.pokerStage.open({name: "overture", html: STAGE, hide: HIDE, guard: 4000, end: function () { S = null; }});
+  if (!S) return;
+  words(S.el, page);
   try { perform(region, page); } catch (_) { finish(); }
 }
 
 function perform(region, page) {
-  var stage = S.stage, width = window.innerWidth, height = window.innerHeight, mid = {x: width / 2, y: height * 0.44};
+  var me = S, stage = S.el, width = window.innerWidth, height = window.innerHeight, mid = {x: width / 2, y: height * 0.44};
   var rx = Math.min(150, width * 0.36), ry = Math.min(150, height * 0.18);
   function ring(angle, reach) { return {x: mid.x + Math.cos(angle) * rx * (reach || 1), y: mid.y + Math.sin(angle) * ry * (reach || 1)}; }
   var q = function (name) { return stage.querySelector(name); };
@@ -185,7 +148,7 @@ function perform(region, page) {
   // Everything goes to its place on the page, measured now from what the page says now. A row under the
   // host dock or off the screen takes its chip, or the button, behind that edge.
   later(EXIT_AT, function () {
-    if (!S || S.stage !== stage) return;
+    if (!me.live()) return;
     try { leave(); } catch (_) { finish(); }
   });
   function leave() {
@@ -225,7 +188,7 @@ function perform(region, page) {
     if (hidden) run(disc, {opacity: [1, 0]}, {duration: 0.14, ease: "easeOut", delay: FLY - 0.14});
     // The button is home: the felt lights from the badge.
     later(FLY * 1000, function () { light(region); });
-    later((FLY + Math.max(0, chips.length - 1) * LAND_GAP) * 1000 + 40, finish);
+    later((FLY + Math.max(0, chips.length - 1) * LAND_GAP) * 1000 + 40, function () { finish(); });
   }
 }
 
