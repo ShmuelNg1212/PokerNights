@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: session finale (built 2026-11-10, not released)
+
+- [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in, and the recap rises, once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
+
 ## Phone checks: felt light after the overture (released 2026-11-06)
 
 - [ ] Start a set: as the button lands in the In play badge, a Brass ring spreads from it across the felt and a soft light crosses behind it, then the felt is still. Nothing spills past the felt's corners. The words stay crisp over it. Tap to skip the overture: no light. Reduce Motion on: no light.

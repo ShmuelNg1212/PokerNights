@@ -37,6 +37,7 @@ The Rack redesign covers all current screens: active sets, count-up, review, fin
 | [session_means_set_in_the_code.md](footguns/session_means_set_in_the_code.md) | `GameSession` is a set; the session is `GameNight` |
 | [template_cache_during_browser_checks.md](footguns/template_cache_during_browser_checks.md) | A verification server without autoreload can keep old compiled templates |
 | [scripts_run_once_per_tab.md](footguns/scripts_run_once_per_tab.md) | A script that starts once per page load keeps polling after the screen changes; register it with `page.js` |
+| [module_start_runs_at_registration.md](footguns/module_start_runs_at_registration.md) | A module's `start` runs when its script registers; a module it calls at once must load before it |
 | [ios_date_input.md](footguns/ios_date_input.md) | The iPhone draws a date input at its own size; the shared field box fixes it and Chrome cannot prove it |
 | [mobile_browser_overflow_checks.md](footguns/mobile_browser_overflow_checks.md) | Mobile layout viewport width can grow with overflowing content; compare with the requested width |
 | [count_status_moves_the_field.md](footguns/count_status_moves_the_field.md) | A wrapped saved-count status moves its field even when document scroll stays fixed |
