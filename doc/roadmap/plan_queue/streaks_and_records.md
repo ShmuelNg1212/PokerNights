@@ -6,11 +6,12 @@ Mode: mixed. The technical part comes first. Plan skill: `codebase-design`. Exec
 
 ## OPEN QUESTIONS
 
-1. **The player page says "Lost 3 in a row" today** (`web/stats.py` `run_text`, `templates/web/player.html:34`). Your rule is that a streak is a winning run only. Recommended: "Current run" shows a winning run or "No run", and a losing run is not said. This changes a released behaviour, so it needs your yes. "Worst night" stays; it is a record, not a streak.
+1. **Does the recap name a losing run?** The recap's Highlights have a recorded rule: no highlight names a loss (`settlement/queries.py` `Highlight`, PRODUCT.md). This draft keeps that rule: a losing run shows on the player's own page only. Answer at reconstitution if the recap must say it too.
 
 ## Decided
 
-- 2026-11-10, the human: "streaks should only include winning runs". No text counts losses in a row.
+- 2026-11-10, the human, first: "streaks should only include winning runs". Then, the same day: "nevermind, include losing runs". The second answer stands. A streak can be a winning run or a losing run.
+- The player page keeps "Current run" as it is: "Won 3 in a row" or "Lost 3 in a row" (`web/stats.py` `run_text`). Nothing is removed.
 - 2026-11-10, the human: no haptics.
 
 ## Goal
@@ -29,13 +30,12 @@ Worked out for one closed session, from the group's counted results in the sessi
 | First win | This is the player's first counted session with a positive result | "First win" |
 
 - A session the player did not play does not break a run.
-- A mark never names a loss, a losing run or a last place.
+- A mark in the recap never names a loss, a losing run or a last place, until question 1 says otherwise.
 - An archived session does not count, as in Stats. A session opened again has no recap, so it has no marks.
 
 ## Draft tasks
 
 - [ ] **Marks from results (tests: first).** `settlement/stats.py`: a pure function `night_marks(rows, night_id)` over the list that `fetch(group, unit)` returns. It gives one item for each mark: kind, member id, count or amount. New `settlement/tests/test_marks.py`: each row of the table, each boundary (run of 2 against 3, best with 2 sessions against 3, the 9th and 10th session, a tie with an earlier best), a break-even that ends a run, a missed session that does not, two units kept apart, an archived session left out, and "no mark names a loss". Completion: the tests fail first, then pass.
-- [ ] **Winning runs only (tests: first), if question 1 is yes.** `PlayerRecord.current_run` gives a winning run or None. `run_text` loses "Lost". Update `web/tests/test_stats_pages.py` and the sentence on runs in `doc/wiki/features.md:547`. Completion: no template or test has "Lost N in a row".
 - [ ] **Show the marks in the recap (tests: alongside).** `web/views.py` (the recap context, line 580) calls `night_marks` with one `stats.fetch` and joins the marks to the recap's players. `settlement/queries.py` does not import `stats` (stats imports queries). `templates/web/_night_recap.html`: the marks follow the three existing Highlights, in the same rows. A view test checks the words and that the recap adds one query. Completion: the Django suite passes on SQLite and PostgreSQL.
 - [ ] **Design pass (tests: alongside).** The rows at 320 and 390 px with long names and four marks for one player. No new colour: the amount of a personal best uses the existing plus colour. Completion: `break-ui` finds nothing open.
 - [ ] **Docs.** Record the rules in `doc/adr/` and GLOSSARY.md (`domain-modeling`): "winning run", "personal best", "counted session". Sync `doc/wiki/spec.md` and `features.md`. Add phone checks to TODO.md.

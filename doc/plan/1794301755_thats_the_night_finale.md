@@ -1,6 +1,6 @@
 # That's the night: the session finale
 
-Status: waits for approval. Date: 2026-11-10, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 5. This is plan 1 of 3 from that study. Plans 2 and 3 wait in the queue: [Chip to the pot](../roadmap/plan_queue/chip_to_the_pot.md), [Streaks and records](../roadmap/plan_queue/streaks_and_records.md).
+Status: approved 2026-11-10 ("approved"). Date: 2026-11-10, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 5. This is plan 1 of 3 from that study. Plans 2 and 3 wait in the queue: [Chip to the pot](../roadmap/plan_queue/chip_to_the_pot.md), [Streaks and records](../roadmap/plan_queue/streaks_and_records.md).
 
 Mode: design (one Experience moment). Visual authority: the built Rack in DESIGN.md. No new colour, font, raster file or dependency. Execute skills: `animate`, `mobile-native`. Rendezvous skills: `review-animations`, `break-ui`, impeccable `critique` and `audit`, `code-review`.
 
