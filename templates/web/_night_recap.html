@@ -26,7 +26,7 @@
     <h3 id="recap-all-title">Everyone's results</h3>
     <ol class="list recap-ranking" data-recap-bars>
       {% for line in recap.ranking %}
-      <li{% if line.member.pk == me.pk %} class="is-me"{% endif %}>
+      <li{% if line.member.pk == me.pk %} class="is-me"{% endif %}{% if line.place == 1 and line.net > 0 %} data-top{% endif %}>
         <div class="recap-rank"><span class="recap-place" aria-hidden="true">{{ line.place }}</span><span class="visually-hidden">Place {{ line.place }}:</span>{% player_token line.standing outcome.standings %}<span class="grow">{{ line.member.display_name }}{% if line.member.pk == me.pk %} <span class="muted">(you)</span>{% endif %}<br><span class="muted small">{{ line.buy_in|amount:unit }} in · {{ line.cash_out|amount:unit }} out · {{ line.buy_ins }} buy-in{{ line.buy_ins|pluralize }}{% if line.play_seconds is not None %} · {{ line.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ line.net|sign_class }}">{% if line.net > 0 %}{% icon 'arrow-up-right' %}{% elif line.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ line.net|signed_amount:unit }}</span></div>
         <div class="recap-bar" aria-hidden="true"><span class="{% if line.net > 0 %}up{% elif line.net < 0 %}down{% else %}flat{% endif %}" style="--share:{{ line.share }};--i:{{ forloop.counter0 }}"></span></div>
       </li>

@@ -187,7 +187,9 @@ localStorage.setItem(seen, "1");
 // Closing leaves who pays whom in view. The page moves now, under the rising sheet, so nothing jumps later.
 me.lands = region.querySelector("[data-recap-lands]");
 if (me.lands && me.lands.getBoundingClientRect().top > innerHeight / 2) me.lands.scrollIntoView({block: "start"});
-open("recap", region.querySelector('[data-sheet-open="recap"]'));
+// The finale plays first, then the recap rises (finale.js). Without it the recap opens at once.
+var show = function () { if (S === me && !dialog.open) open("recap", region.querySelector('[data-sheet-open="recap"]')); };
+if (window.pokerFinale) window.pokerFinale.play(region, show); else show();
 }
 } catch (_) {}
 return stop;

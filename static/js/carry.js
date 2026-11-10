@@ -66,7 +66,7 @@
     if (!list) return;
     var key = "rack-makeup:" + list.dataset.makeup;
     try { if (localStorage.getItem(key)) return; } catch (_) { return; }
-    if (document.querySelector("dialog[open]")) return; // asked again when it closes
+    if (document.querySelector("dialog[open], [data-stage]")) return; // asked again when it closes
     try { localStorage.setItem(key, "1"); } catch (_) { return; }
     var rows = Array.from(list.children);
     rise(rows, 0.07, 8);

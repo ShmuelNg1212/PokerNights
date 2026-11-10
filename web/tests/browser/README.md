@@ -31,6 +31,16 @@ The fixture makes eight open sets for host `hana`, with player `ben` at each. Th
 
 A sampler reads every frame while the stage is up, and while the felt is lit after it. The 53 checks cover the felt light (start, origin on the badge, reach, properties, length, no light after a skip, a full replacement during it), and the first frame, the words, each chip within 1.5 px of its row token, the dealer button into the badge or onto a drawn dealer, the seat order, a poll's morph and a full replacement of `#live` during the overture, a player's phone that waits for an open sheet, no replay, a skipping tap and a skipping Enter on a Rebuy, twelve chips at 320 × 568, 1280 px, reduced motion, a blocked Motion file and frames with the processor slowed four times. Do not take screenshots in the measured window ([footgun](../../../doc/wiki/footguns/screenshot_makes_a_late_frame.md)). Captures are in `/private/tmp/pn-overture-review/`, or `PN_REVIEW_DIR`.
 
+## Session finale
+
+Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_finale.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/finale.mjs`. The host's close consumes the `ready` session: reseed before a repeat.
+
+The fixture makes six sessions for host `hana`, with player `ben` in each: one ready to close with eight players, and closed sessions of eight, two and twelve players, a tie for the top result and an even session. A table has 12 seats at most, so twelve is the largest stack. Each fresh browser context sees a closed session's finale once.
+
+A sampler is installed before the page's scripts. It reads each frame while the stage is up, then the recap's sheet until it stops moving. The 38 checks cover the first frame, the words, the stack, the top result last with the Brass edge, the order of the other chips, the ring, a tie, an even session, the recap at rest within 900 ms, a player's phone after its redraw, no replay, a skipping tap and a skipping Enter, a hidden tab, 320 × 568, 1280 px, reduced motion, a blocked Motion file, no JavaScript and frames with the processor slowed four times. Captures are in `/private/tmp/pn-finale-review/`, or `PN_REVIEW_DIR`.
+
+`night.mjs`, `carried_debts.mjs` and `debts.mjs` wait for the finale to end before they read or close the first automatic recap.
+
 ## Session chip values
 
 Use a fresh temporary database for this flow. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py` with that database selected. Start the local server with the same database. Run `node web/tests/browser/chip_values.mjs`.

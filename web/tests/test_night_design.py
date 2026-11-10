@@ -195,6 +195,18 @@ class SettlePageTests(TestCase):
         self.client.force_login(user)
         return self.client.get(self.url).content.decode()
 
+    def test_the_recap_marks_only_a_top_positive_result_for_the_finale(self):
+        """finale.js reads the top result from the page: one marked line for a winner, none when everyone is even."""
+        self.closed(1500, 500)
+        html = self.page(self.host.user)
+        ranking = html[html.index('data-recap-bars'):]
+        self.assertEqual(ranking.count(' data-top>'), 1)
+        self.assertIn('Ben', ranking[ranking.index(' data-top>'):ranking.index('</li>', ranking.index(' data-top>'))])
+
+    def test_an_even_session_marks_no_top_result(self):
+        self.closed(1000, 1000)
+        self.assertNotIn(' data-top>', self.page(self.host.user))
+
     def lead(self, html):
         return html[html.index('class="felt hero"'):html.index('</section>', html.index('class="felt hero"'))]
 

@@ -30,7 +30,7 @@ for(const engine of (process.env.PN_ENGINES||'chromium,webkit').split(',')){
   await login(payer,f.payer);await payer.goto(`${BASE}/g/${f.group}/`);
   check(engine,'payer has no settle action and sees who confirms',await payer.locator('.debt-opener').count()===0&&(await payer.locator('#debts').innerText()).includes('Ben confirms when paid'));
   if(process.env.PN_DEBTS_PHASE!=='group'){
-   await payer.goto(`${BASE}/n/${f.nights[0]}/`);const recap=payer.locator('dialog.sheet[open]');if(await recap.count()){await recap.locator('.sheet-head button').click();await recap.waitFor({state:'hidden'});}
+   await payer.goto(`${BASE}/n/${f.nights[0]}/`);const recap=payer.locator('dialog.sheet[open]');await recap.waitFor({state:'visible',timeout:2000}).catch(()=>{});/* the recap follows the session finale */if(await recap.count()){await recap.locator('.sheet-head button').click();await recap.waitFor({state:'hidden'});}
   }
   await page.getByRole('button',{name:'Got ₱200 from Ana',exact:true}).click();await dialog.getByRole('button',{name:'Settle',exact:true}).click();
   await page.locator('[data-debt-receipt]').waitFor();await page.waitForFunction(()=>!document.querySelector('dialog.sheet[open]'));

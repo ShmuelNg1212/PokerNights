@@ -326,7 +326,7 @@ Aggregate results remain separate from transfers and payments, using frozen fina
 
 A closed session offers “View session recap” and inline facts when dialog enhancement is unavailable. Recorded play time sums known finalized-set durations only, says Not recorded when none are known and labels partial sums. Total bought in explicitly covers current finalization snapshots across finalized sets, independent of transfers. Top session result names every tied highest positive standing; all-zero results say Everyone broke even. Your session result appears only for a viewer with a standing.
 
-The browser key includes session and signed-in viewer. Automatic opening happens once per key and is consumed before opening; storage refusal leaves manual access. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the manual trigger. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
+The browser key includes session and signed-in viewer. Automatic opening happens once per key and is consumed before opening; since 2026-11-10 the session finale plays first (see "Session finale"); storage refusal leaves manual access. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the manual trigger. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
 
 ### Group and home navigation
 
@@ -1074,6 +1074,34 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 - Only `transform` and `opacity` move. The pool, the ring, the button and each chip are their own elements.
 
 **Measured.** `overture.mjs`, 53 checks. The felt light adds: it starts while the stage leaves, the ring starts within 1.5px of the badge and reaches the farthest corner, two layers move only transform and opacity, it is over in about 760ms with no animation left, a skip and reduced motion give none, a full replacement stops it, and after a replacement during the overture it still plays. Frames stepped at 390 and 1280px in Chrome and at 390px in WebKit show the ring clipped to the felt's corners. The 45 checks before it: the first frame, the words, each chip within 1.5px of its token at 390 and 1280px, the button into the badge and onto a drawn dealer (behind the dock at 390px, at rest at 1280px), the seat order, a poll's morph and a full replacement of the set during the overture, a player's phone with a sheet open, no replay, a tap on a Rebuy and Enter on a focused Rebuy both skip without pressing it, twelve chips inside 320 × 568, reduced motion, a blocked Motion file, and no frame over 50ms with the processor slowed four times (worst 17ms). `table.mjs`: 59 checks. WebKit (Playwright) at 390px: four starts, every chip on its token, worst frame 25ms. No physical iPhone was used.
+
+### Session finale (2026-11-10)
+
+[Plan](doc/plan/1794301755_thats_the_night_finale.md), [study](doc/study/1794301535_more_flair.md). Mode: Operate, with one Experience moment. It is the bookend of the set start overture: the night has a start and an end. No new colour, font, raster file or dependency.
+
+**Inside "a signature moment within 900ms".** The human: "let it stay at around 900ms". From the stage's first frame to the recap at rest is 900ms at most. It is not a recorded exception. There is no vibration and no sound.
+
+**When.** It plays before the recap that opens by itself: once for each session, signed-in viewer and browser, under the recap's own key. That is the host's close, a player's phone on the session page at its next redraw, or a viewer's first visit later. The recap opened with "View session recap" has no finale.
+
+**The stage.** A layer over the whole screen, in `#table-sheets`, built by `stage.js` as the overture's is. The page under it is the closed session: every figure is at its accepted value in every frame, and the page shows faintly through Ground at 97%. In the middle, at 44% of the height, the players' 44px chips make one stack, each 6px above the one before (less for a full table: the stack is 84px tall at most). Under it is "That's the night" in Brass (1.75rem, width 75%, weight 800), as "Shuffle up and deal" is. The stage shows no figure and no name.
+
+| Time | Part |
+|---|---|
+| 0 to 160ms | The ground fades in |
+| 0 to 420ms | Each chip rises 110px from 80% into the stack (`shift`, no bounce), 30ms apart at most; the last chip starts by 160ms |
+| 200 to 440ms | "That's the night" stamps from 150% (`arrive`) |
+| 340 to 640ms | With a top result: one Brass ring opens from the top chip and fades (3px, 50% to 220%) |
+| 490 to 650ms | The ground, the stack and the words fade |
+| 490ms to about 850ms | The recap rises (`sheet`). Focus starts on its Close, as before |
+
+- **The top result.** The chip of the highest positive result lands last and has a 3px Brass edge. Tied top results land last, one after the other, under one ring. The page marks them (`data-top` on the recap's ranking); the script works out nothing.
+- **No loss is ranked.** The other chips land in the order of their members, not of their results. When nobody finished ahead there is no ring and no marked chip.
+- **A skip does only that.** A tap, a key or a hidden tab ends the stage in that frame. The recap opens when the tap or the key is over, so the same tap cannot close it or press what is under the stage. Enter or Space does not press the focused control.
+- **The screen is taken.** While the stage is on the page it carries `data-stage`. The session page does not redraw under it, and the install sheet, the table alerts question and the make-up of a figure wait, as they do behind an open sheet.
+- **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload or when storage is refused. The recap opens by itself as before in the first three cases. Without JavaScript the recap's facts are in the page.
+- Only `transform` and `opacity` move.
+
+**Measured.** `finale.mjs`, 38 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring, a tie, an even session, the recap at rest within 900ms on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms).
 
 ### Carried transfers (2026-10-11)
 

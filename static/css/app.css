@@ -2081,9 +2081,9 @@ button.seat-free[aria-busy=true] { color: var(--brass); }
    every layer by transform or opacity. While it plays, the page's row tokens, "Set N" and the badge are hidden:
    the stage's own copies land on them. Without Motion or under reduced motion it never appears. */
 html[data-overture] #live :is(.player-row .chip, [data-carry="title"] small, .badge-live) { opacity: 0; }
-.overture { position: fixed; inset: 0; z-index: 40; overflow: hidden; color: var(--bone); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.overture.is-gone { opacity: 0; }
-.overture :is(.ov-ground, .ov-pool, .ov-ring, .ov-disc, .ov-chip) { position: absolute; pointer-events: none; }
+.overture, .finale { position: fixed; inset: 0; z-index: 40; overflow: hidden; color: var(--bone); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:is(.overture, .finale).is-gone { opacity: 0; }
+:is(.overture, .finale) :is(.ov-ground, .ov-pool, .ov-ring, .ov-disc, .ov-chip) { position: absolute; pointer-events: none; }
 .ov-ground { inset: 0; background: color-mix(in oklch, var(--ground) 97%, transparent); }
 .ov-pool { left: 50%; top: 44%; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
   background: repeating-linear-gradient(45deg, oklch(1 0 0 / .025) 0 1px, transparent 1px 7px), repeating-linear-gradient(-45deg, oklch(0 0 0 / .08) 0 1px, transparent 1px 7px), var(--felt);
@@ -2092,12 +2092,16 @@ html[data-overture] #live :is(.player-row .chip, [data-carry="title"] small, .ba
 .overture .ov-disc { left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); font-size: 1.75rem; font-weight: 850; line-height: 1;
   background: radial-gradient(circle at 50% 35%, #fff 0%, var(--bone) 60%, color-mix(in oklch, var(--bone) 82%, var(--ink)) 100%);
   box-shadow: 0 0 0 2px var(--ink), 0 8px 18px oklch(0 0 0 / .55), inset 0 0 0 6px var(--bone), inset 0 0 0 9px var(--brass); }
-.overture .ov-chip { left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; font-size: .9375rem; box-shadow: 0 6px 14px oklch(0 0 0 / .5); }
-.overture p { position: absolute; left: 16px; right: 16px; margin: 0; text-align: center; pointer-events: none; }
+:is(.overture, .finale) .ov-chip { left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; font-size: .9375rem; box-shadow: 0 6px 14px oklch(0 0 0 / .5); }
+:is(.overture, .finale) p { position: absolute; left: 16px; right: 16px; margin: 0; text-align: center; pointer-events: none; }
 .ov-set { top: 12%; font-size: 5.5rem; line-height: 1; font-stretch: 62%; font-weight: 850; letter-spacing: -.01em; }
 .ov-call { top: calc(44% + 168px); color: var(--brass); font-size: 1.75rem; line-height: 1.1; font-stretch: 75%; font-weight: 800; text-wrap: balance; }
 .ov-facts { top: calc(44% + 210px); color: var(--bone-dim); font-size: .9375rem; }
 .ov-skip { bottom: max(24px, env(safe-area-inset-bottom)); color: var(--bone-dim); font-size: .8125rem; }
+/* The session finale (DESIGN.md, "Session finale"). finale.js builds it from the overture's parts: the ground, the
+   ring and the players' chips in one stack. The top result's chip has a Brass edge. */
+.finale .ov-call { top: calc(44% + 84px); }
+.finale .ov-chip.fi-top { box-shadow: 0 0 0 3px var(--brass), 0 6px 14px oklch(0 0 0 / .5); }
 @media (max-height: 700px) { .ov-set { top: 8%; font-size: 4.25rem; } .ov-call { top: calc(44% + 150px); font-size: 1.5rem; } .ov-facts { top: calc(44% + 186px); } }
 /* The felt lights as the overture lands. overture.js sets data-felt-lit on <html> for one pass, with the badge's
    place on the felt in --lit-x and --lit-y and its reach to the farthest corner in --lit-r. One Brass ring spreads
