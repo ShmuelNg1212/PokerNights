@@ -1,12 +1,13 @@
 // The end of a session (DESIGN.md, "Session finale"). sheets.js decides that the recap opens by itself, once
 // per session and viewer, and calls play() first. The players' chips slide into one stack, the top result
-// lands last under a Brass ring, "That's the night" stamps in, and the recap rises: all at rest within 900ms.
+// lands last under a Brass ring, "That's the night" stamps in and stays to be read. Then the stage goes, and only
+// then does the recap rise: the sheet never covers the finale (the human, 2026-11-10).
 // The page under the stage is the closed session, with every figure at its accepted value. play() calls
-// done exactly once: when the recap is due, on a skip, or at once when the finale cannot play.
+// done exactly once: when the stage has gone, on a skip, or at once when the finale cannot play.
 (function () {
 "use strict";
 var S = null;
-var OUT = [0.16, 1, 0.3, 1], LIFT = 6, STACK = 84, GAP = 0.03, LAST_START = 0.16, RING_AT = 340, RECAP_AT = 490, FADE = 0.16;
+var OUT = [0.16, 1, 0.3, 1], LIFT = 6, STACK = 84, GAP = 0.03, LAST_START = 0.16, RING_AT = 340, LEAVE_AT = 1100, FADE = 0.16;
 var STAGE = '<span class="ov-ground"></span><span class="ov-ring"></span><p class="ov-call">That’s the night</p>';
 
 // The players' chips as the recap draws them. The top result is what the page marks (data-top): nothing
@@ -27,13 +28,13 @@ function play(region, done) {
   function due() { if (called) return; called = true; if (!left) done(); }
   var St = window.pokerStage, page = St && read(region);
   if (!page || !page.chips.length) { due(); return; }
-  var stage = St.open({name: "finale", html: STAGE, guard: 1500, end: function () { S = null; }, then: due});
+  var stage = St.open({name: "finale", html: STAGE, guard: 2500, end: function () { S = null; }, then: due});
   if (!stage) { due(); return; }
   S = stage; stage.leave = function () { left = true; stage.finish(); };
-  try { perform(stage, page, due); } catch (_) { stage.finish(); }
+  try { perform(stage, page); } catch (_) { stage.finish(); }
 }
 
-function perform(stage, page, due) {
+function perform(stage, page) {
   var at = window.pokerStage.at, el = stage.el, count = page.chips.length;
   var mid = {x: window.innerWidth / 2, y: window.innerHeight * 0.44};
   var lift = Math.min(LIFT, STACK / Math.max(1, count - 1)), gap = Math.min(GAP, LAST_START / Math.max(1, count - 1));
@@ -56,13 +57,12 @@ function perform(stage, page, due) {
     // Started by a timer, not by a delay: the first keyframe is written at once, and the ring is not there yet.
     stage.later(RING_AT, function () { stage.run(ring, {opacity: [0.9, 0], transform: [at(crown, 0.5), at(crown, 2.2)]}, {duration: 0.3, ease: OUT}); });
   }
-  // The stage goes as the recap rises over it.
-  stage.later(RECAP_AT, function () {
+  // The whole picture holds, then the stage fades and goes. Its end is what opens the recap (then: due).
+  stage.later(LEAVE_AT, function () {
     if (!stage.live()) return;
     moving.forEach(function (part) { stage.run(part, {opacity: [1, 0]}, {duration: FADE, ease: "easeOut"}); });
-    due();
   });
-  stage.later(RECAP_AT + FADE * 1000 + 20, function () { stage.finish(); });
+  stage.later(LEAVE_AT + FADE * 1000 + 20, function () { stage.finish(); });
 }
 
 window.pokerFinale = {play: play};

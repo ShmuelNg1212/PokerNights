@@ -20,12 +20,14 @@ const post=async(U,path,data)=>U.js(`(async()=>{const body=new URLSearchParams($
 const nights=JSON.parse(readFileSync('/private/tmp/pn-slice3-manifest.json','utf8'));
 const path=n=>'/n/'+nights[n]+'/';
 // The first automatic recap follows the session finale (finale.js): wait for the sheet to be open and at rest.
-const recapUp=async U=>{for(let i=0;i<40;i++){if(await U.js(`!!document.querySelector('dialog.sheet[open]')&&!pokerStage.taken()`))break;await sleep(50)}await sleep(500)};
-const dismiss=async U=>{if(await U.js(`!!document.querySelector('dialog[open]')`))await U.click(`document.querySelector('.sheet-head button')`)};
+const recapUp=async U=>{for(let i=0;i<60;i++){if(await U.js(`!!document.querySelector('dialog.sheet[open]')&&!pokerStage.taken()`))break;await sleep(50)}await sleep(800)};
+const dismiss=async U=>{for(let i=0;i<60&&await U.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`))await U.click(`document.querySelector('.sheet-head button')`)};
 try {
 for(const name of ['partly','unpaid','settled','break-even','large','ready','blocked','empty','tied']) {
  for(const width of [390,1280]) {
   await send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);await A.go(path(name));await sleep(600);
+  // The session finale plays before the first automatic recap: no capture is taken while its stage is up.
+  for(let i=0;i<60&&await A.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(500);
   if(await A.js(`!!document.querySelector('dialog[open]')`)){await A.shot(name+'-recap-'+width);await dismiss(A)}
   check(name+' '+width+' no overflow',await A.js(`document.documentElement.scrollWidth<=${width}`));
   if(width===1280)check(name+' desktop columns',await A.js(`getComputedStyle(document.querySelector('.night-layout')).gridTemplateColumns.split(' ').length===2`));
@@ -39,7 +41,7 @@ await P.go(path('unpaid'));await recapUp(P);check('player first visit opens own 
 await P.click(`document.querySelector('[data-sheet-open=recap]')`);await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9},P.s);check('Tab keeps modal open and focus inside',await P.js(`!!document.querySelector('dialog[open]')&&document.querySelector('dialog').contains(document.activeElement)`));await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27},P.s);await sleep(300);check('Escape closes recap',await P.js(`!document.querySelector('dialog[open]')`));
 // The detailed recap: sections, the head that stays, the bars, the reveal.
 const bar=`getComputedStyle(document.querySelector('.sheet-body .recap-bar span')).transform`;
-await P.go(path('two-sets'));await sleep(700);
+await P.go(path('two-sets'));await recapUp(P);
 check('recap has its five sections',await P.js(`[...document.querySelectorAll('.sheet-body .recap-part>h3')].map(h=>h.textContent).join('|')`)==="Top session result|Your night|Everyone's results|Highlights|Set by set");
 check('recap highlights name play, never a loss',await P.js(`(()=>{const t=document.querySelector('.sheet-body .recap-highlights').textContent;return t.includes('Most buy-ins')&&t.includes('Biggest win in one set')&&t.includes('in set 2')&&!t.includes('−')})()`));
 check('recap lists a set-by-set result for the viewer',await P.js(`document.querySelectorAll('.sheet-body .recap-by-set li').length===2`));
@@ -55,7 +57,7 @@ check('recap set links are 48px',await P.js(`[...document.querySelectorAll('.she
 check('recap text contrast is at least 4.5',await P.js(`(()=>{const c=document.createElement('canvas').getContext('2d',{willReadFrequently:true});const rgb=v=>{c.clearRect(0,0,1,1);c.fillStyle=v;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3)};const lum=v=>{const [r,g,b]=rgb(v).map(x=>{x/=255;return x<=.03928?x/12.92:((x+.055)/1.055)**2.4});return .2126*r+.7152*g+.0722*b};const ground=el=>{for(;el;el=el.parentElement){const b=getComputedStyle(el).backgroundColor;if(b!=='rgba(0, 0, 0, 0)'&&!b.endsWith(' / 0)'))return b}};return [...document.querySelectorAll('.sheet-body .recap h3, .sheet-body .recap .muted, .sheet-body .recap .amount, .sheet-body .recap .stat-label, .sheet-body .recap .stat-tile-note, .sheet-body .recap-place')].every(el=>{const a=lum(getComputedStyle(el).color),b=lum(ground(el));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5})})()`));
 await dismiss(P);check('recap bars reset for the next opening',await P.js(`!document.querySelector('[data-recap-bars]').className.includes('recap-watch')`));
 await P.click(`document.querySelector('[data-sheet-open=recap]')`);check('recap reopens at its top',await P.js(`document.querySelector('dialog').scrollTop===0`));check('recap starts focus on Close',await P.js(`document.activeElement===document.querySelector('.sheet-head button')`));if(await P.js(`!!document.querySelector('.sheet-body [data-sheet-swap=share]')`)){await P.js(`document.querySelector('dialog').scrollTop=9999`);await P.click(`document.querySelector('.sheet-body [data-sheet-swap=share]')`);await sleep(900);check('share from the end of the recap starts at its top',await P.js(`document.querySelector('dialog').scrollTop===0`),await P.js(`document.querySelector('dialog').scrollTop`));}await dismiss(P);check('a recap opened by a tap returns focus to its button',await P.js(`document.activeElement.dataset.sheetOpen==='recap'`));
-await send('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true},P.s);await P.go(path('large'));await sleep(700);
+await send('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true},P.s);await P.go(path('large'));await recapUp(P);
 check('recap fits 320px with long names and large amounts',await P.js(`(()=>{const d=document.querySelector('dialog');return d.open&&d.scrollWidth<=d.clientWidth&&[...d.querySelectorAll('.recap-rank>.amount, .recap-winner .amount, .recap-wide .stat-tile-figure')].every(el=>el.getBoundingClientRect().height<40&&el.getBoundingClientRect().right<=d.getBoundingClientRect().right)})()`));await P.shot('recap-large-320');await dismiss(P);
 await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},P.s);
 await P.go(path('settled'));await recapUp(P);check('another session autoopens',await P.js(`!!document.querySelector('dialog[open]')`));check('recap opened by itself is at its top',await P.js(`(()=>{const d=document.querySelector('dialog');return d.scrollHeight>d.clientHeight&&d.scrollTop===0})()`),await P.js(`[document.querySelector('dialog').scrollHeight,document.querySelector('dialog').clientHeight]`));await dismiss(P);

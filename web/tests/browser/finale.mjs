@@ -45,7 +45,7 @@ const results=[];const check=(name,ok,note='')=>{results.push({name,ok:!!ok});co
 const RECAP=`!!document.querySelector('dialog.sheet[open] .recap')`;
 const done=`__fi.n>0&&!document.querySelector('.finale')&&${RECAP}`;
 const rest=`!document.querySelector('.finale')&&!pokerStage.taken()&&document.getAnimations().filter(a=>a.playState==='running'&&a.effect&&a.effect.target&&!(a.effect.target.closest&&a.effect.target.closest('.sheet-body'))).length===0&&!document.querySelector('dialog.sheet').style.transform`;
-const facts=`({ringEarly:Math.max(0,...__fi.shots.filter(s=>s.t-__fi.first.t<300).map(s=>s.ring)),n:__fi.n,stages:__fi.stages,first:__fi.first,last:__fi.last,ring:__fi.ring,span:__fi.last.t-__fi.first.t,opened:__fi.opened-__fi.first.t,rested:__fi.moved-__fi.first.t,chips:__fi.shots[Math.max(0,__fi.shots.length-12)].chips})`;
+const facts=`({under:__fi.shots.filter(s=>s.dialog).length,held:(f=>f.length?f[f.length-1].t-f[0].t:0)(__fi.shots.filter(s=>s.ground>=0.99&&s.call.o>=0.99&&s.chips.length&&s.chips.every(c=>c.o>=0.99))),ringEarly:Math.max(0,...__fi.shots.filter(s=>s.t-__fi.first.t<300).map(s=>s.ring)),n:__fi.n,stages:__fi.stages,first:__fi.first,last:__fi.last,ring:__fi.ring,span:__fi.last.t-__fi.first.t,opened:__fi.opened-__fi.first.t,rested:__fi.moved-__fi.first.t,chips:__fi.shots[Math.max(0,__fi.shots.length-12)].chips})`;
 // The chips in the order they were dealt onto the stack: each later one sits higher.
 const stacked=chips=>chips.every((c,i)=>i===0||c.y<chips[i-1].y+0.5);
 try {
@@ -65,14 +65,16 @@ try {
  check('ready: the top result (Miguel) is the last to land and has the Brass edge',h.chips[7].top&&h.chips[7].text===await H.js(`document.querySelector('.recap-ranking>li[data-top] .chip').textContent.trim()`)&&await H.js(`document.querySelector('.recap-ranking>li[data-top]').textContent.includes('Miguel')`)&&h.chips.filter(c=>c.top).length===1,JSON.stringify(h.chips.map(c=>c.text+(c.top?'*':''))));
  check('ready: the others are not in result order',JSON.stringify(h.chips.slice(0,7).map(c=>c.text))!==JSON.stringify(await H.js(`[...document.querySelectorAll('.recap-ranking>li:not([data-top]) .chip')].map(c=>c.textContent.trim())`)),JSON.stringify(h.chips.map(c=>c.text)));
  check('ready: one Brass ring opens, and not before the top chip is on its way',h.ring>0.3&&h.ringEarly===0,JSON.stringify({ring:h.ring,early:h.ringEarly}));
- check('ready: the recap is at rest within 900ms of the first frame',h.opened>0&&h.rested<=900,`opened ${Math.round(h.opened)}ms, at rest ${Math.round(h.rested)}ms, stage ${Math.round(h.span)}ms`);
+ check('ready: the whole picture holds for half a second or more',h.held>=500,`${Math.round(h.held)}ms`);
+ check('ready: the recap opens only when the stage has gone, and never over it',h.opened>=h.span-20&&h.under===0,`stage ${Math.round(h.span)}ms, recap opened ${Math.round(h.opened)}ms, frames under the sheet ${h.under}`);
+ check('ready: the recap is at rest within 1.8 seconds of the first frame',h.rested<=1800,`at rest ${Math.round(h.rested)}ms`);
  check('ready: one stage only',h.stages===1,`${h.stages}`);
  check('ready: at rest nothing is left: no stage, no animation, no inline style on the sheet',await H.js(rest),await H.js(why));
  check('ready: focus is on the recap\'s Close',await H.js(`document.activeElement.matches('dialog.sheet .sheet-head button')`));
  await H.shot('ready-recap-390');
  check("ready: the player's phone plays it once after its redraw",await B.until(done,9000));await sleep(700);
  const b=await B.js(facts);
- check("ready: on the player's phone the recap is at rest within 900ms too",b.stages===1&&b.rested<=900,`at rest ${Math.round(b.rested)}ms`);
+ check("ready: on the player's phone the recap also waits for the stage to go",b.stages===1&&b.under===0&&b.opened>=b.span-20&&b.rested<=1800,`at rest ${Math.round(b.rested)}ms`);
  await B.go(`/n/${N.ready}/`);await sleep(1800);
  check('ready: a reload does not replay it, and the recap stays closed',await B.js(`__fi.n===0&&!document.querySelector('dialog[open]')`));
  await B.js(`document.querySelector('[data-sheet-open=recap]').click()`);await sleep(700);
@@ -81,17 +83,17 @@ try {
  // ===== Two players, twelve, a tie and an even session: each in a fresh browser.
  const first=async(name,options)=>{const P=await page(options);await P.login('hana');await P.go(`/n/${N[name]}/`);const ok=await P.until(done,6000);await sleep(700);return {P,ok,f:ok?await P.js(facts):null}};
  const two=await first('two');
- check('two: the finale plays with two chips, the winner on top',two.ok&&two.f.chips.length===2&&two.f.chips[1].top&&!two.f.chips[0].top&&two.f.rested<=900,two.ok?JSON.stringify(two.f.chips.map(c=>c.text+(c.top?'*':''))):'');
+ check('two: the finale plays with two chips, the winner on top',two.ok&&two.f.chips.length===2&&two.f.chips[1].top&&!two.f.chips[0].top&&two.f.under===0&&two.f.rested<=1800,two.ok?JSON.stringify(two.f.chips.map(c=>c.text+(c.top?'*':''))):'');
  const twelve=await first('twelve',{width:320,height:568});
  check('twelve at 320px: twelve chips in a stack inside the screen',twelve.ok&&twelve.f.chips.length===12&&stacked(twelve.f.chips)&&twelve.f.chips.every(c=>c.l>=0&&c.r<=320&&c.t>=0&&c.b<=568),twelve.ok?JSON.stringify(twelve.f.chips.map(c=>Math.round(c.y))):'');
  check('twelve at 320px: the words fit and the page does not scroll sideways',twelve.ok&&twelve.f.last.call.l>=0&&twelve.f.last.call.r<=320&&await twelve.P.js(`document.documentElement.scrollWidth<=320`));
- check('twelve at 320px: at rest within 900ms',twelve.ok&&twelve.f.rested<=900,twelve.ok?`${Math.round(twelve.f.rested)}ms`:'');
+ check('twelve at 320px: the recap waits for the stage and is at rest within 1.8 seconds',twelve.ok&&twelve.f.under===0&&twelve.f.rested<=1800,twelve.ok?`${Math.round(twelve.f.rested)}ms`:'');
  const tied=await first('tied');
  check('tied: both top results land last, with one ring',tied.ok&&tied.f.chips.slice(-2).every(c=>c.top)&&tied.f.chips.filter(c=>c.top).length===2&&tied.f.ring>0.3&&tied.f.ringEarly===0&&await tied.P.js(`document.querySelectorAll('.recap-ranking>li[data-top]').length===2`),tied.ok?JSON.stringify(tied.f.chips.map(c=>c.text+(c.top?'*':''))):'');
  const even=await first('even');
  check('even: the finale plays with no ring and no marked chip',even.ok&&even.f.ring===0&&even.f.chips.length===3&&even.f.chips.every(c=>!c.top),even.ok?JSON.stringify({ring:even.f.ring}):'');
  const wide=await first('eight',{width:1280,height:800});
- check('wide at 1280px: the stack is in the middle and the recap is at rest within 900ms',wide.ok&&wide.f.chips.every(c=>Math.abs(c.x-640)<=1)&&wide.f.rested<=900,wide.ok?`${Math.round(wide.f.rested)}ms`:'');
+ check('wide at 1280px: the stack is in the middle and the recap waits for the stage',wide.ok&&wide.f.chips.every(c=>Math.abs(c.x-640)<=1)&&wide.f.under===0&&wide.f.rested<=1800,wide.ok?`${Math.round(wide.f.rested)}ms`:'');
  check('wide: at rest nothing is left',await wide.P.js(rest),await wide.P.js(why));await wide.P.shot('wide-recap-1280');
 
  // ===== The skip: a tap over a control ends it, opens the recap and presses nothing.

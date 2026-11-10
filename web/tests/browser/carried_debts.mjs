@@ -34,7 +34,7 @@ async function user(name,{width=390,height=844,reduce=false,scripts=true}={}){co
  return {s,js,go,shot,until,name};}
 const results=[];function check(name,ok,detail){results.push({name,ok:!!ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail===undefined?'':JSON.stringify(detail)}`)}
 // The first automatic recap follows the session finale (finale.js): the stage goes before the sheet is closed.
-const dismiss=async U=>{for(let i=0;i<30&&await U.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`)){await U.js(`document.querySelector('.sheet-head button').click()`);await sleep(450)}};
+const dismiss=async U=>{for(let i=0;i<60&&await U.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`)){await U.js(`document.querySelector('.sheet-head button').click()`);await sleep(450)}};
 const list=`[...document.querySelectorAll('.transfer-list .transfer-line')].map(r=>r.querySelector('.transfer-parties').getAttribute('aria-label')+' '+r.querySelector('.transfer-amount').textContent.trim())`;
 const row=id=>`document.querySelector('[data-transfer="${id}"]')`;
 const WATCH=`window.__seen=[];window.__loads=(window.__loads||0)+1;new MutationObserver(l=>l.forEach(m=>{const t=m.target;if(t.classList&&t.classList.contains('just-carried'))__seen.push(t.dataset.transfer)})).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']})`;
@@ -84,7 +84,7 @@ check('the host is told the order of reopening there',await H.js(`/Reopen that s
 
 // --- The player's own figure.
 await B.go(tonight);await sleep(300);
-check('the make-up waits behind the recap that opens by itself',await B.js(`!!document.querySelector('dialog[open]')&&!localStorage.getItem('rack-makeup:'+document.querySelector('.makeup').dataset.makeup)`));
+check('the make-up waits behind the finale and the recap that opens by itself',await B.js(`(!!document.querySelector('dialog[open]')||pokerStage.taken())&&!localStorage.getItem('rack-makeup:'+document.querySelector('.makeup').dataset.makeup)`));
 await dismiss(B);
 const rose=await B.until(`document.getAnimations().some(a=>!(a instanceof CSSTransition)&&a.effect.target.closest('.makeup'))`,1500);
 check('after the recap closes the make-up arrives once',rose>0,rose);

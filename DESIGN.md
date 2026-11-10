@@ -1079,7 +1079,7 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 
 [Plan](doc/plan/1794301755_thats_the_night_finale.md), [study](doc/study/1794301535_more_flair.md). Mode: Operate, with one Experience moment. It is the bookend of the set start overture: the night has a start and an end. No new colour, font, raster file or dependency.
 
-**Inside "a signature moment within 900ms".** The human: "let it stay at around 900ms". From the stage's first frame to the recap at rest is 900ms at most. It is not a recorded exception. There is no vibration and no sound.
+**A third recorded exception to "a signature moment within 900ms"** (changed 2026-11-10, after the first release). The first build stayed inside 900ms by raising the recap at 490ms, over the stage. On a phone the human saw it as a fault: "the session finale animation gets cut off by the auto recap. can you make the recap pop up after the finale animation." The finale now plays in full and holds, and the recap rises only when the stage has gone. The stage takes about 1.3 seconds and the recap is at rest about 1.7 seconds after the first frame. Any tap or key still ends it at once. There is no vibration and no sound.
 
 **When.** It plays before the recap that opens by itself: once for each session, signed-in viewer and browser, under the recap's own key. That is the host's close, a player's phone on the session page at its next redraw, or a viewer's first visit later. The recap opened with "View session recap" has no finale.
 
@@ -1091,8 +1091,9 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 | 0 to 420ms | Each chip rises 110px from 80% into the stack (`shift`, no bounce), 30ms apart at most; the last chip starts by 160ms |
 | 200 to 440ms | "That's the night" stamps from 150% (`arrive`) |
 | 340 to 640ms | With a top result: one Brass ring opens from the top chip and fades (3px, 50% to 220%). A timer starts it: a delayed animation would draw its first keyframe from 0ms |
-| 490 to 650ms | The ground, the stack and the words fade |
-| 490ms to about 850ms | The recap rises (`sheet`). Focus starts on its Close, as before |
+| 640 to 1,100ms | The whole picture holds, so the words can be read |
+| 1,100 to 1,260ms | The ground, the stack and the words fade |
+| 1,280ms to about 1,680ms | The stage has gone. The recap rises (`sheet`). Focus starts on its Close, as before |
 
 - **The top result.** The chip of the highest positive result lands last and has a 3px Brass edge. Tied top results land last, one after the other, under one ring. The page marks them (`data-top` on the recap's ranking); the script works out nothing.
 - **No loss is ranked.** The other chips land in the order of their members, not of their results. When nobody finished ahead there is no ring and no marked chip.
@@ -1101,7 +1102,7 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 - **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload or when storage is refused. The recap opens by itself as before in the first three cases. Without JavaScript the recap's facts are in the page.
 - Only `transform` and `opacity` move.
 
-**Measured.** `finale.mjs`, 43 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring that is not there before 300ms, a tie, an even session, the recap at rest within 900ms on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link with the key held, a tap after a screen change in the same document, the screen taken and free again, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms). WebKit at 390px (Playwright 1.49.1): at rest in 863 to 875ms, no script error, worst frame 44ms.
+**Measured.** `finale.mjs`, 45 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring that is not there before 300ms, a tie, an even session, the whole picture held for 500ms or more, the recap opened only after the stage's last frame and at rest within 1.8 seconds, on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link with the key held, a tap after a screen change in the same document, the screen taken and free again, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms).
 
 ### Carried transfers (2026-10-11)
 

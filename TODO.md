@@ -2,7 +2,7 @@
 
 ## Phone checks: session finale (released 2026-11-10)
 
-- [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in, and the recap rises, once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
+- [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in and stays for a moment. Only after the stage has gone does the recap rise. Once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
 
 ## Phone checks: felt light after the overture (released 2026-11-06)
 

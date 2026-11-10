@@ -30,16 +30,16 @@ for(const engine of (process.env.PN_ENGINES||'chromium,webkit').split(',')){
   await login(payer,f.payer);await payer.goto(`${BASE}/g/${f.group}/`);
   check(engine,'payer has no settle action and sees who confirms',await payer.locator('.debt-opener').count()===0&&(await payer.locator('#debts').innerText()).includes('Ben confirms when paid'));
   if(process.env.PN_DEBTS_PHASE!=='group'){
-   await payer.goto(`${BASE}/n/${f.nights[0]}/`);const recap=payer.locator('dialog.sheet[open]');await recap.waitFor({state:'visible',timeout:2000}).catch(()=>{});/* the recap follows the session finale */if(await recap.count()){await recap.locator('.sheet-head button').click();await recap.waitFor({state:'hidden'});}
+   await payer.goto(`${BASE}/n/${f.nights[0]}/`);const recap=payer.locator('dialog.sheet[open]');await recap.waitFor({state:'visible',timeout:3000}).catch(()=>{});/* the recap follows the session finale */if(await recap.count()){await recap.locator('.sheet-head button').click();await recap.waitFor({state:'hidden'});}
   }
   await page.getByRole('button',{name:'Got ₱200 from Ana',exact:true}).click();await dialog.getByRole('button',{name:'Settle',exact:true}).click();
   await page.locator('[data-debt-receipt]').waitFor();await page.waitForFunction(()=>!document.querySelector('dialog.sheet[open]'));
-  const focusReturned=await page.waitForFunction(()=>document.activeElement.id==='debts-title',null,{timeout:2000}).then(()=>true,()=>false);
+  const focusReturned=await page.waitForFunction(()=>document.activeElement.id==='debts-title',null,{timeout:3000}).then(()=>true,()=>false);
   check(engine,'settlement returns focus to the Debts heading',focusReturned,await page.evaluate(()=>({active:document.activeElement.outerHTML.slice(0,250),heading:document.querySelector('#debts-title')?.outerHTML})));
   check(engine,'accepted settlement removes pair and preserves document',await page.locator('[data-debt]').count()===0&&await page.evaluate(()=>window.__debtSentinel===42));
   check(engine,'receipt states exact net and offers undo',(await page.locator('[data-debt-receipt]').innerText()).includes('Settled with Ana: ₱200')&&await page.locator('[data-debt-receipt] summary').count()===1);
   if(process.env.PN_DEBTS_PHASE!=='group'){
-   await payer.waitForFunction(()=>document.querySelector('[data-transfer]')?.dataset.paid==='s',{timeout:20000});
+   await payer.waitForFunction(()=>document.querySelector('[data-transfer]')?.dataset.paid==='s',{timeout:30000});
    check(engine,'other phone sees cleared transfer through live poll',(await payer.locator('[data-transfer]').innerText()).includes('Settled with Ben'));
    for(const n of f.nights){await payer.goto(`${BASE}/n/${n}/`);check(engine,`session ${n} names settlement`,(await payer.locator('[data-transfer]').innerText()).includes('Settled with Ben'));}
   }
