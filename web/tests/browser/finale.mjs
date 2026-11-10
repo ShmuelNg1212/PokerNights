@@ -44,8 +44,8 @@ const why=`JSON.stringify({stage:!!document.querySelector('.finale'),anims:docum
 const results=[];const check=(name,ok,note='')=>{results.push({name,ok:!!ok});console.log(`${ok?'PASS':'FAIL'} ${name}${note?'  ('+note+')':''}`)};
 const RECAP=`!!document.querySelector('dialog.sheet[open] .recap')`;
 const done=`__fi.n>0&&!document.querySelector('.finale')&&${RECAP}`;
-const rest=`!document.querySelector('.finale')&&!document.querySelector('[data-stage]')&&document.getAnimations().filter(a=>a.playState==='running'&&a.effect&&a.effect.target&&!(a.effect.target.closest&&a.effect.target.closest('.sheet-body'))).length===0&&!document.querySelector('dialog.sheet').style.transform`;
-const facts=`({n:__fi.n,stages:__fi.stages,first:__fi.first,last:__fi.last,ring:__fi.ring,span:__fi.last.t-__fi.first.t,opened:__fi.opened-__fi.first.t,rested:__fi.moved-__fi.first.t,chips:__fi.shots[Math.max(0,__fi.shots.length-12)].chips})`;
+const rest=`!document.querySelector('.finale')&&!pokerStage.taken()&&document.getAnimations().filter(a=>a.playState==='running'&&a.effect&&a.effect.target&&!(a.effect.target.closest&&a.effect.target.closest('.sheet-body'))).length===0&&!document.querySelector('dialog.sheet').style.transform`;
+const facts=`({ringEarly:Math.max(0,...__fi.shots.filter(s=>s.t-__fi.first.t<300).map(s=>s.ring)),n:__fi.n,stages:__fi.stages,first:__fi.first,last:__fi.last,ring:__fi.ring,span:__fi.last.t-__fi.first.t,opened:__fi.opened-__fi.first.t,rested:__fi.moved-__fi.first.t,chips:__fi.shots[Math.max(0,__fi.shots.length-12)].chips})`;
 // The chips in the order they were dealt onto the stack: each later one sits higher.
 const stacked=chips=>chips.every((c,i)=>i===0||c.y<chips[i-1].y+0.5);
 try {
@@ -64,7 +64,7 @@ try {
  check('ready: a chip for each of the eight players, in one stack',h.chips.length===8&&stacked(h.chips)&&h.chips.every(c=>Math.abs(c.x-195)<=1),JSON.stringify(h.chips.map(c=>[c.text,Math.round(c.y)])));
  check('ready: the top result (Miguel) is the last to land and has the Brass edge',h.chips[7].top&&h.chips[7].text===await H.js(`document.querySelector('.recap-ranking>li[data-top] .chip').textContent.trim()`)&&await H.js(`document.querySelector('.recap-ranking>li[data-top]').textContent.includes('Miguel')`)&&h.chips.filter(c=>c.top).length===1,JSON.stringify(h.chips.map(c=>c.text+(c.top?'*':''))));
  check('ready: the others are not in result order',JSON.stringify(h.chips.slice(0,7).map(c=>c.text))!==JSON.stringify(await H.js(`[...document.querySelectorAll('.recap-ranking>li:not([data-top]) .chip')].map(c=>c.textContent.trim())`)),JSON.stringify(h.chips.map(c=>c.text)));
- check('ready: one Brass ring opens',h.ring>0.3,`${h.ring}`);
+ check('ready: one Brass ring opens, and not before the top chip is on its way',h.ring>0.3&&h.ringEarly===0,JSON.stringify({ring:h.ring,early:h.ringEarly}));
  check('ready: the recap is at rest within 900ms of the first frame',h.opened>0&&h.rested<=900,`opened ${Math.round(h.opened)}ms, at rest ${Math.round(h.rested)}ms, stage ${Math.round(h.span)}ms`);
  check('ready: one stage only',h.stages===1,`${h.stages}`);
  check('ready: at rest nothing is left: no stage, no animation, no inline style on the sheet',await H.js(rest),await H.js(why));
@@ -87,7 +87,7 @@ try {
  check('twelve at 320px: the words fit and the page does not scroll sideways',twelve.ok&&twelve.f.last.call.l>=0&&twelve.f.last.call.r<=320&&await twelve.P.js(`document.documentElement.scrollWidth<=320`));
  check('twelve at 320px: at rest within 900ms',twelve.ok&&twelve.f.rested<=900,twelve.ok?`${Math.round(twelve.f.rested)}ms`:'');
  const tied=await first('tied');
- check('tied: both top results land last, with one ring',tied.ok&&tied.f.chips.slice(-2).every(c=>c.top)&&tied.f.chips.filter(c=>c.top).length===2&&tied.f.ring>0.3&&await tied.P.js(`true`),tied.ok?JSON.stringify(tied.f.chips.map(c=>c.text+(c.top?'*':''))):'');
+ check('tied: both top results land last, with one ring',tied.ok&&tied.f.chips.slice(-2).every(c=>c.top)&&tied.f.chips.filter(c=>c.top).length===2&&tied.f.ring>0.3&&tied.f.ringEarly===0&&await tied.P.js(`document.querySelectorAll('.recap-ranking>li[data-top]').length===2`),tied.ok?JSON.stringify(tied.f.chips.map(c=>c.text+(c.top?'*':''))):'');
  const even=await first('even');
  check('even: the finale plays with no ring and no marked chip',even.ok&&even.f.ring===0&&even.f.chips.length===3&&even.f.chips.every(c=>!c.top),even.ok?JSON.stringify({ring:even.f.ring}):'');
  const wide=await first('eight',{width:1280,height:800});
@@ -107,8 +107,12 @@ try {
  // ===== The key skip: Enter on a focused link ends it and does not follow the link.
  const K=await page();await K.login('hana');await K.go(`/n/${N.eight}/`,0);await K.until(`__fi.n>0`,5000);await sleep(150);
  await K.js(`document.querySelector('main a[href]').focus()`);const kwhere=await K.js('location.pathname');
- for(const type of ['keyDown','keyUp'])await send('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,...(type==='keyDown'?{text:'\r'}:{})},K.s);
- check('keys: Enter ends the stage',await K.js(`!document.querySelector('.finale')`));await sleep(700);
+ const enter=(type,more={})=>send('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,...(type==='keyDown'?{text:'\r'}:{}),...more},K.s);
+ await enter('keyDown');
+ check('keys: Enter ends the stage, and the screen stays taken while the key is down',await K.js(`!document.querySelector('.finale')&&pokerStage.taken()&&!document.querySelector('dialog[open]')`));
+ await enter('keyDown',{autoRepeat:true});
+ check('keys: the held key repeats and still follows no link',await K.js(`location.pathname===${JSON.stringify(kwhere)}&&pokerStage.taken()`));
+ await enter('keyUp');await sleep(700);
  check('keys: the recap is open, and Enter followed no link',await K.js(`${RECAP}&&location.pathname===${JSON.stringify(kwhere)}`));
  // ===== A hidden tab ends it; the recap is open for the return.
  const V=await page();await V.login('hana');await V.go(`/n/${N.eight}/`,0);await V.until(`__fi.n>0`,5000);await sleep(150);
@@ -116,7 +120,16 @@ try {
  check('hidden tab: the stage ends and the recap is open',await V.js(`!document.querySelector('.finale')&&${RECAP}`));
  // ===== A redraw of the session page waits for the stage (nightlive.js).
  const Q=await page();await Q.login('hana');await Q.go(`/n/${N.eight}/`,0);await Q.until(`__fi.n>0`,5000);
- check('the page marks the screen as taken while the stage plays',await Q.js(`!!document.querySelector('[data-stage]')`));
+ check('the screen is taken while the stage plays, so the page does not redraw and no other sheet opens',await Q.js(`pokerStage.taken()&&!document.querySelector('dialog[open]')`));
+ await Q.until(done,3000);await sleep(600);
+ check('the screen is free again at rest (the recap is then the open sheet)',await Q.js(`!pokerStage.taken()&&${RECAP}`));
+ // ===== Reached by a tap on a session card: a screen change in the same document. A tap during it keeps the recap.
+ const T=await page();await T.login('hana');await T.go('/');await T.go(await T.js(`document.querySelector('main a[href^="/g/"]').getAttribute('href')`));
+ const card=await T.js(`(()=>{const a=document.querySelector('main a[href="/n/${N.tied}/"]');if(!a)return false;window.__same=1;a.click();return true})()`);
+ check('turbo: the group page links to the session',card);
+ check('turbo: the finale plays after a screen change in the same document',await T.until(`__fi.n>0`,5000)&&await T.js(`window.__same===1`));
+ await sleep(120);await T.tap(195,300);await sleep(900);
+ check('turbo: a tap during it leaves the recap open on that session',await T.js(`${RECAP}&&location.pathname==='/n/${N.tied}/'&&!pokerStage.taken()`));
 
  // ===== Fail safe.
  const R=await page({reduce:true});await R.login('hana');await R.go(`/n/${N.eight}/`);await sleep(1200);

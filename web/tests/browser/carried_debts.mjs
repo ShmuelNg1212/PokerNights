@@ -34,7 +34,7 @@ async function user(name,{width=390,height=844,reduce=false,scripts=true}={}){co
  return {s,js,go,shot,until,name};}
 const results=[];function check(name,ok,detail){results.push({name,ok:!!ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail===undefined?'':JSON.stringify(detail)}`)}
 // The first automatic recap follows the session finale (finale.js): the stage goes before the sheet is closed.
-const dismiss=async U=>{for(let i=0;i<30&&await U.js(`!!document.querySelector('[data-stage]')`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`)){await U.js(`document.querySelector('.sheet-head button').click()`);await sleep(450)}};
+const dismiss=async U=>{for(let i=0;i<30&&await U.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`)){await U.js(`document.querySelector('.sheet-head button').click()`);await sleep(450)}};
 const list=`[...document.querySelectorAll('.transfer-list .transfer-line')].map(r=>r.querySelector('.transfer-parties').getAttribute('aria-label')+' '+r.querySelector('.transfer-amount').textContent.trim())`;
 const row=id=>`document.querySelector('[data-transfer="${id}"]')`;
 const WATCH=`window.__seen=[];window.__loads=(window.__loads||0)+1;new MutationObserver(l=>l.forEach(m=>{const t=m.target;if(t.classList&&t.classList.contains('just-carried'))__seen.push(t.dataset.transfer)})).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']})`;

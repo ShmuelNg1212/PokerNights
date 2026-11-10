@@ -47,7 +47,7 @@
     }
     function say(text) { dialog.querySelector("[data-install-status]").textContent = text; }
     function open(from) {
-      if (dialog.open || document.querySelector("dialog[open], [data-stage]")) return false;
+      if (dialog.open || (document.querySelector("dialog[open]") || (window.pokerStage && window.pokerStage.taken()))) return false;
       opener = from || null; say(""); choose();
       dialog.showModal(); dialog.scrollTop = 0;
       if (window.pokerMotion) window.pokerMotion.run(dialog, { transform: ["translateY(" + dialog.offsetHeight + "px)", "translateY(0px)"] }, "sheet");

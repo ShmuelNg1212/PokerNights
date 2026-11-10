@@ -1090,18 +1090,18 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 | 0 to 160ms | The ground fades in |
 | 0 to 420ms | Each chip rises 110px from 80% into the stack (`shift`, no bounce), 30ms apart at most; the last chip starts by 160ms |
 | 200 to 440ms | "That's the night" stamps from 150% (`arrive`) |
-| 340 to 640ms | With a top result: one Brass ring opens from the top chip and fades (3px, 50% to 220%) |
+| 340 to 640ms | With a top result: one Brass ring opens from the top chip and fades (3px, 50% to 220%). A timer starts it: a delayed animation would draw its first keyframe from 0ms |
 | 490 to 650ms | The ground, the stack and the words fade |
 | 490ms to about 850ms | The recap rises (`sheet`). Focus starts on its Close, as before |
 
 - **The top result.** The chip of the highest positive result lands last and has a 3px Brass edge. Tied top results land last, one after the other, under one ring. The page marks them (`data-top` on the recap's ranking); the script works out nothing.
 - **No loss is ranked.** The other chips land in the order of their members, not of their results. When nobody finished ahead there is no ring and no marked chip.
-- **A skip does only that.** A tap, a key or a hidden tab ends the stage in that frame. The recap opens when the tap or the key is over, so the same tap cannot close it or press what is under the stage. Enter or Space does not press the focused control.
-- **The screen is taken.** While the stage is on the page it carries `data-stage`. The session page does not redraw under it, and the install sheet, the table alerts question and the make-up of a figure wait, as they do behind an open sheet.
+- **A skip does only that.** A tap, a key or a hidden tab ends the stage in that frame. The recap opens when the tap or the key is over, so the same tap cannot close it or press what is under the stage. This holds also for a tap that the browser reports outside the stage, as during a screen change. Enter or Space does not press the focused control, and a held key that repeats presses nothing.
+- **The screen is taken.** `pokerStage.taken()` is true while a stage is on the page and until the tap or key that ended it is over. The session page does not redraw then, and the install sheet, the table alerts question and the make-up of a figure wait, as they do behind an open sheet. A page that is left before the recap is due gives the recap's key back, so the next visit still opens it.
 - **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload or when storage is refused. The recap opens by itself as before in the first three cases. Without JavaScript the recap's facts are in the page.
 - Only `transform` and `opacity` move.
 
-**Measured.** `finale.mjs`, 38 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring, a tie, an even session, the recap at rest within 900ms on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms).
+**Measured.** `finale.mjs`, 43 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring that is not there before 300ms, a tie, an even session, the recap at rest within 900ms on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link with the key held, a tap after a screen change in the same document, the screen taken and free again, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms). WebKit at 390px (Playwright 1.49.1): at rest in 863 to 875ms, no script error, worst frame 44ms.
 
 ### Carried transfers (2026-10-11)
 

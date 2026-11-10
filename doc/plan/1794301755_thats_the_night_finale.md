@@ -64,7 +64,7 @@ One stage, 900 ms at most from its first frame to the recap at rest. Each layer 
 - **The order of the other chips** is the order of their members. The recap's list is in result order, so "the page's order" would have ranked the losses.
 - **A skip opens the recap when the tap or the key is over**, not in the same frame. The same tap would otherwise land on the sheet's backdrop and close it.
 - **Script order.** `stage.js` and `finale.js` load before `sheets.js`, not after `overture.js` ([module_start_runs_at_registration.md](../wiki/footguns/module_start_runs_at_registration.md)).
-- **The screen is taken.** The stage carries `data-stage`. `nightlive.js`, `install.js`, `carry.js` and `alerts.js` treat it as an open sheet. Without this the install sheet could open over the stage at 500 ms, and a redraw during the stage could lose the recap.
+- **The screen is taken.** `pokerStage.taken()` is true while a stage is up and until the press that ended it is over. `nightlive.js`, `install.js`, `carry.js` and `alerts.js` treat it as an open sheet. Without this the install sheet could open over the stage at 500 ms, and a redraw during the stage could lose the recap.
 - **The top result** is marked in the template (`data-top` in `_night_recap.html`), with two Django tests.
 - **Other probes.** `night.mjs`, `carried_debts.mjs` and `debts.mjs` now wait for the finale's end. `night_live.mjs`, `install_prompt.mjs` and `journey.mjs` needed no change.
 
@@ -127,4 +127,19 @@ Completion: the TODO lines exist; the WebKit result is recorded in Checks.
 
 ## Checks
 
-To be recorded at rendezvous.
+Rendezvous, 2026-11-10, on `feat/session-finale`. Each probe ran on a fresh temporary SQLite database.
+
+| Check | Result |
+|---|---|
+| Django suite, SQLite | 1,738 tests OK, 23 skipped. Two new tests for the top-result mark; the script order test lists `stage` and `finale` |
+| `finale.mjs` (`seed_finale.py`) | 43 of 43. The host closes the session through the real form; a second phone gets it by its redraw |
+| `overture.mjs` (`seed_overture.py`) | 53 of 53 after the stage shell moved, with no change to the probe |
+| `night.mjs` | 88 of 88, after it waits for the finale's end |
+| `night_live.mjs`, `install_prompt.mjs` | 22 of 22 and 38 of 38, unchanged |
+| `carried_debts.mjs` | 31 of 32. The one failure ("each row is a 48px target") fails on `main` too |
+| WebKit at 390 px, Playwright 1.49.1 (scratch probe) | 4 sessions: the recap at rest in 863 to 875 ms, no script error, nothing left, worst frame 44 ms, none over 50 ms |
+| Captures | The stage held at rest at 390, 320 and 1280 px: one stack, the Brass edge on the top chip, the words under it |
+| Code review, medium (round 1 of 2) | 9 findings. Fixed 7: the `data-stage` mark was also the own-count panel's attribute, so those pages read as busy; a tap reported outside the stage opened the recap under that tap; after a key skip the screen was free for 350 ms and a held Enter followed the link; the ring's first keyframe showed from 0 ms; a page left before the recap was due lost the recap; the selector was copied in four files; `overture.js` broke if `stage.js` did not load; three probe checks could not fail. Kept 2: the overture's small wrappers, and TODO.md's length (see below) |
+| Checks that can fail | With the old ring delay and the recap at 600 ms, 7 of the 43 checks failed (ring at 0.9 from the first frame, at rest in 950 to 1,000 ms). With `finale.js` loaded after `sheets.js`, the first run failed at "the close plays the finale" |
+| Not checked | A physical iPhone or Android phone (TODO.md). `journey.mjs` and `debts.mjs` were not run; `debts.mjs` got the same wait. The impeccable `critique` and `audit`, `review-animations` and `break-ui` were not run: the agent looked at the captures only |
+| Open | TODO.md is 49 lines against a limit of 40. The other lines are the human's phone checks, so the agent did not remove them |

@@ -229,7 +229,7 @@
     function remind() {
       if (!main || !main.hasAttribute("data-alerts-remind") || read(sessionStorage, REMINDED_KEY)) return;
       timer = setTimeout(function () {
-        if (state !== "ask" || isOpen(box) || document.hidden || document.querySelector("dialog[open], [data-stage]")) return;
+        if (state !== "ask" || isOpen(box) || document.hidden || (document.querySelector("dialog[open]") || (window.pokerStage && window.pokerStage.taken()))) return;
         if (!write(sessionStorage, REMINDED_KEY, "1")) return; // without storage it could repeat: no reminder
         open(box, true);
         var news = document.getElementById("route-announcer");

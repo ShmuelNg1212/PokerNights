@@ -31,7 +31,7 @@
     var refused = null, failures = 0, due = false, changedAt = Date.now();
 
     function busy() {
-      if (document.querySelector("dialog[open], [data-stage]")) return true; // a sheet, or the finale before the recap
+      if (document.querySelector("dialog[open]") || (window.pokerStage && window.pokerStage.taken())) return true; // a sheet, or the finale before the recap
       var active = document.activeElement;
       if (active && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName) && active.type !== "hidden") return true;
       // An open form whose state a redraw would not keep (New group): it is in use.

@@ -173,6 +173,7 @@ if (event.shiftKey && document.activeElement === first) { last.focus(); event.pr
 if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
 });
 function stop() {
+if (me.owed) { try { localStorage.removeItem(me.owed); } catch (_) {} me.owed = null; }
 if (S === me) S = null;
 if (dialog.open) dialog.close();
 dialog.remove();
@@ -188,7 +189,9 @@ localStorage.setItem(seen, "1");
 me.lands = region.querySelector("[data-recap-lands]");
 if (me.lands && me.lands.getBoundingClientRect().top > innerHeight / 2) me.lands.scrollIntoView({block: "start"});
 // The finale plays first, then the recap rises (finale.js). Without it the recap opens at once.
-var show = function () { if (S === me && !dialog.open) open("recap", region.querySelector('[data-sheet-open="recap"]')); };
+// A page that is left before the recap is due gives the turn back, so the next visit still opens it.
+me.owed = seen;
+var show = function () { if (S !== me || dialog.open) return; me.owed = null; open("recap", region.querySelector('[data-sheet-open="recap"]')); };
 if (window.pokerFinale) window.pokerFinale.play(region, show); else show();
 }
 } catch (_) {}

@@ -6,7 +6,7 @@
 (function () {
 "use strict";
 var S = null;
-var OUT = [0.16, 1, 0.3, 1], LIFT = 6, STACK = 84, GAP = 0.03, LAST_START = 0.16, RECAP_AT = 490, FADE = 0.16;
+var OUT = [0.16, 1, 0.3, 1], LIFT = 6, STACK = 84, GAP = 0.03, LAST_START = 0.16, RING_AT = 340, RECAP_AT = 490, FADE = 0.16;
 var STAGE = '<span class="ov-ground"></span><span class="ov-ring"></span><p class="ov-call">That’s the night</p>';
 
 // The players' chips as the recap draws them. The top result is what the page marks (data-top): nothing
@@ -53,7 +53,8 @@ function perform(stage, page, due) {
   // One Brass ring opens from the top of the stack, only when somebody finished ahead.
   if (page.top) {
     var crown = {x: mid.x, y: foot - (count - 1) * lift};
-    stage.run(ring, {opacity: [0.9, 0], transform: [at(crown, 0.5), at(crown, 2.2)]}, {duration: 0.3, ease: OUT, delay: 0.34});
+    // Started by a timer, not by a delay: the first keyframe is written at once, and the ring is not there yet.
+    stage.later(RING_AT, function () { stage.run(ring, {opacity: [0.9, 0], transform: [at(crown, 0.5), at(crown, 2.2)]}, {duration: 0.3, ease: OUT}); });
   }
   // The stage goes as the recap rises over it.
   stage.later(RECAP_AT, function () {

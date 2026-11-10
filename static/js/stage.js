@@ -1,10 +1,11 @@
 // A stage: a short moment played over a page that is already complete (the set start overture, the session
 // finale). It is a div in #table-sheets, outside the live region, because a poll morphs #live and removes
 // inline styles there. Any tap or key, or a hidden tab, ends it in the same frame. One stage at a time.
-// The mark data-stage tells the scripts that redraw a page or open a sheet that the screen is taken.
+// taken() tells the scripts that redraw a page or open a sheet that the screen is not theirs yet: a stage is
+// up, or the tap or key that ended one is not over.
 (function () {
 "use strict";
-var current = null, root = document.documentElement, SWALLOW_MS = 350;
+var current = null, held = 0, root = document.documentElement, SWALLOW_MS = 350;
 
 function at(point, scale, turn) {
   return "translate(" + point.x.toFixed(1) + "px, " + point.y.toFixed(1) + "px) scale(" + (scale === undefined ? 1 : scale) + ")" + (turn ? " rotate(" + turn + "deg)" : "");
@@ -25,7 +26,7 @@ function open(options) {
   var M = window.pokerMotion;
   if (current || !M || !M.on() || document.hidden) return null;
   var el = document.createElement("div");
-  el.className = options.name; el.setAttribute("aria-hidden", "true"); el.setAttribute("data-stage", "");
+  el.className = options.name; el.setAttribute("aria-hidden", "true");
   el.innerHTML = options.html;
   (document.getElementById("table-sheets") || document.body).appendChild(el);
   var controls = [], timers = [];
@@ -49,10 +50,20 @@ function open(options) {
     document.removeEventListener("visibilitychange", skip);
     if (options.hide) root.removeAttribute(options.hide);
     if (options.end) options.end();
-    var then = function () { if (options.then) { var next = options.then; options.then = null; next(); } };
+    // What comes next runs once, when the press that ended the stage is over. Until then the screen is taken.
+    var over = false; held += 1;
+    var then = function () {
+      if (over) return;
+      over = true; held -= 1;
+      document.removeEventListener("keydown", hold, true);
+      if (options.then) options.then();
+    };
+    // A key that is held repeats: it still presses nothing.
+    var hold = function (again) { if (again.key === "Enter" || again.key === " ") again.preventDefault(); };
+    var press = event && event.type;
     // A skipping tap must not become a tap on the page: the stage stays, unseen, for the click that follows.
     // A tap that is cancelled (a drag) sends no click, so the stage also goes then, and after 350ms at most.
-    if (event && event.type === "pointerdown" && el.contains(event.target)) {
+    if (press === "pointerdown" && el.contains(event.target)) {
       el.classList.add("is-gone");
       var gone = function () { el.remove(); then(); };
       el.addEventListener("click", gone, {once: true});
@@ -61,8 +72,16 @@ function open(options) {
       return;
     }
     el.remove();
+    // A tap that the browser reports elsewhere (on <html> during a screen change, or on something above the
+    // stage) is not ours to swallow, but what comes next still waits until its click has been sent.
+    if (press === "pointerdown") {
+      var after = function () { setTimeout(then, 0); };
+      document.addEventListener("click", after, {once: true, capture: true});
+      document.addEventListener("pointercancel", after, {once: true, capture: true});
+      setTimeout(then, SWALLOW_MS);
     // A key is still down: what comes next waits for it to come up, so Space does not press it.
-    if (event && event.type === "keydown") {
+    } else if (press === "keydown") {
+      document.addEventListener("keydown", hold, true);
       document.addEventListener("keyup", then, {once: true, capture: true});
       setTimeout(then, SWALLOW_MS);
     } else then();
@@ -76,5 +95,5 @@ function open(options) {
   return me;
 }
 
-window.pokerStage = {open: open, at: at, centre: centre, active: function () { return !!current; }};
+window.pokerStage = {open: open, at: at, centre: centre, taken: function () { return !!current || held > 0; }};
 })();

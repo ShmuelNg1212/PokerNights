@@ -20,7 +20,7 @@ const post=async(U,path,data)=>U.js(`(async()=>{const body=new URLSearchParams($
 const nights=JSON.parse(readFileSync('/private/tmp/pn-slice3-manifest.json','utf8'));
 const path=n=>'/n/'+nights[n]+'/';
 // The first automatic recap follows the session finale (finale.js): wait for the sheet to be open and at rest.
-const recapUp=async U=>{for(let i=0;i<40;i++){if(await U.js(`!!document.querySelector('dialog.sheet[open]')&&!document.querySelector('[data-stage]')`))break;await sleep(50)}await sleep(500)};
+const recapUp=async U=>{for(let i=0;i<40;i++){if(await U.js(`!!document.querySelector('dialog.sheet[open]')&&!pokerStage.taken()`))break;await sleep(50)}await sleep(500)};
 const dismiss=async U=>{if(await U.js(`!!document.querySelector('dialog[open]')`))await U.click(`document.querySelector('.sheet-head button')`)};
 try {
 for(const name of ['partly','unpaid','settled','break-even','large','ready','blocked','empty','tied']) {

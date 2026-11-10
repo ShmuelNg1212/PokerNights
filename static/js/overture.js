@@ -11,7 +11,8 @@ var OUT = [0.16, 1, 0.3, 1], INOUT = [0.55, 0, 0.2, 1];
 var EXIT_AT = 1300, FLY = 0.46, LAND_GAP = 0.028, CHIP = 44, DISC = 64, WAIT_FOR_SHEET_MS = 30000;
 var HIDE = "data-overture", LIT = "data-felt-lit", LIT_MS = 760, lit = null;
 
-var at = window.pokerStage.at, centre = window.pokerStage.centre;
+function at(point, scale, turn) { return window.pokerStage.at(point, scale, turn); }
+function centre(el) { return window.pokerStage.centre(el); }
 function motion() { return window.pokerMotion; }
 function run(el, frames, options, extra) { S.run(el, frames, options, extra); }
 function later(ms, act) { S.later(ms, act); }
@@ -99,7 +100,7 @@ function waitFor(dialog, region) {
 
 function play(region) {
   var M = motion();
-  if (S || !region || !M || !M.on() || document.hidden) return;
+  if (S || !region || !window.pokerStage || !M || !M.on() || document.hidden) return;
   var sheet = document.querySelector("dialog[open]");
   if (sheet) { waitFor(sheet, region); return; }
   var page = read(region);
