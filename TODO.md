@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: session finale (built 2026-11-10, not released)
+## Phone checks: session finale (released 2026-11-10)
 
 - [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in, and the recap rises, once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
 
@@ -43,7 +43,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] More flair: [session finale plan](doc/plan/1794301755_thats_the_night_finale.md) waits for approval; then [Chip to the pot](doc/roadmap/plan_queue/chip_to_the_pot.md) and [Streaks and records](doc/roadmap/plan_queue/streaks_and_records.md) from the queue.
+- [ ] More flair, next from the queue: [Chip to the pot](doc/roadmap/plan_queue/chip_to_the_pot.md) and [Streaks and records](doc/roadmap/plan_queue/streaks_and_records.md) from the queue.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
