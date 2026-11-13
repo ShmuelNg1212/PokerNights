@@ -1,6 +1,6 @@
 # Streaks and records
 
-Status: waits for approval and for the answer to question 1. Date: 2026-11-13, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 8. This is plan 3 of 3 from that study, after [the session finale](1794301755_thats_the_night_finale.md) and [Chip to the pot](1794561294_chip_to_the_pot.md). Reconstituted from the queue against the code at `8acb556`.
+Status: approved 2026-11-13 ("approved"). Question 1 got no answer, so the default stands: the recap names no losing run. Date: 2026-11-13, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 8. This is plan 3 of 3 from that study, after [the session finale](1794301755_thats_the_night_finale.md) and [Chip to the pot](1794561294_chip_to_the_pot.md). Reconstituted from the queue against the code at `8acb556`.
 
 Mode: mixed. The technical part comes first. Plan skill: `codebase-design`. Execute skills: `tdd`, then impeccable for the recap rows. Rendezvous skills: `code-review`, `break-ui`.
 

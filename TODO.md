@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: chip to the pot (not released; branch `feat/chip-to-the-pot`)
+
+- [ ] A set in play, with a second phone on the page. Rebuy: one chip in the player's colour goes from the row to the pot on both phones, and ends as the pot's digits stop. Cash out: one chip comes from the pot to the row. Tap Rebuy while a chip flies: the sheet opens. Reverse an entry: no chip. A row far down the list: the chip comes from the bottom edge. Reduce Motion on: no chip.
+
 ## Phone checks: session finale (released 2026-11-10)
 
 - [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in and stays for a moment. Only after the stage has gone does the recap rise. Once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
@@ -31,7 +35,7 @@
 - [ ] D: From Your groups, tap a group, then Players: Invite is at the top. Copy and Share work. D: Tap a player: Manage is above the record. Create a reset link: the link is on the screen, not above it. The arrow goes back to the same row.
 - [ ] D: Settings is six short rows. Open Tables and add a table: it comes back open. Refuse a table: the typing stays.
 - [ ] D: Stats: the first ranked row is near the top. Tap the period control: a sheet rises. Choose This year: the sheet closes and the control says so. All five orders scroll beside it.
-- [ ] E: In a dim room, a set in play: Rebuy still reads as a button, with no hard underside. Only the bright button has one, and a press still feels like a press. As host: "Tap a player to cash out" is above the first row. Nothing moves at the first cash-out.
+- [ ] E: In a dim room, a set in play: Rebuy still reads as a button, with no hard underside. Only the bright button has one, and a press still feels like a press. As host: "Tap a player to cash out" is above the first row. The layout does not move at the first cash-out.
 - [ ] E: The group page: tabs are words on a line, and the bar slides. A set in play is the only blue card. The rest are ruled rows.
 - [ ] E: A set's top bar says Session and the page says the table. On a closed session the date is short and the game type is gone from the head. On your smallest phone: "1 buy-in", "bought in" and every badge are readable, and no row is crowded. E: A new group: a stack of chips, one sentence, New session. A new player's group has no button.
 - [ ] Counting and Final: the title stays still. Resume moves back. What next can be pressed while it arrives.
@@ -43,7 +47,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] More flair, plans that wait for approval: [Chip to the pot](doc/plan/1794561294_chip_to_the_pot.md), then [Streaks and records](doc/plan/1794561295_streaks_and_records.md).
+- [ ] More flair, approved 2026-11-13: [Chip to the pot](doc/plan/1794561294_chip_to_the_pot.md) is built, not released. [Streaks and records](doc/plan/1794561295_streaks_and_records.md) is next.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).

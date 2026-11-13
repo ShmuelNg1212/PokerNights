@@ -1,6 +1,6 @@
 # Chip to the pot
 
-Status: waits for approval. Date: 2026-11-13, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 1. This is plan 2 of 3 from that study, after [the session finale](1794301755_thats_the_night_finale.md). Plan 3 is [Streaks and records](1794561295_streaks_and_records.md). Reconstituted from the queue against the code at `8acb556`.
+Status: approved 2026-11-13 ("approved"). Date: 2026-11-13, Asia/Manila. Study: [More flair](../study/1794301535_more_flair.md), idea 1. This is plan 2 of 3 from that study, after [the session finale](1794301755_thats_the_night_finale.md). Plan 3 is [Streaks and records](1794561295_streaks_and_records.md). Reconstituted from the queue against the code at `8acb556`.
 
 Mode: design. Visual authority: the built Rack in DESIGN.md. No new colour, font, file or dependency. Execute skills: `animate`, `mobile-native`. Rendezvous skills: `review-animations`, `break-ui`, `code-review`.
 
@@ -53,8 +53,8 @@ A rebuy or a later buy-in is accepted during play. One chip in the player's colo
 
 ## Tasks
 
-- [ ] **1. Record the decision (tests: alongside).** DESIGN.md addendum "Chip to the pot (2026-11-13)" after "The pot's figure rolls". It states the 360 ms length against the 300 ms interaction rule, with the pot's roll as the precedent. Completion: committed with the build.
-- [ ] **2. Browser check first (tests: alongside).** New `web/tests/browser/chip_pot.mjs` on the `seed_pot.py` seed. Checks:
+- [x] **1. Record the decision (tests: alongside).** DESIGN.md addendum "Chip to the pot (2026-11-13)" after "The pot's figure rolls". It states the 360 ms length against the 300 ms interaction rule, with the pot's roll as the precedent. Completion: committed with the build.
+- [x] **2. Browser check first (tests: alongside).** New `web/tests/browser/chip_pot.mjs` on the `seed_pot.py` seed. Checks:
   - A rebuy on the host's phone and on a second phone gives one chip. It starts on the token (within 1 px) and ends on the pot figure.
   - A cash-out goes the other way.
   - The pot's text is the accepted amount on the chip's first frame.
@@ -67,7 +67,7 @@ A rebuy or a later buy-in is accepted during play. One chip in the player's colo
   - No frame over 50 ms with the processor slowed four times.
   
   Completion: the checks fail before the build and pass after it.
-- [ ] **3. Build (tests: alongside).** New `static/js/chipfly.js`, loaded in `templates/base.html` after `overture.js`. Update the script-order test in the Django suite.
+- [x] **3. Build (tests: alongside).** New `static/js/chipfly.js`, loaded in `templates/base.html` after `overture.js`. Update the script-order test in the Django suite.
   - It registers with `pokerPage` and reads each `.player-row[data-watch]` `data-value` (`bought in : buy-ins : cashed out : status`) into memory.
   - On `live:updated` it compares. Buy-ins up: row to pot. Cashed out up: pot to row. It then stores the new values.
   - The ends: the row's `.chip` token and `.pot-main[data-watch="in-play"] .display-amount`.
@@ -76,11 +76,24 @@ A rebuy or a later buy-in is accepted during play. One chip in the player's colo
   - A thrown error turns the script off for the page view and is still reported, as in `pot.js`.
   
   Completion: `chip_pot.mjs`, `pot.mjs`, `overture.mjs` and the Django suite pass.
-- [ ] **4. Phone checks and docs (tests: alongside).** TODO.md: rebuy and cash out with a second phone on the page. Reword the existing check "Nothing moves at the first cash-out": it means the layout, and a chip now moves. Sync `doc/wiki/features.md`. Run `graphify update .`.
+- [x] **4. Phone checks and docs (tests: alongside).** TODO.md: rebuy and cash out with a second phone on the page. Reword the existing check "Nothing moves at the first cash-out": it means the layout, and a chip now moves. Sync `doc/wiki/features.md`. Run `graphify update .`.
 
 ## Rendezvous
 
 Run the SQLite suite, `chip_pot.mjs`, `pot.mjs`, `overture.mjs`, `mobile_motion.mjs` and `table.mjs`. Run `review-animations`, `break-ui` and `code-review`. The first thing the user does: a rebuy on a running set with a second phone on the page. Record the checks here.
+
+## Checks recorded (2026-11-13)
+
+The plan is frozen from here. Branch `feat/chip-to-the-pot`, verified, not merged.
+
+- Django suite on SQLite: 1738 tests pass, 23 skipped. The script-order test (`web/tests/test_inplace.py`) now names `chipfly`.
+- `chip_pot.mjs`: 32 of 32 on a fresh seed. With `PN_BLOCK_CHIPFLY=1`: 13 of 32, so 19 checks fail without the script.
+- Regression probes on fresh seeds: `pot.mjs` 53 of 53, `overture.mjs` 53 of 53, `table.mjs` 59 of 59.
+- One picture of two chips stopped at 200 ms of the flight at 390 px was read by the agent: both chips are between the rows and the figure, and the pot already says the accepted amount.
+- The build came before the probe's first run. The blocked run stands in for "fails before the build".
+- Not run: `mobile_motion.mjs`. Its Playwright tool was removed on 2026-11-01. WebKit is not measured for this change. The phone check in TODO.md covers the iPhone.
+- Not run as skills: `review-animations` and `break-ui`. The agent read the script against the plan's table in their place. One fix came from that: a fired timer now leaves the list.
+- Changed from the plan: the probe has its own seed, `seed_chip_pot.py`, because five rows in one redraw and a player's phone need more players than `seed_pot.py` has.
 
 ## Not in scope
 

@@ -402,6 +402,16 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Fail-safe: if the drawn digits cannot take exactly the plain figure's room, or the script would write the amount differently from the server, the figure is as it was before this feature. No switch.
 - Code: `static/js/pot.js`, the `.pot-roll`, `.pot-cell` and `.pot-delta` rules in `static/css/app.css`. The script's formatter mirrors `ledger/money.py` and checks itself against the server's figure on every use. Check: `web/tests/browser/pot.mjs` with `seed_pot.py`.
 
+
+## Chip to the pot (2026-11-13)
+
+- When a rebuy or a later buy-in is accepted on a set in play, one chip in the player's colour goes from the player's row to the pot. When a cash-out is accepted, one chip goes from the pot to the row. Each phone on the set page sees it at its next redraw.
+- The chip shows that money moved. It does not count money. The pot and the row show the accepted figures from the first frame.
+- Two to four rows in one redraw get one chip each, 60 ms apart. Five or more get none.
+- No chip moves for a reversal, a new row, the start of a set, a reload, a hidden tab, reduced motion or a missing Motion file.
+- The chip never stops a tap.
+- Code: `static/js/chipfly.js`, the `.chipfly` rules in `static/css/app.css`. Check: `web/tests/browser/chip_pot.mjs` with `seed_chip_pot.py`. Design: DESIGN.md, "Chip to the pot".
+
 ## In-app numpad (2026-10-05)
 
 - **On a phone or tablet a typed number uses the app's own keys.** The phone's keyboard does not open for buy-in, rebuy and cash-out amounts, final counts, stakes, rake or seats. Text fields (names, reasons, notes) keep the phone's keyboard. On a computer nothing changes.
