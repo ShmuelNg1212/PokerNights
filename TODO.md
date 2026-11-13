@@ -43,7 +43,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] More flair, next from the queue: [Chip to the pot](doc/roadmap/plan_queue/chip_to_the_pot.md) and [Streaks and records](doc/roadmap/plan_queue/streaks_and_records.md) from the queue.
+- [ ] More flair, plans that wait for approval: [Chip to the pot](doc/plan/1794561294_chip_to_the_pot.md), then [Streaks and records](doc/plan/1794561295_streaks_and_records.md).
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
