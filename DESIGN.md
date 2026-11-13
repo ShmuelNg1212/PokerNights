@@ -594,6 +594,19 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 - **Nothing moves** on first sight of a set, on a reload, in a hidden tab or without Motion. Under reduced motion the figure changes at once and the amount added shows without movement.
 - **Measured.** `pot.mjs`, 53 checks at 390 and 1280px, pesos and chips: the first frame, the box of the figure and the panel unchanged, both redraw paths, a tap during a roll, a change during a roll, twenty redraws leaving plain text and nothing running, wider, narrower and the long size, reduced motion, a blocked Motion file and both guards.
 
+### Chip to the pot (2026-11-13)
+
+[Plan](doc/plan/1794561294_chip_to_the_pot.md). When a rebuy or a later buy-in is accepted on a set in play, `static/js/chipfly.js` sends one copy of the player's token from the row to the pot figure. When a cash-out is accepted, one goes from the pot to the row. Each phone on the set page sees it at its next redraw. It shows that money moved. It counts nothing: the pot and the row show the accepted figures from the first frame.
+
+- **The flight.** 360ms with the overture's fly curve `[0.55, 0, 0.2, 1]`. It is longer than the 300ms interaction rule so that the chip ends with the pot's roll (about 420ms); the roll is the precedent. To the pot the chip goes to half size and fades over its last 120ms. From the pot it starts at half size, appears over its first 120ms and is removed on the token. Only transform and opacity move.
+- **Several rows.** One chip each, 60ms apart, four at most. More rows in one redraw move no chip.
+- **Ends out of sight.** A row under the host dock or off the screen is that edge, and the chip fades there. A pot off the screen is the top edge. Two ends out of sight move no chip.
+- **The sender's phone.** The chip starts when the sheet has closed. A sheet still open after 400ms gets no chip.
+- **No chip** for a reversal, a row seen for the first time, the start of a set or any other change of the set's state, the first sight of a page, a reload, a full replacement, a stage that has the screen, a hidden tab, reduced motion or a missing Motion file.
+- **It never stops a tap.** The layer is in `#table-sheets`, outside the live region, hidden from screen readers, and takes no pointer events. It is removed when its last chip has gone.
+- **Fail-safe.** An error gives the chips up for that page view and is still reported.
+- **Measured.** `chip_pot.mjs` with `seed_chip_pot.py`, 32 checks at 320, 390 and 1280px on two phones.
+
 ### 2026-10-05 addendum — Motion between screens (stage 3 of the motion overhaul)
 
 A screen change says which way it went. `static/js/turbo-setup.js` decides; the last block of `static/css/app.css` moves.

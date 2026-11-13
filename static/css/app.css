@@ -2098,6 +2098,10 @@ html[data-overture] #live :is(.player-row .chip, [data-carry="title"] small, .ba
 .ov-call { top: calc(44% + 168px); color: var(--brass); font-size: 1.75rem; line-height: 1.1; font-stretch: 75%; font-weight: 800; text-wrap: balance; }
 .ov-facts { top: calc(44% + 210px); color: var(--bone-dim); font-size: .9375rem; }
 .ov-skip { bottom: max(24px, env(safe-area-inset-bottom)); color: var(--bone-dim); font-size: .8125rem; }
+/* Chip to the pot (DESIGN.md, "Chip to the pot"). chipfly.js puts one copy of a row's token here for each
+   accepted rebuy or cash-out. The layer is under a stage and takes no pointer events; only transform and opacity move. */
+.chipfly { position: fixed; inset: 0; z-index: 30; overflow: hidden; pointer-events: none; }
+.chipfly .fly-chip { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; font-size: .9375rem; box-shadow: 0 6px 14px oklch(0 0 0 / .5); will-change: transform, opacity; }
 /* The session finale (DESIGN.md, "Session finale"). finale.js builds it from the overture's parts: the ground, the
    ring and the players' chips in one stack. The top result's chip has a Brass edge. */
 .finale .ov-call { top: calc(44% + 84px); }

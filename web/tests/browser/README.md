@@ -31,6 +31,12 @@ The fixture makes eight open sets for host `hana`, with player `ben` at each. Th
 
 A sampler reads every frame while the stage is up, and while the felt is lit after it. The 53 checks cover the felt light (start, origin on the badge, reach, properties, length, no light after a skip, a full replacement during it), and the first frame, the words, each chip within 1.5 px of its row token, the dealer button into the badge or onto a drawn dealer, the seat order, a poll's morph and a full replacement of `#live` during the overture, a player's phone that waits for an open sheet, no replay, a skipping tap and a skipping Enter on a Rebuy, twelve chips at 320 × 568, 1280 px, reduced motion, a blocked Motion file and frames with the processor slowed four times. Do not take screenshots in the measured window ([footgun](../../../doc/wiki/footguns/screenshot_makes_a_late_frame.md)). Captures are in `/private/tmp/pn-overture-review/`, or `PN_REVIEW_DIR`.
 
+## Chip to the pot
+
+Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_pot.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `PN_DB=<the database file> node web/tests/browser/chip_pot.mjs`. The probe writes buy-ins, cash-outs and reversals and starts one set: reseed before a repeat. Copying the database file is not a reset. `PN_MANIFEST`, `PN_REVIEW_DIR` and `PN_CHROME_PROFILE` select other paths.
+
+A sampler is installed before the page's scripts. It notes each chip in the task that adds it and reads it on every frame until it is gone. The 32 checks cover a rebuy and a cash-out on the host's phone and a player's phone (start and end within 1 px and 8 px, the pot's text on the first frame, the length, the layer), reversals, two and five rows in one redraw, the sender's own rebuy after the sheet closes, a tap during the flight, a reload, a full replacement, the start of a set, a hidden tab, rows and a pot out of sight at 320 × 568, 1280 px, reduced motion, a blocked Motion file and frames with the processor slowed four times. `PN_BLOCK_CHIPFLY=1` blocks the script: 19 checks then fail.
+
 ## Session finale
 
 Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_finale.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/finale.mjs`. The host's close consumes the `ready` session: reseed before a repeat.
