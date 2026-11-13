@@ -34,7 +34,7 @@
     </ol>
     <p class="muted small">Results are after rake and describe play, not payments.</p>
   </section>
-  {% if recap.highlights %}
+  {% if recap.highlights or marks %}
   <section class="recap-part" aria-labelledby="recap-notes-title">
     <h3 id="recap-notes-title">Highlights</h3>
     <dl class="recap-highlights">
@@ -43,6 +43,13 @@
         <dt class="stat-label">{% if h.kind == 'buy_ins' %}Most buy-ins{% elif h.kind == 'set_win' %}Biggest win in one set{% else %}Longest at the table{% endif %}</dt>
         <dd>{% for who, number in h.entries %}<span class="recap-who">{{ who.member.display_name }}{% if number %} <span class="muted">in set {{ number }}</span>{% endif %}</span>{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
         <dd class="recap-value amount{% if h.kind == 'set_win' %} plus{% endif %}">{% if h.kind == 'buy_ins' %}{{ h.count }} buy-in{{ h.count|pluralize }}{% elif h.kind == 'set_win' %}{{ h.amount|signed_amount:unit }}{% else %}{{ h.seconds|duration }}{% endif %}</dd>
+      </div>
+      {% endfor %}
+      {% for mark in marks %}
+      <div data-mark="{{ mark.kind }}">
+        <dt class="stat-label">{{ mark.label }}</dt>
+        <dd>{% for who in mark.who %}<span class="recap-who">{{ who.member.display_name }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+        <dd class="recap-value amount{% if mark.amount %} plus{% endif %}">{% if mark.kind == 'run' %}{{ mark.count }} in a row{% elif mark.kind == 'round' %}{{ mark.count }}th session{% else %}{{ mark.amount|signed_amount:unit }}{% endif %}</dd>
       </div>
       {% endfor %}
     </dl>

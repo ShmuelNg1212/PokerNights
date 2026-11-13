@@ -581,6 +581,8 @@ def night(request, night_id):
             night, outcome.standings, {pk: seconds for pk, (seconds, _) in timers.items()},
             results=outcome.results, viewer_id=me.pk,
         )
+        # What the night meant in each player's history: one more query, read as Stats reads.
+        context["marks"] = stats_pages.recap_marks(night, outcome.standings)
         if settings.SHARE_RESULTS and outcome.plan is not None:
             context["share"] = share.card(night, outcome, context["recap"])
     if host.is_host:

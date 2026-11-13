@@ -353,3 +353,67 @@ def board(rows, members, period, sort="profit") -> Board:
             move = before.index(record.pk) + 1 - place if record.pk in before else "new"
         lines.append(BoardLine(record, place, move or None))
     return Board(period, sort, lines, [BoardLine(record) for record in rest], has_time)
+
+
+# The marks of a night, in the order the recap says them.
+MARK_KINDS = ("run", "best", "first_win", "round")
+RUN_FROM = 3  # winning sessions in a row before a run is named
+BEST_FROM = 3  # counted sessions before a result can be a personal best
+ROUND_NUMBERS = (10, 25, 50, 100)  # and every 50th after that
+
+
+@dataclass(frozen=True)
+class Mark:
+    """What one closed session meant in one player's history. Good news or a neutral count; never a loss.
+
+    ``run``: ``count`` winning sessions in a row, ending with this one. ``best``: this result, ``amount``,
+    is higher than each earlier one. ``first_win``: the first positive result, ``amount``, after at least
+    one other session. ``round``: this is the player's ``count``-th counted session.
+    """
+
+    kind: str
+    member_id: int
+    count: int | None = None
+    amount: int | None = None
+
+
+def _is_round(sessions: int) -> bool:
+    return sessions in ROUND_NUMBERS or (sessions > 100 and sessions % 50 == 0)
+
+
+def night_marks(rows, night_id) -> list:
+    """The marks of one session, from ``fetch(group, unit)``: runs (longest first), bests, first wins, round numbers.
+
+    Only results up to and including that session count, in the order of ``fetch`` (date, then session).
+    A session the player missed does not end a run; a break-even session does. A session that is not in
+    ``rows`` (still open, archived, another unit) has no marks.
+    """
+    tonight = next((row for row in rows if row.night_id == night_id), None)
+    if tonight is None:
+        return []
+    upto = (tonight.date, night_id)
+    past = {}
+    for row in rows:
+        if (row.date, row.night_id) <= upto:
+            past.setdefault(row.member_id, []).append(row)
+    found = []
+    for member_id, results in past.items():
+        last = results[-1]
+        if last.night_id != night_id:
+            continue
+        sessions, earlier = len(results), [r.net for r in results[:-1]]
+        if last.net > 0:
+            run = 1
+            for net in reversed(earlier):
+                if net <= 0:
+                    break
+                run += 1
+            if run >= RUN_FROM:
+                found.append(Mark("run", member_id, count=run))
+            if earlier and max(earlier) <= 0:
+                found.append(Mark("first_win", member_id, amount=last.net))
+            elif sessions >= BEST_FROM and last.net > max(earlier):
+                found.append(Mark("best", member_id, amount=last.net))
+        if _is_round(sessions):
+            found.append(Mark("round", member_id, count=sessions))
+    return sorted(found, key=lambda mark: (MARK_KINDS.index(mark.kind), -(mark.count or 0) if mark.kind == "run" else 0, mark.member_id))

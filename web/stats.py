@@ -150,6 +150,34 @@ def run_text(run) -> str:
     return f"{'Won' if run[0] == 'won' else 'Lost'} {run[1]} in a row"
 
 
+MARK_LABELS = {"run": "Winning run", "best": "Personal best", "first_win": "First win", "round": "Round number"}
+
+
+def recap_marks(night, standings) -> list:
+    """The marks of a closed session as rows for the recap's Highlights. One query, as Stats makes.
+
+    Each row is ``{kind, label, who: [Standing], count, amount}``. Players with the same run or the same
+    round number share a row, as tied players share a highlight. Names are in order within a row.
+    """
+    by_member = {standing.pk: standing for standing in standings}
+    rows = []
+    for mark in stats.night_marks(stats.fetch(night.group_id, night.unit), night.pk):
+        standing = by_member.get(mark.member_id)
+        if standing is None:
+            continue
+        shared = mark.kind in ("run", "round") and next((row for row in rows if row["kind"] == mark.kind and row["count"] == mark.count), None)
+        if shared:
+            shared["who"].append(standing)
+        else:
+            rows.append({"kind": mark.kind, "label": MARK_LABELS[mark.kind], "who": [standing], "count": mark.count, "amount": mark.amount})
+    for row in rows:
+        row["who"].sort(key=lambda standing: (standing.member.display_name.lower(), standing.pk))
+    # A stable sort: runs stay longest first and round numbers in order; equal kinds follow their first name.
+    order = {kind: place for place, kind in enumerate(stats.MARK_KINDS)}
+    rows.sort(key=lambda row: (order[row["kind"]], -(row["count"] or 0) if row["kind"] == "run" else (row["count"] or 0), row["who"][0].member.display_name.lower()))
+    return rows
+
+
 def player_context(request, me, member, periods) -> dict:
     """One player's record in the group for one unit and period, with their place on the profit board."""
     unit = choose_unit(request, periods)

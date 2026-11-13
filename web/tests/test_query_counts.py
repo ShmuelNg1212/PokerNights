@@ -23,7 +23,8 @@ class QueryCountTests(TestCase):
     def test_a_closed_session_page(self):
         night = closed_example()
         self.client.force_login(night.host.user)
-        self.assertLessEqual(len(self.queries(reverse("night", args=[night.session.night_id]))), 14)
+        # One of them reads the group's counted results for the recap's marks (web.stats.recap_marks).
+        self.assertLessEqual(len(self.queries(reverse("night", args=[night.session.night_id]))), 15)
 
     def test_a_session_page_costs_the_same_with_three_sets_as_with_one(self):
         night = worked_example()
