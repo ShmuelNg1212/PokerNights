@@ -95,7 +95,7 @@ Each step should be usable on its own before moving to the next. Steps 1 to 3 an
 - The Settings tab has one row each for Tables, Presets, Chip presets and Rake, and for hosts Group name and Manage. Each row opens its own form.
 - A group's first table is named on New session. New session starts from the chosen preset, or the group's latest session and the default preset of that session's table. A draft set can start directly; the set opens and starts in one transaction ([ADR 0009](../adr/0009-start-a-game-fast.md)).
 - Hosts add several names at once, remove a player after seeing what they still owe or are owed, bring a removed player back with their history, and keep a contact note that only hosts see. A player at the table of an unfinished set cannot be removed. Anyone with a login changes their own name in the group, or in all their groups at once from their profile; a group where the name is taken is skipped.
-- Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session.
+- Session history list with buy-ins, cash-outs and results per session, and a recap of each closed session. The recap also says a winning run, a personal best, a first win and a round number of sessions from the player's history. It names no loss ([ADR 0014](../adr/0014-marks-of-a-night.md)).
 - Hosts rename a group. Every member sees the new name.
 - Hosts archive and restore sessions and groups. An archived session is left out of the stats and the totals. Deleting is allowed only where no money was ever recorded.
 - Optional banker role: one player designated to handle cash for that night. Not built yet.

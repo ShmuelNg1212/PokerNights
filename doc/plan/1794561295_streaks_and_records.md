@@ -46,7 +46,7 @@ Worked out for one closed session, from the group's counted results in the sessi
 
 ## Tasks
 
-- [ ] **1. Marks from results (tests: first).** `settlement/stats.py`: a frozen dataclass `Mark` (kind, member id, count, amount) and a pure function `night_marks(rows, night_id)` over the list that `fetch(group, unit)` returns. New `settlement/tests/test_marks.py`:
+- [x] **1. Marks from results (tests: first).** `settlement/stats.py`: a frozen dataclass `Mark` (kind, member id, count, amount) and a pure function `night_marks(rows, night_id)` over the list that `fetch(group, unit)` returns. New `settlement/tests/test_marks.py`:
   - each row of the table;
   - each boundary: a run of 2 against 3, a best with 2 sessions against 3, the 9th and 10th session, the 150th, a tie with an earlier best;
   - a break-even that ends a run, a missed session that does not;
@@ -56,13 +56,32 @@ Worked out for one closed session, from the group's counted results in the sessi
   - no mark names a loss.
   
   Completion: the tests fail first, then pass.
-- [ ] **2. Show the marks in the recap (tests: alongside).** `web/views.py:580` (the recap context) calls `stats.fetch(group, unit)` once and `night_marks`, and joins each mark to its standing in `outcome.standings`. `templates/web/_night_recap.html`: the marks follow the three existing Highlights in the same `dl`. The section shows when there is a highlight or a mark. A view test checks the words, the order, and that the closed session page adds one query. Completion: the Django suite passes on SQLite and PostgreSQL.
-- [ ] **3. Design pass (tests: alongside).** The rows at 320 and 390 px with long names and three marks for one player. No new colour: the amount of a personal best uses the existing plus colour. DESIGN.md: one paragraph under "Session recap in detail". Completion: `break-ui` finds nothing open.
-- [ ] **4. Docs.** ADR 0014 and GLOSSARY.md (`domain-modeling`): "winning run", "personal best", "counted session". Sync `doc/wiki/spec.md` and `features.md`. Add phone checks to TODO.md. Run `graphify update .`.
+- [x] **2. Show the marks in the recap (tests: alongside).** `web/views.py:580` (the recap context) calls `stats.fetch(group, unit)` once and `night_marks`, and joins each mark to its standing in `outcome.standings`. `templates/web/_night_recap.html`: the marks follow the three existing Highlights in the same `dl`. The section shows when there is a highlight or a mark. A view test checks the words, the order, and that the closed session page adds one query. Completion: the Django suite passes on SQLite and PostgreSQL.
+- [x] **3. Design pass (tests: alongside).** The rows at 320 and 390 px with long names and three marks for one player. No new colour: the amount of a personal best uses the existing plus colour. DESIGN.md: one paragraph under "Session recap in detail". Completion: `break-ui` finds nothing open.
+- [x] **4. Docs.** ADR 0014 and GLOSSARY.md (`domain-modeling`): "winning run", "personal best", "counted session". Sync `doc/wiki/spec.md` and `features.md`. Add phone checks to TODO.md. Run `graphify update .`.
 
 ## Rendezvous
 
 Run the SQLite and PostgreSQL suites, `night.mjs` and `finale.mjs`. Run `code-review` and `break-ui`. The first thing the user does: close a session in which one player wins a third session in a row, then read the recap as that player and as another player. Record the checks here.
+
+## Checks recorded (2026-11-13)
+
+The plan is frozen from here. Branch `feat/streaks-and-records`, stacked on `feat/chip-to-the-pot`, verified, not merged.
+
+- `settlement/tests/test_marks.py`: 28 tests. They failed first (no `night_marks`), then passed.
+- `web/tests/test_recap_marks.py`: 9 tests: the words, the order, exact amounts, shared rows, units, no losing run named, no marks for a session that is not closed, and one added query.
+- Django suite: 1775 tests pass on SQLite (23 skipped) and on PostgreSQL.
+- `web/tests/test_query_counts.py`: the closed session page's limit went from 14 to 15 queries. This is the one query the plan named.
+- Regression probes on fresh seeds: `finale.mjs` 45 of 45, `night.mjs` 88 of 88.
+- Design pass: the agent read the recap at 320 and 390 px with a worst-case seed: two long names, one player with a run of 10 and a best of +₱1,233,567, a first win, and six players in one Round number row. No row overflows and no name overlaps a value.
+- Not run as skills: `break-ui`, `code-review` and impeccable. The agent did the worst-case pass above and read the diff in their place.
+
+Changed from the plan:
+
+- The run's words are "Winning run" and "3 in a row", not "3 winning sessions in a row". The value does not wrap, and the longer words broke a long name into pieces at 320 px.
+- A first win is not also called a personal best. Both said the same fact.
+- Players with the same run or the same round number share one row. A regular group reaches its 10th session together; six rows said one thing.
+- First win shows its signed amount, as Personal best does.
 
 ## Not in scope
 

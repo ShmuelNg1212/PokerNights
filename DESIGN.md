@@ -896,6 +896,8 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 [Plan](doc/plan/1791625392_session_recap_details.md). This replaces the five fact lines of "Closing recap" and the recap paragraph of "Elevation & Depth" (four lines, 540ms). How the recap opens, closes, keeps focus and remembers that it was seen is unchanged. No new colour, font or raster asset.
 
+**Marks (2026-11-13).** [Plan](doc/plan/1794561295_streaks_and_records.md). After the three Highlights, in the same rows: Winning run ("3 in a row"), Personal best and First win (the signed amount in the plus colour), Round number ("10th session"). The label is the `stat-label`; the value does not wrap, so its words are short and a long name keeps the room. Players with the same run or round number share a row, as tied players share a highlight. No new colour, no icon, no movement. Read at 320 and 390 px with two long names and six players in one row.
+
 - **Sections**, in this order, each a Bone Dim 15px heading over its content, with 24px and a Rule line between them: Top session result, Your night, Everyone's results, Highlights, Set by set. Your night appears only for a viewer who played; Highlights only when one has something to say.
 - **Top session result** names every tied winner on a 22px line: a 36px identity chip, the name, and the figure in Up with its arrow. The existing "Everyone broke even." and "No positive result after rake." lines stay.
 - **Facts** reuse the Stats tiles in two columns at every width. Total bought in and Rake already collected each take a full row so a large amount stays on one line; Players, Finalized sets, Buy-ins and Recorded play time follow.

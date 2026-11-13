@@ -19,3 +19,7 @@ Words of the product, as screens and docs use them. The code names are in bracke
 - **Rake fund** (`GroupRakeAccount`, `Transfer.to_rake_fund`): the group's collected rake as a party in settle-up. It only receives. Used when the group's rake rule is "At settle-up, into the rake fund" (ADR 0007); otherwise settle-up returns each player's own fee.
 - **Debt**: an unpaid transfer viewed across closed sessions. Debts between two players are netted within one group and one unit.
 - **Clearance**: a record of the net amount settled between two players. It closes the linked debts across sessions, including when they cancel to zero.
+- **Counted session**: a closed session that is not archived. Stats and the recap's marks read only counted sessions, in one unit (`settlement.queries.counted_results`).
+- **Winning run**: 3 or more counted sessions in a row that a player finished ahead, among the sessions that player played. A break-even session ends it. The recap says it; it never says a losing run ([ADR 0014](doc/adr/0014-marks-of-a-night.md)).
+- **Personal best**: a positive session result higher than each earlier one of that player, from the third counted session.
+- **Mark** (`settlement.stats.Mark`): a fact in the recap's Highlights about a player's history: a winning run, a personal best, a first win or a round number of sessions. Read, never stored.

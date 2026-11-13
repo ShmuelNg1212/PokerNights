@@ -4,6 +4,10 @@
 
 - [ ] A set in play, with a second phone on the page. Rebuy: one chip in the player's colour goes from the row to the pot on both phones, and ends as the pot's digits stop. Cash out: one chip comes from the pot to the row. Tap Rebuy while a chip flies: the sheet opens. Reverse an entry: no chip. A row far down the list: the chip comes from the bottom edge. Reduce Motion on: no chip.
 
+## Phone checks: streaks and records (not released; branch `feat/streaks-and-records`)
+
+- [ ] Close a session and read the recap's Highlights. A player with 3 or more winning sessions in a row has "Winning run". A player's highest result has "Personal best". No row names a loss. Long names stay readable. An old closed session shows its marks as of that session.
+
 ## Phone checks: session finale (released 2026-11-10)
 
 - [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in and stays for a moment. Only after the stage has gone does the recap rise. Once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
@@ -47,7 +51,7 @@
 
 ## Next (each needs its own study and plan)
 
-- [ ] More flair, approved 2026-11-13: [Chip to the pot](doc/plan/1794561294_chip_to_the_pot.md) is built, not released. [Streaks and records](doc/plan/1794561295_streaks_and_records.md) is next.
+- [ ] More flair, approved 2026-11-13: [Chip to the pot](doc/plan/1794561294_chip_to_the_pot.md) and [Streaks and records](doc/plan/1794561295_streaks_and_records.md) are built, not released. Say "ship" to release both.
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).
 - [ ] Fold `doc/wiki/features.md` into `doc/wiki/spec.md` ([queued plan](doc/roadmap/plan_queue/fold_features_into_spec.md)).
