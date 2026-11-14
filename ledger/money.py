@@ -54,11 +54,6 @@ def plain_pesos(centavos: int) -> str:
     return str(pesos) if cents == 0 else f"{pesos}.{cents:02d}"
 
 
-def format_signed(centavos: int) -> str:
-    """A result: ``+₱600``, ``−₱300`` or ``₱0``."""
-    return f"+{format_pesos(centavos)}" if centavos > 0 else format_pesos(centavos)
-
-
 def split_equal(total: int, shares: int) -> list[int]:
     """``total`` in ``shares`` equal integer parts. Units that do not divide go to the first parts."""
     if shares <= 0:

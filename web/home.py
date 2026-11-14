@@ -73,10 +73,6 @@ class Card:
     def more_members(self):
         return max(0, len(self.members) - TOKENS_SHOWN)
 
-    @property
-    def has_stats(self):
-        return self.last_night is not None
-
 
 def home_cards(user) -> list:
     memberships = list(

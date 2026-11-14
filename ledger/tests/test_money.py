@@ -26,9 +26,6 @@ class ParseAndFormatTests(SimpleTestCase):
         self.assertEqual(money.format_pesos(160050), "₱1,600.50")
         self.assertEqual(money.format_pesos(5), "₱0.05")
         self.assertEqual(money.format_pesos(-30000), "−₱300")
-        self.assertEqual(money.format_signed(60000), "+₱600")
-        self.assertEqual(money.format_signed(-30000), "−₱300")
-        self.assertEqual(money.format_signed(0), "₱0")
 
 
 class SplitEqualTests(SimpleTestCase):

@@ -127,3 +127,14 @@ Ruff's limit is 10 branches-and-loops per function. 20 functions outside tests a
 ## Recommendation
 
 Do 5 now as one commit. Then plan 2 and 1A together (same files, same release risk, fail-safe at build time). Then 3A. Leave 1B, 3, 3B and finding 6 until a need shows.
+
+## Addendum, 2026-11-14
+
+The human said "proceed. keep the motion library". Open question 3 is closed: Motion stays.
+
+Two rows of finding 4 were wrong:
+
+- `.icon-bell-filled` and `.icon-bell-off` are live. `{% icon 'bell-filled' %}` in `templates/web/_alerts.html` builds the class, and `web/tests/test_table_alerts.py` checks it.
+- `add_new_player` stays. [features.md](../wiki/features.md) records the decision that it stays "for their other callers and the race tests", and [architecture.md](../wiki/architecture.md) describes its lock order. Its tests are the only race tests for a new name.
+
+Removed: `HomeCard.has_stats`, `format_signed` with its three test lines, `.stat` and the five `.transfer-bottom` rules.

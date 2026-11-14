@@ -166,7 +166,6 @@ table.review tfoot th, table.review tfoot td { font-weight: 700; }
 
 /* Stat tiles: large figures that read at arm's length */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
-.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
 .stat-label { color: var(--muted); font-size: var(--h-label); }
 
 .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -456,8 +455,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .transfer-row { padding: var(--s-4); }
 .transfer-row.is-paid { background: transparent; }
 .transfer-row.is-paid .transfer-amount { color: var(--muted); }
-.transfer-bottom form { grid-area: action; margin: 0; justify-self: end; }
-.transfer-bottom .btn { min-width: 124px; }
 .settled-figure { display: flex; align-items: center; gap: var(--s-2); font-size: 3rem; }
 .settled-figure .icon { width: 2.25rem; height: 2.25rem; stroke-width: 3; }
 /* Stack by default, including browsers without container queries. */
@@ -467,8 +464,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .transfer-parties .chip { width: 32px; height: 32px; flex: 0 0 32px; font-size: .75rem; }
 .transfer-direction { display: flex; align-items: center; gap: var(--s-2); margin-left: 4px; color: var(--bone-dim); font-size: .8125rem; line-height: 1.1; }
 .transfer-direction .icon { transform: rotate(90deg); }
-.transfer-bottom { display: grid; grid-template-columns: minmax(0,1fr); grid-template-areas: "amount" "state"; align-items: start; gap: var(--s-3) var(--s-4); margin-top: var(--s-4); }
-.transfer-bottom.has-action { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: "amount amount" "state action"; }
 .transfer-amount { grid-area: amount; font-size: 1.75rem; font-weight: 800; font-stretch: 80%; white-space: nowrap; }
 .transfer-amount.amount-compact { font-size: 1.375rem; }
 .transfer-amount.amount-long { font-size: 1.125rem; }
@@ -477,7 +472,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .transfer-parties { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: var(--s-3); }
   .transfer-direction { display: grid; justify-items: center; gap: 0; margin: 4px 0 0; }
   .transfer-direction .icon { transform: none; }
-  .transfer-bottom.has-action { grid-template-areas: "amount action" "state action"; }
   .transfer-amount.amount-compact { font-size: 1.75rem; }
   .transfer-amount.amount-long { font-size: 1.375rem; }
 }
