@@ -140,3 +140,5 @@ Two rows of finding 4 were wrong:
 Removed: `HomeCard.has_stats`, `format_signed` with its three test lines, `.stat` and the five `.transfer-bottom` rules.
 
 Finding 3, option A is done in `config/test_runner.py`. The cause was not the tests. Where worker processes are spawned, Django gives each worker an in-memory database in shared-cache mode, and threads there fail at once on a locked table. The runner points each worker at its file copy. `--parallel` now passes: 1,775 tests in about 18 s on SQLite and 30 s on PostgreSQL. No test was tagged or moved.
+
+Option 1A was based on a wrong fact. The Turbo package publishes no minified build; the vendored file is the published one. The [plan](../plan/1794652734_static_addresses_by_content.md) covers finding 2 only and asks to drop 1A.
