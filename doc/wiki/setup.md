@@ -58,10 +58,13 @@ DEBUG=True DEBTS_VIEW=True .venv/bin/python manage.py runserver
 ## Test
 
 ```sh
-DEBUG=True .venv/bin/python manage.py test
+DEBUG=True .venv/bin/python manage.py test              # one process, about 60 s
+DEBUG=True .venv/bin/python manage.py test --parallel   # one process per core, about 18 s
 ```
 
 The test runner reports the current test count. SQLite tests use a file-backed database (`test_db.sqlite3`, gitignored). This lets test threads share a database. SQLite skips PostgreSQL-only row-lock tests.
+
+`--parallel` works because of `config/test_runner.py`. Django gives each parallel worker an in-memory copy of the database, where two threads cannot wait for each other. The runner points each worker at its file copy (`test_db_N.sqlite3`) and removes the copies after the run. The Vercel build runs the suite in one process.
 
 To run the same suite on PostgreSQL:
 

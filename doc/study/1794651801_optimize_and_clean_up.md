@@ -138,3 +138,5 @@ Two rows of finding 4 were wrong:
 - `add_new_player` stays. [features.md](../wiki/features.md) records the decision that it stays "for their other callers and the race tests", and [architecture.md](../wiki/architecture.md) describes its lock order. Its tests are the only race tests for a new name.
 
 Removed: `HomeCard.has_stats`, `format_signed` with its three test lines, `.stat` and the five `.transfer-bottom` rules.
+
+Finding 3, option A is done in `config/test_runner.py`. The cause was not the tests. Where worker processes are spawned, Django gives each worker an in-memory database in shared-cache mode, and threads there fail at once on a locked table. The runner points each worker at its file copy. `--parallel` now passes: 1,775 tests in about 18 s on SQLite and 30 s on PostgreSQL. No test was tagged or moved.

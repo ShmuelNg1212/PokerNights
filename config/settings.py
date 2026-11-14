@@ -133,6 +133,8 @@ if os.environ.get("VERCEL") and "DATABASE_URL" not in os.environ:
 if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # File-backed, so threaded tests see the same locking as development.
     DATABASES["default"]["TEST"] = {"NAME": BASE_DIR / "test_db.sqlite3"}
+# With --parallel, keeps each worker on a database file, so the threaded tests pass (see config/test_runner.py).
+TEST_RUNNER = "config.test_runner.Runner"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
