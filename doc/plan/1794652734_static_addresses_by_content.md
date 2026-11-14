@@ -49,3 +49,7 @@ Two live requests: the log-in page shows different tags on two scripts, and one 
 - Build-like page: with `VERCEL=1`, `DEBUG=False` and a fresh `collectstatic`, the log-in page returned 200 with 46 tagged addresses and 46 different tags. Each tag matched the SHA-256 of the collected file. The release tag was nowhere in the page. The two vendored libraries had no tag.
 - Review by the main agent: the edit to `config/tests.py` first removed `ServerTimingTests` by mistake (the count showed 1,778, not 1,783). The class was restored from git and the count checked per file (18 to 26).
 - Not checked before release: that the Vercel function can read `static/` at run time. If it cannot, each address falls back to the release tag. The first live request after release shows which.
+
+## Released (2026-11-14)
+
+`main` at `d341583`, pushed with the cleanup and the parallel test runner. Vercel reported success on the commit. One live request to the log-in page after that: 200, 46 tagged addresses, 46 different tags. The tags of `css/app.css` (`a04c78a5b2`) and `js/live.js` (`58461aec44`) match the SHA-256 of the files in the repo. So the function can read `static/` at run time and the fallback is not in use. A script address returns `cache-control: public, max-age=31536000, immutable` and `content-encoding: br`, which also answers the study's open point on Brotli. The phone check is in `TODO.md`.
