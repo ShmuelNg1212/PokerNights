@@ -182,7 +182,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-# Stylesheets and scripts carry ?v=<release> on Vercel and are cached for a year (see vercel.json).
+# On Vercel, stylesheets and scripts carry ?v=<tag of the file> and are cached for a year (see vercel.json and config/storage.py).
 STATIC_VERSION = static_version(os.environ)
 # Turn off to make installed phones remove the service worker (see config/pwa.py).
 SERVICE_WORKER = env.bool("SERVICE_WORKER", default=True)

@@ -62,7 +62,9 @@ When `VERCEL` is set, `config/settings.py` trusts `X-Forwarded-Proto`, redirects
 
 ## Static files and caching
 
-- Stylesheet and script addresses carry `?v=<release>` on Vercel (`config.storage.VersionedStaticStorage`, tag from `config.deploy.static_version`). `vercel.json` caches `/static/css/` and `/static/js/` for a year as immutable.
+- On Vercel, each stylesheet and script address carries `?v=<tag>`. The tag is the first ten hex characters of the SHA-256 of that file (`config.storage.content_tag`), so a file that a release did not change keeps its address and a phone keeps its copy. `vercel.json` caches `/static/css/` and `/static/js/` for a year as immutable.
+- If a file cannot be found or read, its address gets the release tag instead (`config.deploy.static_version`), as every address did before 2026-11-14. The page still works. See [footguns/static_tag_follows_the_file.md](footguns/static_tag_follows_the_file.md).
+- Vendored libraries in `static/js/vendor/` get no tag. Their version is in the file name.
 - Fonts, branding and icons are cached for a week with background revalidation and are not versioned. **To change a font or a logo, give the file a new name.** The same holds for the launch screens in `static/splash/`, which an iPhone also keeps from the moment the app is added, and for the link preview picture (`link-preview.png`, named in `config/pwa.py`), and chat apps keep their own copy of a card for longer than a week.
 - On Vercel with no deployment id, commit or URL to derive the tag from, the app refuses to start, so the build fails and production keeps its version.
 - The web app manifest is cached for a day with background revalidation.
@@ -83,7 +85,7 @@ A signed-out visitor who opens a usable invite link lands on Sign up, and the ne
 
 ## Releasing a change
 
-**Run the suite the way the build does before every push.** On Vercel the tests run with `VERCEL` set, which adds `?v=<release>` to stylesheet and script addresses. A test that passes locally can fail there:
+**Run the suite the way the build does before every push.** On Vercel the tests run with `VERCEL` set, which adds `?v=<tag>` to stylesheet and script addresses. A test that passes locally can fail there:
 
 ```sh
 VERCEL=1 VERCEL_URL=example.vercel.app HTTPS_ONLY=False DATABASE_URL=sqlite:////private/tmp/pn-buildlike.sqlite3 .venv/bin/python manage.py test --noinput

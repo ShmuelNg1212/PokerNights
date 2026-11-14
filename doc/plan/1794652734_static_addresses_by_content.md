@@ -8,6 +8,8 @@ A stylesheet or script that did not change in a release keeps its address. A pho
 
 ## OPEN QUESTIONS
 
+Both answered by the human on 2026-11-14: "recommendations approved". Minified Turbo is dropped. The tag is in the query string.
+
 1. **Minified Turbo is dropped from this plan. Agree?** The study said that a published minified build exists. That was wrong: the package `@hotwired/turbo@8.0.23` publishes only `turbo.es2017-umd.js` (the vendored file, same SHA-256) and an ESM build. A smaller file must be made by us with a minifier, and its checksum then matches no published file. The gain is small: the vendored file already keeps one address for a year, so a phone downloads it once (46 KB compressed).
 2. **Query string or file name?** This plan keeps the query string (`app.css?v=<hash of the file>`). Django's `ManifestStaticFilesStorage` puts the hash in the file name instead. That is the stricter design, but if its manifest file is not in the Vercel function, every page fails. The query string fails safe (task 2). Recommended: query string.
 
@@ -26,16 +28,24 @@ A phone can hold a page from before a release and ask for a script after it. It 
 
 ## Tasks
 
-- [ ] **1. Tag by content.** `tests: first`. In `config/tests.py`: two files get different tags; the tag of a file is the same under two different `STATIC_VERSION` values; a changed file gets a changed tag; vendored files and fonts get no tag; with `STATIC_VERSION` empty, addresses are plain. Then change `config/storage.py`.
+- [x] **1. Tag by content.** `tests: first`. In `config/tests.py`: two files get different tags; the tag of a file is the same under two different `STATIC_VERSION` values; a changed file gets a changed tag; vendored files and fonts get no tag; with `STATIC_VERSION` empty, addresses are plain. Then change `config/storage.py`.
   - Acceptance: the new tests pass. `web/tests/test_inplace.py` and the other address tests pass after they are changed to expect the content tag.
   - Done when: the full suite passes on SQLite, and in the build-style run from [deployment.md](../wiki/deployment.md).
-- [ ] **2. Fail safe.** `tests: first`. A name that no finder knows gets `?v=<release tag>` and raises nothing.
+- [x] **2. Fail safe.** `tests: first`. A name that no finder knows gets `?v=<release tag>` and raises nothing.
   - Done when: the test passes.
-- [ ] **3. Rendezvous.** Run the suite three ways: SQLite `--parallel`, build-style, PostgreSQL. Run `code-review`. Then, with `VERCEL=1` and `DEBUG=False` locally, load the log-in page and check that two scripts have different tags and that each address returns 200 after `collectstatic`.
+- [x] **3. Rendezvous.** Run the suite three ways: SQLite `--parallel`, build-style, PostgreSQL. Run `code-review`. Then, with `VERCEL=1` and `DEBUG=False` locally, load the log-in page and check that two scripts have different tags and that each address returns 200 after `collectstatic`.
   - Done when: the checks are recorded here.
-- [ ] **4. Sync docs.** Update "Static files and caching" in `doc/wiki/deployment.md`. Add `doc/wiki/footguns/static_tag_follows_the_file.md` for the risk above. Add a phone check to `TODO.md`.
+- [x] **4. Sync docs.** Update "Static files and caching" in `doc/wiki/deployment.md`. Add `doc/wiki/footguns/static_tag_follows_the_file.md` for the risk above. Add a phone check to `TODO.md`.
   - Done when: the wiki says what the code does.
 
 ## After release
 
 Two live requests: the log-in page shows different tags on two scripts, and one script address returns 200. Phone check: after the next release that changes no script, the installed app opens without the short full reload.
+
+## Checks (rendezvous, 2026-11-14)
+
+- Tests first: the eight new tests in `config.tests.ContentTagTests` and the changed page test failed before the change to `config/storage.py` (8 errors, 1 failure) and pass after it.
+- SQLite `--parallel`: 1,783 tests pass, 23 skips. Build-style run (`VERCEL=1`, one process): 1,783 pass, 23 skips. PostgreSQL `--parallel`: 1,783 pass.
+- Build-like page: with `VERCEL=1`, `DEBUG=False` and a fresh `collectstatic`, the log-in page returned 200 with 46 tagged addresses and 46 different tags. Each tag matched the SHA-256 of the collected file. The release tag was nowhere in the page. The two vendored libraries had no tag.
+- Review by the main agent: the edit to `config/tests.py` first removed `ServerTimingTests` by mistake (the count showed 1,778, not 1,783). The class was restored from git and the count checked per file (18 to 26).
+- Not checked before release: that the Vercel function can read `static/` at run time. If it cannot, each address falls back to the release tag. The first live request after release shows which.

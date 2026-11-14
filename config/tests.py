@@ -95,8 +95,9 @@ class StaticVersionTests(SimpleTestCase):
         from django.templatetags.static import static
         from django.test import override_settings
         with override_settings(STATIC_VERSION="abc1234567"):
-            self.assertEqual(static("css/app.css"), "/static/css/app.css?v=abc1234567")
-            self.assertEqual(static("js/live.js"), "/static/js/live.js?v=abc1234567")
+            self.assertRegex(static("css/app.css"), r"^/static/css/app\.css\?v=[0-9a-f]{10}$")
+            self.assertRegex(static("js/live.js"), r"^/static/js/live\.js\?v=[0-9a-f]{10}$")
+            self.assertEqual(static("js/vendor/turbo-8.0.23.js"), "/static/js/vendor/turbo-8.0.23.js")
             self.assertEqual(static("fonts/archivo.woff2"), "/static/fonts/archivo.woff2")
             self.assertEqual(static("branding/logo-mark.svg"), "/static/branding/logo-mark.svg")
         with override_settings(STATIC_VERSION=""):
@@ -112,13 +113,88 @@ class StaticVersionTests(SimpleTestCase):
         self.assertNotIn("immutable", next(r for r in rules if "fonts" in r["source"])["headers"][0]["value"])
 
 
+class ContentTagTests(SimpleTestCase):
+    """An address follows the file's own bytes, so a file that a release did not change keeps its address."""
+
+    def setUp(self):
+        import tempfile
+        from pathlib import Path
+
+        from django.test import override_settings
+
+        from config import storage
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.folder = Path(folder.name)
+        (self.folder / "js").mkdir()
+        self.write("js/one.js", "one")
+        self.write("js/two.js", "two")
+        using = override_settings(STATICFILES_DIRS=[self.folder], STATIC_VERSION="release001")
+        using.enable()
+        self.addCleanup(using.disable)
+        storage.content_tag.cache_clear()
+        self.addCleanup(storage.content_tag.cache_clear)
+
+    def write(self, name, text):
+        (self.folder / name).write_text(text)
+
+    def address(self, name):
+        from django.templatetags.static import static
+        return static(name)
+
+    def test_the_tag_is_the_start_of_the_files_sha256(self):
+        import hashlib
+        self.assertEqual(self.address("js/one.js"), "/static/js/one.js?v=" + hashlib.sha256(b"one").hexdigest()[:10])
+
+    def test_two_files_have_different_tags(self):
+        self.assertNotEqual(self.address("js/one.js").split("?v=")[1], self.address("js/two.js").split("?v=")[1])
+
+    def test_another_release_does_not_change_the_address_of_an_unchanged_file(self):
+        from django.test import override_settings
+        before = self.address("js/one.js")
+        with override_settings(STATIC_VERSION="release002"):
+            self.assertEqual(self.address("js/one.js"), before)
+
+    def test_a_changed_file_has_a_changed_address(self):
+        from config import storage
+        before = self.address("js/one.js")
+        self.write("js/one.js", "one, changed")
+        storage.content_tag.cache_clear()  # a new release is a new process
+        self.assertNotEqual(self.address("js/one.js"), before)
+
+    def test_the_file_is_read_once_for_each_process(self):
+        from unittest import mock
+
+        from config import storage
+        with mock.patch.object(storage.finders, "find", wraps=storage.finders.find) as find:
+            self.address("js/one.js")
+            self.address("js/one.js")
+        self.assertEqual(find.call_count, 1)
+
+    def test_a_file_that_cannot_be_found_gets_the_release_tag(self):
+        self.assertEqual(self.address("js/absent.js"), "/static/js/absent.js?v=release001")
+
+    def test_a_file_that_cannot_be_read_gets_the_release_tag(self):
+        from unittest import mock
+
+        from config import storage
+        with mock.patch.object(storage.finders, "find", return_value=str(self.folder / "js")):  # a folder, not a file
+            self.assertEqual(self.address("js/one.js"), "/static/js/one.js?v=release001")
+
+    def test_no_tag_away_from_vercel(self):
+        from django.test import override_settings
+        with override_settings(STATIC_VERSION=""):
+            self.assertEqual(self.address("js/one.js"), "/static/js/one.js")
+
+
 class VersionedPageTests(TestCase):
     def test_pages_render_versioned_addresses_and_the_font_matches_the_stylesheet(self):
         from django.test import override_settings
         with override_settings(STATIC_VERSION="abc1234567"):
             html = self.client.get("/accounts/login/").content.decode()
-        self.assertIn('href="/static/css/app.css?v=abc1234567"', html)
-        self.assertIn('src="/static/js/forms.js?v=abc1234567"', html)
+        self.assertRegex(html, r'href="/static/css/app\.css\?v=[0-9a-f]{10}"')
+        self.assertRegex(html, r'src="/static/js/forms\.js\?v=[0-9a-f]{10}"')
+        self.assertNotIn("abc1234567", html)
         # The preload and the stylesheet's own reference must be the same address, or the font downloads twice.
         self.assertIn('href="/static/fonts/archivo.woff2"', html)
 

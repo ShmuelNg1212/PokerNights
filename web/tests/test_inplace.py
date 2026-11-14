@@ -79,9 +79,9 @@ class InPlaceMarksTests(TestCase):
     def test_the_library_address_does_not_change_with_a_release(self):
         html = self.client.get(reverse("login")).content.decode()
         self.assertIn('src="/static/js/vendor/turbo-8.0.23.js"', html)
-        self.assertIn('src="/static/js/turbo-setup.js?v=abc1234567"', html)
+        self.assertRegex(html, r'src="/static/js/turbo-setup\.js\?v=[0-9a-f]{10}"')
         self.assertIn('src="/static/js/vendor/motion-14.0.0.js"', html)
-        self.assertIn('src="/static/js/motion.js?v=abc1234567"', html)
+        self.assertRegex(html, r'src="/static/js/motion\.js\?v=[0-9a-f]{10}"')
 
 
 class ScriptsLoadOnceTests(TestCase):
@@ -101,5 +101,5 @@ class ScriptsLoadOnceTests(TestCase):
             found = re.findall(r'<script src="/static/js/([^"?]+)\.js[^"]*" defer data-turbo-track="reload"></script>', head)
             self.assertEqual(tuple(found), self.NAMES, url)
             self.assertNotIn("<script", body, url)
-            # The address carries ?v=<release> on Vercel, where the build runs these tests.
+            # The address carries ?v=<tag of the file> on Vercel, where the build runs these tests.
             self.assertRegex(head, r'rel="stylesheet" href="/static/css/app\.css[^"]*" data-turbo-track="reload"')

@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: static addresses by content (released 2026-11-14)
+
+- [ ] Open the installed app after this release: every screen looks and works as before. After the next release that changes no script or style, the app opens with no short full reload.
+
 ## Phone checks: chip to the pot (released 2026-11-13)
 
 - [ ] A set in play, with a second phone on the page. Rebuy: one chip in the player's colour goes from the row to the pot on both phones, and ends as the pot's digits stop. Cash out: one chip comes from the pot to the row. Tap Rebuy while a chip flies: the sheet opens. Reverse an entry: no chip. A row far down the list: the chip comes from the bottom edge. Reduce Motion on: no chip.
