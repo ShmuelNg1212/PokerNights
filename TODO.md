@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: full-width felt (not released)
+
+- [ ] A set in play, a set counting up and a closed session: the top panel goes edge to edge under the top bar, with rounded corners at the bottom only. Timer and blinds stay inside the felt. On a computer the felt is unchanged.
+
 ## Phone checks: long names in the set flow (released 2026-11-19)
 
 - [ ] Rename yourself to a long name (two lines or more). Add players: the name shows in full words, the badges go under it. A set in play and the count: the name stops after two lines with "…", and no word breaks in the middle. Short names keep "(you)", the chevron and the badges on one line. The player's sheet shows the full name.
