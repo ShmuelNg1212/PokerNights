@@ -10,8 +10,11 @@
   var TICKS = { tick: 1, done: 1, refused: 2 };
   var vibrates = typeof navigator.vibrate === "function";
   var ticks = !vibrates && "switch" in HTMLInputElement.prototype;
+  // A laptop's Chrome has navigator.vibrate and a Mac's Safari has the switch input; neither vibrates.
+  // A phone is told by its finger: the main pointer is coarse.
+  var finger = matchMedia("(pointer: coarse)");
 
-  function can() { return vibrates || ticks; }
+  function can() { return (vibrates || ticks) && finger.matches; }
   function enabled() {
     try { return localStorage.getItem(KEY) !== "off"; } catch (_) { return true; } // storage that fails means on
   }

@@ -24,11 +24,13 @@
     el.style.setProperty("--balance-ease", rule.easing);
     move(el.querySelector(".books-message"), { opacity: [0, 1], transform: ["translateY(8px)", "translateY(0px)"] }, "shift", { delay: 0.24 });
   }
-  function update() {
+  // live: the page was updated (a poll, a write), not first seen. The books balancing vibrates only then,
+  // so a phone that first opens a set balanced long ago stays still.
+  function update(live) {
     if (!region) return;
     region.querySelectorAll("[data-balance]").forEach(function (el) {
       var key = "balanced:" + el.dataset.balance;
-      try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); if (window.pokerHaptics) window.pokerHaptics.play("done"); } } catch (_) {}
+      try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); if (live && window.pokerHaptics) window.pokerHaptics.play("done"); } } catch (_) {}
     });
     // A set coming back to be corrected is a moment too, once per reopening: the brass rule draws, then the reason rises.
     region.querySelectorAll("[data-reopened]").forEach(function (el) {
@@ -160,7 +162,7 @@
     }
   }
 
-  document.addEventListener("live:updated", function () { books(); update(); });
+  document.addEventListener("live:updated", function () { books(); update(true); });
   document.addEventListener("turbo:before-cache", clearGhosts);
   window.pokerPage.register(function () {
     region = document.getElementById("live");

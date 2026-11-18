@@ -85,18 +85,21 @@
   }
   // haptics.js loads after this file, so it is looked up when a write is answered.
   function haptic(kind) { if (window.pokerHaptics) window.pokerHaptics.play(kind); }
-  function nudge() { haptic("refused"); var el = refusal(); if (el) rest(el, run(el, { x: [0, -6, 6, -3, 0] }, "nudge")); }
-  function answered(failed) {
+  // own: this phone sent the write. A page that only shows an old refusal moves it but does not vibrate.
+  function nudge(own) { if (own) haptic("refused"); var el = refusal(); if (el) rest(el, run(el, { x: [0, -6, 6, -3, 0] }, "nudge")); }
+  // form is the form this phone sent. Every Turbo render also says inplace:updated, with no form: a
+  // visit, or the session page's refresh for someone else's change. Those do not vibrate.
+  function answered(failed, form) {
     // After the other listeners, which place the refusal and close an accepted sheet.
     setTimeout(function () {
-      if (failed || document.querySelector(".message-error")) { nudge(); return; }
-      haptic("done");
+      if (failed || document.querySelector(".message-error")) { nudge(!!form); return; }
+      if (form) haptic("done");
       var button = tapped; tapped = null;
       if (button && button.isConnected && !button.closest("dialog")) rest(button, run(button, { scale: [1, 1.04, 1] }, "pulse"));
     }, 0);
   }
-  document.addEventListener("inplace:updated", function () { answered(false); });
-  document.addEventListener("inplace:failed", function () { answered(true); });
+  document.addEventListener("inplace:updated", function (event) { answered(false, event.detail && event.detail.form); });
+  document.addEventListener("inplace:failed", function (event) { answered(true, event.detail && event.detail.form); });
   if (reduce.addEventListener) reduce.addEventListener("change", mark);
 
   window.pokerMotion = { on: on, run: run, after: after, settle: settle, timing: timing };
@@ -108,7 +111,7 @@
       settle(el, run(el, { opacity: [0, 1], transform: ["scale(0.6)", "scale(1)"] }, "arrive"), ["opacity", "transform"]);
     });
     // A form that came back refused by a full page load.
-    if (document.body.dataset.method === "POST" && document.querySelector("#main [aria-invalid=true]")) nudge();
+    if (document.body.dataset.method === "POST" && document.querySelector("#main [aria-invalid=true]")) nudge(true);
     return function () {
       running.splice(0).forEach(function (controls) { try { controls.cancel(); } catch (_) {} });
       pressed = tapped = null;
