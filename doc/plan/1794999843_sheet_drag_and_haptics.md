@@ -6,6 +6,8 @@ Branch: `feat/sheet-drag-haptics`, from `main`. No code-writing subagents: tasks
 
 ## OPEN QUESTIONS
 
+Answered 2026-11-18: yes to all three. The Vibration switch is on by default. Plan approved.
+
 1. **A Vibration switch for each phone.** Recommendation: yes. Put a "Vibration" switch in the account menu. It is on by default and is kept in this browser only. Reason: some players will not want a buzz at the table. The iPhone already obeys its System Haptics setting; Android does not always. If no, delete task 3.
 2. **A tick on each number key.** Recommendation: yes. The iPhone keyboard ticks on each key, and the app's own keys replace it. It is the moment most likely to work on the iPhone, because it is a direct tap. If no, delete that line from task 2.
 3. **A grab handle on the sheet.** Recommendation: yes. A 36 × 4 px Bone Dim bar, centred, 8 px above the title, shown only below 900 px. It tells a person that the sheet can be dragged. It adds 12 px to the height of the head. If no, the drag still works without a visible handle.
@@ -29,7 +31,7 @@ Branch: `feat/sheet-drag-haptics`, from `main`. No code-writing subagents: tasks
 
 | Item | Decision |
 |---|---|
-| Where a drag starts | The sheet head (handle, title row) at any scroll position. The body only when the sheet is scrolled to its top and the first 8 px of movement is down and more vertical than horizontal. |
+| Where a drag starts | The sheet head (handle, title row) at any scroll position. The body only when the sheet is scrolled to its top and the first 8 px of movement is down and more vertical than horizontal. (Changed at rendezvous: 6 px, and nothing is cancelled before then.) |
 | Where a drag never starts | A number key, an input, a select, a textarea, a range, a sideways-scrolling row (`.pills`), a text selection. |
 | Input | Touch events only, below 900 px. |
 | While dragging | The sheet follows the finger 1:1 down. Up, it resists: 0.2 of the movement, 12 px at most. The backdrop fades with the distance, where the browser supports it. The field that has focus loses it, so a native keyboard goes down. |
@@ -66,37 +68,38 @@ Branch: `feat/sheet-drag-haptics`, from `main`. No code-writing subagents: tasks
 
 ## Tasks
 
-- [ ] **1. Haptics helper.** `tests: alongside`
+- [x] **1. Haptics helper.** `tests: alongside`
   - Add `static/js/haptics.js` with `play(kind)`, the patterns, the rate limit, the hidden-tab rule and the iPhone switch helper. Add it to the base template after `motion.js`. Add `"haptics"` after `"motion"` in `ScriptsLoadOnceTests.NAMES`.
   - Acceptance: with `navigator.vibrate` stubbed, `play("done")` calls it once with `[10, 50, 14]`. Two plays 30 ms apart give one call. In a hidden tab, no call. Without `navigator.vibrate` and with switch support, a play clicks the helper's label once, and focus and every form's values do not change. With neither, `play` does nothing and throws nothing.
   - Done when: the Django suite passes on SQLite and the probe checks in task 6 for the helper pass.
-  - Commit: `feat: add a haptics helper for short vibrations`.
+  - Commit: `feat: add a haptics helper and a Vibration switch` (tasks 1 and 3 together: the switch's code is in `haptics.js`).
 
-- [ ] **2. Haptic moments.** `tests: alongside`
+- [x] **2. Haptic moments.** `tests: alongside`
   - Call `pokerHaptics.play` at the moments in the table: the number keys (if open question 2 is yes), accepted and refused writes, the books balance, the dealer.
   - Acceptance: each moment calls `play` once with its kind. A poll that changes nothing calls nothing. Another person's buy-in calls nothing. A reload of a balanced set calls nothing.
   - Done when: the probe checks in task 6 for the moments pass.
-  - Commit: `feat: vibrate at a write, the books balancing and the dealer`.
+  - Commit: `feat: vibrate at a write, a number key, the books balancing and the dealer`.
 
-- [ ] **3. Vibration switch** (only if open question 1 is yes). `tests: alongside`
+- [x] **3. Vibration switch** (only if open question 1 is yes). `tests: alongside`
   - Add a "Vibration" switch to the account menu, shown only where the phone has a mechanism. Keep the choice in `localStorage` (`rack-haptics`). Storage that fails means on.
   - Acceptance: off stops every play on this browser. On again restores them. The switch has a 48 px target and a visible label. Another browser is not changed.
   - Done when: the probe checks pass, and the account menu passes its existing browser check.
-  - Commit: `feat: let each phone switch vibration off`.
+  - Commit: with task 1.
 
-- [ ] **4. Drag a sheet down to close it.** `tests: alongside`
+- [x] **4. Drag a sheet down to close it.** `tests: alongside`
   - CSS: the grab handle (open question 3), `overscroll-behavior: contain` on `.sheet`, `touch-action: none` on the head below 900 px, and backdrop opacity from a `--sheet-drag` property.
   - `sheets.js`: the drag as in the decisions table. Add the `fling` preset to `motion.js`. Route the close through the existing `close()` path, so content, draft and focus behave as today.
   - Acceptance: every row of the drag table, checked in task 6. Close, Escape, the backdrop and an accepted write still close the sheet as before. The first frame of an opening still has no flash.
   - Done when: `motion.mjs` and `mobile_motion.mjs` give the same results as their recorded baselines, and the new drag checks pass in Chromium and WebKit.
   - Commit: `feat: drag a sheet down to close it`.
 
-- [ ] **5. Tick at the close distance.** `tests: alongside`
+- [x] **5. Tick at the close distance.** `tests: alongside`
   - In the drag, call `play("tick")` once when the distance first passes the close distance going down. No tick when it comes back up and goes down again in the same drag.
   - Done when: the probe check passes.
-  - Commit: in task 4's commit if it is small, else `feat: tick when a sheet drag will close it`.
+  - Commit: in task 4's commit (it is three lines).
 
-- [ ] **6. Browser checks.** `tests: alongside`
+- [x] **6. Browser checks.** `tests: alongside`
+  - Built: `sheet_drag.mjs` (Chromium, 35 checks), `sheet_drag_webkit.mjs` (WebKit, 15 checks), `haptics.mjs` (Chromium, 31 checks) and `seed_sheet_drag.py`. WebKit has no `Touch` constructor and Playwright no touch move, so the WebKit drags are synthetic events that scroll nothing; the scroll case is covered in Chromium with real touch input.
   - Add `web/tests/browser/sheet_drag.mjs` and `web/tests/browser/haptics.mjs`, with a seed if the existing seeds do not supply a sheet with long content, a sheet with number keys and the recap. Add their run steps to `web/tests/browser/README.md`.
   - The drag probe uses Chromium touch input through CDP and WebKit touch emulation, at 320, 390 and 1280 px. It samples each frame from the first touch to rest.
   - Required checks: a drag from the head closes; a short drag goes back; a flick closes; a drag from a scrolled body scrolls and does not drag; a drag on a number key types and does not drag; no drag at 1280 px or with a mouse; no drag during a send; a touch during the rise; reduced motion; a blocked Motion file; the recap sheet; focus back to the opener; only `transform` and `opacity` animate; nothing inline left at rest; a page change during a drag leaves no listener.
@@ -104,7 +107,7 @@ Branch: `feat/sheet-drag-haptics`, from `main`. No code-writing subagents: tasks
   - Done when: both probes pass in full. Record the count.
   - Commit: `test: browser checks for sheet drag and haptics`.
 
-- [ ] **7. Docs.**
+- [x] **7. Docs.**
   - DESIGN.md: a "Sheet drag and haptics" addendum, the `fling` preset in the presets table, and the grab handle. `doc/wiki/features.md`: both features. A footgun file for each surprise found during the work. TODO.md: the phone checks below.
   - Done when: the wiki matches the code.
   - Commit: `docs: record sheet drag and haptics`.
@@ -113,16 +116,28 @@ Branch: `feat/sheet-drag-haptics`, from `main`. No code-writing subagents: tasks
 
 All tasks are ticked. The Django suite passes on SQLite and PostgreSQL. Both new probes pass. `motion.mjs` and `mobile_motion.mjs` match their baselines. The branch is verified and not merged.
 
-## Rendezvous checks (to fill in)
+## Rendezvous checks (2026-11-18)
 
-- [ ] Django suite, SQLite with `--parallel`.
-- [ ] Django suite, PostgreSQL.
-- [ ] `sheet_drag.mjs`, Chromium and WebKit.
-- [ ] `haptics.mjs`.
-- [ ] `motion.mjs` and `mobile_motion.mjs` against their baselines.
-- [ ] `review-animations` on the drag.
-- [ ] `break-ui`: the recap sheet with twelve players, a sheet at 320 × 568 with the keyboard up, a drag that starts during the opening rise.
-- [ ] `code-review` on the branch.
+Two fix rounds were allowed; one was used for code, and one small layout fix followed the `break-ui` pass.
+
+- [x] Django suite, SQLite with `--parallel`: 1784 tests, OK (23 skipped). Run after the last code change.
+- [x] Django suite, PostgreSQL: 1784 tests, OK. Run after the review fixes; the later change was CSS only and the SQLite suite ran after it.
+- [x] `sheet_drag.mjs`, Chromium with real touch input: 39/39 on fresh data.
+- [x] `sheet_drag_webkit.mjs`, WebKit: 15/15. Its drags are synthetic events that scroll nothing.
+- [x] `haptics.mjs`: 38/38 on fresh data (Android, iPhone, neither, laptop).
+- [x] `motion.mjs`: 40/40 on a clean copy of its seed, after the review fixes.
+- [x] `mobile_motion.mjs`: 58/60 on this branch, 56/60 on `main` with the same seed and the same Playwright build. Both fail the two WebKit disclosure-fallback checks; `main` also failed the two Chromium view-transition error checks. No new failure. The recorded baseline (2026-11-01) was 58/60 with different failures, before a WebKit update.
+- [x] `code-review` (medium) on `54f03a6..HEAD`: 9 findings, 7 fixed, 2 kept:
+  - Fixed: "done" vibrated on every Turbo render, so on a screen change and on the session page's redraw for another player's change. This broke the plan's first non-goal. Now only a form this phone sent vibrates ([footgun](../wiki/footguns/inplace_updated_fires_on_every_render.md)).
+  - Fixed: the books vibrated on the first view of a set balanced long ago. Now only in a live update.
+  - Fixed: the Vibration switch showed on a laptop. Now haptics need a coarse pointer.
+  - Fixed: a blocking `touchmove` listener for the sheet's whole life, and a cancelled first move at the top ([footgun](../wiki/footguns/blocking_touch_listener_waits_scroll.md)).
+  - Fixed: an upward flick after a long drag still closed. Fixed: the click suppression could drop the iPhone's haptic click and a real tap after a snap-back, and did not stop the backdrop listener. Fixed: the stylesheet's own entry (without Motion) held the sheet against the finger. Fixed: a layout read on each move.
+  - Kept: the `window.pokerHaptics` guards in four files. They keep each file safe when `haptics.js` is blocked.
+  - Kept (by design): the dealer haptic plays on every phone that watches the draw, as the draw itself does.
+- [x] Each new check could fail for its reason. Run against the code before the fixes, "a screen change: no vibration" and "the session page's own redraw: no vibration" failed with `[[10,50,14]]`. "A flick back up after a long drag keeps the sheet" and "a blocking touchmove listener only at the top" failed. "A tap on Close just after a drag" failed in one of two runs. "A jitter then a swipe up scrolls" passed against both: Chromium scrolls after a cancelled first move, so only the phone check can show that case.
+- [x] `break-ui` pass, by hand (`review-animations` is not installed; the frames and screenshots were read instead): at 320 × 568 the grab handle made the buy-in sheet scroll by 7 px (552 against 545). The handle moved into the top padding; the sheet is 540 px again, as on `main`. The account menu with the Vibration row was read at 390 px.
+- [ ] Not checked here: a physical iPhone. Whether the switch tick plays after a server answer or a poll, and the iPhone's own scroll after a cancelled first move, wait for the phone check.
 
 ## Phone checks for TODO.md (after release)
 
