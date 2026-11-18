@@ -4,8 +4,8 @@
       <div class="player-main">
         {% player_token p participants %}{% if p.member.is_host %}<span class="host-mark">{% icon 'star' %}<span class="visually-hidden">Host</span></span>{% endif %}
         <div class="player-identity">
-          <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
-          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
+          <span class="player-name fallback-name"><span class="name-fit">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span></span>
+          <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens"><span class="name-fit">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span>{% icon 'chevron-right' %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}
             {% if line.has_money %}1 buy-in{% if line.rebuy_count %} + {{ line.rebuy_count }} rebuy{{ line.rebuy_count|pluralize }}{% endif %}{% else %}No buy-in yet{% endif %}
             <span class="change-label badge badge-warn" hidden>Updated</span>
           </span></button>

@@ -12,8 +12,8 @@
       <div class="count-main">
         {% player_token p participants %}
         <div class="count-who">
-          <span class="count-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
-          <button hidden type="button" class="count-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span></button>
+          <span class="count-name fallback-name"><span class="name-fit">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span></span>
+          <button hidden type="button" class="count-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens"><span class="name-fit">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}</span>{% icon 'chevron-right' %}</span></button>
           {% if books_off and line.status == 'cashed_out' %}
           {# The books are off with everyone cashed out: each row shows its own in, out and net, so the mistake can be found from the list. #}
           <span class="count-sub count-books"><span>{{ line.buy_in_total|amount:unit }} in</span> · <span>{{ line.cashed_out|amount:unit }} out</span> <span class="count-net {{ line.cash_net|sign_class }}">{% include "web/_result_icon.html" with net=line.cash_net %}<span class="visually-hidden">net </span>{% if line.cash_net == 0 %}Even{% else %}{{ line.cash_net|signed_amount:unit }}{% endif %}</span>{% if p.status == 'left' %} · left{% endif %}</span>

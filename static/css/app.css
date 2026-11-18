@@ -137,7 +137,7 @@ input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; accent-
 .rake-settings { border: 0; padding: 0; margin: 16px 0 0; min-width: 0; }
 .rake-settings .field { margin-top: 12px; }
 .check.is-disabled { color: var(--muted); cursor: default; }
-.check .grow { overflow-wrap: anywhere; }
+.check .grow { overflow-wrap: break-word; min-width: 0; }
 .sticky-actions { position: sticky; bottom: 0; background: var(--surface); padding: 12px 0; border-top: 1px solid var(--rule); }
 
 /* Review table: a short list of figures to check before confirming */
@@ -228,7 +228,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .player-row { padding: 8px 0; border-bottom: 1px solid var(--rule); }
 .player-main { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 8px; align-items: center; }
 .player-identity { min-width: 0; }
-.player-name { font-size: 1.0625rem; font-weight: 650; overflow-wrap: anywhere; }
+.player-name { font-size: 1.0625rem; font-weight: 650; overflow-wrap: break-word; }
 .player-opener { font-family: inherit; color: inherit; border: 0; background: transparent; text-align: left; cursor: pointer; padding: 0; min-height: var(--tap); max-width: 100%; }
 .player-opener:hover { text-decoration: underline; text-underline-offset: .2em; }
 .player-meta { display: flex; gap: 6px; align-items: center; font-size: .8125rem; color: var(--muted); }
@@ -1680,7 +1680,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .count-v2 .count-row { padding: 7px 0; }
 .count-main { display: grid; grid-template-columns: 36px minmax(0,1fr) minmax(104px,min(36%,180px)); align-items: center; column-gap: 10px; min-height: var(--tap); }
 .count-main .chip { width: 36px; height: 36px; font-size: .8125rem; }
-.count-who { position: relative; display: flex; flex-direction: column; justify-content: center; min-width: 0; min-height: var(--tap); overflow-wrap: anywhere; }
+.count-who { position: relative; display: flex; flex-direction: column; justify-content: center; min-width: 0; min-height: var(--tap); overflow-wrap: break-word; }
 .count-v2 .count-name { line-height: 1.25; }
 .count-v2 .player-opener { display: none; min-height: 0; width: auto; }
 .sheets-enabled .count-v2 .player-opener { display: block !important; }
@@ -2838,3 +2838,14 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .night-detail .transfer-line .transfer-party { align-items: flex-start; }
 .night-detail .transfer-line .transfer-party strong { line-height: 28px; }
 .night-detail .transfer-line { padding: 6px 12px; }
+/* Long names in the set flow (2026-11-19): a name keeps its words whole and shows two lines at most,
+   then an ellipsis. "(you)" follows the name; the chevron stays beside it. The sheet's title and the
+   button's label keep the full name. A name with no space breaks only where it must. */
+.name-fit { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: break-word; min-width: 0; }
+.player-opens > .name-fit { flex: 0 1 auto; }
+.player-opens > .icon { flex: none; }
+/* Add players: the badges keep their line beside a short name and go under a long one, at the right. */
+.pick-form .check { flex-wrap: wrap; row-gap: 0; }
+.pick-form .check > .name-fit { flex: 1 1 auto; max-width: calc(100% - 34px); } /* beside the 22px box and its 12px gap */
+.pick-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto; }
+.pick-tags:not(:has(*)) { display: none; }
