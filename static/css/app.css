@@ -853,17 +853,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .home-dues p.home-when { margin: var(--s-2) 0; white-space: normal; }
 .home-dues .amount { flex: none; font-size: 1.5rem; font-weight: 750; font-stretch: var(--w-money); white-space: nowrap; }
 /* The viewer's figures: label, a large signed amount, one short note. Two side by side; a third takes the full width. */
-.home-facts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1px; margin: 0; border-top: 1px solid var(--rule); background: var(--rule); }
-.home-facts > div { display: flex; flex-direction: column; min-width: 0; padding: var(--s-3) var(--s-4) var(--s-4); background: var(--surface); }
-.home-facts > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
-.home-facts dt { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s-2); min-height: var(--tap); font-size: 1rem; font-weight: 650; overflow-wrap: anywhere; }
-.home-facts dt a { display: inline-flex; align-items: center; min-height: var(--tap); text-underline-offset: 4px; }
-.home-facts dd { margin: 0; }
-.home-facts .amount { display: block; font-size: 1.75rem; line-height: 1.15; font-weight: 800; font-stretch: var(--w-money); overflow-wrap: anywhere; }
-.home-facts .amount .icon { display: inline-block; width: 1.125rem; height: 1.125rem; vertical-align: -.05em; }
-.home-facts .home-absent { color: var(--muted); font-size: 1.25rem; font-weight: 650; font-stretch: 100%; line-height: 1.55; }
-.home-note { margin-top: var(--s-1); color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
-@media (max-width: 359px) { .home-facts { grid-template-columns: minmax(0,1fr); } }
 .home-create { margin-top: var(--s-4); }
 .home-create:not(.home-archived) > summary { list-style: none; color: var(--text); border: 1px dashed var(--line); background: transparent; box-shadow: none; }
 .home-create:not(.home-archived) > summary::-webkit-details-marker { display: none; }
@@ -2678,26 +2667,36 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .home-dues a.card-link:active { background: transparent; box-shadow: none; }
 .home-dues li.row-card:has(> .card-link:active) { background: color-mix(in oklch, var(--bone) 6%, var(--rail)); }
 .home-dues .btn, .home-dues p.home-when { margin: var(--s-2) 0 0; }
-/* Your record: three tiles a unit; the last session is one card under them. */
-.home-record-block { padding: 0 var(--s-3); }
+/* Your record: rows that match the dues above. Each unit's net is one row, with sessions and win rate as its
+   note; the last session is one more row that opens it. The signed figure takes the right edge and never wraps. */
+.home-record-block { padding: 0 var(--s-3) var(--s-3); }
 .home-record-block .label-row { margin: var(--s-2) 4px var(--s-2); }
-.home-record { margin: 0 0 var(--s-3); }
-.home-record > div { text-align: center; padding: 12px 8px; border: 1px solid var(--rule); background: var(--ground); }
-.home-record dt { font-size: .8125rem; }
-.home-record dd { font-size: 1.625rem; }
-.home-record dd.plus { color: var(--up); }
-.home-record dd.minus { color: var(--down); }
-.home-record dd .icon { display: inline-block; width: 1rem; height: 1rem; margin-right: 1px; vertical-align: -.05em; }
-.group-home .home-facts { display: block; margin: 0 var(--s-3) var(--s-3); border: 0; background: transparent; }
-.group-home .home-facts > div.row-card { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--s-3); padding: 4px var(--s-3); background: var(--rail); }
-.group-home .home-facts > div.row-card dd { text-align: right; }
-.group-home .home-facts .amount { font-size: 1.625rem; }
-.group-home .home-record-block + .home-facts, .group-home .home-dues + .home-facts { margin-top: 0; }
-@media (max-width: 339px) { .home-record > div { text-align: left; display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); } .home-record dd { margin: 0; } }
-/* Arrival: the tiles and the dues are set down after the card, one after another (DESIGN.md, "Arrival"). */
-:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li) { animation: welcome-rise 460ms var(--spring-shift) 360ms backwards; }
-:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li):nth-child(2) { animation-delay: 400ms; }
-:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li):nth-child(n+3) { animation-delay: 440ms; }
+.home-record { container: home-record / inline-size; list-style: none; margin: 0; padding: 0; }
+.home-record > li, .home-record .card-link { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-3); min-height: 60px; }
+.home-record > li { padding: var(--s-2) var(--s-3); }
+.home-record > li.home-last { padding: 0 var(--s-3); }
+.home-record .card-link { flex: 1; min-width: 0; padding: var(--s-2) 0; text-decoration: none; }
+.home-record .card-link:active { background: transparent; box-shadow: none; }
+.home-record .card-link:hover strong { text-decoration: underline; text-underline-offset: .2em; }
+.home-record li.row-card:has(> .card-link:active) { background: color-mix(in oklch, var(--bone) 6%, var(--rail)); }
+.home-record .grow { flex: 1 1 9rem; overflow-wrap: anywhere; }
+.home-record strong { font-weight: 650; }
+.home-record .home-when { display: block; font-size: .875rem; white-space: normal; }
+.home-record .home-when > span { white-space: nowrap; }
+.home-record .amount { flex: none; margin-left: auto; font-size: 1.5rem; font-weight: 750; font-stretch: var(--w-money); line-height: 1.2; white-space: nowrap; }
+.home-record .amount.plus { color: var(--up); }
+.home-record .amount.minus { color: var(--down); }
+.home-record .amount .icon { display: inline-block; width: 1rem; height: 1rem; margin-right: 2px; vertical-align: -.05em; }
+.home-record .home-figure { display: flex; flex: none; align-items: center; gap: var(--s-2); margin-left: auto; }
+.home-record .home-figure .amount { margin-left: 0; }
+.home-record .home-absent { color: var(--muted); font-weight: 600; }
+.home-record .home-figure > .icon { flex: none; width: 1.25rem; height: 1.25rem; margin-right: -4px; color: var(--muted); }
+/* A narrow card (a 320 px phone) puts every figure under its label, right-aligned, so the rows read alike. */
+@container home-record (max-width: 299px) { .home-record .grow { flex-basis: 100%; } }
+/* Arrival: the record rows and the dues are set down after the card, one after another (DESIGN.md, "Arrival"). */
+:is([data-welcome], [data-launch]) :is(.home-record > li, .home-dues li) { animation: welcome-rise 460ms var(--spring-shift) 360ms backwards; }
+:is([data-welcome], [data-launch]) :is(.home-record > li, .home-dues li):nth-child(2) { animation-delay: 400ms; }
+:is([data-welcome], [data-launch]) :is(.home-record > li, .home-dues li):nth-child(n+3) { animation-delay: 440ms; }
 
 /* --- Count-up (concept: count-up and reconciliation). --------------------------------------------- */
 @media (max-width: 899px) {

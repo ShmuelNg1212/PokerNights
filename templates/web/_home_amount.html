@@ -1,0 +1,1 @@
+{% load money_tags table_tags %}{# A signed result on Your groups: an arrow for a win or a loss, none for even. #}<span class="amount {{ value|sign_class }}">{% if value > 0 %}{% icon 'arrow-up-right' %}{% elif value < 0 %}{% icon 'arrow-down-right' %}{% endif %}{{ value|signed_amount:unit }}</span>

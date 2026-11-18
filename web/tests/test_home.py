@@ -5,6 +5,7 @@ import uuid
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 from games import services as games
 from games.models import GameNight
@@ -210,45 +211,74 @@ class HomePageTests(TestCase):
         self.assertContains(host, "Did not play")
         self.assertNotContains(host, "You did not play")
 
-    def _record_tiles(self, html):
-        """The record tiles of each unit, as HTML, in page order (parlor revamp, 2026-11-18)."""
-        parts = html.split('<dl class="facts facts-3 home-record"')[1:]
-        return [part[:part.index("</dl>")] for part in parts]
+    def _record_rows(self, html):
+        """The rows of Your record, as HTML, in page order (2026-11-19: rows, not tiles)."""
+        part = html.split('<ul class="home-record"')[1]
+        part = part[:part.index("</ul>")]
+        return [row[:row.index("</li>")] for row in part.split("<li")[1:]]
 
-    def test_my_record_is_three_tiles_from_the_record_the_card_has(self):
+    def test_my_record_is_one_net_row_with_sessions_and_win_rate_as_its_note(self):
         self.club.session(SEP_30, {"A": (1000, 1500), "B": (1000, 500)})
         self.club.session(OCT_1, {"A": (1000, 800), "B": (1000, 1200)})
         self.club.session(OCT_1, {"A": (1000, 1100), "B": (1000, 900)})
         self.client.force_login(self.user_a)
         html = self.client.get(self.url).content.decode()
-        [tiles] = self._record_tiles(html)
-        self.assertIn("<dt>Sessions</dt><dd>3</dd>", tiles)
+        self.assertEqual(html.count("Your record</h3>"), 1)
+        net, last = self._record_rows(html)
+        self.assertIn("<strong>Net</strong>", net)
         # Two wins in three: 66%, rounded down as Stats rounds it.
-        self.assertIn("<dt>Win rate</dt><dd>66%</dd>", tiles)
-        self.assertIn("+₱400", tiles)
+        self.assertIn("3 sessions · 66% win rate", strip_tags(net))
+        self.assertIn("+₱400", net)
+        self.assertIn('class="amount plus"', net)
+        self.assertNotIn("<a ", net)  # the record is read, not pressed
         record = card_for(self.user_a, self.club.group).records[0][1]
         self.assertEqual((record.sessions, record.win_percent, record.net), (3, 66, 40000))
-        self.assertContains(self.client.get(self.url), "Your record")
+        self.assertIn("<strong>Last session</strong>", last)
+        self.assertIn("+₱100", last)
 
-    def test_each_unit_has_its_own_tiles_and_a_loss_keeps_its_sign(self):
+    def test_each_unit_has_its_own_row_and_a_loss_keeps_its_sign(self):
         self.club.session(SEP_30, {"A": (1000, 500), "B": (1000, 1500)})
         self.club.session(OCT_1, {"A": (1000, 1600), "B": (1000, 400)}, unit="chips")
         self.client.force_login(self.user_a)
         html = self.client.get(self.url).content.decode()
-        pesos, chips = self._record_tiles(html)
-        self.assertIn("<dt>Win rate</dt><dd>0%</dd>", pesos)
+        self.assertEqual(html.count("Your record</h3>"), 1)  # one label over both units
+        self.assertNotIn('<span class="count-pill">Chips</span>', html)
+        pesos, chips, last = self._record_rows(html)
+        self.assertIn("<strong>Net in pesos</strong>", pesos)
+        self.assertIn("1 session · 0% win rate", strip_tags(pesos))
         self.assertIn("−₱500", pesos)
-        self.assertIn("<dt>Win rate</dt><dd>100%</dd>", chips)
+        self.assertIn('class="amount minus"', pesos)
+        self.assertIn("<strong>Net in chips</strong>", chips)
+        self.assertIn("1 session · 100% win rate", strip_tags(chips))
         self.assertIn("+600 chips", chips)
         self.assertNotIn("₱", chips)
-        self.assertIn("Your record <span class=\"count-pill\">Chips</span>", html)
+        self.assertIn("+600 chips", last)
 
-    def test_no_session_played_means_no_tiles(self):
+    def test_last_session_is_a_row_that_opens_the_session(self):
+        one = self.club.session(OCT_1, {"A": (1000, 500), "B": (1000, 1500)})
+        self.client.force_login(self.user_a)
+        *_, last = self._record_rows(self.client.get(self.url).content.decode())
+        self.assertIn('class="row-card press-card home-last"', last)
+        self.assertIn(f'<a class="card-link" href="{reverse("night", args=[one.night_id])}"', last)
+        self.assertIn("Oct 1", last)
+
+    def test_an_even_record_has_no_sign_and_no_icon(self):
+        self.club.session(OCT_1, {"A": (1000, 1000), "B": (1000, 1000)})
+        self.client.force_login(self.user_a)
+        net, last = self._record_rows(self.client.get(self.url).content.decode())
+        for row in (net, last):
+            self.assertIn("₱0", row)
+            self.assertNotIn("icon-minus", row)
+            self.assertNotIn("−₱0", row)
+
+    def test_no_session_played_means_no_net_row_and_a_quiet_did_not_play(self):
         self.club.session(OCT_1, {"B": (1000, 1000)})
         self.client.force_login(self.club.host.user)
         html = self.client.get(self.url).content.decode()
-        self.assertEqual(self._record_tiles(html), [])
-        self.assertContains(self.client.get(self.url), "Did not play")
+        [last] = self._record_rows(html)
+        self.assertNotIn("Net", last)
+        self.assertIn('<span class="home-absent">Did not play</span>', last)
+        self.assertNotContains(self.client.get(self.url), "Your record")
 
     def test_player_never_sees_a_draft(self):
         make_session(self.club.host, table=self.club.table, state="setup")

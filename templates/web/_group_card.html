@@ -43,18 +43,18 @@
   </section>
   {% endif %}
 
-  {% for unit, record in card.records %}
-  <section class="home-record-block" aria-label="Your record{% if unit == 'chips' %} in chips{% endif %}">
-    <div class="label-row"><h3 class="section-label">{% icon 'chart' %}Your record{% if unit == 'chips' %} <span class="count-pill">Chips</span>{% endif %}</h3></div>
-    <dl class="facts facts-3 home-record"><div><dt>Sessions</dt><dd>{{ record.sessions }}</dd></div><div><dt>Win rate</dt><dd>{{ record.win_percent }}%</dd></div><div><dt>Net</dt><dd class="amount {{ record.net|sign_class }}">{% if record.net > 0 %}{% icon 'arrow-up-right' %}{% elif record.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %}{{ record.net|signed_amount:unit }}</dd></div></dl>
+  {% if card.records or card.last_night %}
+  {# You: one row a unit (net, with sessions and win rate as its note), then the last session. Rows match the dues above. #}
+  <section class="home-record-block" aria-label="{% if card.records %}Your record{% else %}Last session{% endif %}">
+    {% if card.records %}<div class="label-row"><h3 class="section-label">{% icon 'chart' %}Your record</h3></div>{% endif %}
+    <ul class="home-record">
+      {% for unit, record in card.records %}
+      <li class="row-card home-net"><span class="grow"><strong>Net{% if card.records|length > 1 %} in {% if unit == 'chips' %}chips{% else %}pesos{% endif %}{% endif %}</strong> <span class="home-when"><span>{{ record.sessions }} session{{ record.sessions|pluralize }}</span> · <span>{{ record.win_percent }}% win rate</span></span></span>{% include "web/_home_amount.html" with value=record.net unit=unit %}</li>
+      {% endfor %}
+      {% if card.last_night %}
+      <li class="row-card press-card home-last"><a class="card-link" href="{% url 'night' card.last_night.pk %}"><span class="grow"><strong>Last session</strong> <span class="home-when">{{ card.last_night.game_date|date:"D, M j" }}</span></span><span class="home-figure">{% if card.last_net is None %}<span class="home-absent">Did not play</span>{% else %}{% include "web/_home_amount.html" with value=card.last_net unit=card.last_night.unit %}{% endif %}{% icon 'chevron-right' %}</span></a></li>
+      {% endif %}
+    </ul>
   </section>
-  {% endfor %}
-  {% if card.last_night %}
-  <dl class="home-facts">
-    <div class="row-card"><dt><a href="{% url 'night' card.last_night.pk %}">Last session</a> <span class="home-when">{{ card.last_night.game_date|date:"M j" }}</span></dt>
-      {% if card.last_net is None %}<dd class="amount home-absent">Did not play</dd>
-      {% else %}<dd class="amount {{ card.last_net|sign_class }}">{% if card.last_net > 0 %}{% icon 'arrow-up-right' %}{% elif card.last_net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ card.last_net|signed_amount:card.last_night.unit }}</dd>{% endif %}
-      </div>
-  </dl>
   {% endif %}
 </article>
