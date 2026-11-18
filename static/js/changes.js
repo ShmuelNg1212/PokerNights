@@ -28,7 +28,7 @@
     if (!region) return;
     region.querySelectorAll("[data-balance]").forEach(function (el) {
       var key = "balanced:" + el.dataset.balance;
-      try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); } } catch (_) {}
+      try { if (!localStorage.getItem(key)) { el.classList.add("balance-arrived"); localStorage.setItem(key, "1"); balanced(el); if (window.pokerHaptics) window.pokerHaptics.play("done"); } } catch (_) {}
     });
     // A set coming back to be corrected is a moment too, once per reopening: the brass rule draws, then the reason rises.
     region.querySelectorAll("[data-reopened]").forEach(function (el) {

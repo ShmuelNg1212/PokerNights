@@ -216,6 +216,7 @@ anim(S.light, {transform: [glow[hops], css(home)]}, {type: "spring", visualDurat
 light(winner);
 S.tokens.forEach(function (el, distance) { el.classList.toggle("is-dim", distance > 0); });
 // The winner's moment, once: the dimming lifts, a ring opens from their chip and the rail lights up.
+if (window.pokerHaptics) window.pokerHaptics.play("done");
 anim(S.dim, {opacity: ["1", "0"]}, {duration: 0.4, ease: "easeOut", delay: 0.12});
 anim(S.light, {opacity: ["1", "0"]}, {duration: 0.5, ease: "easeOut", delay: 0.2});
 anim(S.burst, {opacity: ["0.9", "0"], transform: [css(rim, 0.7), css(rim, 2.6)]}, {duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.1});

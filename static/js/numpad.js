@@ -330,7 +330,7 @@
     var field = event.target.closest && event.target.closest("input[data-numpad]");
     if (field) mark(field); // before the focus that would call the phone's keyboard
     var step = panel && event.target.closest && event.target.closest("[data-numpad-next], [data-numpad-done]");
-    if (step && panel.contains(step)) { event.preventDefault(); downAt = Date.now(); downKey = step; move(step); return; }
+    if (step && panel.contains(step)) { event.preventDefault(); downAt = Date.now(); downKey = step; tick(); move(step); return; }
     var chips = panel && event.target.closest && event.target.closest("[data-numpad-chips]");
     if (chips && panel.contains(chips)) { event.preventDefault(); return; } // the field keeps focus until the sheet takes it
     var key = event.target.closest && event.target.closest(".numpad-key");
@@ -338,6 +338,7 @@
     event.preventDefault();
     downAt = Date.now(); downKey = key;
     lit(key, "is-hit", 70);
+    tick();
     act(key.dataset.key, key);
     if (key.dataset.key === "del" && target && target.value) {
       held(key, true); // a fill runs across the key for as long as the hold takes
@@ -349,6 +350,8 @@
       }, HOLD);
     }
   }, true);
+  // A key under a finger ticks, as the phone's own keyboard does (haptics.js; nothing where it cannot).
+  function tick() { if (window.pokerHaptics) window.pokerHaptics.play("tick"); }
   function lift() { clearTimeout(hold); held(pad && pad.querySelector(".is-holding"), false); }
   window.addEventListener("pointerup", lift);
   window.addEventListener("pointercancel", lift);

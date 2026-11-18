@@ -81,11 +81,14 @@
     return (sheet || document).querySelector("[aria-invalid=true]") || (sheet && sheet.querySelector(".sheet-error")) ||
       Array.from(document.querySelectorAll(".message-error")).pop();
   }
-  function nudge() { var el = refusal(); if (el) rest(el, run(el, { x: [0, -6, 6, -3, 0] }, "nudge")); }
+  // haptics.js loads after this file, so it is looked up when a write is answered.
+  function haptic(kind) { if (window.pokerHaptics) window.pokerHaptics.play(kind); }
+  function nudge() { haptic("refused"); var el = refusal(); if (el) rest(el, run(el, { x: [0, -6, 6, -3, 0] }, "nudge")); }
   function answered(failed) {
     // After the other listeners, which place the refusal and close an accepted sheet.
     setTimeout(function () {
       if (failed || document.querySelector(".message-error")) { nudge(); return; }
+      haptic("done");
       var button = tapped; tapped = null;
       if (button && button.isConnected && !button.closest("dialog")) rest(button, run(button, { scale: [1, 1.04, 1] }, "pulse"));
     }, 0);
