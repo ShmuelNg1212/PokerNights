@@ -8,6 +8,8 @@ Reference pictures: [assets](../study/1795008949_parlor_revamp_assets/). `concep
 
 ## OPEN QUESTIONS
 
+Answered 2026-11-18: approved, all four recommendations. The human added: focus on the layout; add movement that suits the new layouts; keep the design system and the material feel. See "Movement" below.
+
 1. **Player rows as Rail cards (study idea 4).** The concepts put each player on a raised Rail card with an 8px gap. Slice E (2026-11-01) chose ruled rows: "A set in play is the only blue card." Recommendation: **yes, cards**, on the set page, count-up, home "To settle" and the transfers. Keep ruled rows in long reading lists (the group's Sessions tab, Stats board, set log). Condition: a table of six still fits one 390 × 844 screen above the dock. If it does not fit, the set page keeps ruled rows. If no, tasks 2.3 and 4.3 keep ruled rows and use only the new spacing.
 2. **The next step as a bone button in the collapsed dock (idea 6).** Now the collapsed dock says "Next: End play and count up" behind a chevron. The concept shows a full-width bone button. Recommendation: **yes**. End play is one POST today, and Resume play undoes it. The other host controls stay behind the chevron. If no, delete task 2.4.
 3. **Home record as three tiles (idea 16).** Recommendation: **yes**, per unit: Sessions, Win rate, Net. All three come from figures that the card already has (`record.sessions`, `record.wins`, `record.net`). "Avg net" from the concept would be a new figure on this page; leave it on Stats. If no, delete task 3.4.
@@ -43,11 +45,28 @@ These are in the concepts. Do not build them (study Finding 3):
 | Transfer card | Payer token over name at the left, payee at the right. In the middle: the amount (28px, the existing length rules), a Brass arrow under it, and "pays" for a screen reader. Then a status line (Not paid in Brass with a clock icon; Paid in Up with a check and time) and the action at the right (Mark paid bone, Undo quiet). Names wrap under their token. |
 | Ledger table | Columns Player, In, Out, Net. Tabular figures, right-aligned. Meta under the name: "N buy-ins". A footer row: totals of In and Out, and Net ₱0. When rake was collected, a row "Rake" above the footer. It is a real `<table>` with a caption. |
 
+## Movement
+
+Rules: DESIGN.md "Motion system". Only `transform` and `opacity`. Existing presets only (`press`, `release`, `shift`, `arrive`, `fade`, `progress`). An interaction ends within 300ms. Money never counts. Reduced motion and a missing Motion file show the end state at once. No control waits for a movement.
+
+| Item | Decision |
+|---|---|
+| Card press | A Rail card row that is a link or a tap target sinks to `scale(.985)` under a finger with `press` and comes back with `release`, as a button does. Its Rule border stays. Not on a card that holds a field. |
+| Facts arrive | Fact tiles rise 8px and fade in, 40ms apart, at most four steps, with `arrive`, on a full page load or a screen change. Not on a poll or a redraw of the same page. The figures are at their value from the first frame. |
+| Transfer arrow | The Brass arrow under a transfer's amount grows from the payer's side (`scaleX` 0 to 1, origin left) with `progress`, 40ms apart down the list, on arrival only. |
+| Paid | When a transfer is marked paid by this phone, the status line's check scales in from 0.6 with `arrive`. The card does not move. |
+| Count edge | The Brass inside edge of a count card is a pseudo-element that fades in over 120ms when its field gets focus. |
+| Books status | When the books panel's status changes after an accepted count, the new status line fades up 4px with `fade`. The existing balanced rule reveal stays and plays once. |
+| Tab marker | The selected Log in / Sign up pill slides to the chosen tab on the screen change, as the group page's tab marker does. |
+| In play dot | The In play pill's dot keeps the Live dot's existing treatment. Nothing new. |
+
 ## Tasks
 
 ### Slice 1: shared parts
 
 - [ ] **1.1 Section label, fact tiles, Rail card row, badges, felt card.** tests: alongside. Add the five parts to `app.css` with the values in the table. Change no page yet. Done when: a style test page in the Django test client renders each part, and `surfaces.mjs` shows no change on the current pages.
+
+- [ ] **1.2 Movement parts.** tests: alongside. Card press, facts arrive and the count edge, in `motion.js` and `app.css`. Done when: `motion.mjs` passes, and a probe shows each one uses only `transform` and `opacity` and is off under reduced motion.
 
 ### Slice 2: set in play (`concept_live_table_in_play.png`)
 
@@ -65,20 +84,20 @@ These are in the concepts. Do not build them (study Finding 3):
 
 ### Slice 4: count-up (`concept_host_count_up_reconciliation.png`)
 
-- [ ] **4.1 Books panel at the top.** tests: alongside. In the neutral overview: section label "COUNT-UP" with "1 of 2 counted" pill. An inset panel: Total bought in, Cashed out plus confirmed counts, and a status row ("The books balance" with the double rule's colour, or "₱500 still to account for" in Brass). It uses the confirmed figures only. The dock's running total stays. "The books" section further down goes. Done when: `count_flow.mjs`, `counts.mjs`, `books_gap.mjs` and `books_motion.mjs` pass, and the balance reveal still plays once.
+- [ ] **4.1 Books panel at the top.** tests: alongside. In the neutral overview: section label "COUNT-UP" with "1 of 2 counted" pill. An inset panel: Total bought in, Cashed out plus confirmed counts, and a status row ("The books balance" with the double rule's colour, or "₱500 still to account for" in Brass). It uses the confirmed figures only. The dock's running total stays. "The books" section further down goes. Add the books status movement. Done when: `count_flow.mjs`, `counts.mjs`, `books_gap.mjs` and `books_motion.mjs` pass, and the balance reveal still plays once.
 - [ ] **4.2 Net on a count row.** tests: first. When the player has a confirmed count or a cash-out, show the signed net beside the field. The net is the figure that the results use: the cash-out or confirmed count minus gross buy-ins. Write the tests before the template: no net without a confirmed count, rake as a loss, chips and pesos. Done when: the tests pass and the net equals the final result for the same player.
 - [ ] **4.3 Count cards.** tests: alongside. Each count row is a Rail card row. The field is an inset Ground field at the right. The row has the Brass edge while its field has focus. "by chips" stays. Done when: `numpad.mjs` and `chip_numpad.mjs` pass, and the fields do not move when a count is accepted.
 
 ### Slice 5: settle-up and recap (`concept_session_settle_up_transfers.png`)
 
 - [ ] **5.1 Recap head card.** tests: alongside. "SESSION RECAP" label and Settled / Partly settled / Unsettled pill. Table name, "Closed 2:15 AM · 12 players". "Still to pay" stays the display figure. Three fact tiles: Play time, Total bought in (with the buy-in count), Rake (only when collected). The top result sits on Rail 2 with a Brass edge, not on felt. Done when: `finale.mjs` and `night.mjs` pass, and the figures match the current page.
-- [ ] **5.2 Transfer cards.** tests: alongside. Section label "WHO PAYS WHOM" with "N transfers" pill. Each transfer is a transfer card. Mark paid and Undo stay native POST actions. Done when: `transfer_layout.mjs`, `debts.mjs` and `carried_debts.mjs` pass, and "Maria Clara de los Santos" stays readable at 320px.
+- [ ] **5.2 Transfer cards.** tests: alongside. Section label "WHO PAYS WHOM" with "N transfers" pill. Each transfer is a transfer card. Mark paid and Undo stay native POST actions. Add the transfer arrow and Paid movement. Done when: `transfer_layout.mjs`, `debts.mjs` and `carried_debts.mjs` pass, and "Maria Clara de los Santos" stays readable at 320px.
 - [ ] **5.3 Ledger table.** tests: first. In the recap's "Everyone's results" and the session results, replace the wrapping meta line with the ledger table. Write the tests before the template: the footer totals equal the session's totals, the Net column sums to zero without rake, the Rake row appears only when rake was collected and the footer then still balances, and a reopened session's replaced results are marked as now. Done when: the tests pass, and at 320px the table fits without sideways scroll (names wrap; figures do not).
 - [ ] **5.4 Share card.** tests: alongside. "SHARE RESULTS" label. A Rail card shows the same text that Share sends, then two buttons: Copy text and Share picture. They call the existing share code. Done when: `share.mjs` passes and the shown text equals the copied text.
 
 ### Slice 6: front door (`concept_pokernights_front_door_home.png`)
 
-- [ ] **6.1 Log in | Sign up tabs.** tests: alongside. Two links styled as a segmented control at the top of the raised sheet. The current page has the selected state and `aria-current="page"`. An invited Sign up keeps the group's name heading. Done when: `door.mjs` and `entry.mjs` pass, and a phone's password manager still sees the same form fields.
+- [ ] **6.1 Log in | Sign up tabs.** tests: alongside. Two links styled as a segmented control at the top of the raised sheet, with the tab marker movement. The current page has the selected state and `aria-current="page"`. An invited Sign up keeps the group's name heading. Done when: `door.mjs` and `entry.mjs` pass, and a phone's password manager still sees the same form fields.
 - [ ] **6.2 Field rows.** tests: alongside. Show stays on the label line at the right, as in the concept. Field icons are not added. Done when: the form fields, names and autocomplete values are unchanged.
 
 ## Rendezvous checks
