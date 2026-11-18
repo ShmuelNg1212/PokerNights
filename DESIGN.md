@@ -1446,3 +1446,16 @@ Mode: Operate, inside The Rack. [Study](doc/study/1795008949_parlor_revamp.md), 
 - **Ledger table.** A closed session's results are a table: Player, In, Out, Net. With rake, "Rake already collected" makes the footer balance (Out and Net). When any figure is longer than eight characters, a phone shows each player on two lines with labelled In, Out and Net; the table keeps its roles. In the recap sheet a fact never breaks inside itself.
 - **Share.** A Rail card shows the first lines of the text the chat receives, fading out, over the Share results button.
 - **Front door.** Log in | Sign up is a segmented control on the sheet where sign-up is open: Ground track, the chosen half a raised Rail 2 pill, 48 px halves. The pill has `view-transition-name: entry-tab`, so it slides between the two screens in 260 ms. On Log in the heading is for a screen reader only.
+
+### 2026-11-19 addendum — Your record as cards
+
+Mode: Operate, inside The Rack. This supersedes "Your record is three Ground tiles a unit" in the Parlor revamp addendum. No new colour, font, radius or movement.
+
+- **Why.** The three tiles gave Sessions, Win rate and Net the same weight. Net, the figure a person looks for, had a third of the width, and "−600 chips" broke onto two lines. A card with both units had two labels and six boxes inside one card. Last session had another layout below them.
+- **Cards.** Your record uses the To settle grammar: a Rail card, a 1 px Rule edge, 12 px corners, at least 60 px tall. On the left, the name at weight 650, with a 14 px Bone Dim note under it. On the right, the signed amount at 1.5rem in the money width, in Up or Down with its arrow. The amount does not wrap.
+- **Net.** One card a unit. The note is "2 sessions · 50% win rate". Each fact stays whole, so a note breaks only at the dot. With both units, one label covers both cards, and they say "Net in pesos" and "Net in chips". The Chips pill is gone.
+- **Last session.** One more card under the same label. The whole card opens the session; it has the press scale and a muted chevron. "Did not play" is muted text at body size. A person with no record sees the card without the label.
+- **Even.** "₱0" has no sign and no arrow.
+- **Narrow.** When the list is under 300 px wide (a 320 px phone), each amount sits under its name, right-aligned, so all the cards read the same way.
+- **Arrival.** The record cards and the dues rise after the card, 40 ms apart, as the tiles did.
+- **Measured.** `home.mjs`, 63 checks at 320, 390 and 1280 px.

@@ -170,3 +170,7 @@ Show Stats before a group's first closed session. Explain the empty board: playe
 ## 2026-11-18 addendum — Parlor revamp
 
 The main screens take their layout from the human's Stitch concepts and keep the Rack's materials. Sections have Brass labels. Players, dues, counts and transfers sit on raised cards. The felt is an inset card. On Your groups a person's record is three tiles: sessions, win rate and net. Each count row shows the net of an accepted count or cash-out. A closed session's results are a ledger of what each player put in, took out and won or lost; with rake, the rake row makes it balance. The front door switches between Log in and Sign up with two tabs. What each action records, and who may do it, is unchanged. The concepts' invented parts (a blind clock, a bottom tab bar, stacks during play, claims about offline or encryption) are not built. [Plan](doc/plan/1795008990_parlor_revamp.md).
+
+## 2026-11-19 addendum — Your record as cards
+
+On Your groups, a person's record is a card for each unit: the net, with sessions and win rate under it. The last session is one more card that opens it. This revises "three tiles" in the Parlor revamp addendum. The figures and their rules are unchanged.
