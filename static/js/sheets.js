@@ -75,18 +75,96 @@ window.pokerMotion.settle(S.body, window.pokerMotion.run(S.body, { opacity: [0, 
 focusStart(source);
 shown();
 }
-function close() {
-var dialog = S.dialog;
+// A drag let go (fling === true) keeps its speed to the edge; without Motion it closes at once. Other
+// callers pass nothing or an event.
+function close(fling) {
+var dialog = S.dialog, flung = fling === true;
 if (!dialog.open || dialog.classList.contains("closing")) return;
 // With Motion the sheet leaves from wherever it is, so a close during the rise turns it around.
-var leaving = window.pokerMotion && window.pokerMotion.run(dialog, { transform: "translateY(" + dialog.offsetHeight + "px)" }, "leave");
+var leaving = window.pokerMotion && window.pokerMotion.run(dialog, { transform: "translateY(" + dialog.offsetHeight + "px)" }, flung ? "fling" : "leave");
 if (leaving) {
 dialog.classList.add("closing");
 window.pokerMotion.after(leaving, function () { if (dialog.open) dialog.close(); dialog.classList.remove("closing"); });
 window.pokerMotion.settle(dialog, leaving);
 }
-else if (matchMedia("(prefers-reduced-motion: reduce)").matches) dialog.close();
+else if (flung || matchMedia("(prefers-reduced-motion: reduce)").matches) dialog.close();
 else { dialog.classList.add("closing"); setTimeout(function () { if (dialog.open) dialog.close(); dialog.classList.remove("closing"); }, 200); }
+}
+// Drag down to close (DESIGN.md, "Sheet drag and haptics"): below 900px, by touch only, so a mouse
+// never drags. The head drags at any scroll; the body only from its top, when the finger first moves
+// down, so the content still scrolls. Without Motion, or under reduced motion, the sheet still follows
+// the finger, and on release it is at once closed or back.
+var WIDE = matchMedia("(min-width: 900px)");
+function draggable(me) {
+var dialog = me.dialog, d = null, quiet = 0;
+function far() { return Math.min(dialog.offsetHeight * 0.3, 160); } // past this, a release closes
+function now() { return new DOMMatrix(getComputedStyle(dialog).transform).m42; } // where a rise or a return has got to
+function place(at) {
+dialog.style.transform = "translateY(" + at + "px)";
+dialog.style.setProperty("--sheet-drag", String(Math.max(0, Math.min(1, at / dialog.offsetHeight)))); // the backdrop fades
+}
+function begin() {
+var M = window.pokerMotion;
+d.from = now();
+// A run that lasts no time stops a rise or a return where it is, and makes the drag the sheet's latest movement.
+if (M && M.on()) M.run(dialog, { transform: "translateY(" + d.from + "px)" }, { duration: 0 });
+d.on = true;
+dialog.classList.add("dragging");
+// The phone's keyboard goes down; the number keys stay, since they are part of the sheet.
+var field = document.activeElement;
+if (field && dialog.contains(field) && field.matches("input, textarea, select") && field.inputMode !== "none") field.blur();
+}
+function end(may, time) {
+var was = d; d = null;
+if (!was || !was.on) return;
+dialog.classList.remove("dragging");
+quiet = Date.now();
+var first = was.samples[0], last = was.samples[was.samples.length - 1];
+// A finger that rested before it lifted has no speed.
+var speed = first && last !== first && time - last[0] < 80 ? (last[1] - first[1]) / (last[0] - first[0]) : 0;
+if (may && (was.at >= far() || (speed >= 0.6 && was.at >= 16))) { close(true); return; }
+dialog.style.setProperty("--sheet-drag", "0");
+var M = window.pokerMotion, going = M && M.run(dialog, { transform: "translateY(0px)" }, "sheet");
+if (going) M.settle(dialog, going); else dialog.style.transform = "";
+}
+dialog.addEventListener("touchstart", function (event) {
+d = null;
+if (WIDE.matches || !dialog.open || dialog.classList.contains("closing") || event.touches.length !== 1) return;
+var target = event.target;
+// The number keys act as a finger goes down; fields, selections and sideways rows keep their own touch.
+if (!target.closest || target.closest(".numpad, input, select, textarea, .pills, [data-haptic]")) return;
+if (dialog.querySelector("form[data-sent], [aria-busy=true]")) return; // a refusal would have nowhere to show
+var touch = event.touches[0];
+d = {x: touch.clientX, y: touch.clientY, head: !!target.closest(".sheet-head"), on: false, from: 0, at: 0, ticked: false, samples: []};
+}, {passive: true});
+dialog.addEventListener("touchmove", function (event) {
+if (!d) return;
+if (event.touches.length !== 1) { end(false, event.timeStamp); return; }
+var touch = event.touches[0], dx = touch.clientX - d.x, dy = touch.clientY - d.y;
+if (!d.on) {
+if (Math.abs(dx) > Math.abs(dy)) { if (Math.abs(dx) >= 8) d = null; return; } // sideways is not a drag
+if (!d.head && (dialog.scrollTop > 0 || dy < 0)) { d = null; return; } // the content scrolls
+if (!event.cancelable) { d = null; return; } // the browser has already started to scroll
+event.preventDefault(); // hold the sheet still while the first 8px decide
+if (Math.abs(dy) < 8) return;
+begin();
+}
+if (event.cancelable) event.preventDefault();
+var at = d.from + dy;
+if (at < 0) at = Math.max(-12, at * 0.2); // up, it resists
+d.at = at; place(at);
+d.samples.push([event.timeStamp, at]);
+while (d.samples.length > 2 && event.timeStamp - d.samples[0][0] > 100) d.samples.shift();
+// Once per drag, as it passes the point where a release closes.
+if (!d.ticked && at >= far()) { d.ticked = true; if (window.pokerHaptics) window.pokerHaptics.play("tick"); }
+}, {passive: false});
+dialog.addEventListener("touchend", function (event) { end(true, event.timeStamp); });
+dialog.addEventListener("touchcancel", function (event) { end(false, event.timeStamp); });
+// The finger that dragged does not also press what it started on.
+dialog.addEventListener("click", function (event) {
+if (Date.now() - quiet < 400) { event.preventDefault(); event.stopPropagation(); }
+}, true);
+me.stopDrag = function () { d = null; dialog.classList.remove("dragging"); };
 }
 // Puts a refusal inside the sheet, beside the amount, and makes the form ready to send again.
 function showError(form, text) {
@@ -145,13 +223,14 @@ window.pokerPage.register(function () {
 var region = document.getElementById("live") || document.querySelector(".night-layout") || document.querySelector("[data-sheet-region]"), mount = document.getElementById("table-sheets");
 if (!region || !mount || !window.HTMLDialogElement) return;
 var dialog = document.createElement("dialog");
-dialog.className = "sheet"; dialog.setAttribute("aria-labelledby", "sheet-title");
+dialog.className = "sheet sheet-draggable"; dialog.setAttribute("aria-labelledby", "sheet-title");
 dialog.innerHTML = '<div class="sheet-head"><h2 id="sheet-title"></h2><button type="button" class="btn btn-round" aria-label="Close sheet"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg></button></div><div class="sheet-body"></div>';
 mount.replaceChildren(dialog);
 var me = S = {region: region, dialog: dialog, body: dialog.querySelector(".sheet-body"), opener: null, key: null,
               draftKey: "rack-draft:" + region.dataset.url, discard: false};
 document.documentElement.classList.add("sheets-enabled");
 dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+draggable(me);
 dialog.querySelector(".sheet-head button").addEventListener("click", close);
 dialog.addEventListener("click", function (event) {
 if (event.target !== dialog) return;
@@ -159,6 +238,8 @@ var box = dialog.getBoundingClientRect();
 if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close();
 });
 dialog.addEventListener("close", function () {
+// A closed sheet keeps nothing from a drag: the next opening starts from its own first frame.
+me.stopDrag(); dialog.style.transform = ""; dialog.style.removeProperty("--sheet-drag");
 putBack(me);
 if (S !== me) return; // the page is being left; there is nothing to focus
 if (me.lands) { me.lands.focus({preventScroll: true}); me.lands = null; return; } // the recap that opened by itself

@@ -308,6 +308,18 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .new-edge { animation: edge-added var(--t-sheet) var(--ease-out); }
 @keyframes edge-added { from { transform: translateY(-8px); opacity: .2; } }
 @keyframes sheet-close { to { transform: translateY(24px); opacity: 0; } }
+/* Sheet drag (2026-11-18, sheets.js): the backdrop fades with the distance, where ::backdrop inherits
+   from its dialog; elsewhere it stays. Below 900px a grab handle sits 8px above the title. */
+.sheet::backdrop { opacity: calc(1 - var(--sheet-drag, 0) * .8); transition: opacity 200ms var(--ease-out); }
+.sheet.dragging::backdrop { transition: none; }
+@media (max-width:899px) {
+  .sheet-draggable { overscroll-behavior: contain; }
+  .sheet-draggable .sheet-head { position: relative; padding-top: 12px; touch-action: none; }
+  .sheet-draggable .sheet-head::before { content: ""; position: absolute; top: 0; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bone-dim); opacity: .6; }
+  .sheet.sheet-draggable:has(.recap) .sheet-head { padding-top: 28px; }
+  .sheet-draggable:has(.recap) .sheet-head::before { top: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .sheet::backdrop { transition: none; } }
 @media (max-width:899px) {
   .table-page { padding-bottom: 128px; }
   .table-bar { gap: 8px; }

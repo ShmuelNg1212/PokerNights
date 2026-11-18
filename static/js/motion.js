@@ -17,7 +17,9 @@
     shift: { type: "spring", visualDuration: 0.26, bounce: 0 },
     drop: { type: "spring", visualDuration: 0.22, bounce: 0.35 },
     fade: { duration: 0.18, ease: "easeOut" },
-    progress: { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
+    progress: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+    // A sheet let go by a downward drag keeps its speed to the edge (sheets.js).
+    fling: { duration: 0.18, ease: [0.2, 0, 0, 1] }
   };
 
   function on() { return !!window.Motion && !reduce.matches; }
