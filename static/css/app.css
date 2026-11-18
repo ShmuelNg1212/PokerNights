@@ -2641,6 +2641,15 @@ p.alerts-text:last-child { margin-bottom: 0; }
   :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) > .dock-toggle > :not(.icon) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) > .dock-toggle > .icon { grid-row: 1; grid-column: 1; color: var(--bone); }
 }
+/* In play the felt stays under the header while the rows scroll beneath it (doc/wiki/footguns/sticky_felt.md).
+   The column box goes, so the felt's sticky range is the whole layout, not its own column.
+   A short screen keeps the felt in the page: there it would leave too little room for the rows. */
+@media (max-width: 899px) and (min-height: 600px) {
+  .table-v2 > .table-left:has(> .felt) { display: contents; }
+  #live .table-v2 > .table-left > .felt { position: sticky; top: 69px; z-index: 3; box-shadow: 0 12px 16px -12px oklch(0 0 0 / .6); }
+  .is-offline #live .table-v2 > .table-left > .felt { top: calc(var(--offline-h, 44px) + 69px); }
+  .table-v2:has(> .table-left > .felt) .player-list :focus-visible { scroll-margin-top: 340px; }
+}
 .table-v2 .felt .pot-side { justify-content: stretch; }
 /* The card is 22px narrower than the ruled row was: the line under the name narrows a little so the stack stays beside its words. */
 .table-v2 .row-card .player-meta, .table-v2 .row-card .player-figure small { font-stretch: 88%; }
