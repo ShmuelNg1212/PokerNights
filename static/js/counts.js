@@ -85,6 +85,17 @@
     box.querySelector("[data-count-status]").dataset.tone = tone;
     var coverage = (missing ? missing + " still to count." : "") + (invalid ? (missing ? " " : "") + invalid + " invalid." : "");
     put("coverage", coverage);
+    // The host's books say the same as the preview, so the panel moves with each typed and confirmed count.
+    var counted = document.querySelector("[data-books-counted]");
+    if (counted) {
+      counted.textContent = invalid ? "Unavailable" : format(remaining, chips);
+      document.querySelector("[data-books-counted-label]").textContent = drafts ? "Counted · unsaved" : entered ? "Counted · players' counts" : "Counted, not cashed out";
+    }
+    var verdict = document.querySelector("[data-books-status]");
+    if (verdict) {
+      verdict.textContent = status; verdict.dataset.tone = tone;
+      verdict.parentElement.querySelector("[data-books-coverage]").textContent = coverage;
+    }
     // The collapsed dock bar repeats the running total and the verdict, so both stay readable while typing.
     var bar = document.querySelector("[data-dock-status]");
     if (bar) {

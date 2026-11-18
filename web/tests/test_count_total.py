@@ -16,8 +16,8 @@ class CountTotalPageTests(TestCase):
         count(self.night, 'B', 0)
         page = self.client.get(self.url)
         self.assertContains(page, 'data-count-accounted>₱2,000', count=1)  # the host has one total, with the next action
-        self.assertContains(page, 'All counts match buy-ins.', count=2)  # that total, and the dock bar
-        self.assertContains(page, 'data-tone="good">All counts match buy-ins.', count=2)
+        self.assertContains(page, 'All counts match buy-ins.', count=3)  # that total, the dock bar and the host's books
+        self.assertContains(page, 'data-tone="good">All counts match buy-ins.', count=3)
         self.assertContains(page, 'data-saved="200000"')
         self.assertContains(page, 'data-saved="0"')
         self.assertContains(page, 'data-bought="200000"')

@@ -25,12 +25,15 @@
   <dl class="set-totals books-lines">
     <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
     <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Total cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+    {# The host's books follow the count as it is typed and confirmed (counts.js); a player's books have the count total below. #}
+    {% if me.is_host and count_total and not balance.counted %}<div class="books-counted"><dt data-books-counted-label>Counted, not cashed out</dt><dd data-books-counted>{{ count_total.remaining|amount:unit }}</dd></div>{% endif %}
     {% if summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}
     {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
     <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
   </dl>
   {# Once every player is cashed out the statement above or below is the one word on the books. #}
   {% if not me.is_host and not balance.counted %}{% include "web/_count_total.html" %}{% endif %}
+  {% if me.is_host and count_total and not balance.counted and not balance.overridden %}<p class="books-verdict small"><span class="verdict" data-books-status data-tone="{{ count_total.tone }}">{{ count_total.status_text }}</span> <span data-books-coverage>{{ count_total.coverage_text }}</span></p>{% endif %}
   {% if balance.overridden %}
   {# An override closes the books without them balancing: neutral, never the balanced moment. #}
   <div class="books-covered">

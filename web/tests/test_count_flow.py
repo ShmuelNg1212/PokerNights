@@ -82,6 +82,27 @@ class CountUpStructureTests(TestCase):
         self.assertNotIn("₱100 missing.", html)
         self.assertIn("Finalize results", html)
 
+    def test_the_host_books_follow_the_confirmed_counts(self):
+        books = lambda: self.page()[self.page().index('id="balance"'):]
+        html = books()
+        self.assertIn('<dt data-books-counted-label>Counted, not cashed out</dt><dd data-books-counted>₱0</dd>', html)
+        self.assertIn('data-books-status data-tone="">₱2,000 still to account for.</span> <span data-books-coverage>2 still to count.', html)
+        count(self.night, "A", 800)
+        html = books()
+        self.assertIn("<dd data-books-counted>₱800</dd>", html)
+        self.assertIn("₱1,200 still to account for.</span> <span data-books-coverage>1 still to count.", html)
+        # Once every player is cashed out, the books' own statement is the one word: no counted line.
+        self.night.cash("A", 900)
+        self.night.cash("B", 1000)
+        self.assertNotIn("data-books-counted", books())
+        self.assertNotIn("data-books-status", books())
+
+    def test_a_player_has_the_count_total_and_not_the_host_lines(self):
+        self.client.force_login(add_player(self.night.group, "viewer").user)
+        html = self.page()
+        self.assertNotIn("data-books-counted", html)
+        self.assertNotIn("data-books-status", html)
+
     def test_a_player_keeps_a_read_only_total_and_no_host_instructions(self):
         member = add_player(self.night.group, "viewer")
         self.client.force_login(member.user)
