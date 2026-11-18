@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: one-line names and Rebuy alignment (not released)
+
+- [ ] A set in play with a long name: the name stops after one line with "…". The Rebuy and Buy-in buttons have the same space above, below and at the right inside the card. A tap on the card beside the button opens the player's sheet. The count and Add players: one line with "…". The player's sheet shows the full name.
+
 ## Phone checks: full-width felt (released 2026-11-19)
 
 - [ ] A set in play, a set counting up and a closed session: the top panel goes edge to edge under the top bar, with rounded corners at the bottom only. Timer and blinds stay inside the felt. On a computer the felt is unchanged.

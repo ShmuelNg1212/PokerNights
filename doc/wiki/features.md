@@ -302,7 +302,7 @@ The layout and several details below changed on 2026-10-05; “Count-up, review 
 - The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser; with Motion the rule draws and then the words rise. Reduced motion leaves it static.
 - Final set results use frozen snapshots, best to worst, with signed amounts and directional icons. The row is a disclosure with a chevron: it opens one line of facts (in, rebuys, out, rake, override, time played) and the player's records. Session results also run best to worst. The viewer's result is prominent. Who pays whom stays on the session page.
 - Each count row is a card. A player with a confirmed count or a cash-out shows the net under the name (`PlayerLine.count_net`: the confirmed count plus earlier cash-outs, or the cash-out, minus gross buy-ins); a typed count that is not confirmed shows none.
-- Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check sits above the count list. Waiting for counts is a neutral notice. When every player is cashed out and the books still differ, the panel leads with the exact signed amount and the next step. Long names wrap. JavaScript-free forms remain usable.
+- Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check sits above the count list. Waiting for counts is a neutral notice. When every player is cashed out and the books still differ, the panel leads with the exact signed amount and the next step. A long name shows one line, then an ellipsis. JavaScript-free forms remain usable.
 
 
 ## Session and settle-up design (slice 3)
