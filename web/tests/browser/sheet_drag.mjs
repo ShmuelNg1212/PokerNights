@@ -85,6 +85,18 @@ try {
  await sleep(150);await A.touch('touchEnd');await sleep(700);
  check('one tick per drag at the close distance',await A.js(`JSON.stringify(__vib)==='[8]'`),await A.js(`JSON.stringify(__vib)`));
  check('ended near the top: the sheet goes back',await rest(A));
+ // Far down, then a flick back up before lifting, still past the close distance: the sheet stays, as
+ // an iPhone sheet does.
+ {const q=await head(A);await A.touch('touchStart',q);
+  for(const y of [20,80,160,240,300]){await sleep(40);await A.touch('touchMove',{x:q.x,y:q.y+y})}
+  for(const y of [260,220]){await A.touch('touchMove',{x:q.x,y:q.y+y})}
+  await A.touch('touchEnd');await sleep(700);}
+ check('a flick back up after a long drag keeps the sheet',await rest(A));
+ // A tap right after a drag goes back is a tap: Close works at once.
+ await drag(A,await head(A),40,{hold:60});await sleep(80);
+ await A.touch('touchStart',await at(A,`${D}.querySelector('.sheet-head button')`));await sleep(30);await A.touch('touchEnd');await sleep(600);
+ check('a tap on Close just after a drag still closes',await A.js(`!${D}.open`));
+ await openBuy(A);
  // A drag that starts on a number key types and does not drag.
  await A.js(`${D}.querySelector('[name=amount]').value=''`);
  const key=await at(A,`${D}.querySelector('.numpad-key[data-key="5"]')`);
@@ -134,6 +146,19 @@ await sleep(900);
  const body=await A.js(`(()=>{const r=${D}.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height*0.6}})()`);
  seen=await drag(A,body,150,{during:`({y:${ty},top:${D}.scrollTop})`});await sleep(500);
  check('a drag on scrolled content scrolls and does not drag',seen.y===0&&seen.top<300,JSON.stringify(seen));
+ // A blocking touchmove listener only while the content is at its top: scrolled, nothing waits for script.
+ const blocking=async()=>{const {result}=await send('Runtime.evaluate',{expression:D},A.s);const {listeners}=await send('DOMDebugger.getEventListeners',{objectId:result.objectId},A.s);return listeners.filter(l=>l.type==='touchmove'&&!l.passive).length};
+ await A.js(`${D}.scrollTop=300`);await sleep(150);const scrolledBlocking=await blocking();
+ await A.js(`${D}.scrollTop=0`);await sleep(150);const topBlocking=await blocking();
+ check('a blocking touchmove listener only at the top of the content',scrolledBlocking===0&&topBlocking===1,`scrolled ${scrolledBlocking}, top ${topBlocking}`);
+ // At the top, a finger that jitters down 2 px and then goes up scrolls the content. Chromium scrolls
+ // even after a cancelled first move, so this guards the behaviour but cannot show the iPhone's case,
+ // where a cancelled first move stops the whole gesture; the phone check covers that.
+ const mid2=await A.js(`(()=>{const r=${D}.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height*0.7}})()`);
+ await A.touch('touchStart',mid2);await sleep(30);await A.touch('touchMove',{x:mid2.x,y:mid2.y+2});
+ for(let i=1;i<=8;i++){await sleep(30);await A.touch('touchMove',{x:mid2.x,y:mid2.y+2-i*25})}
+ const jitter=await A.js(`({y:${ty},top:${D}.scrollTop})`);await A.touch('touchEnd');await sleep(400);
+ check('at the top, a jitter down then a swipe up scrolls the content',jitter.y===0&&jitter.top>50,JSON.stringify(jitter));
  const grabRecap=await A.js(`getComputedStyle(${D}.querySelector('.sheet-head')).position`);
  check('the recap head stays sticky',grabRecap==='sticky',grabRecap);
  await A.js(`${D}.scrollTop=300`);await sleep(100);

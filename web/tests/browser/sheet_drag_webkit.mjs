@@ -13,7 +13,7 @@ const IDS=JSON.parse(readFileSync(process.env.PN_MANIFEST || '/private/tmp/pn-dr
 const results=[];const check=(name,ok,detail='')=>{results.push({name,ok});console.log(`${ok?'PASS':'FAIL'} ${name}${ok||!detail?'':' — '+detail}`)};
 const browser=await webkit.launch();
 try {
- const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
+ const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
  await context.addInitScript(()=>{window.__ticks=[];window.__errors=[];addEventListener('error',e=>__errors.push(e.message));
   addEventListener('click',e=>{if(e.target.matches&&e.target.matches('label[data-haptic]'))__ticks.push(Math.round(performance.now()))},true)});
  const page=await context.newPage();

@@ -1,13 +1,17 @@
 // Haptics (haptics.js) and the Vibration switch. Seed a fresh temporary SQLite database with
-// seed_sheet_drag.py alone, start Django on 127.0.0.1:8765 with it, then run this file. The probe
-// records buy-ins: reseed before a repeat. No check can feel a vibration: this records what was asked of
+// seed_sheet_drag.py alone, start Django on 127.0.0.1:8765 with it, then run this file with PN_DB set
+// to that database file. The probe records buy-ins and a cash-out (from a Django shell, so that the
+// books balance while a phone watches): reseed before a repeat. No check can feel a vibration: this records what was asked of
 // navigator.vibrate (the Android path) and each click on the iPhone's hidden switch.
-import {spawn} from 'node:child_process';
+import {spawn,execFileSync} from 'node:child_process';
 import {writeFileSync,mkdirSync,rmSync,readFileSync} from 'node:fs';
 const OUT=process.env.PN_REVIEW_DIR || '/private/tmp/pn-haptics-review';mkdirSync(OUT,{recursive:true});
 const BASE=process.env.PN_BROWSER_URL || 'http://127.0.0.1:8765';
 const IDS=JSON.parse(readFileSync(process.env.PN_MANIFEST || '/private/tmp/pn-drag-manifest.json','utf8'));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const DB=process.env.PN_DB || '/private/tmp/pn-drag/db.sqlite3';
+// A write by nobody on these phones: the service records it, as a host's other device would.
+const shell=code=>execFileSync('.venv/bin/python',['manage.py','shell','-c',code],{env:{...process.env,DATABASE_URL:`sqlite:///${DB}`,DEBUG:'True'},stdio:['ignore','pipe','pipe']});
 const PROFILE=process.env.PN_CHROME_PROFILE || '/private/tmp/pn-haptics-chrome';rmSync(PROFILE,{recursive:true,force:true});
 const chrome=spawn(process.env.PN_CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--headless=new','--remote-debugging-port=9344',`--user-data-dir=${PROFILE}`,'--no-first-run','--disable-gpu','about:blank'],{stdio:'ignore'});
 let url;for(let i=0;i<40&&!url;i++){try{url=(await(await fetch('http://127.0.0.1:9344/json/version')).json()).webSocketDebuggerUrl;}catch{await sleep(150)}}
@@ -68,11 +72,27 @@ try {
  await sleep(9000); // at least one poll brings A2's buy-in to A, then later polls change nothing
  check("A2's buy-in reached A's page",await A.js(`document.querySelector('#live').textContent.includes('7,') || document.querySelector('#live').textContent.length!==${pot}`));
  check("another person's buy-in and quiet polls: no vibration",await vib(A)==='[]',await vib(A));
- // The books balance: once on first sight of the set in this browser, never on a reload.
+ // A screen change by a tapped link: nothing.
+ await reset(A);await A.js(`document.querySelector('.table-bar a').click()`);await sleep(1500);
+ check('a screen change: no vibration',await vib(A)==='[]'&&await A.js(`location.pathname`)!==`/s/${IDS.play}/`,await vib(A));
+ // The session page redraws itself for someone else's change with the Turbo visit nightlive.js makes
+ // (nightlive.js:58). Every Turbo render says inplace:updated; with no form sent, nothing vibrates.
+ await A.go(`/n/${IDS.play_night}/`);await reset(A);
+ await A.js(`new Promise(r=>{document.addEventListener('inplace:updated',()=>{window.__rendered=true;r()},{once:true});Turbo.visit(location.pathname+location.search,{action:'replace'})})`);await sleep(600);
+ check("the session page's own redraw: a Turbo render that says inplace:updated",await A.js(`!!window.__rendered`));
+ check("the session page's own redraw: no vibration",await vib(A)==='[]',await vib(A));
+ // The books balance: when they come to balance while the phone watches, once; not on a reload, and
+ // not on another phone that first opens the set already balanced.
+ await A.go(`/s/${IDS.count}/`);await sleep(500);await reset(A);
+ check('the books do not balance yet',await A.js(`!document.querySelector('[data-balance]')`));
+ shell(`import uuid; from django.contrib.auth import get_user_model; from groups.models import Member; from ledger import services as L; m=Member.objects.get(user__username='hana', role='host'); L.record_cash_out(${IDS.count}, m, ${IDS.count_last}, 50000, uuid.uuid4())`);
+ await sleep(9000); // a poll brings the balance
+ check('the books came to balance on the page',await A.js(`!!document.querySelector('[data-balance]')`));
+ check('the books balancing: one done',await vib(A)==='[[10,50,14]]',await vib(A));
  await reset(A);await A.go(`/s/${IDS.count}/`);await sleep(500);
- check('the books balance: one done',await vib(A)==='[[10,50,14]]',await vib(A));
- await A.go(`/s/${IDS.count}/`);await sleep(500);
  check('a reload of a balanced set: nothing',await vib(A)==='[]',await vib(A));
+ await A2.js(`__vib.length=0`);await A2.go(`/s/${IDS.count}/`);await sleep(500);
+ check('another phone that first opens it balanced: nothing',await A2.js(`JSON.stringify(__vib)`)==='[]',await A2.js(`JSON.stringify(__vib)`));
  // The Vibration switch.
  await A.go(`/s/${IDS.play}/`);
  check('android: the Vibration switch is shown and on',await A.js(`!${sw}.hidden&&${sw}.getAttribute('aria-checked')==='true'`));
@@ -113,6 +133,10 @@ try {
  // A phone with neither: the switch stays hidden and play does nothing.
  const N=await user('hana','none');await N.go(`/s/${IDS.play}/`);
  check('neither: the Vibration switch is hidden',await N.js(`${sw}.hidden&&!pokerHaptics.can()`));
+ // A laptop: Chrome has navigator.vibrate, but the pointer is fine. No switch, no vibration.
+ const L=await user('hana','android');await send('Emulation.setTouchEmulationEnabled',{enabled:false},L.s);
+ await send('Emulation.setDeviceMetricsOverride',{width:1280,height:844,deviceScaleFactor:1,mobile:false},L.s);await L.go(`/s/${IDS.play}/`);
+ check('a laptop: no Vibration switch, nothing plays',await L.js(`${sw}.hidden&&!pokerHaptics.can()&&(pokerHaptics.play('done'),__vib.length===0)`));
  check('neither: play does nothing and throws nothing',await N.js(`(pokerHaptics.play('done'),!document.querySelector('[data-haptic]'))`));
  check('android: no errors',await A.js(`__errors.length===0`),await A.js(`JSON.stringify(__errors)`));
 } catch(error){console.error(error);check('probe ran to its end',false,String(error))}

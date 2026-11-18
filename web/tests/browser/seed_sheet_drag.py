@@ -1,8 +1,9 @@
 """Fixture for sheet drag and haptics. Run alone on a fresh temporary SQLite database.
 
 Host hana (with player ben, who has a login) has one set in play with four players, for the buy-in and
-cash-out sheets and their number keys; one set counting up whose books balance, for the haptic at that
-moment; and one closed session of twelve players, for the long recap sheet.
+cash-out sheets and their number keys; one set counting up with one cash-out left, which the haptics
+probe records from a shell so that the books balance while a phone watches; and one closed session of
+twelve players, for the long recap sheet.
 """
 import json, uuid
 from django.contrib.auth import get_user_model
@@ -30,7 +31,7 @@ pair = games.add_participants(count.pk, host, [ben.pk, roster[0].pk], u())
 for p in pair: ledger.record_buy_in(count.pk, host, p.pk, 100000, u())
 games.transition(count.pk, host, "start")
 games.transition(count.pk, host, "end")
-for p, cash in zip(pair, [150000, 50000]): ledger.record_cash_out(count.pk, host, p.pk, cash, u())
+ledger.record_cash_out(count.pk, host, pair[0].pk, 150000, u())  # pair[1] is left for the probe, at 50000
 
 nets = [20000, 60000, 40000, 100000, 10000, 0, -10000, -20000, -30000, -40000, -50000, -80000]
 done = make_session(host, state="open", table_name="Long table", seat_count=12)
@@ -42,6 +43,6 @@ for p, net in zip(people, nets): ledger.record_cash_out(done.pk, host, p.pk, 100
 settlement.finalize(done.pk, host)
 settlement.close_night(done.night_id, host)
 
-manifest = {"play": play.pk, "count": count.pk, "twelve": done.night_id}
+manifest = {"play": play.pk, "play_night": play.night_id, "count": count.pk, "count_last": pair[1].pk, "twelve": done.night_id}
 open("/private/tmp/pn-drag-manifest.json", "w").write(json.dumps(manifest))
 print("DRAG_IDS", manifest)
