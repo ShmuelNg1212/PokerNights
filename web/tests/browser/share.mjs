@@ -42,7 +42,8 @@ const facts=`(async()=>{const img=${Q('[data-share-preview]')};const c=document.
 async function phone(width){
  const W=`${width}px phone`,A=await user('hana',width,{phone:true});
  await A.go(`/n/${M.small}/`);
- check(`${W} Share results sits with the recap opener, 48px, page fits`,await A.js(`(()=>{const b=document.querySelector('.night-after [data-sheet-open=share]');return !!b&&b.getBoundingClientRect().height>=48&&b.previousElementSibling.classList.contains('recap-opener')&&document.documentElement.scrollWidth<=${width}})()`));
+ // Since the parlor revamp (2026-11-18) the button sits in the share card, which follows the recap opener.
+ check(`${W} Share results sits with the recap opener, 48px, page fits`,await A.js(`(()=>{const b=document.querySelector('.night-after [data-sheet-open=share]');return !!b&&b.getBoundingClientRect().height>=48&&b.closest('.share-panel').previousElementSibling.classList.contains('recap-opener')&&document.documentElement.scrollWidth<=${width}})()`));
  await A.open(M.small);
  // The first frames of the deal, before it lands.
  await A.until(`${ready}`);

@@ -2834,3 +2834,8 @@ p.alerts-text:last-child { margin-bottom: 0; }
 }
 /* The session head's rake line: the figure never breaks inside itself. */
 .night-overview .set-totals dd { white-space: nowrap; }
+/* A transfer card is narrower than the row was, so names wrap sooner: the chip stays on the first name line
+   (DESIGN.md, Layout), and the card is no taller than the row (night.mjs: at most 100px). */
+.night-detail .transfer-line .transfer-party { align-items: flex-start; }
+.night-detail .transfer-line .transfer-party strong { line-height: 28px; }
+.night-detail .transfer-line { padding: 6px 12px; }

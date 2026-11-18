@@ -81,7 +81,7 @@
       {% if night.is_closed %}<p class="small muted">Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>{% elif total_rake %}<p class="small muted">Includes rake already collected.</p>{% endif %}
       {% if night.is_closed and recap %}
       {# The ledger: what each player put in and took out, and the result. The footer balances: with rake, the rake row is what the results lack. #}
-      <div class="ledger-wrap"><table class="ledger-table{% if recap|ledger_wide:unit %} ledger-stacked{% endif %}" role="table">
+      <div class="ledger-wrap night-results"><table class="ledger-table{% if recap|ledger_wide:unit %} ledger-stacked{% endif %}" role="table">
         <caption class="visually-hidden">Each player's buy-ins, cash-outs and result</caption>
         <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Player</th><th scope="col" role="columnheader">In</th><th scope="col" role="columnheader">Out</th><th scope="col" role="columnheader">Net</th></tr></thead>
         <tbody role="rowgroup">
