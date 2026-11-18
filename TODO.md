@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: parlor revamp (not released)
+## Phone checks: parlor revamp (released 2026-11-19)
 
 - [ ] Set in play with six players: the felt is a rounded card; timer and blinds are dark tiles; all six rows show above the folded dock, with End play as the bright button beside a round chevron. A host has a small Brass star on the chip. Press a row: it sinks a little and comes back. Rebuy still opens the sheet.
 - [ ] Your groups: Host pill with a star; the set in play is a blue card inside the group card; To settle rows have the other person's chip; Your record is three tiles. Log in again: the tiles and dues rise after the card.
