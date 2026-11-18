@@ -210,6 +210,46 @@ class HomePageTests(TestCase):
         self.assertContains(host, "Did not play")
         self.assertNotContains(host, "You did not play")
 
+    def _record_tiles(self, html):
+        """The record tiles of each unit, as HTML, in page order (parlor revamp, 2026-11-18)."""
+        parts = html.split('<dl class="facts facts-3 home-record"')[1:]
+        return [part[:part.index("</dl>")] for part in parts]
+
+    def test_my_record_is_three_tiles_from_the_record_the_card_has(self):
+        self.club.session(SEP_30, {"A": (1000, 1500), "B": (1000, 500)})
+        self.club.session(OCT_1, {"A": (1000, 800), "B": (1000, 1200)})
+        self.club.session(OCT_1, {"A": (1000, 1100), "B": (1000, 900)})
+        self.client.force_login(self.user_a)
+        html = self.client.get(self.url).content.decode()
+        [tiles] = self._record_tiles(html)
+        self.assertIn("<dt>Sessions</dt><dd>3</dd>", tiles)
+        # Two wins in three: 66%, rounded down as Stats rounds it.
+        self.assertIn("<dt>Win rate</dt><dd>66%</dd>", tiles)
+        self.assertIn("+₱400", tiles)
+        record = card_for(self.user_a, self.club.group).records[0][1]
+        self.assertEqual((record.sessions, record.win_percent, record.net), (3, 66, 40000))
+        self.assertContains(self.client.get(self.url), "Your record")
+
+    def test_each_unit_has_its_own_tiles_and_a_loss_keeps_its_sign(self):
+        self.club.session(SEP_30, {"A": (1000, 500), "B": (1000, 1500)})
+        self.club.session(OCT_1, {"A": (1000, 1600), "B": (1000, 400)}, unit="chips")
+        self.client.force_login(self.user_a)
+        html = self.client.get(self.url).content.decode()
+        pesos, chips = self._record_tiles(html)
+        self.assertIn("<dt>Win rate</dt><dd>0%</dd>", pesos)
+        self.assertIn("−₱500", pesos)
+        self.assertIn("<dt>Win rate</dt><dd>100%</dd>", chips)
+        self.assertIn("+600 chips", chips)
+        self.assertNotIn("₱", chips)
+        self.assertIn("Your record <span class=\"count-pill\">Chips</span>", html)
+
+    def test_no_session_played_means_no_tiles(self):
+        self.club.session(OCT_1, {"B": (1000, 1000)})
+        self.client.force_login(self.club.host.user)
+        html = self.client.get(self.url).content.decode()
+        self.assertEqual(self._record_tiles(html), [])
+        self.assertContains(self.client.get(self.url), "Did not play")
+
     def test_player_never_sees_a_draft(self):
         make_session(self.club.host, table=self.club.table, state="setup")
         self.client.force_login(self.user_a)

@@ -47,7 +47,12 @@ def player_token(participant, participants):
 def member_token(member, members):
     from types import SimpleNamespace
     peers = [SimpleNamespace(member=m, join_order=m.pk, pk=m.pk) for m in members]
-    return player_token(next(p for p in peers if p.pk == member.pk), peers)
+    # A member who left the group can still be owed money: their chip is drawn from their own name.
+    match = next((p for p in peers if p.pk == member.pk), None)
+    if match is None:
+        match = SimpleNamespace(member=member, join_order=member.pk, pk=member.pk)
+        peers.append(match)
+    return player_token(match, peers)
 
 
 @register.simple_tag
@@ -68,7 +73,7 @@ def double_default(settings, unit):
     return plain_amount(min(settings.default_buy_in * 2, settings.max_buy_in), unit)
 
 # Lucide SVG paths, ISC licensed; see static/icons/LICENSE.
-ICONS = {'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />\n  <circle cx="12" cy="12" r="3" />', 'chevron-right': '<path d="m9 18 6-6-6-6" />', 'chevron-down': '<path d="m6 9 6 6 6-6" />', 'plus': '<path d="M5 12h14" />\n  <path d="M12 5v14" />', 'arrow-left': '<path d="m12 19-7-7 7-7" />\n  <path d="M19 12H5" />', 'arrow-right': '<path d="M5 12h14" />\n  <path d="m12 5 7 7-7 7" />', 'arrow-up-right': '<path d="M7 7h10v10" />\n  <path d="M7 17 17 7" />', 'arrow-down-right': '<path d="m7 7 10 10" />\n  <path d="M17 7v10H7" />', 'minus': '<path d="M5 12h14" />', 'x': '<path d="M18 6 6 18" />\n  <path d="m6 6 12 12" />', 'check': '<path d="M20 6 9 17l-5-5" />', 'ellipsis': '<circle cx="12" cy="12" r="1" />\n  <circle cx="19" cy="12" r="1" />\n  <circle cx="5" cy="12" r="1" />', 'log-out': '<path d="m16 17 5-5-5-5" />\n  <path d="M21 12H9" />\n  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />'}
+ICONS = {'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />\n  <circle cx="12" cy="12" r="3" />', 'chevron-right': '<path d="m9 18 6-6-6-6" />', 'chevron-down': '<path d="m6 9 6 6 6-6" />', 'plus': '<path d="M5 12h14" />\n  <path d="M12 5v14" />', 'arrow-left': '<path d="m12 19-7-7 7-7" />\n  <path d="M19 12H5" />', 'arrow-right': '<path d="M5 12h14" />\n  <path d="m12 5 7 7-7 7" />', 'arrow-up-right': '<path d="M7 7h10v10" />\n  <path d="M7 17 17 7" />', 'arrow-down-right': '<path d="m7 7 10 10" />\n  <path d="M17 7v10H7" />', 'minus': '<path d="M5 12h14" />', 'x': '<path d="M18 6 6 18" />\n  <path d="m6 6 12 12" />', 'check': '<path d="M20 6 9 17l-5-5" />', 'ellipsis': '<circle cx="12" cy="12" r="1" />\n  <circle cx="19" cy="12" r="1" />\n  <circle cx="5" cy="12" r="1" />', 'log-out': '<path d="m16 17 5-5-5-5" />\n  <path d="M21 12H9" />\n  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />', 'users': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', 'star': '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', 'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', 'scale': '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>', 'share': '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>', 'chart': '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>', 'transfer': '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>', 'coins': '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>'}
 
 @register.simple_tag
 def icon(name):
@@ -146,3 +151,11 @@ def ordinal_place(number):
     number = int(number)
     suffix = "th" if 10 <= number % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
     return f"{number}{suffix}"
+
+
+@register.filter
+def ledger_wide(recap, unit):
+    """True when a figure of the ledger table is too long for four columns on a phone (centavos, millions)."""
+    from ledger.money import format_amount
+    figures = [v for line in recap.ranking for v in (line.buy_in, line.cash_out, line.net)] + [recap.total_buy_in, recap.total_rake]
+    return max((len(format_amount(abs(v), unit)) for v in figures), default=0) > 8

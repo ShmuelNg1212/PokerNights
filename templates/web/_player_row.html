@@ -1,8 +1,8 @@
 {% load money_tags clock_tags table_tags %}{# One player at the table: the row, and the sources of its sheets. #}
 {% with p=line.participant %}
-    <li class="player-row {% if p.status == 'left' %}player-left{% endif %}" data-watch="player-{{ p.pk }}"{% if arrived and p.pk in arrived %} data-arrived{% endif %} data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}" data-name="{{ p.member.display_name }}"{% if p.member_id == me.pk %} data-mine{% endif %}>
+    <li class="player-row row-card press-card{% if p.status == 'left' %} player-left{% endif %}" data-watch="player-{{ p.pk }}"{% if arrived and p.pk in arrived %} data-arrived{% endif %} data-value="{{ line.buy_in_total }}:{{ line.buy_in_count }}:{{ line.cashed_out }}:{{ p.status }}" data-name="{{ p.member.display_name }}"{% if p.member_id == me.pk %} data-mine{% endif %}>
       <div class="player-main">
-        {% player_token p participants %}
+        {% player_token p participants %}{% if p.member.is_host %}<span class="host-mark">{% icon 'star' %}<span class="visually-hidden">Host</span></span>{% endif %}
         <div class="player-identity">
           <span class="player-name fallback-name">{{ p.member.display_name }}{% if p.member_id == me.pk %} <span class="muted small">(you)</span>{% endif %}</span>
           <button hidden type="button" class="player-name player-opener" data-sheet-open="player-{{ p.pk }}" aria-label="Details for {{ p.member.display_name }}"><span class="player-opens">{{ p.member.display_name }}{% if p.member_id == me.pk %}&nbsp;<span class="muted small">(you)</span>{% endif %}{% icon 'chevron-right' %}</span><span class="player-meta">{% buy_in_stack line.buy_in_count %}

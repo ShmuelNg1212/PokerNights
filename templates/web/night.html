@@ -79,11 +79,28 @@
     <section aria-labelledby="results-title">
       <h2 id="results-title">{% if night.is_closed %}Session results <span class="badge">Final</span>{% else %}Results so far <span class="badge">Not final</span>{% endif %}</h2>
       {% if night.is_closed %}<p class="small muted">Results describe play, not payments. {% if total_rake %}They include rake already collected; settle-up excludes that fee.{% endif %}</p>{% elif total_rake %}<p class="small muted">Includes rake already collected.</p>{% endif %}
+      {% if night.is_closed and recap %}
+      {# The ledger: what each player put in and took out, and the result. The footer balances: with rake, the rake row is what the results lack. #}
+      <div class="ledger-wrap"><table class="ledger-table{% if recap|ledger_wide:unit %} ledger-stacked{% endif %}" role="table">
+        <caption class="visually-hidden">Each player's buy-ins, cash-outs and result</caption>
+        <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Player</th><th scope="col" role="columnheader">In</th><th scope="col" role="columnheader">Out</th><th scope="col" role="columnheader">Net</th></tr></thead>
+        <tbody role="rowgroup">
+          {% for line in recap.ranking %}<tr role="row"{% if line.member.pk == me.pk %} class="is-me"{% endif %}><th scope="row" role="rowheader"><span class="ledger-who">{% player_token line.standing outcome.standings %}<span class="ledger-text"><span class="ledger-name">{{ line.member.display_name }}</span>{% if line.member.pk == me.pk %} <span class="muted">(you)</span>{% endif %}
+            <span class="ledger-meta">{{ line.buy_ins }} buy-in{{ line.buy_ins|pluralize }}</span></span></span></th><td role="cell" data-label="In">{{ line.buy_in|amount:unit }}</td><td role="cell" data-label="Out">{{ line.cash_out|amount:unit }}</td><td role="cell" data-label="Net" class="amount {{ line.net|sign_class }}">{{ line.net|signed_amount:unit }}</td></tr>
+          {% endfor %}
+        </tbody>
+        <tfoot role="rowgroup">
+          {% if recap.total_rake %}<tr role="row" class="ledger-rake"><th scope="row" role="rowheader">Rake already collected</th><td role="cell" data-label="In"></td><td role="cell" data-label="Out">{{ recap.total_rake|amount:unit }}</td><td role="cell" data-label="Net">{{ recap.total_rake|signed_amount:unit }}</td></tr>{% endif %}
+          <tr role="row" class="ledger-total"><th scope="row" role="rowheader">Total</th><td role="cell" data-label="In">{{ recap.total_buy_in|amount:unit }}</td><td role="cell" data-label="Out">{{ recap.total_cash_out|add:recap.total_rake|amount:unit }}</td><td role="cell" data-label="Net">{{ recap.total_net|add:recap.total_rake|signed_amount:unit }}</td></tr>
+        </tfoot>
+      </table></div>
+      {% else %}
       <ul class="list night-results">
         {% for row in outcome.ranked %}
         <li class="result-row"><div class="row">{% player_token row outcome.standings %}<span class="grow">{{ row.member.display_name }}<br><span class="muted small">{{ row.sets_played }} set{{ row.sets_played|pluralize }}{% if row.play_seconds is not None %} · {{ row.play_seconds|duration }}{% endif %}</span></span><span class="amount {{ row.net|sign_class }}">{% if row.net > 0 %}{% icon 'arrow-up-right' %}{% elif row.net < 0 %}{% icon 'arrow-down-right' %}{% else %}{% icon 'minus' %}{% endif %} {{ row.net|signed_amount:unit }}</span></div></li>
         {% endfor %}
       </ul>
+      {% endif %}
     </section>
     {% endif %}
     {% if not night.is_closed and not night.is_archived and players or not night.is_closed and outcome.table_payments %}
@@ -156,7 +173,14 @@
     {% if recap %}
     <button type="button" class="btn btn-quiet btn-block recap-opener" data-sheet-open="recap">View session recap</button>
     {% endif %}
-    {% if share %}{% include "web/_share.html" %}{% endif %}
+    {% if share %}
+    {# A look at what goes to the group chat; the sheet holds the picture, the full text and the ways to send it. #}
+    <section class="share-panel" aria-labelledby="share-title">
+      <div class="label-row"><h2 class="section-label" id="share-title">{% icon 'share' %}Share results</h2></div>
+      <pre class="share-peek" aria-hidden="true">{{ share.text }}</pre>
+      {% include "web/_share.html" %}
+    </section>
+    {% endif %}
     {% if manage %}
     <details class="night-manage" id="manage">
       <summary>Manage this session</summary>

@@ -50,9 +50,10 @@ try {
  await A.click(`document.querySelector('form.form-section [type=submit]')`);
  check('the field returns to password type on submit',await A.js(`JSON.stringify(window.__types)==='["password"]'`));
  // Keyboard order and focus ring on login.
- await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').focus()`);const order=[];
+ // Since the parlor revamp (2026-11-18) Sign up is the tab above the form, so it comes first.
+ await A.go('/accounts/login/');await A.js(`document.querySelector('.entry-tab-link a').focus()`);const order=[];
  for(let i=0;i<4;i++){await A.key('Tab','Tab',9);order.push(await A.js(`document.activeElement.name||document.activeElement.className||document.activeElement.textContent.trim()`));}
- check('keyboard order: password, show, log in, sign up',JSON.stringify(order)===JSON.stringify(['password','password-toggle','btn btn-primary btn-block','Sign up']));
+ check('keyboard order: sign up tab, username, password, show, log in',JSON.stringify(order)===JSON.stringify(['username','password','password-toggle','btn btn-primary btn-block']));
  await A.go('/accounts/login/');await A.js(`document.querySelector('[name=username]').focus()`);await A.key('Tab','Tab',9);await A.key('Tab','Tab',9);
  check('show button has the focus ring',await A.js(`document.activeElement.matches('.password-toggle')&&getComputedStyle(document.activeElement).outlineWidth==='3px'`));
  // Errors.

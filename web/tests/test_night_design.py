@@ -142,8 +142,8 @@ class RecapPageTests(TestCase):
             self.assertContains(page, heading)
         self.assertNotContains(page, 'Your night')
         self.assertNotContains(page, '(you)')
-        self.assertContains(page, '₱2,000 in · ₱2,200 out · 2 buy-ins')
-        self.assertContains(page, '₱1,000 in · ₱700 out · 2 buy-ins')  # the loss is listed
+        self.assertContains(page, '<span>₱2,000 in</span> · <span>₱2,200 out</span> · <span>2 buy-ins</span>')
+        self.assertContains(page, '<span>₱1,000 in</span> · <span>₱700 out</span> · <span>2 buy-ins</span>')  # the loss is listed
         self.assertContains(page, 'Biggest win in one set')
         self.assertContains(page, 'in set 1')
         self.assertNotContains(page, 'Most buy-ins')  # everyone bought in twice

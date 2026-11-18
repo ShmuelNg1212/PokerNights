@@ -6,6 +6,7 @@
 {% include "partials/entry_head.html" %}
 {% endblock %}
 {% block sheet %}
+{% if can_sign_up %}<nav class="entry-tabs" aria-label="Log in or sign up"><span class="entry-tab is-current" aria-current="page">Log in</span><p class="entry-alt entry-tab-link"><a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}"><span class="visually-hidden">No account? </span>Sign up</a></p></nav>{% endif %}
 <h1>Log in</h1>
 {% if invited_to %}<p class="entry-invite">You're invited to <strong>{{ invited_to }}</strong>. Log in, then confirm to join.</p>{% endif %}
 <form method="post" class="form-section stack">
@@ -21,6 +22,5 @@
   <button type="submit" class="btn btn-primary btn-block" data-busy="Logging in…">Log in</button>
 </form>
 <p class="hint entry-forgot">{% if reset_links %}Forgot your password? Ask a host of your group for a reset link.{% else %}Forgot your password? There is no reset yet. Tell your host, who can ask the site administrator to set a new one.{% endif %}</p>
-{% if can_sign_up %}<p class="entry-alt">No account? <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign up</a></p>
-{% else %}<p class="entry-alt entry-alt-plain">No account? Ask a host of your group for an invite link.</p>{% endif %}
+{% if not can_sign_up %}<p class="entry-alt entry-alt-plain">No account? Ask a host of your group for an invite link.</p>{% endif %}
 {% endblock %}

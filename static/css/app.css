@@ -2567,3 +2567,270 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .sheet:has(.debt-confirm-direction) .sheet-head h2 { min-width: 0; overflow-wrap: anywhere; }
 .clearance-undo { grid-column: 1 / -1; }
 .sheet:has(.debt-confirm-direction) .sheet-head .btn-round { flex: none; }
+
+/* ===== Parlor revamp (2026-11-18). doc/plan/1795008990_parlor_revamp.md ==========================
+   The Stitch concepts' layout on the Rack's own materials: Brass section labels, inset felt, fact
+   tiles, Rail card rows and transfer cards. No new colour, font or radius. Later rules here win. */
+
+/* A section label: Brass capitals with a drawn icon. A count pill or a muted aside sits at the right. */
+.section-label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--brass); font-size: .8125rem; font-weight: 700; font-stretch: 85%; letter-spacing: .06em; text-transform: uppercase; line-height: 1.25; }
+.section-label > .icon { width: 1rem; height: 1rem; }
+.label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: 32px; margin: var(--s-5) 0 var(--s-2); }
+.label-row > :first-child { min-width: 0; }
+.count-pill { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--r-pill); background: var(--rail-2); color: var(--bone-dim); font-size: .75rem; font-weight: 600; font-stretch: 100%; letter-spacing: 0; text-transform: none; line-height: 1.5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.label-aside { color: var(--muted); font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.label-aside .amount { font-weight: 700; }
+
+/* Fact tiles: an inset grid of label-over-figure. Ground on Rail, Deep Felt on felt. */
+.facts { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0,1fr)); gap: var(--s-2); margin: var(--s-3) 0 0; padding: 0; }
+.facts-3 { --cols: 3; }
+.facts > div { min-width: 0; padding: 10px 12px; border-radius: var(--r-field); background: var(--ground); }
+.facts dt { margin: 0; color: var(--muted); font-size: .75rem; font-weight: 600; line-height: 1.3; }
+.facts dd { margin: 2px 0 0; font-size: 1.375rem; font-weight: 800; font-stretch: var(--w-money); line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.facts dd small { display: block; margin-top: 2px; font-size: .75rem; font-weight: 500; font-stretch: 100%; color: var(--muted); }
+.felt .facts > div { background: var(--felt-deep); }
+.felt .facts dt, .felt .facts dd small { color: var(--felt-ink); }
+@media (max-width: 339px) { .facts-3 { --cols: 1; } }
+
+/* A Rail card row: one player, one transfer or one debt on its own raised card. Flat: no shadow. */
+.row-card { padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--r-row); background: var(--rail); }
+.row-card + .row-card { margin-top: 6px; }
+/* A card that opens something sinks a little under a finger and springs back, as a button does. */
+.press-card { transition: scale 300ms var(--spring-arrive); }
+.press-card:is(:has(> .player-main .player-opener:active), :has(> .card-link:active)) { scale: .985; transition: scale var(--t-press) var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .press-card { transition: none; } .press-card:is(:has(> .player-main .player-opener:active), :has(> .card-link:active)) { scale: none; } }
+
+/* Role and state pills. Words always; colour is never the only sign. */
+.badge-host { display: inline-flex; align-items: center; gap: 3px; color: var(--brass); border-color: color-mix(in oklch, var(--brass) 55%, transparent); font-size: .6875rem; letter-spacing: .04em; text-transform: uppercase; line-height: 1.6; }
+.badge-host .icon { width: .6875rem; height: .6875rem; }
+.badge-dot { display: inline-flex; align-items: center; gap: 6px; }
+.badge-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--up); flex: none; }
+
+/* --- The set in play (concept: live table). --------------------------------------------------- */
+@media (max-width: 899px) {
+  /* The felt is an inset card on a phone: the page's margin all round and every corner rounded. */
+  .table-v2 .felt { margin: var(--s-2) 0 0; padding: var(--s-4); border-radius: var(--r-sheet); }
+}
+.table-v2 .felt .pot-label { text-transform: uppercase; letter-spacing: .06em; font-weight: 700; font-size: .75rem; }
+/* Timer and blinds become two inset tiles beside the figure, in the same height as before. */
+.table-v2 .felt .pot { grid-template-columns: minmax(0,1fr) 128px; }
+.table-v2 .felt .pot-side { gap: 4px; }
+.table-v2 .felt .pot-side > div { padding: 4px 10px 5px; border-radius: var(--r-field); background: var(--felt-deep); }
+.table-v2 .felt .pot-side .pot-label { font-size: .6875rem; line-height: 1.3; }
+.table-v2 .felt .pot-side strong { line-height: 1.15; }
+/* The facts line is an inset bar on the felt; it still opens the details. */
+.table-v2 .set-facts { border-top: 0; }
+.table-v2 .set-facts > summary { padding: 0 12px; border-radius: var(--r-field); background: var(--felt-deep); }
+.table-v2 .set-facts > summary:active { background: color-mix(in oklch, var(--bone) 8%, var(--felt-deep)); }
+.table-v2 .set-facts[open] .facts-body { padding: var(--s-2) 12px 0; }
+@media (max-width: 359px) { .table-v2 .felt .pot { grid-template-columns: minmax(0,1fr) 112px; } }
+
+/* Players: the label row, then a card for each player, as tight as the ruled row was. */
+.table-players .label-row { margin: 10px 0 2px; padding: 0; }
+.table-players .label-row h2 { font-size: .8125rem; }
+.table-v2 .player-list { display: grid; gap: 6px; }
+.table-v2 .player-row.row-card { margin: 0; padding: 3px 10px; border-bottom: 1px solid var(--rule); }
+.sheets-enabled .table-v2 .row-card .player-opener::after { inset: -3px -10px; border-radius: var(--r-row); }
+.sheets-enabled .table-v2 .player-row.row-card:has(.player-opener:active) { border-color: var(--rule); background: color-mix(in oklch, var(--bone) 6%, var(--rail)); box-shadow: none; }
+.table-v2 .player-row.row-card.just-changed::before { inset: -1px; }
+.table-v2 .player-row.row-card.player-left { background: transparent; }
+.table-v2 .player-list > :is(.join-row, .empty-state) { border: 0; }
+/* A host's chip carries a small Brass disc with a star, like a button on the chip. It takes no room in the row. */
+.player-main > .chip { grid-column: 1; grid-row: 1; }
+.player-main > .host-mark { grid-column: 1; grid-row: 1; align-self: start; justify-self: end; display: grid; place-items: center; width: 18px; height: 18px; margin: -3px -5px 0 0; border-radius: 50%; background: var(--brass); color: var(--ink); box-shadow: 0 0 0 2px var(--rail); }
+.host-mark .icon { width: 11px; height: 11px; fill: currentColor; stroke-width: 1.5; }
+.table-v2 .row-card .player-actions .btn { padding-inline: 12px; }
+@media (min-width: 900px) { .table-v2 .player-row.row-card { padding: 8px 14px; } .sheets-enabled .table-v2 .row-card .player-opener::after { inset: -8px -14px; } }
+
+/* The folded dock in play: the next step is the bone button itself, with the chevron beside it. */
+@media (max-width: 899px) {
+  :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) { display: grid; grid-template-columns: minmax(0,1fr) var(--tap); align-items: center; column-gap: var(--s-2); padding-top: 10px; }
+  :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls > form:has(> .next-action[value=end]) { display: block; grid-column: 1; grid-row: 1; margin: 0; }
+  :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) > .dock-toggle { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: var(--tap); height: var(--tap); padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--rail-2); }
+  :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) > .dock-toggle > :not(.icon) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  :root.dock-collapsed:not(.dock-closing):not(.kb-bar) .table-layout .host-controls:has(> form > .next-action[value=end]) > .dock-toggle > .icon { grid-row: 1; grid-column: 1; color: var(--bone); }
+}
+.table-v2 .felt .pot-side { justify-content: stretch; }
+/* The card is 22px narrower than the ruled row was: the line under the name narrows a little so the stack stays beside its words. */
+.table-v2 .row-card .player-meta, .table-v2 .row-card .player-figure small { font-stretch: 88%; }
+.table-v2 .row-card .player-meta { column-gap: 4px; }
+@media (max-width: 359px) {
+  .table-players .label-row .btn { white-space: nowrap; padding-inline: 10px; }
+  .table-v2 .set-facts > summary { padding: 0 10px; font-size: .8125rem; }
+}
+
+/* --- Your groups (concepts: your groups home, the rack home). ------------------------------------ */
+/* A set in play is an inset felt card inside the group's card; the other states are an inset Ground panel. */
+.group-home .home-band { margin: 0 var(--s-3) var(--s-3); padding: var(--s-4); border: 0; border-radius: var(--r-sheet); }
+.group-home .home-band:not(.felt) { background: var(--ground); border: 1px solid var(--rule); }
+.group-home .home-band.home-band-quiet { background: var(--ground); }
+.group-home .home-band .badge-dot::before { background: var(--up); }
+.group-home .home-band .badge-live.badge-dot::before { background: oklch(0.62 0.13 160); }
+.group-home .home-row { margin: 0 var(--s-3) var(--s-3); padding: 0 var(--s-3); border: 1px solid var(--rule); border-radius: var(--r-row); background: var(--rail); }
+/* To settle: a label, then a card for each person. */
+.home-dues { padding: 0 var(--s-3) var(--s-3); border-top: 0; }
+.home-dues .label-row { margin: var(--s-2) 4px var(--s-2); }
+.home-dues li + li { border-top: 0; }
+.home-dues li.row-card { padding: 0 var(--s-3); }
+.home-dues a.card-link { min-height: 60px; padding: var(--s-2) 0; }
+.home-dues a.card-link .chip { width: 36px; height: 36px; font-size: .8125rem; }
+.home-dues a.card-link .home-when { display: block; font-size: .875rem; }
+.home-dues a.card-link:active { background: transparent; box-shadow: none; }
+.home-dues li.row-card:has(> .card-link:active) { background: color-mix(in oklch, var(--bone) 6%, var(--rail)); }
+.home-dues .btn, .home-dues p.home-when { margin: var(--s-2) 0 0; }
+/* Your record: three tiles a unit; the last session is one card under them. */
+.home-record-block { padding: 0 var(--s-3); }
+.home-record-block .label-row { margin: var(--s-2) 4px var(--s-2); }
+.home-record { margin: 0 0 var(--s-3); }
+.home-record > div { text-align: center; padding: 12px 8px; border: 1px solid var(--rule); background: var(--ground); }
+.home-record dt { font-size: .8125rem; }
+.home-record dd { font-size: 1.625rem; }
+.home-record dd.plus { color: var(--up); }
+.home-record dd.minus { color: var(--down); }
+.home-record dd .icon { display: inline-block; width: 1rem; height: 1rem; margin-right: 1px; vertical-align: -.05em; }
+.group-home .home-facts { display: block; margin: 0 var(--s-3) var(--s-3); border: 0; background: transparent; }
+.group-home .home-facts > div.row-card { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--s-3); padding: 4px var(--s-3); background: var(--rail); }
+.group-home .home-facts > div.row-card dd { text-align: right; }
+.group-home .home-facts .amount { font-size: 1.625rem; }
+.group-home .home-record-block + .home-facts, .group-home .home-dues + .home-facts { margin-top: 0; }
+@media (max-width: 339px) { .home-record > div { text-align: left; display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); } .home-record dd { margin: 0; } }
+/* Arrival: the tiles and the dues are set down after the card, one after another (DESIGN.md, "Arrival"). */
+:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li) { animation: welcome-rise 460ms var(--spring-shift) 360ms backwards; }
+:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li):nth-child(2) { animation-delay: 400ms; }
+:is([data-welcome], [data-launch]) :is(.home-record > div, .home-dues li):nth-child(n+3) { animation-delay: 440ms; }
+
+/* --- Count-up (concept: count-up and reconciliation). --------------------------------------------- */
+@media (max-width: 899px) {
+  /* The overview is an inset card, as the felt is in play. */
+  .count-v2 > .felt.hero { margin: var(--s-2) 0 0; border: 1px solid var(--rule); border-radius: var(--r-sheet); }
+}
+.count-v2 .count-workspace > .label-row { margin: 10px 0 4px; padding: 0; }
+.count-v2 .player-list { display: grid; gap: 6px; }
+.count-v2 .count-row.row-card { padding: 4px 10px; border-bottom: 1px solid var(--rule); }
+.count-v2 .count-row.row-card.just-changed::before { inset: -1px; }
+.count-v2 .count-row.row-card .count-entry input[data-count-input] { background: var(--ground); }
+.count-v2 .count-row.row-card.is-cashed_out { background: transparent; }
+/* The row being typed in has a Brass inside edge; the field's own focus ring is unchanged. It fades in. */
+.count-v2 .count-row.row-card::after { content: ""; position: absolute; inset: -1px; border: 2px solid var(--brass); border-radius: var(--r-row); opacity: 0; pointer-events: none; transition: opacity 120ms var(--ease-out); }
+.count-v2 .count-row.row-card:has(input[data-count-input]:focus)::after { opacity: 1; }
+/* The net of an accepted count or cash-out, under the name. */
+.count-sub .count-net { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; font-weight: 700; white-space: nowrap; }
+.count-sub .count-net.plus { color: var(--up); }
+.count-sub .count-net.minus { color: var(--down); }
+.count-sub .count-net .icon { width: 13px; height: 13px; stroke-width: 2.5; }
+/* The books: a Rail panel with an inset list of figures and the status at its foot. */
+.end-balance > .books-label { margin: var(--s-5) 0 var(--s-2); }
+.count-v2 .balance-panel.books { padding: var(--s-3); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--rail); }
+.count-v2 .books .books-lines { padding: 6px 12px 10px; border-radius: var(--r-field); background: var(--ground); }
+.count-v2 .books .books-lines > div { margin-top: 6px; }
+.count-v2 .books .books-lines dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+.count-v2 .books .notice { margin: 0; }
+.count-v2 .books-balanced { padding: 14px 0 2px; }
+
+/* --- Settle-up and results (concept: session settle-up transfers). ---------------------------------- */
+/* The session's section headings read as Brass labels; the ids, focus targets and words are unchanged. */
+.night-detail > section > h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: var(--s-2); color: var(--brass); font-size: .8125rem; font-weight: 700; font-stretch: 85%; letter-spacing: .06em; text-transform: uppercase; }
+.night-detail > section > h2 .badge { letter-spacing: 0; text-transform: none; font-stretch: 100%; }
+/* Each transfer is a Rail card: who pays whom, the amount, then its state and the action. */
+.night-detail .transfer-list { display: grid; gap: 6px; }
+.night-detail .transfer-line { padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--r-row); background: var(--rail); }
+.night-detail .transfer-line.is-paid { background: transparent; }
+.night-detail .transfer-line.is-mine:not(.is-paid) { border-color: color-mix(in oklch, var(--brass) 55%, var(--rule)); }
+.night-detail .transfer-line .transfer-direction { color: var(--brass); }
+.night-detail .transfer-line:not(.is-paid) .transfer-state { color: var(--brass); }
+.night-detail .transfer-line.is-paid .transfer-state { color: var(--up); }
+/* Arrival: each arrow is drawn from the payer's side, one after another. Only on a page load: a redraw in place keeps it. */
+@media (prefers-reduced-motion: no-preference) {
+  .night-detail .transfer-line .transfer-direction .icon { transform-origin: left center; animation: arrow-draw 260ms var(--ease-out) backwards; animation-delay: calc(120ms + var(--i, 0) * 40ms); }
+  .night-detail .transfer-line:nth-child(2) .transfer-direction .icon { --i: 1; }
+  .night-detail .transfer-line:nth-child(3) .transfer-direction .icon { --i: 2; }
+  .night-detail .transfer-line:nth-child(n+4) .transfer-direction .icon { --i: 3; }
+}
+@keyframes arrow-draw { from { opacity: 0; transform: scaleX(0); } }
+/* The ledger: Player, In, Out, Net. Figures never break; names wrap. */
+.ledger-wrap { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--rail); overflow: hidden; }
+.ledger-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ledger-table th, .ledger-table td { padding: 8px 6px; text-align: right; white-space: nowrap; font-size: .875rem; font-stretch: 88%; }
+.ledger-table :is(th, td):first-child { padding-left: 12px; text-align: left; white-space: normal; }
+.ledger-table :is(th, td):last-child { padding-right: 12px; }
+.ledger-table thead th { padding-block: 10px 6px; color: var(--muted); font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid var(--rule); }
+.ledger-table tbody tr + tr { border-top: 1px solid color-mix(in oklch, var(--rule) 60%, transparent); }
+.ledger-table tbody tr.is-me { background: var(--rail-2); }
+.ledger-table tbody th { font-weight: 650; }
+.ledger-table td { color: var(--bone-dim); font-weight: 600; }
+.ledger-table td.amount { font-size: 1rem; font-weight: 800; color: var(--text); }
+.ledger-table td.amount.plus { color: var(--up); }
+.ledger-table td.amount.minus { color: var(--down); }
+.ledger-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ledger-who .chip { width: 28px; height: 28px; flex: 0 0 28px; font-size: .6875rem; }
+.ledger-text { display: grid; min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+.ledger-meta { color: var(--muted); font-size: .75rem; font-weight: 500; }
+.ledger-table tfoot tr { border-top: 1px solid var(--rule); }
+.ledger-table tfoot th { font-weight: 700; color: var(--muted); font-size: .8125rem; }
+.ledger-table tfoot .ledger-total :is(th, td) { padding-block: 10px; color: var(--text); font-weight: 800; background: var(--ground); }
+@media (max-width: 359px) { .ledger-table th, .ledger-table td { padding-inline: 4px; font-size: .8125rem; } .ledger-who .chip { display: none; } }
+/* In the recap a fact never breaks inside itself: a line ends between facts. */
+.recap-meta > span { white-space: nowrap; }
+@media (max-width: 899px) {
+  /* The session's lead panel is an inset card on a phone, as the set's is. */
+  .night-overview > .felt.hero { margin: var(--s-2) 0 0; border: 1px solid var(--rule); border-radius: var(--r-sheet); }
+}
+.night-detail .night-settle .transfer-list, .night-settle .night-detail .transfer-list { border-top: 0; }
+/* Share: a card with the first lines of the text the chat receives, over the button that opens the sheet. */
+.share-panel { margin: var(--s-4) 0 0; padding: var(--s-3); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--rail); }
+.share-panel > .label-row { margin: 0 0 var(--s-2); }
+.share-peek { position: relative; max-height: 7.5em; margin: 0 0 var(--s-3); padding: 10px 12px; overflow: hidden; border-radius: var(--r-field); background: var(--ground); color: var(--bone-dim); font: 500 .8125rem/1.45 Archivo, ArchivoFallback, system-ui, sans-serif; white-space: pre-wrap; overflow-wrap: anywhere; -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent); mask-image: linear-gradient(to bottom, #000 65%, transparent); }
+.share-panel .share-opener, .share-panel .share-source > summary { margin: 0; }
+
+/* --- Front door (concept: front door). ----------------------------------------------------------- */
+/* Log in | Sign up: a segmented control on top of the raised sheet. The chosen half is a raised Rail 2 pill;
+   the other is the link. Between the two screens the pill slides across (a named view transition). */
+.entry-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 0 0 var(--s-4); padding: 4px; border: 1px solid var(--rule); border-radius: var(--r-btn); background: var(--ground); }
+.entry-tabs > * { margin: 0; }
+.entry-tab, .entry-tab-link a { display: grid; place-items: center; min-height: var(--tap); border-radius: 11px; font-weight: 650; text-decoration: none; }
+.entry-tab.is-current { background: var(--rail-2); color: var(--bone); box-shadow: inset 0 1px 0 oklch(1 0 0 / .06); view-transition-name: entry-tab; }
+.entry-tab-link a { color: var(--bone-dim); }
+.entry-tab-link a:hover { color: var(--bone); background: color-mix(in oklch, var(--bone) 5%, transparent); }
+.entry-tab-link a:focus-visible { outline: 3px solid var(--brass); outline-offset: -3px; }
+.entry-tabs + h1 { margin-top: 0; }
+::view-transition-group(entry-tab) { animation-duration: 260ms; animation-timing-function: var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(entry-tab), ::view-transition-old(entry-tab), ::view-transition-new(entry-tab) { animation: none !important; } }
+/* The books' status line fades up when a redraw brings a new one (a morph inserts it; an unchanged one stays). */
+@media (prefers-reduced-motion: no-preference) {
+  .count-v2 .books > :is(.notice, .books-covered) { animation: status-in 180ms var(--ease-out) backwards; }
+}
+@keyframes status-in { from { opacity: 0; transform: translateY(4px); } }
+@media (min-width: 900px) { .table-v2 .set-facts[open] .facts-body { padding: var(--s-3); border-radius: var(--r-field); background: var(--felt-deep); } }
+/* A section label keeps its size where an older heading rule (.section-heading h2, .home-dues h3) is more specific. */
+.label-row > :is(h2, h3).section-label { margin: 0; font-size: .8125rem; font-weight: 700; color: var(--brass); }
+/* On Log in the chosen tab already says "Log in": the heading stays for a screen reader only. */
+.entry-tabs:has(> .entry-tab.is-current:first-child) + h1 { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Worst-case data (break-ui, 2026-11-18). */
+/* A long pot puts the timer and blinds side by side under it; a figure in a tile may wrap at its spaces, never past the felt. */
+.table-v2 .felt .pot, .table-v2 .felt .pot-side, .table-v2 .felt .pot-side > div { min-width: 0; }
+.table-v2 .felt .pot-side strong { white-space: normal; overflow-wrap: anywhere; }
+.table-v2 .felt .pot:has(.amount-long) { grid-template-columns: minmax(0,1fr); }
+.table-v2 .felt .pot:has(.amount-long) .pot-side { grid-template-columns: 1fr 1fr; text-align: left; }
+.table-v2 .felt .pot:has(.amount-long) .pot-side > div { text-align: left; }
+/* On the smallest phone a row's amount takes its own line under the name, and "bought in" stays whole. */
+@media (max-width: 359px) {
+  .table-v2 .row-card .player-figure small { display: block; margin-left: 0; white-space: nowrap; }
+  .table-v2 .row-card .player-figure { overflow-wrap: anywhere; }
+}
+/* A ledger with long figures: each player takes two lines, the name above and In, Out and Net below, labelled. */
+@media (max-width: 559px) {
+  .ledger-stacked, .ledger-stacked :is(thead, tbody, tfoot) { display: block; }
+  .ledger-stacked thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .ledger-stacked tr { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: baseline; padding: 8px 12px; column-gap: 8px; }
+  .ledger-stacked tr > th[scope=row] { grid-column: 1 / -1; padding: 0 0 4px; }
+  .ledger-stacked tr > td { padding: 0; text-align: left; }
+  .ledger-stacked tr > td:last-child { text-align: right; }
+  .ledger-stacked tbody tr > td::before { content: attr(data-label); display: block; color: var(--muted); font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .ledger-stacked tfoot tr > td:empty { visibility: hidden; }
+  .ledger-stacked tfoot .ledger-total :is(th, td) { background: transparent; }
+  .ledger-stacked tfoot .ledger-total { background: var(--ground); }
+  .ledger-stacked .ledger-who .chip { display: grid; }
+}
+/* The session head's rake line: the figure never breaks inside itself. */
+.night-overview .set-totals dd { white-space: nowrap; }

@@ -22,7 +22,10 @@ const LAST=Object.fromEntries(['draft','open','running','counting','long'].map(k
 const size=(A,width)=>send('Emulation.setDeviceMetricsOverride',{width,height:844,deviceScaleFactor:1,mobile:width<900},A.s);
 const dock=`document.querySelector('.host-controls')`,toggle=`document.querySelector('.dock-toggle')`;
 const clears=sel=>`(()=>{window.scrollTo(0,document.documentElement.scrollHeight);const all=document.querySelectorAll(${JSON.stringify(sel)});const el=all[all.length-1];return !el||el.getBoundingClientRect().bottom<=${dock}.getBoundingClientRect().top})()`;
-const shown=`[...${dock}.children].filter(el=>el.getClientRects().length).map(el=>el.className)`;
+// The visible parts of the dock. In play the folded bar holds End play itself (parlor revamp, 2026-11-18); that
+// form is counted apart, by the checks that name it.
+const shown=`[...${dock}.children].filter(el=>el.getClientRects().length&&!el.matches('form:has(> .next-action[value=end])')).map(el=>el.className)`;
+const endShown=`!!document.querySelector('.host-controls > form > .next-action[value=end]')?.getClientRects().length`;
 try {
  const A=await user('hana');
  await A.go('/s/3/');await A.js(`localStorage.removeItem('rack-dock')`);
@@ -42,7 +45,7 @@ try {
    await A.click(toggle);
    // Counting up, the folded bar keeps the one main action beside the running total (count-v2).
    const countUp=name==='counting'||name==='long',kept=countUp?await A.js(`[...document.querySelectorAll('.host-controls>.next-action, .host-controls>.dock-hint')].filter(el=>el.getClientRects().length).length`):0;
-   check(tag+' collapsed shows only the bar'+(countUp?' and the main action':''),await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===${1+kept}&&!document.querySelector('.host-more').getClientRects().length`)&&(countUp||await A.js(`!document.querySelector('.next-action').getClientRects().length`)));
+   check(tag+' collapsed shows only the bar'+(countUp?' and the main action':''),await A.js(`${toggle}.getAttribute('aria-expanded')==='false'&&${shown}.length===${1+kept}&&!document.querySelector('.host-more').getClientRects().length`)&&(countUp||(name==='running'?await A.js(endShown):await A.js(`!document.querySelector('.next-action').getClientRects().length`))));
    check(tag+' collapsed bar is small',await A.js(`${dock}.getBoundingClientRect().height<=${(name==='long'||(name==='counting'&&width===320)?96:name==='counting'?76:72)+kept*72}`));
    check(tag+' collapsed bar names the state',await A.js(`${toggle}.querySelector('.dock-next').getClientRects().length>0`));
    check(tag+' collapsed clears last row',await A.js(clears(LAST[name])));
@@ -122,7 +125,7 @@ try {
  await A.go(`/s/${M.default.set}/`);
  check('open set collapsed, next step named',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: Start the set')`));
  await A.click(toggle);await A.click(`document.querySelector('button[value=start]')`);await A.click(toggle);
- check('running names end play',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: End play and count up')`));
+ check('running names end play',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: End play and count up')&&${endShown}`));
  await A.click(toggle);await A.click(`document.querySelector('button[value=end]')`);await A.click(toggle);
  check('count-up collapsed after end play',await A.js(`${shown}.length<=2&&!document.querySelector('.host-more').getClientRects().length&&!!document.querySelector('[data-dock-status]')`));
  // Count-up: the collapsed bar follows the typed counts.

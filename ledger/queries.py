@@ -97,6 +97,18 @@ class PlayerLine:
         """Cashed out minus bought in, before any host override: the figure a cashed-out row shows while the books are off."""
         return self.cashed_out - self.buy_in_total
 
+    @property
+    def count_net(self):
+        """The net a count row shows, from accepted figures only: the result a cash-out gives, or a confirmed
+        count plus what is already cashed out, minus gross buy-ins (rake is a loss). None until either exists."""
+        if not self.has_money:
+            return None
+        if self.status == "cashed_out":
+            return self.cash_out_final - self.buy_in_total
+        if self.status == "ready":
+            return self.cashed_out + self.count.amount - self.buy_in_total
+        return None
+
 
 @dataclass
 class Summary:

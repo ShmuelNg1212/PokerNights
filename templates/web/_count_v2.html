@@ -14,7 +14,7 @@
   </section>
   <div class="count-workspace">
     {% if can_enter_count and my_line and my_line.has_money %}{% include "web/_count_own.html" with line=my_line p=my_line.participant %}{% endif %}
-    <div class="section-heading"><h2>Player counts <span class="muted small">{{ summary.player_count }} players</span></h2></div>
+    <div class="section-heading label-row"><h2 class="section-label">{% icon 'users' %}Player counts <span class="count-pill">{{ summary.player_count }} players</span></h2></div>
     {% include "web/_count_rows.html" %}
   </div>
   {% if me.is_host %}{% include "web/_host_controls.html" %}{% endif %}

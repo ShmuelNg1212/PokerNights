@@ -220,7 +220,7 @@ class CountRevampTests(TestCase):
         html = self.client.get(self.url).content.decode()
         self.assertIn('class="table-layout end-set-layout count-layout count-v2"', html)
         row = html[html.index('class="count-row '):html.index("</li>\n    \n", html.index('class="count-row '))]
-        self.assertIn('class="count-row is-ready"', row)
+        self.assertIn('class="count-row is-ready row-card"', row)
         self.assertIn("₱1,000 in", row)
         self.assertIn('aria-label="Final count of A"', row)
         self.assertIn('name="count_', row)

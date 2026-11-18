@@ -410,6 +410,16 @@ class Recap:
     highlights: list = field(default_factory=list)
     mine: object = None  # the viewer's RecapLine, when they played
 
+    @property
+    def total_cash_out(self) -> int:
+        """Every player's cash-outs over the finalized sets (the ledger table's Out total)."""
+        return sum(line.cash_out for line in self.ranking)
+
+    @property
+    def total_net(self) -> int:
+        """The sum of the results. Results are after rake, so this is minus the rake already collected."""
+        return sum(line.net for line in self.ranking)
+
 
 def _highlights(lines, rows, by_member, set_count) -> list:
     found = []

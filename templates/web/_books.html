@@ -1,6 +1,6 @@
-{% load money_tags clock_tags %}
+{% load money_tags clock_tags table_tags %}
 {# One place for the set's money: each figure once, then where the books stand. #}
-<h2>The books</h2>
+<div class="label-row books-label"><h2 class="section-label">{% icon 'scale' %}The books</h2></div>
 <section class="balance-panel books stack">
   {% if balance.counted and not balance.ok %}
   {# Every player is cashed out and the books still differ: the gap in words comes before the figures. #}
