@@ -9,7 +9,7 @@ PokerNights runs on Vercel's free Hobby plan with a free Neon Postgres database,
 | Django app | One Vercel Function (Python 3.14, WSGI, `config/wsgi.py`), region **`sin1`** (Singapore) | Vercel finds `manage.py` and `WSGI_APPLICATION` by itself |
 | Static files | Vercel CDN at `/static/` | Vercel runs `collectstatic` because `STATIC_ROOT` is set. No extra package |
 | Database | Neon Postgres (Free), `aws-ap-southeast-1`, resource `pokernights-db` | The app uses the pooled `DATABASE_URL` (PgBouncer). Migrations use `DATABASE_URL_UNPOOLED` |
-| Build gate | Every build (`vercel.json` → `buildCommand`) | 1. The full test suite runs on a throwaway SQLite file. 2. Only if it passes, migrations run. A failing test or migration fails the build and the live site keeps its version |
+| Build gate | Every build (`vercel.json` → `buildCommand`) | 1. The full test suite runs on a throwaway SQLite file, in 4 parallel workers (`--parallel 4`, since 2026-11-18). 2. Only if it passes, migrations run. A failing test or migration fails the build and the live site keeps its version |
 
 - **Vercel project:** `pokernights` in `shmuelng8310-5097s-projects`. The local link is in `.vercel/` (gitignored).
 - **Configuration files:** [`vercel.json`](../../vercel.json) and [`.vercelignore`](../../.vercelignore).
@@ -88,8 +88,10 @@ A signed-out visitor who opens a usable invite link lands on Sign up, and the ne
 **Run the suite the way the build does before every push.** On Vercel the tests run with `VERCEL` set, which adds `?v=<tag>` to stylesheet and script addresses. A test that passes locally can fail there:
 
 ```sh
-VERCEL=1 VERCEL_URL=example.vercel.app HTTPS_ONLY=False DATABASE_URL=sqlite:////private/tmp/pn-buildlike.sqlite3 .venv/bin/python manage.py test --noinput
+VERCEL=1 VERCEL_URL=example.vercel.app HTTPS_ONLY=False DATABASE_URL=sqlite:////private/tmp/pn-buildlike.sqlite3 .venv/bin/python manage.py test --noinput --parallel 4
 ```
+
+**Build time.** The suite grew from about 677 tests (2026-10-05) to 1,784 (2026-11-18). Run one at a time, as the build did until 2026-11-18, the command above took 66 s on a 10-core Mac, and a push took several minutes to go live. With 4 workers it takes about 24 s there. The number is fixed at 4, not `--parallel` alone: a build container can report more processors than it may use, and each worker holds its own copy of the test database. The worker files are next to the test database in `/tmp`, and `config/test_runner.py` removes them. If parallel runs fail on Vercel, the build fails and production keeps its version; remove `--parallel 4` from `vercel.json` to go back.
 
 On 2026-10-05 a test that asserted the plain stylesheet address failed the build of `6a3f24b`. Production kept the previous version, as designed, and the fix followed. A failed build is silent: after a push, check that the live site actually changed.
 
