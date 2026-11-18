@@ -8,7 +8,7 @@
 - [ ] Close a session: transfers are cards with Brass arrows that draw in; Session results is a table (Player, In, Out, Net) that balances; with centavos each player takes two lines. Share results shows the first lines of the text. Reduce Motion on: nothing moves.
 - [ ] Front door: Log in | Sign up tabs; tap Sign up: the pill slides across. Password manager still fills the form.
 
-## Phone checks: Your record as cards (not released)
+## Phone checks: Your record as cards (released 2026-11-19)
 
 - [ ] Your groups: Your record is cards like To settle: "Net" with "2 sessions · 50% win rate" under it and the amount on the right, then a Last session card that opens the session. A group with pesos and chips says "Net in pesos" and "Net in chips" under one label. Log in again: the cards rise after the card, one after another.
 
