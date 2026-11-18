@@ -1634,7 +1634,8 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .join-row-quiet { padding: var(--s-2) 0; }
 .player-list > .empty-state { padding: var(--s-3) 0; }
 .player-list > .empty-state p { margin: 0; }
-.join-row-quiet form { display: flex; align-items: center; gap: var(--s-1); margin: 0; }
+.join-row-quiet form { display: grid; gap: var(--s-1); margin: 0; }
+.join-row-quiet form > p { margin: 0; }
 .join-row .btn-primary { margin: var(--s-2) 0; }
 /* Inside a player's sheet. */
 .sheets-enabled .sheet-swap { display: flex !important; margin-bottom: var(--s-3); }

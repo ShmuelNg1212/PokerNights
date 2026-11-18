@@ -226,6 +226,21 @@ class SetPageRevampTests(TestCase):
         self.assertIn('class="join-row join-row-quiet"', page)
         self.assertLess(page.index(f'data-watch="player-{self.seats[0].pk}"'), page.index(f'data-watch="player-{self.seats[1].pk}"'))
         self.assertLess(page.index(f'data-watch="player-{self.seats[1].pk}"'), page.index("join-row-quiet"))
+        row = page[page.index("join-row-quiet"):page.index("</li>", page.index("join-row-quiet"))]
+        self.assertIn('<button class="btn btn-block" type="submit" aria-describedby="host-join-why">', row)
+        self.assertNotIn("link-button", row)
+
+    def test_on_an_open_set_the_host_joins_from_the_host_controls(self):
+        from games.tests.helpers import make_session
+        session = make_session(self.host, state="open", table_name="Porch table")
+        page = self.client.get(reverse("session", args=[session.pk])).content.decode()
+        controls = page[page.index('class="host-controls'):page.index('class="host-more"')]
+        self.assertIn('class="host-join"', controls)
+        self.assertLess(controls.index("Join this set"), controls.index('value="start"'))
+        self.assertNotIn("join-row", page)
+        # Seated, the host has nothing to join.
+        self.client.post(reverse("participant_add", args=[session.pk]))
+        self.assertNotIn('class="host-join"', self.client.get(reverse("session", args=[session.pk])).content.decode())
 
     def test_a_player_sees_their_own_row_first_and_once(self):
         self.client.force_login(self.ben.user)
