@@ -314,7 +314,10 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .sheet::backdrop { opacity: calc(1 - var(--sheet-drag, 0) * .8); transition: opacity 200ms var(--ease-out); }
 .sheet.dragging::backdrop { transition: none; }
 @media (max-width:899px) {
-  .sheet-draggable { overscroll-behavior: contain; }
+  /* No bounce of the sheet's own content: contain stops only the page behind; on an iPhone the content
+     still rubber-banded inside the sheet as it was dragged down. While a drag runs, nothing scrolls. */
+  .sheet-draggable { overscroll-behavior: none; }
+  .sheet-draggable.dragging { overflow-y: hidden; }
   .sheet-draggable .sheet-head { position: relative; touch-action: none; }
   .sheet-draggable .sheet-head::before { content: ""; position: absolute; top: -10px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bone-dim); opacity: .6; }
   .sheet-draggable:has(.recap) .sheet-head::before { top: 6px; } /* the recap's sticky head starts at the sheet's edge */

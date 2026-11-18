@@ -56,9 +56,11 @@ try {
  check('grab handle: 36 × 4 px above the title below 900 px',grab.w==='36px'&&grab.h==='4px'&&grab.c!=='none',JSON.stringify(grab));
  await A.shot('drag-handle');
  // A short drag follows the finger and goes back.
- let seen=await drag(A,await head(A),60,{during:`({y:${ty},fade:+getComputedStyle(${D},'::backdrop').opacity})`});
+ let seen=await drag(A,await head(A),60,{during:`({y:${ty},fade:+getComputedStyle(${D},'::backdrop').opacity,overflow:getComputedStyle(${D}).overflowY})`});
  check('a drag follows the finger 1:1',Math.abs(seen.y-60)<=2,JSON.stringify(seen));
  check('the backdrop fades with the distance',seen.fade<1,JSON.stringify(seen));
+ // On an iPhone the content rubber-banded inside the sheet as it was dragged down: no bounce, and no scroll during a drag.
+ check('while it is dragged, the content cannot scroll or bounce',seen.overflow==='hidden'&&await A.js(`getComputedStyle(${D}).overscrollBehaviorY==='none'`),JSON.stringify(seen));
  await sleep(700);
  check('a short drag goes back and leaves no inline transform',await rest(A));
  check('the backdrop is full again',await A.js(`+getComputedStyle(${D},'::backdrop').opacity===1`));

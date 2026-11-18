@@ -25,7 +25,7 @@ try {
  const DRAG=`window.__drag=async function(el,dy,o){o=o||{};const r=el.getBoundingClientRect(),x=r.left+Math.min(60,r.width/2),y=r.top+r.height/2,d=document.querySelector('dialog.sheet');
   const t=(yy)=>({identifier:1,target:el,clientX:x,clientY:yy,pageX:x,pageY:yy});const fire=(type,list)=>{const e=new Event(type,{bubbles:true,cancelable:true});Object.defineProperty(e,'touches',{value:list});el.dispatchEvent(e)};
   fire('touchstart',[t(y)]);const steps=o.steps||10;for(let i=1;i<=steps;i++){await new Promise(r=>setTimeout(r,(o.ms||300)/steps));fire('touchmove',[t(y+dy*i/steps)])}
-  await new Promise(r=>setTimeout(r,o.hold===undefined?150:o.hold));const seen=new DOMMatrix(getComputedStyle(d).transform).m42;fire('touchend',[]);return seen}`;
+  await new Promise(r=>setTimeout(r,o.hold===undefined?150:o.hold));const seen=new DOMMatrix(getComputedStyle(d).transform).m42;window.__during={overflow:getComputedStyle(d).overflowY,top:d.scrollTop};fire('touchend',[]);return seen}`;
  await page.addScriptTag({content:DRAG});
  const D=`document.querySelector('dialog.sheet')`,opener=`[...document.querySelectorAll('[data-sheet-open^=buy]')].find(b=>b.getClientRects().length)`;
  const ev=s=>page.evaluate(s);
@@ -33,9 +33,10 @@ try {
  check('webkit: haptics take the switch path',await ev(`pokerHaptics.can()&&!('vibrate' in navigator)&&('switch' in HTMLInputElement.prototype)`));
  check('webkit: the Vibration switch is shown',await ev(`!document.querySelector('[data-haptics-switch]').hidden`));
  await openBuy();
- check('webkit: grab handle and contained overscroll',await ev(`getComputedStyle(${D}.querySelector('.sheet-head'),'::before').width==='36px'&&getComputedStyle(${D}).overscrollBehaviorY==='contain'`));
+ check('webkit: grab handle, and no overscroll bounce of the content',await ev(`getComputedStyle(${D}.querySelector('.sheet-head'),'::before').width==='36px'&&getComputedStyle(${D}).overscrollBehaviorY==='none'`));
  let seen=await ev(`__drag(${D}.querySelector('.sheet-head h2'),60)`);await page.waitForTimeout(700);
  check('webkit: a drag follows the finger',Math.abs(seen-60)<=2,String(seen));
+ check('webkit: while it is dragged, the content cannot scroll',await ev(`__during.overflow==='hidden'`)&&await ev(`getComputedStyle(${D}).overflowY==='auto'`),await ev(`JSON.stringify(__during)`));
  check('webkit: a short drag goes back, nothing inline',await ev(`${D}.open&&new DOMMatrix(getComputedStyle(${D}).transform).m42===0&&${D}.style.transform===''`));
  await ev(`__ticks.length=0`);
  seen=await ev(`__drag(${D}.querySelector('.sheet-head h2'),220)`);await page.waitForTimeout(700);
@@ -65,6 +66,9 @@ try {
  await ev(`${D}.scrollTop=300`);
  seen=await ev(`__drag(${D}.querySelector('.sheet-body .recap')||${D}.querySelector('.sheet-body'),150)`);await page.waitForTimeout(400);
  check('webkit: a scrolled recap does not drag from its body',seen===0&&await ev(`${D}.open`),String(seen));
+ await ev(`${D}.scrollTop=300`);const kept=await ev(`${D}.scrollTop`);
+ seen=await ev(`__drag(${D}.querySelector('.sheet-head h2'),60)`);await page.waitForTimeout(700);
+ check('webkit: a short head drag on a scrolled recap keeps its place in the text',seen>40&&await ev(`${D}.open&&${D}.scrollTop===${kept}&&__during.top===${kept}`),await ev(`JSON.stringify({now:${D}.scrollTop,during:__during,kept:${kept}})`));
  seen=await ev(`__drag(${D}.querySelector('.sheet-head h2'),220)`);await page.waitForTimeout(700);
  check('webkit: the recap head drags at any scroll and closes',seen>200&&await ev(`!${D}.open`),String(seen));
  check('webkit: no errors',await ev(`__errors.length===0`),await ev(`JSON.stringify(__errors)`));
