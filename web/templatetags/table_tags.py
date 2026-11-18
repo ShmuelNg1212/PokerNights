@@ -91,6 +91,8 @@ ICONS.update({
     # Table alerts in the header (2026-10-16): off, on (the same bell, filled) and blocked.
     'bell': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
     'bell-filled': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path fill="currentColor" d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />',
+    # Vibration in the account menu (2026-11-18).
+    'vibrate': '<path d="m2 8 2 2-2 2 2 2-2 2" />\n  <path d="m22 8-2 2 2 2-2 2 2 2" />\n  <rect width="8" height="14" x="8" y="5" rx="1" />',
     'bell-off': '<path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742" />\n  <path d="m2 2 20 20" />\n  <path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05" />',
 })
 

@@ -70,6 +70,17 @@ class HeaderTests(TestCase):
         self.assertIn("Log out", account)
         self.assertNotIn('class="who"', header)
 
+    def test_the_vibration_switch_waits_hidden_between_profile_and_log_out(self):
+        # haptics.js shows it only where the phone can vibrate; it is in no form, so it never posts.
+        account = self.parts(reverse("home"))[0].split('id="account"')[1]
+        switch = account.split("data-haptics-switch")[0].rsplit("<button", 1)[1]
+        self.assertIn('type="button"', switch)
+        self.assertIn('role="switch" aria-checked="true"', switch)
+        self.assertIn("data-haptics-switch hidden>", account)
+        self.assertIn("Vibration", account)
+        self.assertLess(account.index("Your profile"), account.index("Vibration"))
+        self.assertLess(account.index("Vibration"), account.index("<form"))
+
     @override_settings(**KEYS)
     def test_the_bell_comes_before_the_account_token(self):
         header, _ = self.parts(reverse("home"))

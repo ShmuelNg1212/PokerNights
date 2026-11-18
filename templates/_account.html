@@ -1,11 +1,13 @@
 {% load table_tags %}{% comment %}The account token at the end of the header: the person's initial on a chip, and under it a panel with
-   the username, Your profile and Log out. A native disclosure, so Log out is two taps with or without JavaScript; account.js
+   the username, Your profile, Vibration (where the phone can vibrate) and Log out. A native disclosure, so Log out is two taps with or without JavaScript; account.js
    adds the motion, the outside tap and Escape. Permanent, so a refresh of the same page leaves it open.{% endcomment %}
 <details id="account" class="account" data-turbo-permanent data-account>
   <summary class="account-button" aria-controls="account-panel">{% account_token user %}<span class="visually-hidden">Account: {{ user.username }}</span></summary>
   <div class="header-panel account-panel" id="account-panel">
     <p class="account-who">{% account_token user %}<span class="account-words"><span class="account-label">Logged in as</span><strong class="account-name">{{ user.username }}</strong></span></p>
     <a class="btn btn-block account-profile" href="{% url 'profile' %}">{% icon 'user' %}Your profile</a>
+    {# Shown by haptics.js only on a phone that can vibrate; the choice is kept in this browser. #}
+    <button type="button" class="btn btn-block account-haptics" role="switch" aria-checked="true" data-haptics-switch hidden>{% icon 'vibrate' %}<span class="account-haptics-words">Vibration</span><span class="switch-track" aria-hidden="true"></span></button>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
       <button type="submit" class="btn btn-block account-out">{% icon 'log-out' %}Log out</button>
