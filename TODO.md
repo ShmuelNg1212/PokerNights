@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: full-width felt (not released)
+## Phone checks: full-width felt (released 2026-11-19)
 
 - [ ] A set in play, a set counting up and a closed session: the top panel goes edge to edge under the top bar, with rounded corners at the bottom only. Timer and blinds stay inside the felt. On a computer the felt is unchanged.
 
