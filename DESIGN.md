@@ -607,6 +607,41 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 - **Fail-safe.** An error gives the chips up for that page view and is still reported.
 - **Measured.** `chip_pot.mjs` with `seed_chip_pot.py`, 32 checks at 320, 390 and 1280px on two phones.
 
+### Sheet drag and haptics (2026-11-18)
+
+[Plan](doc/plan/1794999843_sheet_drag_and_haptics.md), [study](doc/study/1794999762_sheet_drag_and_haptics.md). Mode: Operate. No new colour, font or dependency. One preset and one control are added. `.impeccable/design.json` is not changed; the drift recorded above remains.
+
+**Drag a sheet down to close it.** `static/js/sheets.js`, below 900px, by touch only.
+
+- **The grab handle.** A 36 × 4px bar in Bone Dim at 60%, centred, in the sheet's top padding, 6px from its edge. It adds no height, so a sheet that fitted the screen still fits (the buy-in sheet at 320 × 568). From 900px the sheet is centred and has no handle.
+- **Where a drag starts.** The head (handle, title and Close) at any scroll position; its `touch-action` is `none`. The content only when it is scrolled to its top and the finger first moves down. Nothing is decided and nothing is stopped in the first 6px, before the browser itself would scroll. A drag never starts on a number key, a field, a select, a sideways row (`.pills`), while a form in the sheet is sent, or while the stylesheet's own entry runs (without Motion).
+- **While dragging.** The sheet follows the finger 1:1 down. Up, it resists: 0.2 of the movement, 12px at most. The backdrop fades with the distance, to 20% at the sheet's full height, where `::backdrop` inherits from its dialog. A phone keyboard goes down; the number keys stay.
+- **The release.** It closes past 30% of the sheet's height or 160px, whichever is less, or with a flick down of 0.6px/ms over at least 16px. A flick back up keeps the sheet, however far it went, as an iPhone sheet does. Closing uses `fling`; staying uses the `sheet` spring from where it is. Content, draft and focus then behave as for Close.
+- **A touch during a movement** (a rise, a return) takes the sheet from where it is.
+- **Scrolling stays free.** The blocking `touchmove` listener is on the sheet only while its content is at its top. Scrolled, nothing waits for a script.
+- **The finger that dragged** does not press what it started on: one click within 400ms is dropped. A new touch, and the haptic switch's click, are never dropped.
+- **Reduced motion and no Motion.** The sheet still follows the finger. A release is at once closed or back, and the backdrop does not ease.
+
+| Name | Shape | Used for |
+|---|---|---|
+| `fling` | 180ms, ease `[0.2, 0, 0, 1]` | A sheet let go by a drag: it keeps its speed to the edge and does not start slowly again |
+
+**Haptics.** `static/js/haptics.js`, `pokerHaptics.play(kind)`. A vibration confirms what the screen already shows; it is never the only sign. Haptics are not movement, so reduced motion does not turn them off.
+
+| Kind | Android (`navigator.vibrate`) | iPhone (the switch tick) | Moment |
+|---|---|---|---|
+| `tick` | 8ms | one tick | A number key under a finger; a drag that passes the close distance, once per drag; the Vibration switch turned on |
+| `done` | `[10, 50, 14]` | one tick | This phone's own write accepted; the books come to balance in a live update, once per set per browser; the seat draw shows the dealer |
+| `refused` | `[24, 40, 24]` | two ticks, 70ms apart | This phone's own write refused, with the existing nudge |
+
+- **Only this phone's moments.** No vibration for another person's change, a screen change, a page's own redraw, or a set first opened already balanced. Every Turbo render says `inplace:updated`; only one that carries the form this phone sent vibrates.
+- **The iPhone.** Safari has no vibration API. A click on the label of a hidden `<input type="checkbox" switch>` plays the system switch tick. It sits in the open dialog (a modal dialog makes the rest of the page inert), in no form, with no box, hidden from assistive technology. Its clicks stop at its label, and focus stays where it was. It follows System Haptics. It is not a documented API, and it may do nothing outside a direct tap; the phone check settles that. Nothing else depends on it.
+- **Limits.** Not more than one play in 60ms. Nothing in a hidden tab. Only on a phone: a coarse main pointer and a way to vibrate. A laptop has neither switch nor vibration.
+
+**The Vibration switch.** In the account menu, between Your profile and Log out: a 48px `.btn` row with the vibrate icon, the word and a 36 × 22px track (Ground with a Line edge when off; Up with an Ink knob when on). `role="switch"` with `aria-checked`. On by default; the choice is kept in this browser only (`rack-haptics`). Hidden where the phone cannot vibrate. Turning it on ticks once, to say what it does.
+
+**Measured.** `sheet_drag.mjs` (39 checks, Chromium with real touch input, 390 and 1280px), `sheet_drag_webkit.mjs` (15 checks, WebKit, synthetic touches) and `haptics.mjs` (38 checks, an Android, an iPhone, a phone with neither and a laptop), all with `seed_sheet_drag.py`. No check can feel a vibration, and none runs on a physical iPhone.
+
 ### 2026-10-05 addendum — Motion between screens (stage 3 of the motion overhaul)
 
 A screen change says which way it went. `static/js/turbo-setup.js` decides; the last block of `static/css/app.css` moves.

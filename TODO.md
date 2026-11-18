@@ -1,5 +1,10 @@
 # TODO
 
+## Phone checks: sheet drag and haptics (not released; branch `feat/sheet-drag-haptics`)
+
+- [ ] Drag: in the installed app, drag the buy-in sheet down by its title. It follows the finger and closes; a short drag goes back; a flick back up keeps it. On the recap, scroll down, then drag the middle down: it scrolls first and drags only at the top. At the top of a long sheet, swipe up: it scrolls, even after a small wobble down. Reduce Motion on: it follows, then jumps.
+- [ ] Haptics (iPhone, System Haptics on): each number key ticks. A drag ticks once as it passes the close point. Unknown, please report: does an accepted buy-in tick, a refused amount tick twice, the books balancing tick, the dealer in a seat draw tick? Another player's buy-in: nothing. Account menu: Vibration off stops all of it.
+
 ## Phone checks: static addresses by content (released 2026-11-14)
 
 - [ ] Open the installed app after this release: every screen looks and works as before. After the next release that changes no script or style, the app opens with no short full reload.

@@ -47,6 +47,26 @@ A sampler is installed before the page's scripts. It reads each frame while the 
 
 `night.mjs`, `carried_debts.mjs` and `debts.mjs` wait for the finale to end before they read or close the first automatic recap.
 
+## Sheet drag and haptics
+
+Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_sheet_drag.py` alone. Start Django on `127.0.0.1:8765` with that database. Run the three probes in this order, because only the last one writes:
+
+```sh
+node web/tests/browser/sheet_drag.mjs
+PN_PLAYWRIGHT=/private/tmp/pn-browser-tools/node_modules/playwright PLAYWRIGHT_BROWSERS_PATH=/private/tmp/pn-browser-binaries node web/tests/browser/sheet_drag_webkit.mjs
+PN_DB=<the database file> node web/tests/browser/haptics.mjs
+```
+
+The fixture is host `hana` with player `ben`: one set in play with four players, one set counting up with one cash-out left, and one closed session of twelve players for the long recap. It writes `/private/tmp/pn-drag-manifest.json` (`PN_MANIFEST`). `haptics.mjs` records buy-ins, and records the last cash-out from a Django shell (`PN_DB`) so that the books balance while a phone watches: reseed before a repeat.
+
+- `sheet_drag.mjs`, 39 checks in Chrome over the DevTools protocol, with real touch input, so a drag on scrolled content scrolls it: the handle, 1:1 follow, the backdrop, the upward resistance, close by distance and by flick, a flick back up that keeps the sheet, one tick per drag, number keys, a button under the drag, a tap on Close just after a drag, no drag during a send, a touch during a held rise, the recap (scrolled content scrolls, the sticky head drags), the blocking listener only at the top, a jitter then a swipe, a page change during a drag, 1280px, a mouse, reduced motion and a blocked Motion file.
+- `sheet_drag_webkit.mjs`, 15 checks in WebKit. WebKit has no `Touch` constructor and Playwright has no touch move, so its drags are synthetic events (an `Event` with a `touches` list) that scroll nothing. WebKit has the switch input and no `navigator.vibrate`, so it checks the real iPhone path: focus, form values, Tab, the account menu.
+- `haptics.mjs`, 38 checks on four kinds of browser: Android (`navigator.vibrate` recorded), iPhone (vibrate removed, the switch input present, each click on the hidden label recorded), neither, and a laptop (fine pointer). No check can feel a vibration.
+
+A movement in progress cannot be caught from Node: see [headless frames](../../../doc/wiki/footguns/headless_frames_run_unthrottled.md). Captures are in `/private/tmp/pn-drag-review/` and `/private/tmp/pn-haptics-review/`, or `PN_REVIEW_DIR`.
+
+Known limit on 2026-11-18: `mobile_motion.mjs` gives 58/60 on this branch and 56/60 on `main` with the same seed. Both fail "webkit fallback: settings expands through an intermediate height" and "webkit fallback: set Details content expands" with the newly installed WebKit build. `main` also failed both Chromium "no runtime errors" checks with the view-transition rejection ([footgun](../../../doc/wiki/footguns/view_transition_opt_in_rejects_under_load.md)).
+
 ## Session chip values
 
 Use a fresh temporary database for this flow. Migrate it, then run `manage.py shell < web/tests/browser/seed_chip_values.py` with that database selected. Start the local server with the same database. Run `node web/tests/browser/chip_values.mjs`.

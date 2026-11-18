@@ -413,6 +413,15 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - The chip never stops a tap.
 - Code: `static/js/chipfly.js`, the `.chipfly` rules in `static/css/app.css`. Check: `web/tests/browser/chip_pot.mjs` with `seed_chip_pot.py`. Design: DESIGN.md, "Chip to the pot".
 
+## Drag a sheet to close it, and haptics (2026-11-18)
+
+- On a phone, any sheet closes by a drag down, as in an iPhone app: from its head at any time, or from its content when that is scrolled to its top. A short drag goes back. A flick down closes; a flick back up keeps it. A grab handle shows it. On a wide screen, or with a mouse, nothing drags.
+- The phone vibrates briefly at a few moments: a number key, a drag that will close the sheet, this phone's own write accepted or refused, the books coming to balance while the phone watches, and the dealer in a seat draw. Another person's change never vibrates it.
+- Android vibrates through `navigator.vibrate`. An iPhone has no vibration API; the app uses the tick of a hidden switch input, which follows System Haptics and may not play outside a direct tap.
+- Vibration switch in the account menu: on by default, kept in this browser. It is hidden where the phone cannot vibrate, and on a laptop.
+- Fail-safe: with no way to vibrate, the switch off, no Motion or reduced motion, every screen works as before. Reduced motion keeps the drag but drops its easing. No feature switch.
+- Code: `static/js/haptics.js`, the drag in `static/js/sheets.js`, the `.sheet-draggable`, `.account-haptics` and `.switch-track` rules in `static/css/app.css`, the switch in `templates/_account.html`. Check: `web/tests/browser/sheet_drag.mjs`, `sheet_drag_webkit.mjs` and `haptics.mjs` with `seed_sheet_drag.py`. Design: DESIGN.md, "Sheet drag and haptics".
+
 ## In-app numpad (2026-10-05)
 
 - **On a phone or tablet a typed number uses the app's own keys.** The phone's keyboard does not open for buy-in, rebuy and cash-out amounts, final counts, stakes, rake or seats. Text fields (names, reasons, notes) keep the phone's keyboard. On a computer nothing changes.
