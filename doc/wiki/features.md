@@ -137,7 +137,7 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 
 ## Collapsible host dock
 
-- On a phone, the host dock on the set page starts with a “Host controls” row. Folded while a set is in play, it shows End play and count up as the bone button with a round chevron beside it (2026-11-18). Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
+- On a phone, the host dock on the set page starts with a “Host controls” row. Folded while a set is in play, it shows End play and count up as the bone button with a round chevron beside it (2026-11-18), centred in its circle (2026-11-19). Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
 - The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
@@ -613,7 +613,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 - A player's row is one line: chip, name with what they bought in, and the count field. An empty field is awaiting; a confirmed count shows dim in the field with a tick; a player's own entry shows dim and the row says "entered ₱450". A cashed-out player has no field and shows the amount.
 - Tapping a name opens the player's sheet with records, reversals, the exception cash-out and Clear the count. Without JavaScript each row has a Details disclosure.
 - The overview has one small mark per player with a buy-in, filled as each is counted or cashed out.
-- "The books" lists total bought in, total cashed out, rake when collected, an override when recorded and the set timer, then where the books stand. A discrepancy leads the section and the section moves under the overview once every player is cashed out.
+- "The books" lists total bought in, total cashed out, rake when collected, an override when recorded and the set timer, then where the books stand. On the host's screen it also lists "Counted, not cashed out" and the count verdict ("₱3,000 still to account for. 3 still to count."). Both follow each typed, confirmed or polled count, as the host bar does ("Counted · unsaved" while typed counts are not sent; 2026-11-19). A player's books have the confirmed count total instead. A discrepancy leads the section and the section moves under the overview once every player is cashed out.
 - The help sentence above the list stays in place, so a field never moves when a count is accepted.
 - The host bar keeps the running total and the main action when folded. Open, it shows its hint only when there is no action.
 - A player sees "Your count" first: the field and Send to host, what they entered, and what the host confirmed.

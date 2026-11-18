@@ -906,11 +906,11 @@ Group settings → Players. [Plan](doc/plan/1791525658_roster_management.md). No
 
 | Part | Rule |
 |---|---|
-| Felt panel | The pot, the timer and the blinds, then one line: "₱X bought in · ₱Y cashed out" with **Details**. Details holds the totals, the rake rows (only when rake is on), the rake rule and the place. Open from 900px |
+| Felt panel | The pot, the timer and the blinds, then one line: "₱X bought in · ₱Y cashed out" with **Details**. Details holds the totals, the rake rows (only when rake is on), the rake rule and the place. Open from 900px. On a phone 600px tall or more the felt stays under the header while the rows scroll beneath it, with a soft shadow at its lower edge (2026-11-19); a shorter screen scrolls it away |
 | The pot | One line always: 4rem, 3rem under 360px, smaller again for a long figure |
 | Player row | One line: token, name with a chevron, figure, and **Rebuy** (or Buy-in). The whole row opens the player's sheet. Under 360px the figure sits under the name. From 900px Cash out is written on the row too |
 | Player's sheet | **Cash out** first, then the summary and the corrections. Cash out replaces the sheet's content inside the same open sheet (`sheets.js`, swap); a sheet never opens a second sheet |
-| Order | A player sees their own row first, and Join first when they are not seated. A host sees the order of joining, with a quiet "Playing too? Join this set" after the list and the line "Tap a player to cash out or correct an entry." |
+| Order | A player sees their own row first, and Join first when they are not seated. A host sees the order of joining and the line "Tap a player to cash out or correct an entry." A host who is not seated has a neutral full-width **Join this set** button with a plus: in the host menu above Start the set while the set is Joining, under the list with "Playing too?" while it is in play (2026-11-19) |
 | Host menu | Folded on first sight of a set in play, unfolded in every other state. A choice the host makes is kept either way (`rack-dock`: `open` or `collapsed`) |
 
 **Preparing.** A draft and an open set show a Rail panel, never felt: "Get this set ready" and four steps (Players, Stakes and rake, Open for players, Start the set). A step is Done (Bone disc with a tick), Next (Brass ring with its number) or Later (rule ring, muted name); each says its state in words for a screen reader. The menu's one main button is the Next step. Stakes count as done from the start; the step's button reads "Choose rake" until a rule is chosen. Once the set is open, finished steps take one line each so the first player is in view. Totals appear only when there is money.

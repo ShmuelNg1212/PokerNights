@@ -1,5 +1,11 @@
 # TODO
 
+## Phone checks: felt in view, host's books, host Join, round chevron (not released)
+
+- [ ] A set in play: scroll the players. The felt stays under the top bar, and the rows pass under it. A tap on a row's Rebuy still opens the sheet. The chevron beside End play and count up sits in the middle of its circle.
+- [ ] Count up as host: type a count. The books say "Counted · unsaved" with the amount, and the verdict under it moves. Confirm: "Counted, not cashed out" keeps the amount.
+- [ ] A draft: tap Let players join first. The host menu has a Join this set button above Start the set. Tap it: you are seated, and the button goes.
+
 ## Phone checks: one-line names and Rebuy alignment (not released)
 
 - [ ] A set in play with a long name: the name stops after one line with "…". The Rebuy and Buy-in buttons have the same space above, below and at the right inside the card. A tap on the card beside the button opens the player's sheet. The count and Add players: one line with "…". The player's sheet shows the full name.
