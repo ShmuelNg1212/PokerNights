@@ -2625,6 +2625,11 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .player-main > .host-mark { grid-column: 1; grid-row: 1; align-self: start; justify-self: end; display: grid; place-items: center; width: 18px; height: 18px; margin: -3px -5px 0 0; border-radius: 50%; background: var(--brass); color: var(--ink); box-shadow: 0 0 0 2px var(--rail); }
 .host-mark .icon { width: 11px; height: 11px; fill: currentColor; stroke-width: 1.5; }
 .table-v2 .row-card .player-actions .btn { padding-inline: 12px; }
+/* Phone: the written action sits 8px inside the card at the top, the right and the bottom. */
+@media (max-width: 899px) {
+  .table-v2 .player-row.row-card { padding: 7px 7px 7px 10px; }
+  .sheets-enabled .table-v2 .row-card .player-opener::after { inset: -7px -7px -7px -10px; }
+}
 @media (min-width: 900px) { .table-v2 .player-row.row-card { padding: 8px 14px; } .sheets-enabled .table-v2 .row-card .player-opener::after { inset: -8px -14px; } }
 
 /* The folded dock in play: the next step is the bone button itself, with the chevron beside it. */
@@ -2826,10 +2831,10 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .night-detail .transfer-line .transfer-party { align-items: flex-start; }
 .night-detail .transfer-line .transfer-party strong { line-height: 28px; }
 .night-detail .transfer-line { padding: 6px 12px; }
-/* Long names in the set flow (2026-11-19): a name keeps its words whole and shows two lines at most,
-   then an ellipsis. "(you)" follows the name; the chevron stays beside it. The sheet's title and the
-   button's label keep the full name. A name with no space breaks only where it must. */
-.name-fit { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: break-word; min-width: 0; }
+/* Long names in the set flow (2026-11-19): a name shows one line, then an ellipsis.
+   "(you)" follows the name; the chevron stays beside it. The sheet's title and the
+   button's label keep the full name. */
+.name-fit { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .player-opens > .name-fit { flex: 0 1 auto; }
 .player-opens > .icon { flex: none; }
 /* Add players: the badges keep their line beside a short name and go under a long one, at the right. */

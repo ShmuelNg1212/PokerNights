@@ -46,8 +46,8 @@ const MEASURE=long=>`(()=>{
   if(badge.right>innerWidth)problems.push('row '+i+': the badge leaves the screen');
   const things=[];
   row.querySelectorAll('.player-figure, .player-actions .btn, .chip, .buy-stack').forEach(el=>{if(el.getClientRects().length)things.push([el.className.split(' ')[0],el.getBoundingClientRect()])});
-  // A long name shows two lines (.name-fit); the lines it hides still have rectangles, so only the shown ones count.
-  row.querySelectorAll('.player-name > span:first-child, .fallback-name').forEach(el=>{const shown=(el.querySelector('.name-fit')||el).getBoundingClientRect();text(el).filter(r=>r.top<shown.bottom-1&&r.bottom>shown.top+1).forEach(r=>things.push(['name',r]))});
+  // A long name shows one line, then an ellipsis (.name-fit); the text it hides still has rectangles, so only the shown part counts.
+  row.querySelectorAll('.player-name > span:first-child, .fallback-name').forEach(el=>{const shown=(el.querySelector('.name-fit')||el).getBoundingClientRect();text(el).map(r=>({left:Math.max(r.left,shown.left),right:Math.min(r.right,shown.right),top:Math.max(r.top,shown.top),bottom:Math.min(r.bottom,shown.bottom)})).filter(r=>r.right>r.left+1&&r.bottom>r.top+1).forEach(r=>things.push(['name',r]))});
   const meta=badges[0].parentElement;[...meta.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).forEach(n=>text(n).forEach(r=>things.push(['buy-ins',r])));
   things.forEach(([what,r])=>{if(hit(badge,r))problems.push('row '+i+': the badge covers the '+what)});
  });
