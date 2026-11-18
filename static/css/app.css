@@ -309,15 +309,15 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 @keyframes edge-added { from { transform: translateY(-8px); opacity: .2; } }
 @keyframes sheet-close { to { transform: translateY(24px); opacity: 0; } }
 /* Sheet drag (2026-11-18, sheets.js): the backdrop fades with the distance, where ::backdrop inherits
-   from its dialog; elsewhere it stays. Below 900px a grab handle sits 8px above the title. */
+   from its dialog; elsewhere it stays. Below 900px a grab handle sits in the sheet's top padding, 6px
+   from its edge, so it adds no height: a sheet that fitted the screen still fits. */
 .sheet::backdrop { opacity: calc(1 - var(--sheet-drag, 0) * .8); transition: opacity 200ms var(--ease-out); }
 .sheet.dragging::backdrop { transition: none; }
 @media (max-width:899px) {
   .sheet-draggable { overscroll-behavior: contain; }
-  .sheet-draggable .sheet-head { position: relative; padding-top: 12px; touch-action: none; }
-  .sheet-draggable .sheet-head::before { content: ""; position: absolute; top: 0; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bone-dim); opacity: .6; }
-  .sheet.sheet-draggable:has(.recap) .sheet-head { padding-top: 28px; }
-  .sheet-draggable:has(.recap) .sheet-head::before { top: 16px; }
+  .sheet-draggable .sheet-head { position: relative; touch-action: none; }
+  .sheet-draggable .sheet-head::before { content: ""; position: absolute; top: -10px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--bone-dim); opacity: .6; }
+  .sheet-draggable:has(.recap) .sheet-head::before { top: 6px; } /* the recap's sticky head starts at the sheet's edge */
 }
 @media (prefers-reduced-motion: reduce) { .sheet::backdrop { transition: none; } }
 @media (max-width:899px) {
