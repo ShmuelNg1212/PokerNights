@@ -2596,10 +2596,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .badge-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--up); flex: none; }
 
 /* --- The set in play (concept: live table). --------------------------------------------------- */
-@media (max-width: 899px) {
-  /* The felt is an inset card on a phone: the page's margin all round and every corner rounded. */
-  .table-v2 .felt { margin: var(--s-2) 0 0; padding: var(--s-4); border-radius: var(--r-sheet); }
-}
 .table-v2 .felt .pot-label { text-transform: uppercase; letter-spacing: .06em; font-weight: 700; font-size: .75rem; }
 /* Timer and blinds become two inset tiles beside the figure, in the same height as before. */
 .table-v2 .felt .pot { grid-template-columns: minmax(0,1fr) 128px; }
@@ -2699,10 +2695,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 :is([data-welcome], [data-launch]) :is(.home-record > li, .home-dues li):nth-child(n+3) { animation-delay: 440ms; }
 
 /* --- Count-up (concept: count-up and reconciliation). --------------------------------------------- */
-@media (max-width: 899px) {
-  /* The overview is an inset card, as the felt is in play. */
-  .count-v2 > .felt.hero { margin: var(--s-2) 0 0; border: 1px solid var(--rule); border-radius: var(--r-sheet); }
-}
 .count-v2 .count-workspace > .label-row { margin: 10px 0 4px; padding: 0; }
 .count-v2 .player-list { display: grid; gap: 6px; }
 .count-v2 .count-row.row-card { padding: 4px 10px; border-bottom: 1px solid var(--rule); }
@@ -2770,10 +2762,6 @@ p.alerts-text:last-child { margin-bottom: 0; }
 @media (max-width: 359px) { .ledger-table th, .ledger-table td { padding-inline: 4px; font-size: .8125rem; } .ledger-who .chip { display: none; } }
 /* In the recap a fact never breaks inside itself: a line ends between facts. */
 .recap-meta > span { white-space: nowrap; }
-@media (max-width: 899px) {
-  /* The session's lead panel is an inset card on a phone, as the set's is. */
-  .night-overview > .felt.hero { margin: var(--s-2) 0 0; border: 1px solid var(--rule); border-radius: var(--r-sheet); }
-}
 .night-detail .night-settle .transfer-list, .night-settle .night-detail .transfer-list { border-top: 0; }
 /* Share: a card with the first lines of the text the chat receives, over the button that opens the sheet. */
 .share-panel { margin: var(--s-4) 0 0; padding: var(--s-3); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--rail); }
