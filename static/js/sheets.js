@@ -96,16 +96,16 @@ else { dialog.classList.add("closing"); setTimeout(function () { if (dialog.open
 // the finger, and on release it is at once closed or back.
 var WIDE = matchMedia("(min-width: 900px)");
 function draggable(me) {
-var dialog = me.dialog, d = null, quiet = 0;
-function far() { return Math.min(dialog.offsetHeight * 0.3, 160); } // past this, a release closes
+var dialog = me.dialog, d = null, skip = 0, holding = false;
 function now() { return new DOMMatrix(getComputedStyle(dialog).transform).m42; } // where a rise or a return has got to
+function far(h) { return Math.min(h * 0.3, 160); } // past this, a release closes
 function place(at) {
 dialog.style.transform = "translateY(" + at + "px)";
-dialog.style.setProperty("--sheet-drag", String(Math.max(0, Math.min(1, at / dialog.offsetHeight)))); // the backdrop fades
+dialog.style.setProperty("--sheet-drag", String(Math.max(0, Math.min(1, at / d.h)))); // the backdrop fades
 }
 function begin() {
 var M = window.pokerMotion;
-d.from = now();
+d.from = now(); d.h = dialog.offsetHeight; // read once: each move only writes
 // A run that lasts no time stops a rise or a return where it is, and makes the drag the sheet's latest movement.
 if (M && M.on()) M.run(dialog, { transform: "translateY(" + d.from + "px)" }, { duration: 0 });
 d.on = true;
@@ -118,51 +118,67 @@ function end(may, time) {
 var was = d; d = null;
 if (!was || !was.on) return;
 dialog.classList.remove("dragging");
-quiet = Date.now();
+skip = Date.now();
 var first = was.samples[0], last = was.samples[was.samples.length - 1];
 // A finger that rested before it lifted has no speed.
 var speed = first && last !== first && time - last[0] < 80 ? (last[1] - first[1]) / (last[0] - first[0]) : 0;
-if (may && (was.at >= far() || (speed >= 0.6 && was.at >= 16))) { close(true); return; }
+// Far enough, or a flick down, closes. A flick back up keeps the sheet, however far it went.
+if (may && speed > -0.3 && (was.at >= far(was.h) || (speed >= 0.6 && was.at >= 16))) { close(true); return; }
 dialog.style.setProperty("--sheet-drag", "0");
 var M = window.pokerMotion, going = M && M.run(dialog, { transform: "translateY(0px)" }, "sheet");
 if (going) M.settle(dialog, going); else dialog.style.transform = "";
 }
+// Only a drag stops the browser from scrolling. That needs a blocking listener, and a blocking listener
+// makes each scroll wait for this script, so it is there only while the content is at its top, where a
+// body drag can start. The head needs none: its touch-action is none.
+function hold(event) { if (d && d.on && event.cancelable) event.preventDefault(); }
+function sync() {
+var top = dialog.scrollTop <= 0;
+if (top === holding) return;
+holding = top;
+if (top) dialog.addEventListener("touchmove", hold, {passive: false}); else dialog.removeEventListener("touchmove", hold, {passive: false});
+}
 dialog.addEventListener("touchstart", function (event) {
-d = null;
+d = null; skip = 0; // a new touch is a new tap: its click is not the drag's
 if (WIDE.matches || !dialog.open || dialog.classList.contains("closing") || event.touches.length !== 1) return;
 var target = event.target;
 // The number keys act as a finger goes down; fields, selections and sideways rows keep their own touch.
 if (!target.closest || target.closest(".numpad, input, select, textarea, .pills, [data-haptic]")) return;
 if (dialog.querySelector("form[data-sent], [aria-busy=true]")) return; // a refusal would have nowhere to show
+// The stylesheet's own entry (without Motion) would hold the sheet against the finger until it ends.
+if (dialog.getAnimations && window.CSSAnimation && dialog.getAnimations().some(function (a) { return a instanceof CSSAnimation && a.playState === "running"; })) return;
 var touch = event.touches[0];
-d = {x: touch.clientX, y: touch.clientY, head: !!target.closest(".sheet-head"), on: false, from: 0, at: 0, ticked: false, samples: []};
+d = {x: touch.clientX, y: touch.clientY, head: !!target.closest(".sheet-head"), on: false, from: 0, h: 0, at: 0, ticked: false, samples: []};
 }, {passive: true});
 dialog.addEventListener("touchmove", function (event) {
 if (!d) return;
 if (event.touches.length !== 1) { end(false, event.timeStamp); return; }
 var touch = event.touches[0], dx = touch.clientX - d.x, dy = touch.clientY - d.y;
 if (!d.on) {
-if (Math.abs(dx) > Math.abs(dy)) { if (Math.abs(dx) >= 8) d = null; return; } // sideways is not a drag
-if (!d.head && (dialog.scrollTop > 0 || dy < 0)) { d = null; return; } // the content scrolls
+// Nothing is decided, and nothing is stopped, in the first 6px: the browser does not scroll before that.
+if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+if (Math.abs(dx) > Math.abs(dy)) { d = null; return; } // sideways is not a drag
+if (!d.head && (dialog.scrollTop > 0 || dy < 0 || !holding)) { d = null; return; } // the content scrolls
 if (!event.cancelable) { d = null; return; } // the browser has already started to scroll
-event.preventDefault(); // hold the sheet still while the first 8px decide
-if (Math.abs(dy) < 8) return;
-begin();
+begin(); // hold() runs after this listener and stops this move's scroll
 }
-if (event.cancelable) event.preventDefault();
 var at = d.from + dy;
 if (at < 0) at = Math.max(-12, at * 0.2); // up, it resists
 d.at = at; place(at);
 d.samples.push([event.timeStamp, at]);
 while (d.samples.length > 2 && event.timeStamp - d.samples[0][0] > 100) d.samples.shift();
 // Once per drag, as it passes the point where a release closes.
-if (!d.ticked && at >= far()) { d.ticked = true; if (window.pokerHaptics) window.pokerHaptics.play("tick"); }
-}, {passive: false});
+if (!d.ticked && at >= far(d.h)) { d.ticked = true; if (window.pokerHaptics) window.pokerHaptics.play("tick"); }
+}, {passive: true});
+dialog.addEventListener("scroll", sync, {passive: true});
+sync();
 dialog.addEventListener("touchend", function (event) { end(true, event.timeStamp); });
 dialog.addEventListener("touchcancel", function (event) { end(false, event.timeStamp); });
-// The finger that dragged does not also press what it started on.
+// The finger that dragged does not also press what it started on: one click, soon after, is dropped. The
+// iPhone's hidden haptic switch is never dropped, and nor is anything after a new touch.
 dialog.addEventListener("click", function (event) {
-if (Date.now() - quiet < 400) { event.preventDefault(); event.stopPropagation(); }
+if (!skip || Date.now() - skip > 400 || (event.target.closest && event.target.closest("[data-haptic]"))) return;
+skip = 0; event.preventDefault(); event.stopImmediatePropagation();
 }, true);
 me.stopDrag = function () { d = null; dialog.classList.remove("dragging"); };
 }
