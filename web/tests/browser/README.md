@@ -408,6 +408,8 @@ These fail the same on `main` and are not fixed by Slice C: `count_flow.mjs` 89 
 
 `seed_break_group.py` holds the worst realistic data for a group's Players, Settings and Stats tabs: names at the 60-character limit, names with no space, one letter, diacritics, right-to-left, emoji, 16 players, figures in the millions. Seed it alone on a fresh temporary database and log in as `aleksandra`. It has no script of its own; use it to look at those tabs at 320 and 390 px.
 
+`seed_break_set.py` holds the same kind of names for the set flow: a draft, an open set with its seats drawn, a set in play with a cash-out and a leaver, and a set being counted. Seed it alone on a fresh temporary database and log in as `aleksandra`. It writes `/private/tmp/pn-break-set-manifest.json`. It has no script of its own; use it to look at the set page, Add players and the count rows at 320 and 390 px.
+
 Since 2026-11-01 (UI revamp Slice D):
 
 - The Players tab is `?view=players`. Scripts that read the roster or invite links go there: `roster`, `claim`, `invites`, `copy`, `reset`, `new_names`, `late_player`, `remaining`, `remaining_supplement`, `remaining_actions`, `corrections`, `lifetime`.

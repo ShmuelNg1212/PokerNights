@@ -292,6 +292,8 @@ Compact outlined pills mark state. Live state uses bone and ink; warning and pos
 
 Names and metadata form a single 48px-minimum detail target. Amounts form a separate right-aligned column. Buy-in or Rebuy and Cash out are written buttons at every width: side by side under the name on phones, beside the amount from 900px. Cash-out state and departed-player state remain written.
 
+**Long names (2026-11-19).** In a player row, a count row and the Add players list, a name keeps its words whole. It shows two lines at most, then an ellipsis (`.name-fit`). A name with no space breaks only where it must. "(you)" follows the name and the chevron stays beside it, so the name has the full column. On a name longer than two lines, the ellipsis can hide "(you)"; the token and the host mark still show the row. The sheet's title and the button's label keep the full name. In Add players, the badges stay beside a short name and go under a long one, at the right. The seat table and the seat list keep their one-line ellipsis. Read at 320 and 390 px with `seed_break_set.py`.
+
 ### Start controls
 
 An open set places a checked native option immediately before Start the set. Its 48px-minimum label shows the current usual amount in the session’s unit and says it applies to players without a buy-in; adjacent help says existing buy-ins stay unchanged. Unchecking opts out for that start, and live updates retain the choice. The native form records missing opening buy-ins on accepted start before the timer begins. The control reuses the shared checkbox, focus and primary-action treatment.

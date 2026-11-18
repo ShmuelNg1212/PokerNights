@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: long names in the set flow (not released, `fix/long-names-set-flow`)
+
+- [ ] Rename yourself to a long name (two lines or more). Add players: the name shows in full words, the badges go under it. A set in play and the count: the name stops after two lines with "…", and no word breaks in the middle. Short names keep "(you)", the chevron and the badges on one line. The player's sheet shows the full name.
+
 ## Phone checks: parlor revamp (released 2026-11-19)
 
 - [ ] Set in play with six players: the felt is a rounded card; timer and blinds are dark tiles; all six rows show above the folded dock, with End play as the bright button beside a round chevron. A host has a small Brass star on the chip. Press a row: it sinks a little and comes back. Rebuy still opens the sheet.
