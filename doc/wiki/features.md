@@ -137,7 +137,7 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 
 ## Collapsible host dock
 
-- On a phone, the host dock on the set page starts with a “Host controls” row. Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
+- On a phone, the host dock on the set page starts with a “Host controls” row. Folded while a set is in play, it shows End play and count up as the bone button with a round chevron beside it (2026-11-18). Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
 - The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
@@ -232,7 +232,7 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 - An account created from a usable invite joins the group in the same request: `accounts.signup.AFTER_SIGNUP` holds `groups.access.join_from_invite`, which calls `services.accept_invite`. If the invite stopped being usable in between, the account exists and the visitor lands on the invite page.
 - An existing account still confirms on the Join page.
 - Words: `accounts.forms.LoginForm` and `SignupForm.WORDS` replace Django's messages by error code. Validators are unchanged.
-- Log in offers Sign up only when `accounts.signup.allowed` would open it.
+- Log in offers Sign up only when `accounts.signup.allowed` would open it. Then Log in and an uninvited Sign up start with a Log in | Sign up tab pair; the chosen pill slides between the two screens.
 - Two critique snapshots for these pages are in `.impeccable/critique/` (24 then 25 of 40).
 
 ## Installable app
@@ -301,6 +301,7 @@ The layout and several details below changed on 2026-10-05; “Count-up, review 
 - Batch review shows “After this batch” against “Bought in” (and collected rake), the table of confirmed amounts with this batch's total, and the verdict above **Cash out N players**, which makes no payment and does not finalize. When the counts balance the books with no override, the one button is **Finish set N**, which also finalizes. “Still to count” shows only when somebody is left.
 - The books-balance double rule appears only when the existing accounting gate passes, including disclosed overrides. It animates once per set per browser; with Motion the rule draws and then the words rise. Reduced motion leaves it static.
 - Final set results use frozen snapshots, best to worst, with signed amounts and directional icons. The row is a disclosure with a chevron: it opens one line of facts (in, rebuys, out, rake, override, time played) and the player's records. Session results also run best to worst. The viewer's result is prominent. Who pays whom stays on the session page.
+- Each count row is a card. A player with a confirmed count or a cash-out shows the net under the name (`PlayerLine.count_net`: the confirmed count plus earlier cash-outs, or the cash-out, minus gross buy-ins); a typed count that is not confirmed shows none.
 - Count-up, review and finalized pages use two columns from 900 px. On phones, counts stay in one column; the balance check sits above the count list. Waiting for counts is a neutral notice. When every player is cashed out and the books still differ, the panel leads with the exact signed amount and the next step. Long names wrap. JavaScript-free forms remain usable.
 
 
@@ -335,9 +336,9 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 ## Your groups home
 
 - The first page lists each group with its players, one status band and one next action for the viewer: **Go to the table** for a set in play, **Go to set N** for a draft, joining or counting set, **Go to the session** when every set is finished, and **New session** or **Add a table** for a host in a quiet group. A player in a quiet group gets no button.
-- A set in play shows players at the table and the timer on the blue felt band. Money still in play is not shown here. The page polls for changes.
-- **To settle** shows only the viewer's own debts, three rows at most. With `DEBTS_VIEW=False`, each row is an unpaid transfer linked to its session. With it on, transfers are netted per person and unit. **See all debts** opens the group's Debts section. Rake fund transfers stay separate.
-- **Your record** shows profit or loss, sessions and wins per unit, by the same rules as Stats. **Last session** shows the viewer's result in the latest closed session, or "You did not play".
+- A set in play shows players at the table and the timer on an inset felt card inside the group's card, with an In play pill. Money still in play is not shown here. The page polls for changes.
+- **To settle** is a Brass label over one card per row, with the other person's chip and the date under the name. It shows only the viewer's own debts, three rows at most. With `DEBTS_VIEW=False`, each row is an unpaid transfer linked to its session. With it on, transfers are netted per person and unit. **See all debts** opens the group's Debts section. Rake fund transfers stay separate.
+- **Your record** is three tiles per unit: Sessions, Win rate (`PlayerStats.win_percent`, rounded down as Stats rounds it) and Net, by the same rules as Stats. **Last session** shows the viewer's result in the latest closed session, or "Did not play".
 - Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
 - Create a group is a closed section under the groups. A person with no group gets a first-group screen.
 
@@ -621,9 +622,10 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 
 **The closed session page**
 
-- Order: overview, Who pays whom, Session results, Sets, Payment records (closed), then View session recap and Manage this session.
+- Order: overview, Who pays whom, Session results, Sets, Payment records (closed), then View session recap, the Share results card and Manage this session.
+- Session results of a closed session are a ledger table: Player, In, Out, Net, best first, with a Total row. With rake, a "Rake already collected" row makes Out and Net balance. When a figure is longer than eight characters, a phone shows each player on two lines (`ledger_wide`).
 - The overview's headline is the viewer's own part: You pay, You receive, You're settled or Nothing to pay. The host's is Still to pay for the table, or Settled. The amount is what is still unpaid.
-- A transfer is one row: payer, arrow, payee and amount, with its payment state below. A paid row shows its time. With `DEBTS_VIEW=True`, it names the recorder. With the switch off, it says "marked by the host". Payment and clearance actions follow "Settle status of a session" and "Debts across sessions". The viewer's own rows are marked "(you)". The order is the plan's.
+- A transfer is one card: payer, Brass arrow, payee and amount, with its payment state below. A paid row shows its time. With `DEBTS_VIEW=True`, it names the recorder. With the switch off, it says "marked by the host". Payment and clearance actions follow "Settle status of a session" and "Debts across sessions". The viewer's own rows are marked "(you)". The order is the plan's.
 - "How this is worked out" holds the notes on netting and rake.
 - When Mark paid is accepted the row settles and the bar moves; when the last transfer is paid, "Settled" arrives once per session per browser (`settled:<session>` in localStorage; a player's own key adds their member id).
 - `templates/web/night.html`, `_night_lead.html`, `static/js/settle.js`; `settlement.queries.NightOutcome.part_for()` gives the viewer's part from the transfers already loaded.

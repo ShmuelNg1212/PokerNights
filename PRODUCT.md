@@ -166,3 +166,7 @@ Words: a set is Draft, Joining, In play, Counting up, Finalized or Canceled. The
 ## 2026-11-01 addendum — Stable group tabs
 
 Show Stats before a group's first closed session. Explain the empty board: players appear once a session closes. Give one action, Go to sessions. Keep all four tab positions stable. Only closed sessions supply stats. The human also confirmed the existing selected defaults for earlier unpaid transfers and the Not started badge. [Decision](doc/adr/0011-stats-before-the-first-closed-session.md).
+
+## 2026-11-18 addendum — Parlor revamp
+
+The main screens take their layout from the human's Stitch concepts and keep the Rack's materials. Sections have Brass labels. Players, dues, counts and transfers sit on raised cards. The felt is an inset card. On Your groups a person's record is three tiles: sessions, win rate and net. Each count row shows the net of an accepted count or cash-out. A closed session's results are a ledger of what each player put in, took out and won or lost; with rake, the rake row makes it balance. The front door switches between Log in and Sign up with two tabs. What each action records, and who may do it, is unchanged. The concepts' invented parts (a blind clock, a bottom tab bar, stacks during play, claims about offline or encryption) are not built. [Plan](doc/plan/1795008990_parlor_revamp.md).

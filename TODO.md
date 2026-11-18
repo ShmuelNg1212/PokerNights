@@ -1,5 +1,13 @@
 # TODO
 
+## Phone checks: parlor revamp (not released)
+
+- [ ] Set in play with six players: the felt is a rounded card; timer and blinds are dark tiles; all six rows show above the folded dock, with End play as the bright button beside a round chevron. A host has a small Brass star on the chip. Press a row: it sinks a little and comes back. Rebuy still opens the sheet.
+- [ ] Your groups: Host pill with a star; the set in play is a blue card inside the group card; To settle rows have the other person's chip; Your record is three tiles. Log in again: the tiles and dues rise after the card.
+- [ ] Count-up: each player is a card; tap a field and the card gets a Brass edge; a confirmed count shows its net under the name. The books are a panel. On an iPhone with the keyboard up, the last field stays clear of the bar.
+- [ ] Close a session: transfers are cards with Brass arrows that draw in; Session results is a table (Player, In, Out, Net) that balances; with centavos each player takes two lines. Share results shows the first lines of the text. Reduce Motion on: nothing moves.
+- [ ] Front door: Log in | Sign up tabs; tap Sign up: the pill slides across. Password manager still fills the form.
+
 ## Phone checks: sheet drag and haptics (released 2026-11-18)
 
 - [ ] Drag: in the installed app, drag the buy-in sheet down by its title. It follows the finger and closes, and the content does not pull away inside it (fix pending release); a short drag goes back; a flick back up keeps it. On the recap, scroll down, then drag the middle down: it scrolls first and drags only at the top. At the top of a long sheet, swipe up: it scrolls, even after a small wobble down. Reduce Motion on: it follows, then jumps.
