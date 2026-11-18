@@ -619,6 +619,7 @@ The set page shows a change, yours or someone else's, as movement. `static/js/fl
 - **The release.** It closes past 30% of the sheet's height or 160px, whichever is less, or with a flick down of 0.6px/ms over at least 16px. A flick back up keeps the sheet, however far it went, as an iPhone sheet does. Closing uses `fling`; staying uses the `sheet` spring from where it is. Content, draft and focus then behave as for Close.
 - **A touch during a movement** (a rise, a return) takes the sheet from where it is.
 - **Scrolling stays free.** The blocking `touchmove` listener is on the sheet only while its content is at its top. Scrolled, nothing waits for a script.
+- **No bounce inside the sheet** (changed 2026-11-18, after the release). On an iPhone the human saw the content pull away inside the sheet as it was swiped down to close: the sheet's own overscroll bounce ran under the drag. The sheet now has `overscroll-behavior: none` below 900px (no bounce at either end of its content), and its content cannot scroll while a drag runs (`overflow-y: hidden` on `.dragging`). The place in the text is kept.
 - **The finger that dragged** does not press what it started on: one click within 400ms is dropped. A new touch, and the haptic switch's click, are never dropped.
 - **Reduced motion and no Motion.** The sheet still follows the finger. A release is at once closed or back, and the backdrop does not ease.
 
