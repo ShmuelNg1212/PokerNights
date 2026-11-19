@@ -12,6 +12,7 @@ from ledger.tests.helpers import Night
 from settlement import queries, services
 from settlement.tests.test_night import TwoSets
 from web import share
+from web.templatetags.table_tags import group_token
 
 
 def closed(night, figures):
@@ -53,7 +54,7 @@ class ShareCardTests(TestCase):
             [(r["place"], r["name"], r["amount"], r["sign"], r["share"]) for r in card["rows"]],
             [(1, "A", "+₱200", "plus", 66), (2, "B", "+₱100", "plus", 33), (3, "C", "−₱300", "minus", 100)],
         )
-        self.assertEqual([(r["chip"], r["k"]) for r in card["rows"]], [("A", 1), ("B", 2), ("C", 3)])
+        self.assertEqual([(r["chip"], r["k"]) for r in card["rows"]], [group_token(s.member) for s in sorted(outcome.standings, key=lambda s: s.member.display_name)])
         self.assertEqual(
             [(t["payer"]["name"], t["payee"]["name"], t["amount"]) for t in card["transfers"]],
             [(t.payer.display_name, t.payee.display_name, f"₱{t.amount // 100:,}") for t in outcome.transfers],

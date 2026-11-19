@@ -10,12 +10,13 @@ from django.utils.text import slugify
 from ledger import money
 from settlement.models import RAKE_FUND
 
-from .templatetags.table_tags import token
+from .templatetags.table_tags import group_token
 
 
-def card(night, outcome, recap) -> dict:
+def card(night, outcome, recap, cache=None) -> dict:
     unit = night.unit
-    tokens = {s.member.pk: token(s, outcome.standings) for s in outcome.standings}
+    cache = {} if cache is None else cache  # the page's roster read, when the view passes it
+    tokens = {s.member.pk: group_token(s.member, cache) for s in outcome.standings}
 
     def who(member) -> dict:
         if member is None:  # the rake fund

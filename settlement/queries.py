@@ -211,7 +211,7 @@ class NightOutcome:
 
     @property
     def ranked(self):
-        """Best result first. ``standings`` stays in join order, because a player's token colour follows it."""
+        """Best result first. ``standings`` stays in join order."""
         return best_first(self.standings, lambda standing: standing.member)
 
     @property

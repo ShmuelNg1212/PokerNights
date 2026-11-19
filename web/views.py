@@ -584,7 +584,7 @@ def night(request, night_id):
         # What the night meant in each player's history: one more query, read as Stats reads.
         context["marks"] = stats_pages.recap_marks(night, outcome.standings)
         if settings.SHARE_RESULTS and outcome.plan is not None:
-            context["share"] = share.card(night, outcome, context["recap"])
+            context["share"] = share.card(night, outcome, context["recap"], request.__dict__.setdefault("_chip_labels", {}))
     if host.is_host:
         context["manage"] = {
             "unfinished": [s for s in all_sets if s.state in games.UNFINISHED_STATES],

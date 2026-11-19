@@ -18,7 +18,7 @@ def plain(value, unit):
     return plain_amount(value, unit)
 
 def token(participant, participants) -> tuple:
-    """``(label, colour number)`` of a player's chip: an initial, or two letters when initials collide."""
+    """Fallback ``(label, colour)`` for an object outside a group: an initial, or two letters when initials collide."""
     name = participant.member.display_name.strip()
     initial = name[:1].upper() or "?"
     peers = [p for p in participants if p.member.display_name.strip()[:1].upper() == initial]
@@ -37,22 +37,96 @@ def token(participant, participants) -> tuple:
     return initial, (participant.join_order - 1) % 10 + 1
 
 
-@register.simple_tag
-def player_token(participant, participants):
-    initial, colour = token(participant, participants)
-    # data-m names the player, so a screen change can carry the chip to the same player's row (turbo-setup.js).
-    return format_html('<span class="chip k{}" data-m="{}" aria-hidden="true">{}</span>', colour, getattr(participant.member, "pk", ""), initial)
+def _short(text, used, place):
+    """Two letters for a later namesake: first and last word, the first two letters, or a free letter."""
+    words = text.split()
+    label = words[0][:1] + words[-1][:1] if len(words) > 1 else text[:2]
+    if len(label) < 2 or label in used:
+        label = next((text[:1] + char for char in text[1:] if char.isalnum() and text[:1] + char not in used), f"{text[:1]}{place}")
+    return label
 
-@register.simple_tag
-def member_token(member, members):
+
+def roster_labels(rows) -> dict:
+    """``{member pk: label}`` for a whole group roster, removed members too (ADR 0015).
+
+    The member who joined the group first keeps the one initial; each later namesake takes two letters.
+    A new member therefore never changes an earlier member's label.
+    """
+    labels, by_initial = {}, {}
+    for pk, name in sorted(rows):
+        text = name.strip().upper()
+        by_initial.setdefault(text[:1] or "?", []).append((pk, text))
+    for initial, peers in by_initial.items():
+        used = {initial}
+        labels[peers[0][0]] = initial
+        for place, (pk, text) in enumerate(peers[1:], 2):
+            label = _short(text, used, place)
+            used.add(label)
+            labels[pk] = label
+    return labels
+
+
+def group_token(member, cache=None) -> tuple:
+    """``(label, colour number)`` of a member's chip: the same on every screen of their group (ADR 0015)."""
+    from groups.models import Member
+
+    cache = {} if cache is None else cache
+    if member.group_id not in cache:
+        cache[member.group_id] = roster_labels(Member.objects.filter(group_id=member.group_id).values_list("pk", "display_name"))
+    labels = cache[member.group_id]
+    label = labels.get(member.pk) or member.display_name.strip()[:1].upper() or "?"
+    return label, (member.pk - 1) % 10 + 1
+
+
+def _request_cache(context):
+    """One roster read per request, however many chips the page draws."""
+    request = context.get("request")
+    if request is None:
+        return None
+    if not hasattr(request, "_chip_labels"):
+        request._chip_labels = {}
+    return request._chip_labels
+
+
+def _chip(label, colour, member_pk):
+    # data-m names the player, so a screen change can carry the chip to the same player's row (turbo-setup.js).
+    return format_html('<span class="chip k{}" data-m="{}" aria-hidden="true">{}</span>', colour, member_pk, label)
+
+
+def _in_group(member):
+    return isinstance(getattr(member, "pk", None), int) and isinstance(getattr(member, "group_id", None), int)
+
+
+def player_token(participant, participants=None, cache=None):
+    """A participant's chip. ``participants`` is used only for an object outside a group (tests, previews)."""
+    member = participant.member
+    if _in_group(member):
+        label, colour = group_token(member, cache)
+    else:
+        label, colour = token(participant, participants or [participant])
+    return _chip(label, colour, getattr(member, "pk", ""))
+
+
+def member_token(member, members=None, cache=None):
+    """A roster member's chip: the same rule as a participant's."""
+    if _in_group(member):
+        label, colour = group_token(member, cache)
+        return _chip(label, colour, member.pk)
     from types import SimpleNamespace
-    peers = [SimpleNamespace(member=m, join_order=m.pk, pk=m.pk) for m in members]
-    # A member who left the group can still be owed money: their chip is drawn from their own name.
-    match = next((p for p in peers if p.pk == member.pk), None)
-    if match is None:
-        match = SimpleNamespace(member=member, join_order=member.pk, pk=member.pk)
-        peers.append(match)
-    return player_token(match, peers)
+    peers = [SimpleNamespace(member=m, join_order=m.pk, pk=m.pk) for m in (members or [member])]
+    match = next((p for p in peers if p.pk == member.pk), None) or SimpleNamespace(member=member, join_order=member.pk, pk=member.pk)
+    label, colour = token(match, peers if match in peers else peers + [match])
+    return _chip(label, colour, member.pk)
+
+
+@register.simple_tag(takes_context=True, name="player_token")
+def player_token_tag(context, participant, participants=None):
+    return player_token(participant, participants, _request_cache(context))
+
+
+@register.simple_tag(takes_context=True, name="member_token")
+def member_token_tag(context, member, members=None):
+    return member_token(member, members, _request_cache(context))
 
 
 @register.simple_tag

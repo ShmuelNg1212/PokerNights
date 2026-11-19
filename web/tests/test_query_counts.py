@@ -24,7 +24,8 @@ class QueryCountTests(TestCase):
         night = closed_example()
         self.client.force_login(night.host.user)
         # One of them reads the group's counted results for the recap's marks (web.stats.recap_marks).
-        self.assertLessEqual(len(self.queries(reverse("night", args=[night.session.night_id]))), 15)
+        # One reads the group roster for the chips (ADR 0015); the share card reuses it.
+        self.assertLessEqual(len(self.queries(reverse("night", args=[night.session.night_id]))), 16)
 
     def test_a_session_page_costs_the_same_with_three_sets_as_with_one(self):
         night = worked_example()
@@ -45,14 +46,15 @@ class QueryCountTests(TestCase):
         night = Night("A", "B", "C")
         night.buy("A", 1000)
         self.client.force_login(night.host.user)
-        # 13, and one that marks the viewer's "added you" notice seen (notify.services.mark_seen).
-        self.assertLessEqual(len(self.queries(reverse("session", args=[night.session.pk]))), 14)
+        # 13, and one that marks the viewer's "added you" notice seen (notify.services.mark_seen),
+        # and one roster read for the chips (ADR 0015).
+        self.assertLessEqual(len(self.queries(reverse("session", args=[night.session.pk]))), 15)
 
     def test_a_changed_poll_costs_no_more_than_the_page(self):
         night = Night("A", "B", "C")
         night.buy("A", 1000)
         self.client.force_login(night.host.user)
-        self.assertLessEqual(len(self.queries(reverse("session_state", args=[night.session.pk]) + "?v=0")), 13)
+        self.assertLessEqual(len(self.queries(reverse("session_state", args=[night.session.pk]) + "?v=0")), 14)  # with the roster read for the chips
 
     def test_viewing_a_page_does_not_write_the_login_session(self):
         night = Night("A")

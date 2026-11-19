@@ -19,7 +19,7 @@ from ledger.tests.test_counts import count, counting
 from ledger.tests.test_rake import configure
 from settlement import queries as settlement_queries
 from settlement import services
-from web.templatetags.table_tags import token
+from web.templatetags.table_tags import group_token
 
 
 def balanced(*names):
@@ -339,7 +339,7 @@ class ResultsAtAGlanceTests(TestCase):
         standings = settlement_queries.night_outcome(night).standings
         self.assertEqual(
             {name: int(colour) for colour, name in shown},
-            {s.member.display_name: token(s, standings)[1] for s in standings},
+            {s.member.display_name: group_token(s.member)[1] for s in standings},
         )
 
     def test_a_tie_goes_by_name_and_the_set_log_keeps_join_order(self):

@@ -6,6 +6,8 @@ Branch: `feat/stable-chips`, from `docs/ui-critique` (unreleased, docs only). Th
 
 ## OPEN QUESTIONS
 
+Answered 2026-11-19: approved, all four recommendations.
+
 1. **Reverse a recorded decision.** DESIGN.md (the roster section, line 337) says: "Set join order and session standing order retain their own token rules, so colour does not promise identity across those views." This plan makes colour and label a promise of identity in a group. Recommendation: **yes**. The critique found the same person in three colours and three labels. A host finds a player by chip first. If no, delete this plan; keep the queue.
 2. **Derived or stored colour.** Recommendation: **derived** from `Member.pk`, as the roster and Stats already do. No migration, no new write path. A stored colour (a host picks it) can come later. If stored: add a migration, a service, an audit record and a roster control, and this plan grows past one slice.
 3. **More than ten members.** Ten colours repeat in a group of 11 or more. Recommendation: accept the repeat. The two-letter label tells the people apart, and the name is always next to the chip. Do not add new colour tokens.
@@ -24,16 +26,17 @@ Branch: `feat/stable-chips`, from `docs/ui-critique` (unreleased, docs only). Th
 
 ## Tasks
 
-- [ ] **1. One token rule for a member in a group.** `tests: first`.
+- [x] **1. One token rule for a member in a group.** `tests: first`.
   - Add `group_token(member) -> (label, colour)` in `web/templatetags/table_tags.py`. Colour: `(member.pk - 1) % 10 + 1`. Label: the first initial. When the first initial collides with another member of the same group (all members, removed ones too), the member with the lowest `pk` keeps one letter and each later one takes two letters, by the existing rule (first and last word, then the first two letters, then a free letter, then letter plus number).
   - Cache the group's roster labels once per request (for example on the group object or in a context-scoped dict), so a page with 12 chips makes one query, not twelve.
   - Acceptance: tests show (a) the same member gets the same label and colour from a set's participant list, a session's standings and the roster; (b) adding a later member "Bea" does not change "Ben" if Ben joined first; (c) a removed member keeps a label; (d) one query per page for the roster labels (`assertNumQueries` on a set page).
   - Completion: the new tests pass and fail on the old code.
-- [ ] **2. Every token uses the rule.** `tests: first` for the views, then the templates.
+- [x] **2. Every token uses the rule.** `tests: first` for the views, then the templates.
   - `player_token` and `member_token` call `group_token`. Their second argument becomes unused; remove it from the call sites listed by `grep -rn "player_token\|member_token" templates`.
   - `web/share.py:18` uses the same rule, so the share image matches the page.
   - Acceptance: a test renders set 3, session 1 and Stats for the seeded Ben and finds the same `kN` class and the same label on each.
   - Completion: SQLite suite passes.
+  - Done 2026-11-19. Deviation: the second argument stays. It is the fallback for objects outside a group (unit tests that use plain namespaces). Templates are unchanged. Three query budgets rose by one: the roster read, once per request (`web/tests/test_query_counts.py`). The share card reuses the page's read. SQLite 1814 OK.
 - [ ] **3. Update the design record.** Docs.
   - DESIGN.md: replace the sentence at line 337 and extend "Player colours (c1–c10)" at line 196. Colour and label belong to the member in the group.
   - ADR `doc/adr/0015-one-chip-per-member.md` (via `domain-modeling`): context, decision, the >10 rule, and the label rule.
