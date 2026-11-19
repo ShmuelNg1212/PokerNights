@@ -241,6 +241,7 @@ class SetPageRevampTests(TestCase):
 
     def test_on_an_open_set_the_host_joins_from_the_players_head(self):
         from games.tests.helpers import make_session
+        # Nobody has joined yet: the Players head still shows, for the host's Join.
         session = make_session(self.host, state="open", table_name="Porch table")
         page = self.client.get(reverse("session", args=[session.pk])).content.decode()
         head = page[page.index('class="table-players"'):page.index('class="player-list"')]

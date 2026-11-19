@@ -33,6 +33,16 @@ try {
   await size(A,width);
   for(const [name,id] of Object.entries(SETS)) {
    await A.go(`/s/${id}/`);const tag=`${name} ${width}`;
+   // Before the start the dock holds Start alone, with no toggle (host dock before Start, 2026-11-20). A fold chosen in play does not empty it.
+   if(name==='draft'||name==='open'){
+    check(tag+' has no toggle',await A.js(`!${toggle}&&${shown}.length>1`));
+    check(tag+' clears last row',await A.js(clears(LAST[name])));
+    check(tag+' fits width',await A.js(`document.documentElement.scrollWidth<=${width}`));
+    await A.js(`localStorage.setItem('rack-dock','collapsed')`);await A.go(`/s/${id}/`);
+    check(tag+' a fold chosen in play leaves it whole',await A.js(`document.documentElement.classList.contains('dock-collapsed')&&${shown}.length>1&&!!document.querySelector('.host-controls .next-action')?.getClientRects().length`));
+    await A.js(`localStorage.setItem('rack-dock','open')`);await A.shot(`dock-${name}-${width}`); // the next states start from the host's choice "open", as a toggle left it before
+    continue;
+   }
    check(tag+' starts expanded with toggle',await A.js(`${toggle}.getAttribute('aria-expanded')==='true'&&!${toggle}.hidden&&${shown}.length>1`));
    // During count-up the bar is the one running total, open or folded; in every other state it is the title.
    const counting=name==='counting'||name==='long';
@@ -123,8 +133,8 @@ try {
  await A.click(`[...document.querySelectorAll('.host-more details > summary')][0]`);await A.click(`document.querySelector('.host-more > summary')`);await A.click(toggle);
  // Collapsed choice carries across states: open set → start → end play.
  await A.go(`/s/${M.default.set}/`);
- check('open set collapsed, next step named',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: Start the set')`));
- await A.click(toggle);await A.click(`document.querySelector('button[value=start]')`);await A.click(toggle);
+ check('open set with the fold chosen: no toggle, Start shows',await A.js(`!${toggle}&&document.documentElement.classList.contains('dock-collapsed')&&!!document.querySelector('button[value=start]').getClientRects().length`));
+ await A.click(`document.querySelector('button[value=start]')`);
  check('running names end play',await A.js(`${shown}.length===1&&${toggle}.textContent.includes('Next: End play and count up')&&${endShown}`));
  await A.click(toggle);await A.click(`document.querySelector('button[value=end]')`);await A.click(toggle);
  check('count-up collapsed after end play',await A.js(`${shown}.length<=2&&!document.querySelector('.host-more').getClientRects().length&&!!document.querySelector('[data-dock-status]')`));

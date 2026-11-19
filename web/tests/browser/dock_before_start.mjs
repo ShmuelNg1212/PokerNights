@@ -57,6 +57,9 @@ check('390: the last row clears the dock at the end of the page',clear>=0,`${cle
 // The page reserves the measured height (dock.js), not the 128px default, which is shorter than this dock.
 const reserved=await phone.js(`(()=>{const h=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock-h')),d=document.querySelector('#live .host-controls').getBoundingClientRect().height;return {h,d:Math.ceil(d)}})()`);
 check('390: the page reserves the measured dock height',Math.abs(reserved.h-reserved.d)<=1,JSON.stringify(reserved));
+// Above the keyboard (dock.js sets kb-bar on <html>) a dock with no toggle does not cover the field. CSS only: headless Chrome has no keyboard.
+const kb=await phone.js(`(()=>{const h=document.documentElement;h.classList.add('kb-open','kb-bar');const v=getComputedStyle(document.querySelector('#live .host-controls')).visibility;h.classList.remove('kb-open','kb-bar');return v})()`);
+check('390: above the keyboard the dock with no toggle is out of sight',kb==='hidden',kb);
 await phone.go('/s/'+SET.full+'/');d=await phone.js(DOCK);
 check('390: a full set has no Join',!d.join&&!d.joinInDock);
 await phone.go('/s/'+SET.draft+'/');d=await phone.js(DOCK);await phone.shot('draft-390');
@@ -85,6 +88,8 @@ const small=await page(320,568);
 await small.go('/s/'+SET.twelve+'/');d=await small.js(DOCK);await small.shot('eleven-320');
 check('320: no toggle, one bright button',!d.toggle&&d.primary.length===1);
 check('320: the dock fits without its own scroll',d.scroll<=0,`${d.scroll}px over`);
+const head=await small.js(`(()=>{const h=document.querySelector('#live .table-players .label-row'),t=h.querySelector('h2').getBoundingClientRect(),j=h.querySelector('.host-join').getBoundingClientRect(),p=h.querySelector('.count-pill');return {h:Math.round(h.getBoundingClientRect().height),side:j.left>=t.right-1&&Math.abs((j.top+j.bottom)/2-(t.top+t.bottom)/2)<4,pill:p.getClientRects().length,pillText:p.scrollWidth<=p.clientWidth+1}})()`);
+check('320: the Players head is one line: title, count, Join side by side',head.h<=52&&head.side&&head.pill===1&&head.pillText,JSON.stringify(head));
 // At 568px the set's panel alone reaches the dock, so Join is one short scroll away: the first control after the panel.
 check('320: Join is the first control after the set panel',await small.js(`(()=>{const p=document.querySelector('#live .prep'),all=[...document.querySelectorAll('#live button,#live a')].filter(e=>e.getClientRects().length&&!p.contains(e)&&!e.closest('.host-controls'));return !!all[0]&&!!all[0].closest('.host-join')})()`));
 await small.js(`document.querySelector('#live .host-join button').scrollIntoView({block:'center'})`);await sleep(300);d=await small.js(DOCK);

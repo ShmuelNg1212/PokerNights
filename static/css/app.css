@@ -890,6 +890,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   /* Only a dock with a toggle folds: before the start the dock has none, and a fold chosen in play must not empty it. */
   .dock-enabled .table-layout .host-controls:has(> .dock-toggle) { padding-top: 0; }
   :is(.dock-collapsed:not(.dock-closing), .kb-bar) .table-layout .host-controls:has(> .dock-toggle) > :not(.dock-toggle) { display: none; }
+  /* With no toggle there is no bar to keep above the keyboard: the dock steps out of sight, and keeps its box for dock.js. */
+  .kb-bar .table-layout .host-controls:not(:has(> .dock-toggle)) { visibility: hidden; }
   /* iPhone keyboard: dock.js raises the dock by --kb, which follows the visible frame, and reserves --kb-h, the keyboard's height. */
   .kb-open .table-layout .host-controls { bottom: var(--kb, 0px); padding-bottom: 6px; max-height: calc(100dvh - var(--kb-h, 0px) - 16px); }
   .dock-toggle .icon { transition: transform var(--t-fast) var(--ease-out); }
