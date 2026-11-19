@@ -86,7 +86,7 @@ try {
  await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,500);
  check('Done puts the panel away and brings the dock back',await A.js(`!${PANEL}&&!${R}.classList.contains('numpad-open')&&${DOCK}.getClientRects().length>0&&document.activeElement!==${field(7)}`));
  check('typed counts: the one main button confirms them',await A.js(`JSON.stringify(${primaries})`)==='["Confirm 2 counts"]');
- check('typed counts: the bar says Preview',await A.js(`document.querySelector('.dock-count').textContent.replace(/\\s+/g,' ').trim()`)==='Preview · ₱3,000 of ₱9,000 bought in');
+ check('typed counts: the bar says Preview',await A.js(`document.querySelector('.dock-count').textContent.replace(/\\s+/g,' ').trim()`)==='Preview · Accounted for ₱3,000 of ₱9,000');
  check('typed counts: the hint says they are not saved',await A.js(`/not saved until you confirm/.test(document.getElementById('batch-why').textContent)`));
  // The books are records: they keep the confirmed counts, as the server renders them, while counts are typed.
  check('typed counts: the books keep the confirmed counts',await A.js(`fetch(location.href).then(r=>r.text()).then(t=>{const d=new DOMParser().parseFromString(t,'text/html'),q=s=>[...[document,d].map(x=>x.querySelector(s)?.textContent.trim())];const [a,b]=q('[data-books-counted]'),[c,e]=q('[data-books-counted-label]'),[f,g]=q('[data-books-status]');return !!a&&a===b&&c===e&&c==='Counted, not cashed out'&&f===g})`));
@@ -151,9 +151,15 @@ try {
 
  // --- The end states.
  await A.go(`/s/${M.off}/`);
- check('books off: the main button leads to the difference',await A.js(`${shownIn('#live .next-action')}.map(e=>e.textContent.trim()).join()`)==='See the ₱100 difference'&&await A.js(`${primaries}.length`)===0);
- check('books off: the balance check is directly under the overview, its red panel in the first screen',await A.js(`(()=>{const a=document.querySelector('.felt').getBoundingClientRect(),e=document.querySelector('.end-balance').getBoundingClientRect(),b=document.querySelector('.discrepancy').getBoundingClientRect();return e.top>=a.bottom&&e.top<a.bottom+40&&b.bottom<=${DOCK}.getBoundingClientRect().top+2})()`));
- check('books off: the bar says the gap in the panel\'s coral, nothing about counting',await A.js(`(()=>{const g=document.querySelector('[data-dock-gap]');return !!g&&g.textContent.trim()==='₱100 missing'&&!document.querySelector('[data-dock-status]')&&!/still to count/.test(document.querySelector('.dock-next').textContent)})()`));
+ check('books off: the main button is a search, in bone',await A.js(`${shownIn('#live .next-action')}.map(e=>e.textContent.trim()).join()`)==='Find the ₱100 difference'&&await A.js(`JSON.stringify(${primaries})`)==='["Find the ₱100 difference"]');
+ check('books off: the counts come first, then the books',await A.js(`document.querySelector('.count-workspace').getBoundingClientRect().bottom<=document.querySelector('.end-balance').getBoundingClientRect().top`));
+ // A calm search: in the panel and in the bar, the amount is the only text in Down, and the panel has no Down border.
+ const ONLY_AMOUNT=root=>`(()=>{const r=document.querySelector(${JSON.stringify(root)}),f=r.querySelector('.gap-figure'),down=getComputedStyle(f).color;const hits=[r,...r.querySelectorAll('*')].filter(e=>getComputedStyle(e).color===down&&[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()));return hits.length===1&&hits[0]===f&&f.textContent.trim()==='₱100'})()`;
+ check('books off: in the panel only the amount is in Down',await A.js(ONLY_AMOUNT('.discrepancy')));
+ check('books off: the panel is neutral',await A.js(`(()=>{const d=getComputedStyle(document.querySelector('.discrepancy')),f=getComputedStyle(document.querySelector('.discrepancy .gap-figure')).color;return d.borderTopColor!==f&&d.borderTopWidth==='1px'})()`));
+ check('books off: in the bar only the amount is in Down',await A.js(ONLY_AMOUNT('[data-dock-gap]')));
+ check('books off: the override waits in More host controls',await A.js(`!!document.querySelector('.host-more [data-key=override]')&&!document.querySelector('.end-balance [data-key=override]')`));
+ check('books off: the bar says the gap, nothing about counting',await A.js(`(()=>{const g=document.querySelector('[data-dock-gap]');return !!g&&g.textContent.trim()==='₱100 missing'&&!document.querySelector('[data-dock-status]')&&!/still to count/.test(document.querySelector('.dock-next').textContent)})()`));
  check('books off: no disabled button',await A.js(`!${DOCK}.querySelector('button:disabled')`));
  await sleep(300);await A.shot('count-flow-off-390');
  await A.tap(`${DOCK}.querySelector('a.next-action')`,700);
@@ -216,11 +222,15 @@ try {
  // --- A computer: two columns, the action beside the fields' top, no panel.
  await A.computer();await A.go(`/s/${M.eight}/`);
  check('computer: players at the right, the action directly under the overview',await A.js(`(()=>{const f=document.querySelector('.felt').getBoundingClientRect(),w=document.querySelector('.count-workspace').getBoundingClientRect(),d=${DOCK}.getBoundingClientRect(),t=document.querySelector('.end-balance').getBoundingClientRect();return w.left>f.right&&Math.abs(w.top-f.top)<4&&d.top>=f.bottom&&d.top<f.bottom+40&&t.top>=d.bottom&&d.left===f.left})()`));
+ check('pips: ready is half filled, cashed out is full',await A.js(`(()=>{const r=document.querySelector('.count-pips li[data-status=ready]'),c=document.querySelector('.count-pips li[data-status=cashed_out]');return !!r&&/linear-gradient/.test(getComputedStyle(r).backgroundImage)&&(!c||getComputedStyle(c).backgroundImage==='none')})()`));
  check('computer: one total, and the cash-out button',await A.js(`${shownIn('[data-count-accounted],[data-dock-accounted]')}.length===1`)&&await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]');
  await A.js(`${field(4)}.focus()`);await send('Input.insertText',{text:'750'},A.s);await sleep(300);
  check('computer: typing with the keyboard, no panel, the button confirms',await A.js(`!${PANEL}&&${field(4)}.getAttribute('inputmode')==='decimal'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Confirm 1 count"]');
  check('computer: focus goes from the fields to the action',await A.js(`(()=>{const order=[...document.querySelectorAll('#live input:not([type=hidden]), #live button, #live a[href], #live summary')].filter(e=>e.getClientRects().length);return order.indexOf(${field(0)})<order.indexOf(document.querySelector('[data-confirm-typed]'))})()`));
  await sleep(300);await A.shot('count-flow-1280');
+ await A.go(`/s/${M.off}/`);
+ check('computer, books off: the action and then the books under the overview, the panel neutral',await A.js(`(()=>{const d=document.querySelector('.host-controls').getBoundingClientRect(),t=document.querySelector('.end-balance').getBoundingClientRect();return t.top>=d.bottom})()`)&&await A.js(ONLY_AMOUNT('.discrepancy')));
+ await sleep(300);await A.shot('count-flow-off-1280');
  await A.js(`sessionStorage.clear()`);
 
  // --- A player.

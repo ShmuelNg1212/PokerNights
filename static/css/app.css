@@ -398,9 +398,10 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .count-list > .btn { margin-top: 12px; }
 .balance-panel { padding: 12px 0; border-top: 1px solid var(--line); }
 .balance-panel .notice { margin-bottom: 0; }
-.discrepancy { padding: var(--s-4); border: 2px solid var(--danger); border-radius: var(--radius); background: var(--danger-bg); }
+/* A calm search (2026-11-20): a neutral panel; only the amount is in Down. */
+.discrepancy { padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .discrepancy p { margin: var(--s-1) 0 0; }
-.discrepancy-amount { color: var(--danger); font-size: 2.5rem; line-height: 1.1; font-weight: 800; font-stretch: var(--w-money); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.discrepancy-amount { color: var(--text); font-size: 2.5rem; line-height: 1.1; font-weight: 800; font-stretch: var(--w-money); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .books-balanced { position: relative; padding: 16px 0 12px; color: var(--up); font-size: .875rem; }
 .books-balanced::before { content: ''; position: absolute; inset: 0 0 auto; height: 5px; border-block: 1px solid var(--up); }
 .balance-arrived::before { animation: books-balance var(--t-focal) var(--ease-out); transform-origin: left; }
@@ -426,7 +427,6 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .end-set-layout:not(.final-layout) .table-left { display: contents; }
   .end-set-layout .felt { order: 0; }
   .end-balance { order: 4; }
-  .books-known > .end-balance { order: 1; }
   .count-workspace { order: 2; }
   .end-set-layout .host-more > summary { min-height: var(--tap); }
   .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 154px; }
@@ -1173,7 +1173,7 @@ legend { padding: 0; }
       transition: block-size 200ms var(--ease-out), content-visibility 200ms allow-discrete;
     }
     details[open]:not(.account, .rsvp-host, [data-app-link])::details-content { block-size: auto; }
-    details.prep-completing::details-content { transition: none; }
+    details:is(.prep-completing, .open-at-once)::details-content { transition: none; }
   }
 }
 
@@ -1227,8 +1227,6 @@ input.numpad-refused { border-color: var(--down); }
   .count-layout > .felt { grid-column: 1; grid-row: 1; }
   .count-layout > .host-controls { grid-column: 1; grid-row: 2; margin: 0; }
   .count-layout > .end-balance { grid-column: 1; grid-row: 4; }
-  .count-layout.books-known > .end-balance { grid-row: 2; }
-  .count-layout.books-known > .host-controls { grid-row: 3; }
   .count-layout > .count-workspace { grid-column: 2; grid-row: 1 / -1; }
 }
 @media (max-width: 899px) {
@@ -1724,7 +1722,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-v2 .felt.hero { padding-bottom: var(--s-3); }
 .count-v2 .count-workspace > .section-heading { padding: var(--s-2) 0 0; }
 .count-pips li { width: 22px; height: 6px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--line); }
-.count-pips li[data-status="ready"] { background: var(--bone); box-shadow: none; }
+/* Ready is half filled, cashed out is full: the shape tells them apart, not the colour alone (2026-11-20). */
+.count-pips li[data-status="ready"] { background: linear-gradient(90deg, var(--bone) 50%, transparent 50%); box-shadow: inset 0 0 0 1px var(--bone); }
 .count-pips li[data-status="cashed_out"] { background: var(--good); box-shadow: none; }
 /* Stacked under the overview on a phone, the card keeps clear of that panel's rounded corners. */
 .own-count-lead { margin: var(--s-4) 0 var(--s-5); }
@@ -1746,7 +1745,6 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 @media (min-width: 900px) {
   .own-count-lead { margin-top: 0; } /* beside the overview, level with it */
   .count-layout.count-v2 > .end-balance { grid-row: 3; }
-  .count-layout.count-v2.books-known > .end-balance { grid-row: 2; }
 }
 
 /* The closed session page: your part, then one row per transfer (night-settle). DESIGN.md, "Settle-up in rows" (2026-10-10). */
@@ -2259,15 +2257,15 @@ p.alerts-text:last-child { margin-bottom: 0; }
 :is(.discrepancy-where, [data-key=override])[open]:not([data-disclosure-closing]) > summary::after { transform: translateY(3px) rotate(225deg); }
 .discrepancy-where > summary { font-size: .875rem; }
 /* The override opens from a quiet button, as the host's other options do; its form's Record override stays the one danger action. */
-.override-lead { margin: var(--s-2) 0 calc(var(--s-1) * -1); color: var(--muted); }
 [data-key=override] > summary.btn { justify-content: center; color: var(--text); }
 [data-key=override][open]:not([data-disclosure-closing]) > summary.btn { background: var(--surface-2); margin-bottom: var(--s-3); }
 @media (prefers-reduced-motion: reduce) { :is(.discrepancy-where, [data-key=override]) > summary::after { transition: none; } }
 /* The one sentence under the gap: balanced lines, so "buy-ins" never splits at its hyphen. */
 .discrepancy :is(.gap-sentence, p) { text-wrap: balance; }
 /* Books off: the host bar (2026-10-17) */
-/* Every player is cashed out and the books differ: the bar says it once, in Down, with no mark. */
-.dock-gap { color: var(--down); font-weight: 600; }
+/* Every player is cashed out and the books differ: the bar says it once; only the amount is in Down (2026-11-20). */
+.dock-gap { color: var(--text); font-weight: 600; }
+.gap-figure { color: var(--down); font-weight: inherit; }
 /* gap.js draws this over the record the button leads to and fades it out; only its opacity moves. */
 .gap-ring { position: absolute; z-index: 4; box-sizing: border-box; border: 2px solid var(--brass); pointer-events: none; }
 /* The target takes focus so a screen reader lands there; the ring above is the visible answer. */

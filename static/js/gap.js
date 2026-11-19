@@ -1,4 +1,4 @@
-// "See the ₱100 difference": the books panel is often already on screen, so the tap leads to
+// "Find the ₱100 difference": the books panel is often already on screen, so the tap leads to
 // the record that looks wrong instead. Without this script the link is a plain anchor to #balance.
 (function () {
   "use strict";
@@ -55,14 +55,20 @@
     var where = !el.hasAttribute("data-suspect") && document.querySelector("#live .discrepancy-where");
     // Where to look already open: the next place is the players' rows, where a record can be corrected.
     if (where && where.open) el = document.querySelector("#live .count-row") || el;
-    if (where) where.open = true;
-    var room = band(), box = el.getBoundingClientRect(), gap = 16;
-    var whole = box.top >= room.top && box.bottom <= room.bottom;
-    var smooth = window.pokerMotion ? window.pokerMotion.on() : !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Where to look opens at once here: the page moves to it, and a panel measured mid-growth would
+    // seem to fit and then end under the bar (the books come after the counts since 2026-11-20).
+    if (where && !where.open) { where.classList.add("open-at-once"); where.open = true; where.getBoundingClientRect(); where.classList.remove("open-at-once"); }
     // Focus without a scroll of its own, so the page moves once.
     if (!el.hasAttribute("tabindex") && !el.matches("a[href],button,input,select,textarea")) el.setAttribute("tabindex", "-1");
     el.setAttribute("data-gap-focus", "");
     el.focus({ preventScroll: true });
+    reveal(el);
+  });
+
+  function reveal(el) {
+    var room = band(), box = el.getBoundingClientRect(), gap = 16;
+    var whole = box.top >= room.top && box.bottom <= room.bottom;
+    var smooth = window.pokerMotion ? window.pokerMotion.on() : !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (whole) { pulse(el); return; }
     var by = box.top - room.top - gap;
     // A target shorter than the band is centred in it; a taller one starts at its top.
@@ -76,7 +82,7 @@
     window.addEventListener("scrollend", finish);
     window.scrollBy({ top: by, behavior: "smooth" });
     setTimeout(finish, 700); // a browser without scrollend, or a scroll already at its end
-  });
+  }
 
   window.pokerPage.register(function () { return clear; });
 })();

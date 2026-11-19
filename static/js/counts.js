@@ -74,8 +74,8 @@
     // A recorded override covers the difference; typed counts put the stack check back.
     var pending = drafts + entered;
     if (!pending && box.dataset.covered) { status = box.dataset.covered; tone = "warn"; }
-    // Every player cashed out and the books still off: the panel's coral, not the preview's brass.
-    else if (!pending && "gap" in box.dataset && difference !== 0n) tone = "down";
+    // Every player cashed out and the books still off: a calm search, so brass; only the panel's amount is coral.
+    else if (!pending && "gap" in box.dataset && difference !== 0n) tone = "warn";
     var shown = invalid ? "Unavailable" : format(total, chips);
     function put(key, text) { box.querySelector("[data-count-" + key + "]").textContent = text; }
     put("label", drafts ? "Preview · unsaved counts" : entered ? "Preview · players' counts" : "Confirmed counts");

@@ -6,7 +6,7 @@
   {# Every player is cashed out and the books still differ: the gap in words comes before the figures. #}
   <div class="discrepancy" id="books-gap" data-gap="{{ balance.difference }}">
     <div class="discrepancy-statement" role="alert">
-      <p class="discrepancy-amount">{{ balance.headline }}</p>
+      <p class="discrepancy-amount"><span class="gap-figure">{{ balance.difference_text }}</span> {% if balance.difference > 0 %}too much{% else %}missing{% endif %}</p>
       {% if me.is_host %}<p class="gap-sentence">{{ balance.gap_sentence }}</p>
       {% else %}<p>The host is checking the records. Results are final once the books balance.</p>{% endif %}
     </div>
@@ -17,7 +17,7 @@
     <details class="discrepancy-where" data-key="books-where">
       <summary>Where to look</summary>
       <ul class="discrepancy-causes small">{% for cause in balance.causes %}<li>{{ cause }}</li>{% endfor %}</ul>
-      <p class="small">Tap a player's name to reverse and re-enter the wrong buy-in or cash-out, or record an override below if the error cannot be found.</p>
+      <p class="small">Tap a player's name to reverse and re-enter the wrong buy-in or cash-out, or record an override in More host controls if the error cannot be found.</p>
     </details>
     {% endif %}
   </div>
@@ -33,7 +33,7 @@
   </dl>
   {# Once every player is cashed out the statement above or below is the one word on the books. #}
   {% if not me.is_host and not balance.counted %}{% include "web/_count_total.html" %}{% endif %}
-  {% if me.is_host and count_total and not balance.counted and not balance.overridden %}<p class="books-verdict small"><span class="verdict" data-books-status data-tone="{{ count_total.tone }}">{{ count_total.status_text }}</span> <span data-books-coverage>{{ count_total.coverage_text }}</span></p>{% endif %}
+  {# The host reads what remains in the dock; the books keep the figures and the names. #}
   {% if balance.overridden %}
   {# An override closes the books without them balancing: neutral, never the balanced moment. #}
   <div class="books-covered">
@@ -60,24 +60,6 @@
     <form method="post" data-turbo="true" action="{% url 'override_void' session.pk %}">{% csrf_token %}
       <button type="submit" class="btn btn-small btn-quiet">Remove the override</button>
     </form>
-    {% endif %}
-    {% if balance.counted and not balance.ok %}
-    <p class="override-lead small">Cannot find the error?</p>
-    <details data-key="override">
-      <summary class="btn btn-quiet btn-block">Finalize with an override</summary>
-      <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
-        <p class="small muted">{% if summary.rake %}Cash-outs plus rake{% else %}Cash-outs{% endif %} must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
-        <div class="field">
-          <label for="absorber">Who absorbs the difference?</label>
-          <select id="absorber" name="absorber">
-            {% for line in summary.money_lines %}<option value="{{ line.participant.pk }}" {% if line.participant.member_id == me.pk %}selected{% endif %}>{{ line.participant.member.display_name }}</option>{% endfor %}
-            <option value="equal">All players, in equal shares</option>
-          </select>
-        </div>
-        <div class="field"><label for="override-note">Note</label><input id="override-note" type="text" name="note" data-keep="override-note" maxlength="255" required></div>
-        <button type="submit" class="btn btn-danger btn-block">Record override</button>
-      </form>
-    </details>
     {% endif %}
   {% endif %}
 </section>

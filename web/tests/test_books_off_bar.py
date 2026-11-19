@@ -27,7 +27,7 @@ class BooksOffBarTests(TestCase):
     def test_the_bar_says_missing_once_in_down_without_a_mark(self):
         self.off()
         _, bar = self.bar()
-        self.assertIn('<span class="dock-gap" data-dock-gap>₱100 missing</span>', bar)
+        self.assertIn('<span class="dock-gap" data-dock-gap><strong class="gap-figure">₱100</strong> missing</span>', bar)
         self.assertNotIn("still to count", bar)
         self.assertNotIn("data-tone", bar)  # no warn mark, no brass
         # counts.js rewrites the bar only through these; without them it leaves the line alone.
@@ -37,14 +37,14 @@ class BooksOffBarTests(TestCase):
     def test_extra_money_says_too_much_as_the_panel_does(self):
         self.off(b=1200)
         _, bar = self.bar()
-        self.assertIn(">₱100 too much</span>", bar)
+        self.assertIn("<strong class=\"gap-figure\">₱100</strong> too much</span>", bar)
 
     def test_the_button_names_the_difference_and_falls_back_to_the_books(self):
         self.off()
         html, _ = self.bar()
         link = re.search(r'<a [^>]*data-books-gap[^>]*>([^<]*)</a>', html)
         self.assertIsNotNone(link)
-        self.assertEqual(link.group(1), "See the ₱100 difference")
+        self.assertEqual(link.group(1), "Find the ₱100 difference")
         self.assertIn('href="#balance"', link.group(0))
         self.assertIn('id="balance"', html)  # the anchor has somewhere to go without JavaScript
         self.assertIn('data-turbo="false"', link.group(0))

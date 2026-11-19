@@ -2,7 +2,7 @@
 <div class="host-controls stack">
   {% if balance.overridden %}{% firstof balance.covered_text as covered %}{% endif %}
   {# Before the start the dock holds Start alone: a folded bar would only repeat it. In play and in the count-up the bar carries the next step or the count. #}
-  {% if session.state == 'running' or session.state == 'reconciliation' %}<button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }} bought in</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}{% if balance.counted and not balance.ok %}<span class="dock-gap" data-dock-gap>{{ balance.headline }}</span>{% else %}<span class="verdict" data-dock-status data-tone="{% if covered %}warn{% else %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.coverage_text }}</span>{% endif %}{% elif session.state == 'setup' and prep.next == 'players' %}Next: Add players{% elif session.state == 'setup' or session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>{% endif %}
+  {% if session.state == 'running' or session.state == 'reconciliation' %}<button type="button" class="dock-toggle{% if session.state == 'reconciliation' %} dock-total{% endif %}" hidden aria-expanded="true" data-focus-key="dock-toggle"><span class="dock-title">Host controls</span>{% if session.state == 'reconciliation' %}<span class="dock-count"><span data-dock-prefix></span><span class="dock-label">Accounted for</span> <strong data-dock-accounted>{{ count_total.accounted|amount:unit }}</strong> of {{ summary.total|amount:unit }}</span>{% endif %}<span class="dock-next muted small"{% if session.state == 'reconciliation' %} aria-live="polite"{% endif %}>{% if session.state == 'reconciliation' %}{% if balance.counted and not balance.ok %}<span class="dock-gap" data-dock-gap><strong class="gap-figure">{{ balance.difference_text }}</strong> {% if balance.difference > 0 %}too much{% else %}missing{% endif %}</span>{% else %}<span class="verdict" data-dock-status data-tone="{% if covered %}warn{% else %}{{ count_total.tone }}{% endif %}">{% if covered %}{{ covered }}{% else %}{{ count_total.status_text }}{% endif %}</span> <span data-dock-coverage>{{ count_total.coverage_text }}</span>{% endif %}{% elif session.state == 'setup' and prep.next == 'players' %}Next: Add players{% elif session.state == 'setup' or session.state == 'open' %}Next: Start the set{% else %}Next: End play and count up{% endif %}</span>{% icon 'chevron-down' %}</button>{% endif %}
   <h2 class="host-controls-heading">Host controls</h2>
   {# On the new page the checklist's "Stakes and rake" step leads there. #}
   {% if can_configure_rake and not prep %}
@@ -54,13 +54,13 @@
   </details>
   {% elif balance.counted %}
   {# gap.js turns the tap into a scroll to the record that looks wrong; without it the anchor leads to the books. #}
-  <a class="btn btn-danger btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>See the {{ balance.difference_text }} difference</a>
+  <a class="btn btn-primary btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>Find the {{ balance.difference_text }} difference</a>
   {% elif summary.ready_lines %}
   <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>{% if finishes_the_set %}Review and finish{% else %}Cash out counted players ({{ summary.ready_lines|length }}){% endif %}</a>
   {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}
-    {% if balance.ok %}{% firstof "" as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override." as hint %}{% elif summary.ready_lines %}{% firstof "" as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
+    {% if balance.ok %}{% firstof "" as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override in More host controls." as hint %}{% elif summary.ready_lines %}{% firstof "" as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
     <p id="batch-why" class="dock-hint small muted" data-hint="{{ hint }}">{{ hint }}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
@@ -73,7 +73,24 @@
     <button class="btn btn-quiet btn-block" name="action" value="close">Back to draft</button>
   </form>{% endif %}
   {% if session.state == 'reconciliation' %}
-
+    {# A rare way out of a gap: it waits here, so the books stay a search. The form and its rules are unchanged. #}
+    {% if balance.counted and not balance.ok %}
+    <details data-key="override">
+      <summary class="btn btn-quiet btn-block">Finalize with an override</summary>
+      <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
+        <p class="small muted">{% if summary.rake %}Cash-outs plus rake{% else %}Cash-outs{% endif %} must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
+        <div class="field">
+          <label for="absorber">Who absorbs the difference?</label>
+          <select id="absorber" name="absorber">
+            {% for line in summary.money_lines %}<option value="{{ line.participant.pk }}" {% if line.participant.member_id == me.pk %}selected{% endif %}>{{ line.participant.member.display_name }}</option>{% endfor %}
+            <option value="equal">All players, in equal shares</option>
+          </select>
+        </div>
+        <div class="field"><label for="override-note">Note</label><input id="override-note" type="text" name="note" data-keep="override-note" maxlength="255" required></div>
+        <button type="submit" class="btn btn-danger btn-block">Record override</button>
+      </form>
+    </details>
+    {% endif %}
     <form method="post" data-turbo="true" action="{% url 'session_transition' session.pk %}">{% csrf_token %}<button class="btn btn-quiet btn-block" name="action" value="resume">Resume play</button></form>
     {% if session.ended_at %}
     <details data-key="end-time">

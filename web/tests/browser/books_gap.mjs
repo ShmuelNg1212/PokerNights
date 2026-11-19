@@ -1,4 +1,4 @@
-// Books off (2026-10-17): the host bar's "See the ₱100 difference" leads to the record that looks wrong
+// Books off (2026-10-17; calm since 2026-11-20): the host bar's "Find the ₱100 difference" leads to the record that looks wrong
 // (gap.js). Seed a fresh temporary database with seed.py then seed_end_set.py (set 9 "Recount needed",
 // set 10 covered by an override), serve it on 127.0.0.1:8773, then run.
 import {spawn} from 'node:child_process';
@@ -42,7 +42,7 @@ const place=`(()=>{const el=document.querySelector('#live [data-suspect]')||docu
 const bar=`(()=>{const t=document.querySelector('.dock-toggle'),g=t.querySelector('.dock-gap'),b=document.querySelector('a[data-books-gap]');
  const lh=e=>{const cs=getComputedStyle(e);return Math.round(e.getBoundingClientRect().height/(parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.4))};
  const down=getComputedStyle(document.documentElement).getPropertyValue('--down').trim();const probe=document.createElement('i');probe.style.color=down;document.body.appendChild(probe);const want=getComputedStyle(probe).color;probe.remove();
- return {text:g&&g.textContent,color:g&&getComputedStyle(g).color===want,mark:g&&getComputedStyle(g,'::before').content,count:/still to count/.test(t.textContent),
+ return {text:g&&g.textContent,color:g&&getComputedStyle(g.querySelector('.gap-figure')).color===want&&getComputedStyle(g).color!==want,mark:g&&getComputedStyle(g,'::before').content,count:/still to count/.test(t.textContent),
   gapLines:g&&g.getClientRects().length?lh(g):0,button:b&&b.getClientRects().length?Math.round(b.getBoundingClientRect().height):0,label:b&&b.textContent.trim(),overflow:document.documentElement.scrollWidth>innerWidth}})()`;
 const okRuns=`__runs.every(r=>r.keys.every(k=>['transform','opacity','boxShadow','x','y','scale'].includes(k)))`;
 
@@ -51,14 +51,14 @@ for(const width of (process.env.PN_WIDTHS||'320,390,1280').split(',').map(Number
  await A.go(`/s/${OFF}/`);
  let b=await A.js(bar);
  if(width<900){
-  check(`${width} the bar reads "₱100 missing" in Down, no mark, no "still to count"`,b.text==='₱100 missing'&&b.color&&(b.mark==='none'||b.mark==='normal')&&!b.count,b);
+  check(`${width} the bar reads "₱100 missing", only the amount in Down, no mark, no "still to count"`,b.text==='₱100 missing'&&b.color&&(b.mark==='none'||b.mark==='normal')&&!b.count,b);
   // Folded: the short line and the main action, each on one line.
   await A.js(`localStorage.setItem('rack-dock','collapsed')`);await A.go(`/s/${OFF}/`);b=await A.js(bar);
   check(`${width} folded: "₱100 missing" on one line and the main action under it`,b.gapLines===1&&b.button>=48&&b.button<=56&&!b.overflow,b);
   await A.shot(`folded-${width}`);
   await A.js(`localStorage.setItem('rack-dock','open')`);await A.go(`/s/${OFF}/`);
  }
- check(`${width} the button names the difference`,b.label==='See the ₱100 difference',b);
+ check(`${width} the button names the difference`,b.label==='Find the ₱100 difference',b);
  // The tap from the top of the page.
  await A.js(`scrollTo(0,0);__runs.length=0`);await A.tap('a[data-books-gap]');await sleep(1200);
  let p=await A.js(place);

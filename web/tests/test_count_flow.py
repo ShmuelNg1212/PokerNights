@@ -66,10 +66,10 @@ class CountUpStructureTests(TestCase):
         self.night.cash("B", 1000)
         html = self.page()
         self.assertIn('href="#balance"', html)
-        self.assertIn("See the ₱100 difference", html)
+        self.assertIn("Find the ₱100 difference", html)
         self.assertIn('id="balance"', html)
         self.assertIn("books-known", html)
-        self.assertIn('data-tone="down">₱100 missing.', html)  # every player cashed out: the panel's coral
+        self.assertIn('data-tone="warn">₱100 missing.', html)  # a calm search: only the panel's amount is coral
         self.assertNotIn("Finalize results", html)
         self.assertNotIn("disabled", html[html.index('class="host-controls'):html.index('class="host-more"')])
 
@@ -86,11 +86,11 @@ class CountUpStructureTests(TestCase):
         books = lambda: self.page()[self.page().index('id="balance"'):]
         html = books()
         self.assertIn('<dt data-books-counted-label>Counted, not cashed out</dt><dd data-books-counted>₱0</dd>', html)
-        self.assertIn('data-books-status data-tone="">₱2,000 still to account for.</span> <span data-books-coverage>2 still to count.', html)
+        self.assertNotIn("still to account for", html)  # the dock says what remains
         count(self.night, "A", 800)
         html = books()
         self.assertIn("<dd data-books-counted>₱800</dd>", html)
-        self.assertIn("₱1,200 still to account for.</span> <span data-books-coverage>1 still to count.", html)
+        self.assertNotIn("data-books-status", html)
         # Once every player is cashed out, the books' own statement is the one word: no counted line.
         self.night.cash("A", 900)
         self.night.cash("B", 1000)

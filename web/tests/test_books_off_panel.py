@@ -43,7 +43,7 @@ class BooksOffPanelTests(TestCase):
         panel = self.panel(html)
         self.assertIn('id="books-gap"', panel)
         self.assertIn('data-gap="-10000"', panel)
-        self.assertIn('<p class="discrepancy-amount">₱100 missing</p>', panel)
+        self.assertIn('<p class="discrepancy-amount"><span class="gap-figure">₱100</span> missing</p>', panel)
         self.assertNotIn("−₱100", panel)
         self.assertNotIn("off by", panel.lower())
         self.assertIn("Cash-outs are ₱100 below buy-ins.", panel)
@@ -52,28 +52,28 @@ class BooksOffPanelTests(TestCase):
     def test_the_alert_is_the_short_statement_and_the_causes_wait_closed(self):
         panel = self.panel(self.page(self.night.host.user))
         alert = re.search(r'<div class="discrepancy-statement" role="alert">(.*?)</div>', panel, re.S).group(1)
-        self.assertIn("₱100 missing", alert)
+        self.assertIn("gap-figure\">₱100</span> missing", alert)
         self.assertNotIn("Look for", alert)
         self.assertEqual(panel.count('role="alert"'), 1)
         where = panel[panel.index("<details"):]
         self.assertIn("<summary>Where to look</summary>", where)
         self.assertNotIn("<details open", panel)
         self.assertIn("A buy-in recorded twice", where)
-        self.assertIn("record an override below", where)
+        self.assertIn("record an override in More host controls", where)
 
     def test_too_much_reads_above(self):
         services.reverse_cash_out(self.night.session.pk, self.night.host,
                                   self.night.line("Carlo").cash_outs[0].pk, "recount")
         self.night.cash("Carlo", 1200)
         panel = self.panel(self.page(self.night.host.user))
-        self.assertIn('<p class="discrepancy-amount">₱200 too much</p>', panel)
+        self.assertIn('<p class="discrepancy-amount"><span class="gap-figure">₱200</span> too much</p>', panel)
         self.assertIn("Cash-outs are ₱200 above buy-ins.", panel)
         self.assertIn("A cash-out that is too high", panel)
 
     def test_a_player_sees_no_host_instructions_and_their_own_figures(self):
         html = self.page(self.carlo.user)
         panel = self.panel(html)
-        self.assertIn("₱100 missing", panel)
+        self.assertIn("gap-figure\">₱100</span> missing", panel)
         self.assertIn("The host is checking the records. Results are final once the books balance.", panel)
         self.assertIn("You: ₱1,000 in · ₱900 out", panel)
         self.assertNotIn("Where to look", panel)
@@ -85,10 +85,9 @@ class BooksOffPanelTests(TestCase):
         self.assertNotIn("Confirmed counts", html)
         self.assertNotIn("data-count-coverage", html)
 
-    def test_the_override_opens_from_a_button_in_place(self):
+    def test_the_override_opens_from_a_button_in_more_host_controls(self):
         html = self.page(self.night.host.user)
-        self.assertIn('<details data-key="override">', html)
-        self.assertIn("Cannot find the error?", html)
+        self.assertIn('<details data-key="override">', html[html.index('class="host-more"'):])
         self.assertIn('<summary class="btn btn-quiet btn-block">Finalize with an override</summary>', html)
 
 
