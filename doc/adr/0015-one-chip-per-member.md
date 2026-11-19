@@ -8,7 +8,7 @@ A chip (a coloured token with initials) stands for a player. Before this decisio
 
 ## Decision
 
-- A member's chip colour is `(member.pk - 1) % 10 + 1`, on every screen of their group. The colour is derived, not stored.
+- A member's chip colour is their place in their own group's roster (member ID order, removed members included), modulo ten, on every screen of their group. The colour is derived, not stored. A global `(member.pk - 1) % 10` was rejected at review: member IDs count across all groups, so two members of a small group could share a colour.
 - A member's label is worked out against the group's whole roster, removed members included, in member ID order. The earliest member with an initial keeps that one letter. Each later namesake takes two letters (first and last word, the first two letters, or a free letter). A new member never changes an earlier member's label.
 - A group of more than ten members repeats colours. The label and the written name tell the members apart. No colour token is added.
 - The header's account chip is not part of this rule. It belongs to the account, not to a group.
@@ -17,4 +17,5 @@ A chip (a coloured token with initials) stands for a player. Before this decisio
 
 - Each page reads the group roster once for its chips (one query per request). The share card reuses that read.
 - A member's label can change only when that member's own name changes.
+- One case moves colours: a claim that replaces an empty roster entry deletes that entry (`groups.services`), so the members after it move up one place. This is rare and the entry had no records.
 - A stored, host-chosen colour remains possible later. It would need a migration, a service and an audit record.

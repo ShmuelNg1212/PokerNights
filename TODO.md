@@ -1,5 +1,10 @@
 # TODO
 
+## Phone checks: one chip per person (unreleased, `feat/stable-chips`)
+
+- [ ] Open a set in play, then its session, then the group's Stats. Each person has the same colour and letters on all three.
+- [ ] In a group with a Ben and a Bea, the one who joined the group first shows one letter; the other shows two.
+
 ## Phone checks: felt in view, host's books, host Join, round chevron (released 2026-11-19)
 
 - [ ] A set in play: scroll the players. The felt stays under the top bar, and the rows pass under it. A tap on a row's Rebuy still opens the sheet. The chevron beside End play and count up sits in the middle of its circle.

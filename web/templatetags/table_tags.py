@@ -72,10 +72,12 @@ def group_token(member, cache=None) -> tuple:
 
     cache = {} if cache is None else cache
     if member.group_id not in cache:
-        cache[member.group_id] = roster_labels(Member.objects.filter(group_id=member.group_id).values_list("pk", "display_name"))
-    labels = cache[member.group_id]
+        rows = list(Member.objects.filter(group_id=member.group_id).order_by("pk").values_list("pk", "display_name"))
+        # Colour is the member's place in their own group, so a group of up to ten has ten different colours.
+        cache[member.group_id] = (roster_labels(rows), {pk: place for place, (pk, _) in enumerate(rows)})
+    labels, places = cache[member.group_id]
     label = labels.get(member.pk) or member.display_name.strip()[:1].upper() or "?"
-    return label, (member.pk - 1) % 10 + 1
+    return label, places.get(member.pk, member.pk - 1) % 10 + 1
 
 
 def _request_cache(context):

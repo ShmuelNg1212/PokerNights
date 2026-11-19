@@ -6,7 +6,7 @@ Branch: `feat/stable-chips`, from `docs/ui-critique` (unreleased, docs only). Th
 
 ## OPEN QUESTIONS
 
-Answered 2026-11-19: approved, all four recommendations.
+Answered 2026-11-19: approved, all four recommendations. Note on 4: the rule that the plan approved is the one in its last sentence and task 1 (the earliest member keeps one letter: Ben "B", Bea "BE"). The "Ben is BE" example above it contradicts that and is wrong.
 
 1. **Reverse a recorded decision.** DESIGN.md (the roster section, line 337) says: "Set join order and session standing order retain their own token rules, so colour does not promise identity across those views." This plan makes colour and label a promise of identity in a group. Recommendation: **yes**. The critique found the same person in three colours and three labels. A host finds a player by chip first. If no, delete this plan; keep the queue.
 2. **Derived or stored colour.** Recommendation: **derived** from `Member.pk`, as the roster and Stats already do. No migration, no new write path. A stored colour (a host picks it) can come later. If stored: add a migration, a service, an audit record and a roster control, and this plan grows past one slice.
@@ -48,6 +48,11 @@ Answered 2026-11-19: approved, all four recommendations.
   - `break-ui`: a group of 14 with three names that start with "B", and a 60-character name.
   - Completion: the probe passes; captures at 390 px and 1280 px look right.
   - Done 2026-11-19: `web/tests/browser/stable_chips.mjs`, eleven pages and 1280 px, including seed_home's 14-player and 60-character-name groups. main: 11/13, with Ben drawn four ways (`k8 BN`, `k6 B`, `k1 B`, `k2 BE`). Branch: 13/13, 42 members, each drawn one way. Captures were checked by eye: set 3 at 390 px, the 14-player roster.
+
+## Rendezvous record (2026-11-19)
+
+- `code-review` (medium): one important finding applied to the code. Colour from the global `Member.pk` let two members of a small group share a colour, because member IDs count across all groups. Fixed: colour is the member's place in their own group's roster, modulo ten. A new test (`test_a_small_group_has_distinct_colours_whatever_other_groups_hold`) failed before the fix and passes after. ADR 0015, DESIGN.md and architecture.md updated. The other findings were about wording in this plan; the note under OPEN QUESTIONS resolves the label contradiction.
+- SQLite: 1815 OK (23 skipped).
 
 ## Rendezvous checks
 

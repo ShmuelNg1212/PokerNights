@@ -73,6 +73,15 @@ class OneChipPerMemberTests(TestCase):
         self.assertEqual(member_token(bea, active), bea_before)
         self.assertEqual(member_token(Member.objects.get(pk=self.ben.pk), active), ben_before)
 
+    def test_a_small_group_has_distinct_colours_whatever_other_groups_hold(self):
+        other = Night("Ana")
+        for name in ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9"]:
+            groups.add_roster_player(self.night.host, name)  # the first group takes ten ids in between
+        groups.add_roster_player(other.host, "Bo")  # Bo's id is ten after Ana's
+        roster = list(Member.objects.filter(group=other.group))
+        colours = {re.search(r"k(\d+)", member_token(m, roster)).group(1) for m in roster}
+        self.assertEqual(len(colours), len(roster))
+
     def test_chips_on_a_page_read_the_roster_once(self):
         for name in ["Bea", "Bong", "Carlo", "Cora", "Dan"]:
             member = groups.add_roster_player(self.night.host, name)
