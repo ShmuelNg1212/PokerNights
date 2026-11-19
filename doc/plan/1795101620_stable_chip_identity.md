@@ -42,11 +42,12 @@ Answered 2026-11-19: approved, all four recommendations.
   - ADR `doc/adr/0015-one-chip-per-member.md` (via `domain-modeling`): context, decision, the >10 rule, and the label rule.
   - Completion: both written; no other DESIGN.md text promises per-set colours (`grep -n "join order" DESIGN.md`).
   - Done 2026-11-19. DESIGN.md lines 196, 323 and 337; `doc/wiki/architecture.md` and `features.md` lost their per-set colour text. The ADR was written in the format of 0014; the `domain-modeling` skill was not run, because the decision was already settled in the plan.
-- [ ] **4. Browser check.** `tests: alongside`.
+- [x] **4. Browser check.** `tests: alongside`.
   - On the review seed (`seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_opening.py`, `seed_home.py`), read the chip class and label for Ben and Miguel on /s/3/, /s/2/, /n/1/, /n/12/, /g/1/ (Stats and Players) and / as ben.
   - The check must fail on main: on main, Ben is k-pink on /s/3/ and another colour on Stats.
   - `break-ui`: a group of 14 with three names that start with "B", and a 60-character name.
   - Completion: the probe passes; captures at 390 px and 1280 px look right.
+  - Done 2026-11-19: `web/tests/browser/stable_chips.mjs`, eleven pages and 1280 px, including seed_home's 14-player and 60-character-name groups. main: 11/13, with Ben drawn four ways (`k8 BN`, `k6 B`, `k1 B`, `k2 BE`). Branch: 13/13, 42 members, each drawn one way. Captures were checked by eye: set 3 at 390 px, the 14-player roster.
 
 ## Rendezvous checks
 
