@@ -193,7 +193,7 @@ The palette combines warm dark supports with a cool indigo working field and pal
 
 ### Tertiary
 
-- **Player colours (c1–c10):** the ten recurring chip identities. Initials and names remain essential; lighter chips use dark ink. These colours do not encode financial status.
+- **Player colours (c1–c10):** the ten recurring chip identities. A member has one colour and one label in their group, on every screen ([ADR 0015](doc/adr/0015-one-chip-per-member.md)). Initials and names remain essential; lighter chips use dark ink. These colours do not encode financial status.
 
 ### Neutral
 
@@ -320,7 +320,7 @@ The neutral overview gives the viewer’s frozen signed result prominence when p
 
 The open-session neutral overview leads with the current set action and the viewer’s result so far when a standing exists; it explains that transfers follow closing. Close and next-set actions retain their service gates beside that task. A closed session uses slate, an intact Still to pay figure, written settlement status, amount-based progress and a separately labelled paid-transfer count. Remaining and paid sums use exact integer transfers; zero transfers show “Nobody owes anything” without a progress denominator.
 
-Transfer rows pair payer and payee identity tokens with full names, “pays,” an exact amount and Paid / Not paid text. Identities adapt at 440px of actual card width, including the 416px desktop detail column at a 900px viewport. Named grid areas fix amount, state and action positions. Financial rows align at their top edges; timestamps grow below the badge. Figures stay on one line: the base is 28px, formatted lengths above 10 use 22px narrow / 28px wide, and above 17 use 18px narrow / 22px wide. Currency, digits, decimal precision and the chips unit remain complete. Paid includes its recorded time and “marked by the host.” Host Mark paid and Undo are native POST actions. The session identity order follows first appearance in aggregate standings and keys tokens by member; it need not match a set’s colour order. Payment records retain recorder and undone status, with struck text for reversed records.
+Transfer rows pair payer and payee identity tokens with full names, “pays,” an exact amount and Paid / Not paid text. Identities adapt at 440px of actual card width, including the 416px desktop detail column at a 900px viewport. Named grid areas fix amount, state and action positions. Financial rows align at their top edges; timestamps grow below the badge. Figures stay on one line: the base is 28px, formatted lengths above 10 use 22px narrow / 28px wide, and above 17 use 18px narrow / 22px wide. Currency, digits, decimal precision and the chips unit remain complete. Paid includes its recorded time and “marked by the host.” Host Mark paid and Undo are native POST actions. Tokens are keyed by member and match every other screen. Payment records retain recorder and undone status, with struck text for reversed records.
 
 Aggregate results remain separate from transfers and payments, using frozen finalized-set values, signed figures and direction icons. Closed results carry Final; open results carry a “Not final” badge. No-finalization state is explicit. A viewer without a standing receives no invented result. Sets retain number, written state and known timer values; the existing “Play time over all sets” line is distinct from the recap’s finalized-only duration.
 
@@ -334,7 +334,7 @@ The browser key includes session and signed-in viewer. Automatic opening happens
 
 Home shows one block per group that reports its state (see the home addendum below). A newcomer gets a focused first-group screen with the mark, the create form and a line about invite links. The group's sessions in progress are table cards, and the host's New session follows them (see "Sessions tab", 2026-10-17). Without tables, the page gives the table-creation prerequisite. Past sessions and management use ordinary rules and rail sections. Native disclosures contain table creation, member management and roster additions; host-only actions retain their gates.
 
-The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Roster chip colour derives from member primary key within the ten-colour palette; collision handling uses roster peers. Set join order and session standing order retain their own token rules, so colour does not promise identity across those views. The one-time invite URL remains a labelled read-only field.
+The alphabetic roster pairs full names with initials, Host / No login labels and native management controls. Chip colour derives from member primary key within the ten-colour palette, on the roster and on every other screen. The label is worked out against the whole roster, removed members included: the earliest member keeps the one initial and each later namesake takes two letters. Colour and label promise identity across views ([ADR 0015](doc/adr/0015-one-chip-per-member.md)). The one-time invite URL remains a labelled read-only field.
 
 ### Account and supporting forms
 

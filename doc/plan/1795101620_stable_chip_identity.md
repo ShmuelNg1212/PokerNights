@@ -37,10 +37,11 @@ Answered 2026-11-19: approved, all four recommendations.
   - Acceptance: a test renders set 3, session 1 and Stats for the seeded Ben and finds the same `kN` class and the same label on each.
   - Completion: SQLite suite passes.
   - Done 2026-11-19. Deviation: the second argument stays. It is the fallback for objects outside a group (unit tests that use plain namespaces). Templates are unchanged. Three query budgets rose by one: the roster read, once per request (`web/tests/test_query_counts.py`). The share card reuses the page's read. SQLite 1814 OK.
-- [ ] **3. Update the design record.** Docs.
+- [x] **3. Update the design record.** Docs.
   - DESIGN.md: replace the sentence at line 337 and extend "Player colours (c1–c10)" at line 196. Colour and label belong to the member in the group.
   - ADR `doc/adr/0015-one-chip-per-member.md` (via `domain-modeling`): context, decision, the >10 rule, and the label rule.
   - Completion: both written; no other DESIGN.md text promises per-set colours (`grep -n "join order" DESIGN.md`).
+  - Done 2026-11-19. DESIGN.md lines 196, 323 and 337; `doc/wiki/architecture.md` and `features.md` lost their per-set colour text. The ADR was written in the format of 0014; the `domain-modeling` skill was not run, because the decision was already settled in the plan.
 - [ ] **4. Browser check.** `tests: alongside`.
   - On the review seed (`seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_opening.py`, `seed_home.py`), read the chip class and label for Ben and Miguel on /s/3/, /s/2/, /n/1/, /n/12/, /g/1/ (Stats and Players) and / as ben.
   - The check must fail on main: on main, Ben is k-pink on /s/3/ and another colour on Stats.
