@@ -887,8 +887,9 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   :is(.dock-collapsed, .kb-bar) .dock-toggle:has(.dock-count) .dock-title { display: none; }
   .dock-collapsed .dock-toggle .icon { transform: rotate(180deg); }
   .kb-bar .dock-toggle .icon { visibility: hidden; }
-  .dock-enabled .table-layout .host-controls { padding-top: 0; }
-  :is(.dock-collapsed:not(.dock-closing), .kb-bar) .table-layout .host-controls > :not(.dock-toggle) { display: none; }
+  /* Only a dock with a toggle folds: before the start the dock has none, and a fold chosen in play must not empty it. */
+  .dock-enabled .table-layout .host-controls:has(> .dock-toggle) { padding-top: 0; }
+  :is(.dock-collapsed:not(.dock-closing), .kb-bar) .table-layout .host-controls:has(> .dock-toggle) > :not(.dock-toggle) { display: none; }
   /* iPhone keyboard: dock.js raises the dock by --kb, which follows the visible frame, and reserves --kb-h, the keyboard's height. */
   .kb-open .table-layout .host-controls { bottom: var(--kb, 0px); padding-bottom: 6px; max-height: calc(100dvh - var(--kb-h, 0px) - 16px); }
   .dock-toggle .icon { transition: transform var(--t-fast) var(--ease-out); }
@@ -1637,6 +1638,7 @@ input.is-figured, input.is-figured::placeholder { -webkit-text-fill-color: trans
 .join-row-quiet form { display: grid; gap: var(--s-1); margin: 0; }
 .join-row-quiet form > p { margin: 0; }
 .join-row .btn-primary { margin: var(--s-2) 0; }
+.table-players .label-row .host-join { margin: 0; flex: none; }
 /* Inside a player's sheet. */
 .sheets-enabled .sheet-swap { display: flex !important; margin-bottom: var(--s-3); }
 .sheet-summary { margin: 0 0 var(--s-2); color: var(--muted); }

@@ -61,29 +61,38 @@ class TablePageTests(TestCase):
         self.assertNotContains(page, 'buyins/add')
         self.assertNotContains(page, 'next-action')
 
-    def test_host_dock_toggle_names_the_next_step_in_each_state(self):
-        for state, text in [('open', 'Next: Start the set'), ('running', 'Next: End play and count up')]:
-            night = Night('Ben', state=state)
-            self.client.force_login(night.host.user)
-            page = self.client.get(reverse('session', args=[night.session.pk]))
-            self.assertContains(page, 'class="dock-toggle"', count=1)
-            self.assertContains(page, 'class="dock-toggle" hidden aria-expanded="true" data-focus-key="dock-toggle"')
-            self.assertContains(page, text, count=1)
-            self.assertContains(page, 'js/dock.js')
+    def test_host_dock_toggle_names_the_next_step_in_play(self):
+        night = Night('Ben', state='running')
+        self.client.force_login(night.host.user)
+        page = self.client.get(reverse('session', args=[night.session.pk]))
+        self.assertContains(page, 'class="dock-toggle"', count=1)
+        self.assertContains(page, 'class="dock-toggle" hidden aria-expanded="true" data-focus-key="dock-toggle"')
+        self.assertContains(page, 'Next: End play and count up', count=1)
+        self.assertContains(page, 'js/dock.js')
+
+    def test_before_the_start_the_dock_has_no_toggle(self):
+        # A folded bar would only repeat Start the set, the one button under it.
+        night = Night('Ben', state='open')
+        self.client.force_login(night.host.user)
+        page = self.client.get(reverse('session', args=[night.session.pk]))
+        self.assertNotContains(page, 'dock-toggle')
+        self.assertNotContains(page, 'Next: Start the set')
+        self.assertContains(page, 'name="action" value="start">Start the set</button>', count=1)
+        self.assertContains(page, 'js/dock.js')
 
     def test_more_host_controls_options_are_buttons(self):
         page = self.client.get(self.url)
         self.assertContains(page, '<summary class="btn btn-quiet btn-block">Cancel this set</summary>')
         self.assertContains(page, '<summary class="btn btn-quiet btn-block">Or add one player</summary>')
 
-    def test_host_dock_toggle_on_a_draft(self):
+    def test_host_dock_on_a_draft(self):
         from games import services as games
         night = Night(state='open')
         games.transition(night.session.pk, night.host, 'close')
         self.client.force_login(night.host.user)
         page = self.client.get(reverse('session', args=[night.session.pk]))
         # Nobody is in the set yet, so adding players is the next step and Open is offered beside it.
-        self.assertContains(page, 'Next: Add players', count=1)
+        self.assertNotContains(page, 'dock-toggle')
         self.assertContains(page, '<a class="btn btn-primary btn-block next-action" href="%s">Add players</a>' % reverse('participants_add', args=[night.session.pk]))
         self.assertContains(page, 'name="action" value="open">Let players join first</button>')
 
@@ -230,13 +239,17 @@ class SetPageRevampTests(TestCase):
         self.assertIn('<button class="btn btn-block" type="submit" aria-describedby="host-join-why">', row)
         self.assertNotIn("link-button", row)
 
-    def test_on_an_open_set_the_host_joins_from_the_host_controls(self):
+    def test_on_an_open_set_the_host_joins_from_the_players_head(self):
         from games.tests.helpers import make_session
         session = make_session(self.host, state="open", table_name="Porch table")
         page = self.client.get(reverse("session", args=[session.pk])).content.decode()
+        head = page[page.index('class="table-players"'):page.index('class="player-list"')]
+        self.assertIn('class="host-join"', head)
+        self.assertIn('aria-label="Join this set"', head)
+        # The dock before the start holds Start alone.
         controls = page[page.index('class="host-controls'):page.index('class="host-more"')]
-        self.assertIn('class="host-join"', controls)
-        self.assertLess(controls.index("Join this set"), controls.index('value="start"'))
+        self.assertNotIn("host-join", controls)
+        self.assertNotIn("Join this set", controls)
         self.assertNotIn("join-row", page)
         # Seated, the host has nothing to join.
         self.client.post(reverse("participant_add", args=[session.pk]))
@@ -302,7 +315,8 @@ class PreparationTests(TestCase):
         self.assertIn('<button class="btn btn-primary btn-block next-action" name="action" value="start">Start the set</button>', page)
         self.assertIn('name="action" value="open">Let players join first</button>', page)
         self.assertIn("Ready to start", page)
-        self.assertIn("Next: Start the set", page)
+        self.assertIn('value="start">Start the set</button>', page)
+        self.assertNotIn("dock-toggle", page)
 
     def test_an_open_set_makes_starting_the_next_step(self):
         from games import services as games
@@ -312,7 +326,8 @@ class PreparationTests(TestCase):
         self.assertEqual(self.steps(page), {"players": "done", "stakes": "done", "open": "done"})
         self.assertIn('<span class="badge">Joining</span>', page)
         self.assertIn("Players can see it and join.", page)
-        self.assertIn("Next: Start the set", page)
+        self.assertIn('value="start">Start the set</button>', page)
+        self.assertNotIn("dock-toggle", page)
         self.assertIn('name="opening_buy_ins"', page)
 
     def test_an_open_set_with_nobody_still_asks_for_players(self):

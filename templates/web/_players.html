@@ -3,9 +3,12 @@
   {% include "web/_players_count.html" %}
 {% else %}
 <section class="table-players" aria-label="Players at the table">
-  {% if summary.player_count or not prep %}<div class="section-heading label-row"><h2 class="section-label">{% icon 'users' %}Players <span class="count-pill" data-player-count="{{ summary.player_count }}">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+  {# Players can join now, and so can the host: beside the seat count it changes, near the top, where the dock never covers it. In play it is under the list. #}
+  {% if session.state == 'open' and can_join and me.is_host and not my_participant and seats_free > 0 %}{% firstof "1" as host_join %}{% endif %}
+  {% if summary.player_count or not prep or host_join %}<div class="section-heading label-row"><h2 class="section-label">{% icon 'users' %}Players <span class="count-pill" data-player-count="{{ summary.player_count }}">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
     {# While a set is prepared the checklist's first step adds players; in play this is the way to seat a late arrival. #}
     {% if can_manage_players and not prep %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
+    {% if host_join %}<form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}" class="host-join">{% csrf_token %}<button class="btn btn-small" type="submit" aria-label="Join this set">{% icon 'plus' %} Join</button></form>{% endif %}
   </div>{% endif %}
   {# On a phone a tap on a name is the only way to a cash-out, so the sentence comes before the rows. It stays, so no row moves when one cashes out. #}
   {% if me.is_host and session.state == 'running' and summary.player_count %}<p class="row-hint muted small">Tap a player to cash out or correct an entry.</p>{% endif %}
@@ -19,7 +22,7 @@
     {% if not me.is_host %}{% for line in summary.lines %}{% if line.participant.member_id == me.pk %}{% include "web/_player_row.html" %}{% endif %}{% endfor %}{% endif %}
     {% for line in summary.lines %}{% if me.is_host or line.participant.member_id != me.pk %}{% include "web/_player_row.html" %}{% endif %}
     {% empty %}{% if not me.is_host or not prep %}<li class="empty-state"><p>No players yet. {% if me.is_host %}Add players to start buy-ins.{% else %}Join this set when the host opens it.{% endif %}</p></li>{% endif %}{% endfor %}
-    {# In play the host joins under the list, so End play stays the one bright button. On an open set the button is in the host controls. #}
+    {# In play the host joins under the list, so End play stays the one bright button. On an open set the button is in the Players head. #}
     {% if can_join and not my_participant and me.is_host and seats_free > 0 and session.state == 'running' %}<li class="join-row join-row-quiet">
       <form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}">{% csrf_token %}<p class="muted small" id="host-join-why">Playing too?</p><button class="btn btn-block" type="submit" aria-describedby="host-join-why">{% icon 'plus' %} Join this set</button></form>
     </li>{% endif %}

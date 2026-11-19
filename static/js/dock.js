@@ -15,14 +15,18 @@
     if (dock && !root.classList.contains("dock-closing")) root.style.setProperty("--dock-h", Math.ceil(dock.getBoundingClientRect().height) + "px");
   }
 
+  // Before the start the dock has no toggle, but the page still reserves its height.
   function sync() {
-    var toggle = region && region.querySelector(".dock-toggle");
-    if (!toggle) return;
-    toggle.hidden = false;
-    toggle.setAttribute("aria-expanded", String(!root.classList.contains("dock-collapsed") && !root.classList.contains("kb-bar")));
+    var dock = region && region.querySelector(".host-controls");
+    if (!dock) return;
+    var toggle = dock.querySelector(":scope > .dock-toggle");
+    if (toggle) {
+      toggle.hidden = false;
+      toggle.setAttribute("aria-expanded", String(!root.classList.contains("dock-collapsed") && !root.classList.contains("kb-bar")));
+    }
     // A live update replaces a dock that was still sliding.
-    if (sliding && sliding.effect.target !== toggle.parentElement) halt();
-    if (watcher) { watcher.disconnect(); watcher.observe(toggle.parentElement); }
+    if (sliding && sliding.effect.target !== dock) halt();
+    if (watcher) { watcher.disconnect(); watcher.observe(dock); }
     measure();
   }
 
