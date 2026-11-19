@@ -3,7 +3,7 @@
 ## Phone checks: felt in view, host's books, host Join, round chevron (released 2026-11-19)
 
 - [ ] A set in play: scroll the players. The felt stays under the top bar, and the rows pass under it. A tap on a row's Rebuy still opens the sheet. The chevron beside End play and count up sits in the middle of its circle.
-- [ ] Count up as host: type a count. The books say "Counted · unsaved" with the amount, and the verdict under it moves. Confirm: "Counted, not cashed out" keeps the amount.
+- [ ] Count up as host: type a count. The books under "Total cashed out" do not change. Confirm it: "Counted, not cashed out" and the verdict under it move.
 - [ ] A draft: tap Let players join first. The host menu has a Join this set button above Start the set. Tap it: you are seated, and the button goes.
 
 ## Phone checks: one-line names and Rebuy alignment (released 2026-11-19)

@@ -261,7 +261,7 @@ Since 2026-10-09:
 
 Since the count-up and settle-up revamp (2026-10-10, [plan](../../../doc/plan/1791630963_count_up_and_settle_up_revamp.md)):
 
-- `count_flow.mjs` has 91 checks: it expects the order overview, players, host action, the books; reads the contrast of the help line and of the line under a name; and checks that each accepted count gets its tick and its mark in the overview with nothing written inline.
+- `count_flow.mjs` has 92 checks: it expects the order overview, players, host action, the books; reads the contrast of the help line and of the line under a name; and checks that each accepted count gets its tick and its mark in the overview with nothing written inline.
 - `night.mjs` has 83 checks: the host's first screen (overview and four whole transfers), row heights, each viewer's headline, the order of the page, folded payment records, a transfer settling after the server accepts, "Settled" arriving once per session per browser, and both under reduced motion. "large amount remains one line" now reads the overview's figure.
 - `dock.mjs` (228 checks): during count-up the folded bar keeps the main action or the hint beside the running total, so its "collapsed" checks allow that one extra element there. Its last scroll check passes when the list is too short to scroll.
 - `player_entries.mjs` (48 checks) finds a player's own count in the "Your count" block above the list, and an entered count as "entered ₱1,450" on the row.

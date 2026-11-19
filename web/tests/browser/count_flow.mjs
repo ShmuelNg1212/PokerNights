@@ -88,6 +88,8 @@ try {
  check('typed counts: the one main button confirms them',await A.js(`JSON.stringify(${primaries})`)==='["Confirm 2 counts"]');
  check('typed counts: the bar says Preview',await A.js(`document.querySelector('.dock-count').textContent.replace(/\\s+/g,' ').trim()`)==='Preview · ₱3,000 of ₱9,000 bought in');
  check('typed counts: the hint says they are not saved',await A.js(`/not saved until you confirm/.test(document.getElementById('batch-why').textContent)`));
+ // The books are records: they keep the confirmed counts, as the server renders them, while counts are typed.
+ check('typed counts: the books keep the confirmed counts',await A.js(`fetch(location.href).then(r=>r.text()).then(t=>{const d=new DOMParser().parseFromString(t,'text/html'),q=s=>[...[document,d].map(x=>x.querySelector(s)?.textContent.trim())];const [a,b]=q('[data-books-counted]'),[c,e]=q('[data-books-counted-label]'),[f,g]=q('[data-books-status]');return !!a&&a===b&&c===e&&c==='Counted, not cashed out'&&f===g})`));
  await A.js(`window.scrollTo(0,0)`);await sleep(300);await A.shot('count-flow-typed-390');
  // An invalid count (from a physical keyboard) blocks the confirm.
  await A.js(`${field(2)}.focus()`);await send('Input.insertText',{text:'9x'},A.s);await A.js(`document.activeElement.blur()`);await sleep(400);
