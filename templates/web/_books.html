@@ -6,7 +6,7 @@
   {# Every player is cashed out and the books still differ: the gap in words comes before the figures. #}
   <div class="discrepancy" id="books-gap" data-gap="{{ balance.difference }}">
     <div class="discrepancy-statement" role="alert">
-      <p class="discrepancy-amount"><span class="gap-figure">{{ balance.difference_text }}</span> {% if balance.difference > 0 %}too much{% else %}missing{% endif %}</p>
+      <p class="discrepancy-amount"><span class="gap-figure">{{ balance.difference_text }}</span> {{ balance.headline_word }}</p>
       {% if me.is_host %}<p class="gap-sentence">{{ balance.gap_sentence }}</p>
       {% else %}<p>The host is checking the records. Results are final once the books balance.</p>{% endif %}
     </div>

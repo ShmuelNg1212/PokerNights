@@ -427,6 +427,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   .end-set-layout:not(.final-layout) .table-left { display: contents; }
   .end-set-layout .felt { order: 0; }
   .end-balance { order: 4; }
+  .books-known > .end-balance { order: 1; }
   .count-workspace { order: 2; }
   .end-set-layout .host-more > summary { min-height: var(--tap); }
   .table-page:has(.end-set-layout:not(.final-layout)) { padding-bottom: 154px; }
@@ -1745,6 +1746,7 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 @media (min-width: 900px) {
   .own-count-lead { margin-top: 0; } /* beside the overview, level with it */
   .count-layout.count-v2 > .end-balance { grid-row: 3; }
+  .count-layout.count-v2.books-known > .end-balance { grid-row: 2; }
 }
 
 /* The closed session page: your part, then one row per transfer (night-settle). DESIGN.md, "Settle-up in rows" (2026-10-10). */

@@ -255,9 +255,14 @@ class Balance:
     @property
     def headline(self) -> str:
         """The gap in words, amount first: "₱100 missing" or "₱100 too much". Empty when there is none."""
-        if self.difference > 0:
-            return f"{self.difference_text} too much"
-        return f"{self.difference_text} missing" if self.difference < 0 else ""
+        return f"{self.difference_text} {self.headline_word}" if self.difference else ""
+
+    @property
+    def headline_word(self) -> str:
+        """The headline's words after the amount, for pages that style the amount apart."""
+        if not self.difference:
+            return ""
+        return "too much" if self.difference > 0 else "missing"
 
     @property
     def gap_sentence(self) -> str:

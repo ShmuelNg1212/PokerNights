@@ -68,7 +68,7 @@ class CountUpStructureTests(TestCase):
         self.assertIn('href="#balance"', html)
         self.assertIn("Find the ₱100 difference", html)
         self.assertIn('id="balance"', html)
-        self.assertIn("books-known", html)
+        self.assertNotIn("books-known", html)  # the host searches from the counts
         self.assertIn('data-tone="warn">₱100 missing.', html)  # a calm search: only the panel's amount is coral
         self.assertNotIn("Finalize results", html)
         self.assertNotIn("disabled", html[html.index('class="host-controls'):html.index('class="host-more"')])

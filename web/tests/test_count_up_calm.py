@@ -117,3 +117,10 @@ class CalmMismatchButtonTests(PageMixin, TestCase):
         html = self.page(night)
         self.assertIn('<a class="btn btn-primary btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>Find the ₱100 difference</a>', html)
         self.assertNotIn("btn-danger btn-block next-action", html)
+
+
+class MismatchOrderTests(PageMixin, TestCase):
+    def test_the_host_searches_from_the_counts_and_a_player_reads_the_verdict_first(self):
+        night, carlo = off_by_100()
+        self.assertNotIn("books-known", self.page(night))
+        self.assertIn("count-v2 books-known", self.page(night, carlo.user))
