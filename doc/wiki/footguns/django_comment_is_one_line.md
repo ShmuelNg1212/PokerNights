@@ -9,3 +9,5 @@ Date: 2026-10-14, Asia/Manila.
 **Impact.** The stylesheet's `@view-transition` opt-in stops counting, so screen changes lose their movement, and the stray words can show on the page. Nothing in the Django suite noticed until a test looked at the head's text.
 
 **Remedy.** Use `{% comment %}...{% endcomment %}` for a comment over several lines. `accounts/tests/test_door.py` (`LaunchArrivalTests`) checks that a signed-in page's head holds nothing but tags.
+
+**Addendum, 2026-11-19.** The same mistake showed the comment text under the player list in play (`templates/web/_players.html`). `web/tests/test_template_comments.py` now fails on any `{#` that has no `#}` on the same line, in every template.
