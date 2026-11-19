@@ -45,7 +45,7 @@ class DockFigureLabelTests(PageMixin, TestCase):
     def test_the_folded_figure_says_what_it_adds_up(self):
         html = self.page(counting())
         bar = section(html, '<button type="button" class="dock-toggle', "</button>")
-        self.assertRegex(bar, r'<span data-dock-prefix></span><span class="dock-label">Accounted for</span> <strong data-dock-accounted>₱500</strong> of ₱3,000')
+        self.assertRegex(bar, r'<span data-dock-prefix></span><span class="dock-label">Accounted for</span> <strong data-dock-accounted>₱500</strong> <span class="dock-of">of ₱3,000</span>')
         self.assertNotIn("bought in", bar)
 
     def test_the_label_matches_the_verdict_with_rake_too(self):

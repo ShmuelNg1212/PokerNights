@@ -885,6 +885,7 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
   :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-title { font-size: .8125rem; color: var(--muted); }
   :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-next { display: block; color: var(--text); font-size: .9375rem; }
   :is(.dock-collapsed, .kb-bar) .dock-toggle .dock-count { display: block; font-size: .9375rem; }
+  .dock-count .dock-of { white-space: nowrap; } /* a long total wraps whole, never "of" alone */
   :is(.dock-collapsed, .kb-bar) .dock-toggle:has(.dock-count) .dock-title { display: none; }
   .dock-collapsed .dock-toggle .icon { transform: rotate(180deg); }
   .kb-bar .dock-toggle .icon { visibility: hidden; }
