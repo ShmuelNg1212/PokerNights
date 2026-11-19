@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: host dock before Start (not released)
+
+- [ ] A joining set as host, not seated: the dock has the checkbox, Start the set and More host controls only. "+ Join" is beside Players; a tap seats you and it goes. Fold the dock in a set in play, then open a new set: Start still shows. In play the dock still folds.
+
 ## Phone checks: one chip per person (released 2026-11-19)
 
 - [ ] Open a set in play, then its session, then the group's Stats. Each person has the same colour and letters on all three.

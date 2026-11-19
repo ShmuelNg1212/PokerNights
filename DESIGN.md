@@ -1461,3 +1461,13 @@ Mode: Operate, inside The Rack. This supersedes "Your record is three Ground til
 - **Narrow.** When the list is under 300 px wide (a 320 px phone), each amount sits under its name, right-aligned, so all the cards read the same way.
 - **Arrival.** The record cards and the dues rise after the card, 40 ms apart, as the tiles did.
 - **Measured.** `home.mjs`, 63 checks at 320, 390 and 1280 px.
+
+### 2026-11-20 addendum: host dock before Start
+
+Before the start the dock holds one primary action. [Plan](doc/plan/1795103143_host_dock_before_start.md).
+
+- **Dock.** On a draft or open set the dock has no toggle row. It shows the usual buy-in checkbox, Start the set and More host controls, with its 12px top padding. At 390 × 844 it is 183px high (was 283px).
+- **Join.** The host's Join on an open set is a neutral small button, "+ Join" (accessible name "Join this set"), at the right of the Players head, beside the seat count. It is a 48px target and the head stays one line at 320px.
+- **Keyboard.** Above the keyboard a dock with no toggle is not shown.
+- **Unchanged.** In play and in the count-up the toggle and the folded bar stay as before. From 900px the dock is a column, and Join is in the Players head there too.
+- **Measured.** `dock_before_start.mjs`, 28 checks at 320, 390 and 1280px.

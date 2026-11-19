@@ -137,7 +137,9 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 
 ## Collapsible host dock
 
-- On a phone, the host dock on the set page starts with a “Host controls” row. Folded while a set is in play, it shows End play and count up as the bone button with a round chevron beside it (2026-11-18), centred in its circle (2026-11-19). Tapping it folds the dock to one bar; tapping again opens it. It exists in draft, open, in play and counting up.
+- On a phone, the host dock on the set page starts with a “Host controls” row. Folded while a set is in play, it shows End play and count up as the bone button with a round chevron beside it (2026-11-18), centred in its circle (2026-11-19). Tapping it folds the dock to one bar; tapping again opens it. It exists in play and counting up.
+- Before the start (draft and open sets) the dock has no toggle (2026-11-20). It holds the usual buy-in checkbox, Start the set and More host controls. A fold chosen in play does not hide it: only a dock with a toggle folds. While the keyboard is up for a field outside the dock, the dock is out of sight. `dock.js` still measures it, so the page reserves its height.
+- A host who is not seated at an open set joins from a "+ Join" button in the Players head, beside the seat count (2026-11-20). It shows when a seat is free, also when nobody has joined yet. In play the host joins under the list ("Playing too?").
 - The collapsed bar names the next step. In count-up it shows the live count verdict, which follows typed counts.
 - No action can be taken from the collapsed bar. Expanding shows every control, option and line of guidance.
 - The choice is kept per browser (`localStorage` key `rack-dock`) for all sets, and holds through live updates and state changes. It starts expanded.
@@ -146,8 +148,8 @@ Settings → Rake shows the group's lifetime collected rake across all sessions 
 - Since 2026-10-05 count fields use the in-app numpad on a phone, so the next point applies only to text fields on the set page (a cancel reason, an override note, a reversal reason).
 - On an iPhone, while the keyboard is up, the dock sits on top of the keyboard as the bar and returns to its saved state when the keyboard closes. Typing in a field inside the dock keeps it expanded. The bar stays the bar and stays on the keyboard while the page is scrolled with the keyboard open, and only a new focus moves the page. `dock.js` reads `window.visualViewport` and sets `--kb` (the dock's offset), `--kb-h` (the keyboard's height) and the classes `kb-open` and `kb-bar` on `<html>`. A set page opened with `?kb=1` shows the numbers it reads. See the footgun [fixed elements sit under the iPhone keyboard](footguns/ios_keyboard_covers_fixed.md). Not yet confirmed on a real iPhone.
 - The options under “More host controls” are all full-width buttons, including Cancel this set and Or add one player.
-- There is no toggle from 900 px, without JavaScript, or for players.
-- Code: `templates/web/_host_controls.html`, `static/js/dock.js`, the last block of `static/css/app.css`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
+- There is no toggle from 900 px, without JavaScript, for players, or before the start.
+- Code: `templates/web/_host_controls.html`, `templates/web/_players.html` (the host's Join), `static/js/dock.js`, the last block of `static/css/app.css`. Checks: `dock.mjs`, `dock_before_start.mjs`. `static/js/live.js` gives focus back to a redrawn control that carries `data-focus-key`. `static/js/counts.js` also writes the verdict to the bar.
 
 ## Archive and delete sessions and groups
 
