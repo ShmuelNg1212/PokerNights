@@ -133,15 +133,16 @@ def session_new(request, group_id):
 def session_settings(request, session_id):
     session, actor = session_for(request.user, session_id)
     require_host(actor)
+    has_money = services.has_money(session)
     form = SettingsForm(
         request.POST or None, initial={**services.current_settings(session).stakes(), **services.current_settings(session).rake()}, unit=session.unit,
-        unit_locked=services.has_money(session),
+        unit_locked=has_money,
     )
     if request.method == "POST" and form.is_valid():
         saved = attempt_bound(request, form, services.update_settings, session.pk, actor, form.cleaned_data, request_id=request_id_from(request), success="Settings saved.")
         if saved is not None:
             return redirect("session", session_id=session.pk)
-    return render(request, "games/settings_form.html", {"form": form, "session": session, "request_id": request.POST.get("request_id") or uuid.uuid4()})
+    return render(request, "games/settings_form.html", {"form": form, "session": session, "has_money": has_money, "request_id": request.POST.get("request_id") or uuid.uuid4()})
 
 
 @require_POST

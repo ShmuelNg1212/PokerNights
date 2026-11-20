@@ -45,11 +45,11 @@ Acceptance: no screen shows a 24-hour time. Completion: `grep -rnE 'date:"[^"]*H
 
 ### 3. Set settings says what is true — `tests: alongside`
 
-- [ ] Before the first buy-in: "Set the rake before the first buy-in."
-- [ ] After a buy-in: "This set has buy-ins. New settings apply to the next buy-in; recorded buy-ins keep their amounts and rake."
-- [ ] Use a fact the view already has; if none, count the set's buy-ins in the view (a read).
+- [x] Before the first buy-in: "Set the rake before the first buy-in. After it, the rake stays as it is."
+- [x] After a buy-in or cash-out: "This set has money recorded, so the rake stays as it is. New blinds and buy-in limits apply from the next buy-in." (Changed in execute: `games/services.py:280` refuses a rake change once money is recorded; stakes can still change.)
+- [x] Use a fact the view already has: `services.has_money(session)`.
 
-Acceptance: each state shows its own line. Completion: a view test for each state.
+Acceptance: each state shows its own line. Completion: a view test for each state (`games/tests/test_form_layout.py`, set settings test).
 
 ### 4. Dates and amounts that read like the rest — `tests: alongside`
 

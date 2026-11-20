@@ -105,6 +105,7 @@ class FormLayoutTests(TestCase):
         self.assertEqual(control_names(page), ["unit", *STAKES_NAMES, *RAKE_NAMES])
         titles = re.findall(r'class="group-title"[^>]*>([^<]+)<', page.content.decode())
         self.assertEqual(titles, ["Game", "Stakes", "Rake per buy-in"])
+        self.assertContains(page, "Set the rake before the first buy-in.")
         from games import services as games
         player = games.add_participant(session.pk, self.host, self.host.pk)
         games.transition(session.pk, self.host, "start", opening_buy_ins=False)
@@ -112,6 +113,8 @@ class FormLayoutTests(TestCase):
         page = self.client.get(url)
         self.assertContains(page, "Buy-ins are recorded, so the unit cannot change.")
         self.assertContains(page, "Rake is locked")
+        self.assertContains(page, "This set has money recorded, so the rake stays as it is.")
+        self.assertNotContains(page, "Set the rake before the first buy-in.")
         self.assertRegex(page.content.decode(), r'<select[^>]*name="unit"[^>]*disabled')
 
     def test_preset_form_groups(self):
