@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: calm count-up (not released, `feat/count-up-calm`)
+## Phone checks: calm count-up (released 2026-11-20)
 
 - [ ] Count up as host, fold the dock: it reads "Accounted for ₱X of ₱Y" on one line, then "₱Y still to account for." The books do not repeat that line. Ready marks are half filled, cashed-out marks full.
 - [ ] Cash out everyone with ₱100 short: the counts come first, then a plain panel where only "₱100" is coral. The bar says "₱100 missing" with only the amount coral; the button is "Find the ₱100 difference" in bone and leads to the wrong record. Open More host controls: "Finalize with an override" is there; record one. On a player's phone the books stay under the overview.
