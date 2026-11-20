@@ -345,7 +345,19 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Groups with a set in play come first, then groups with an open session, then by name. Drafts stay hidden from players.
 - Create a group is a closed section under the groups. A person with no group gets a first-group screen.
 
-- **Since 2026-10-05 each group is a card** with one settings button (a gear, top right) in place of the group's tab links; the name still opens the group. The card shows who, now and you in that order; the viewer's record and last result are cards under Your record (since 2026-11-19); "New group" is a button after the last card. Template `templates/web/_group_card.html`; check `web/tests/browser/home.mjs` with `seed_home.py`. Details in DESIGN.md.
+- **Since 2026-10-05 each group is a card** with one settings button (a gear, top right, for hosts only since 2026-11-20) in place of the group's tab links; the name still opens the group. The chips show up to six other members, who played last first (a set that started and was not canceled, in a session not archived and not in the future), then the rest by name; the viewer has no chip. Without the debts view, "And N more unpaid transfers in past sessions" is a button to the Not settled list. The card shows who, now and you in that order; the viewer's record and last result are cards under Your record (since 2026-11-19); "New group" is a button after the last card. Template `templates/web/_group_card.html`; check `web/tests/browser/home.mjs` with `seed_home.py`. Details in DESIGN.md.
+
+## Words and formats (since 2026-11-20)
+
+- Times show on the 12-hour clock ("11:07 PM") on every screen. A `datetime-local` field keeps its 24-hour value.
+- The buy-in sheet's quick amount is "Usual", as the settings say "Usual buy-in".
+- Amount fields group digits as they are typed ("1,650.50"), on the app's keys and on a keyboard (`static/js/grouping.js`). Only peso and chip amounts are grouped; a count of one chip colour, a percentage and a seat count are not. The server reads "1,000" and "₱1,000" as 1000.
+- Stakes and flat-rake fields show "₱" before or "chips" after the amount, for the form's unit choice (`games.forms.AmountInput`, CSS `:has()`). A form with no unit choice shows neither.
+- New session shows the chosen date as "Thu, Nov 19" under the date field.
+- Set settings says "Set the rake before the first buy-in" before money, and that the rake cannot change after it.
+- On a set in play, a player who left shows the net large ("+₱1,650", "−₱350", or "Even") and "In ₱1,000 · out ₱2,650" small. After a partial cash-out the player still plays, so the row keeps the buy-in total and "Cashed out ₱X".
+- On Stats, the order pills fade at the right edge while more are off screen. A member with no closed session reads "You have not played in a closed session yet."
+- Secondary text that a player reads at the table (`.facts`, `.ledger-meta`, `.count-pill`) is 13 px (`--h-label`).
 
 ## Group page, stats and branding (UI evolution)
 

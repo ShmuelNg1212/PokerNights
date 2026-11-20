@@ -1,5 +1,14 @@
 # TODO
 
+## Phone checks: words, formats and the home card (not released: branch feat/words-formats-home)
+
+- [ ] As a player, Your groups: no gear on a group you do not host; the chips are the people who played last, without you. As host the gear is there.
+- [ ] A buy-in sheet: the field reads "1,000" and the quick button says Usual. Type 1650.50 on the keys: it reads "1,650.50" as you type, and the row shows ₱1,650.50 after Confirm. Records in the player's sheet show "11:07 PM", not "23:07".
+- [ ] Cash a player out with "Left": the row shows "+₱650" or "−₱350" large and "In · out" small. A partial cash-out keeps "Cashed out ₱X".
+- [ ] Count up with the chip sheet to ₱1,000 or more: the field reads "1,320" and the row still says by chips.
+- [ ] New session: "₱" in each stakes field, "chips" after it when you pick Chips, and "Thu, Nov 19" under the date. Set settings after a buy-in says the rake cannot change.
+- [ ] Stats on a phone: the order pills fade at the right edge until you scroll to the end.
+
 ## Phone checks: Cash out and Reverse apart (released 2026-11-20)
 
 - [ ] Open a player in a set in play: Cash out is at the top, the records are under a line with "Records and corrections", and no red button shows. Tap "Reverse…" on a rebuy: a reason field and "Reverse ₱1,000" appear. Reverse it: the rebuy is struck through with the reason. On a computer the "Tap a player" line is gone.

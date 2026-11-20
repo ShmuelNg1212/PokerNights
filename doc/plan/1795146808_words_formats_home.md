@@ -1,6 +1,6 @@
 # Words, formats and the home card
 
-Status: approved 2026-11-20 with the recommended answers. Reconstituted 2026-11-20 from the queued plan ui_6_words_formats_home (removed from the queue with this plan), critique issues 7 and 8 (P3) and the minor observations in the [UI critique](../study/1795101392_ui_critique.md). Mode: design, with two small technical parts (time format, token order). Skills: `/impeccable clarify` in execute; `tdd` for task 5; at rendezvous `code-review`, `break-ui`, `/impeccable critique`.
+Status: approved 2026-11-20 with the recommended answers. Verified on branch `feat/words-formats-home` 2026-11-20; frozen. Reconstituted 2026-11-20 from the queued plan ui_6_words_formats_home (removed from the queue with this plan), critique issues 7 and 8 (P3) and the minor observations in the [UI critique](../study/1795101392_ui_critique.md). Mode: design, with two small technical parts (time format, token order). Skills: `/impeccable clarify` in execute; `tdd` for task 5; at rendezvous `code-review`, `break-ui`, `/impeccable critique`.
 
 ## Goal
 
@@ -92,9 +92,23 @@ Acceptance: no reading text during play is under 13 px. Completion: a browser pr
 
 ## Checks at rendezvous
 
-- [ ] SQLite suite; PostgreSQL suite before release.
-- [ ] `code-review`, `/impeccable critique`, `break-ui` on the home card and the player row.
-- [ ] Browser probe: sign in as a player, open Your groups (no gear, tokens, the link), then a set in play (12-hour times in the sheet, a left player's net).
+- [x] SQLite suite; PostgreSQL suite before release. (SQLite 1846 OK after the last fix. PostgreSQL 1844 OK before the review fixes; run again before release.)
+- [x] `code-review`, `/impeccable critique`, `break-ui` on the home card and the player row. (See Rendezvous record.)
+- [x] Browser probe: sign in as a player, open Your groups (no gear, tokens, the link), then a set in play (12-hour times in the sheet, a left player's net). (`home.mjs` covers the player's cards; the times are a view test; the net is a view test and a 320 px screenshot.)
+
+## Rendezvous record (2026-11-20)
+
+- **code-review (medium), 7 findings.** Fixed 6 in round 1:
+  1. The chip sheet dropped the breakdown at totals of 1,000 or more (`denominations.js` compared grouped text). `chip_batch.mjs` now uses ₱1,320; it fails without the fix (6 pass, then it stops) and passes with it (21/21).
+  2. A partial cash-out showed a net. Now only `status == left` shows the net. View tests updated.
+  3. A grouped server value looked typed. The default is grouped too. `amounts.mjs` checks it.
+  4. Quick amounts, presets and redrawn fields were grouped late. They are grouped at once. `amounts.mjs` checks the quick amount.
+  5. Backspace after a comma did nothing. It removes the digit. `amounts.mjs` checks "12,345" → "1,345".
+  6. Home tokens counted draft sets and future sessions. They do not; a view test checks it.
+  7. Gear hidden from players: kept. It is the approved plan; players reach Settings by the tab.
+- **/impeccable critique (dual-agent).** Detector: clean (8 `design-system-color` false positives from the unresolved stylesheet). Design review 24/32 (Good). Fixed: the "more unpaid transfers" link is a 48 px quiet button; a zero net reads "Even"; a hidden "Net" label before the figure; plainer rake words; `.date-words` uses `--s-1`; DESIGN.md `.count-pill` is 13 px. Not done (P3): a unit mark in the buy-in sheet field (it says "Amount (pesos)"); a left fade on the Stats pills.
+- **break-ui (targeted).** A player who left after a ₱5,000,000 buy-in at 320 px: "−₱4,999,999.99" and "In ₱5,000,000 · out ₱0.01" fit, no overflow. The past sessions line at 320 px: "₱199,999,999.98 still to pay" fits on one line. Text under 13 px on the group page: 14 → 0.
+- **Probes.** `home.mjs` 63/63; `stats.mjs` 90/90; `amounts.mjs` 12/12 (new); `chip_batch.mjs` 21/21; `chip_numpad.mjs` 24/24; `multi_host.mjs` 29/29. Same as main (failures that already exist): `numpad.mjs` 103/105, `flow.mjs` 50/52, `table.mjs` 38 then a crash at the draft dock (`dock-next` is gone before Start since the host dock release).
 
 ## Completion criterion
 
