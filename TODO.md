@@ -121,6 +121,8 @@
 
 ## Next (each needs its own study and plan)
 
+- [ ] A fast "same rebuy again" for the host (UI critique heuristic 7). Needs its own study.
+- [ ] First-time help for a player: stripes, hatching, "Counting up" (UI critique heuristic 10). Needs its own study.
 - [ ] More flair: the queue is empty. The next ideas are in the [study](doc/study/1794301535_more_flair.md) (season review, group milestones).
 - [ ] Entry pages: shorter password help; a first step for a new player on the group page.
 - [ ] Stages 2 and 3, what remains: optional banker, seasons. See the [roadmap](doc/roadmap/README.md).

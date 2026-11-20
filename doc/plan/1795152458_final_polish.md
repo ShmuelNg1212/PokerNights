@@ -1,6 +1,6 @@
 # Final polish after the critique items
 
-Status: draft 2026-11-20, waiting for approval. Reconstituted from the queued plan `ui_7_final_polish` (remove it from the queue at approval) and the [UI critique](../study/1795101392_ui_critique.md). Critique items 1 to 8 are released (plans 1795101620, 1795103143, 1795105635, 1795134971, 1795144795, 1795146808). Mode: design. Skills: `/impeccable polish` in execute; at rendezvous `/impeccable critique` (same method as the study), `break-ui`, `code-review`.
+Status: approved 2026-11-20 with the recommended answers. Reconstituted from the queued plan `ui_7_final_polish` (removed from the queue with this approval) and the [UI critique](../study/1795101392_ui_critique.md). Critique items 1 to 8 are released (plans 1795101620, 1795103143, 1795105635, 1795134971, 1795144795, 1795146808). Mode: design. Skills: `/impeccable polish` in execute; at rendezvous `/impeccable critique` (same method as the study), `break-ui`, `code-review`.
 
 ## Goal
 
@@ -14,9 +14,9 @@ The screens that items 1 to 8 changed look like one app again: same spacing, sam
 
 ## OPEN QUESTIONS
 
-1. **The two minor items.** My recommendation: take both into this plan as small tasks (task 2). They are polish-sized: one word change and one pattern or label in the bar. **Answer:**
-2. **"Same rebuy again" and first-time help.** My recommendation: keep them out of this plan. Add them to TODO.md "Next" as items that need their own study. **Answer:**
-3. **Bar for done.** My recommendation: the rerun scores at least 30/40, with no heuristic lower than before. If it scores lower, I stop and report, and I do not fix more in this plan. **Answer:**
+1. **The two minor items.** My recommendation: take both into this plan as small tasks (task 2). They are polish-sized: one word change and one pattern or label in the bar. **Answer (2026-11-20): as recommended.**
+2. **"Same rebuy again" and first-time help.** My recommendation: keep them out of this plan. Add them to TODO.md "Next" as items that need their own study. **Answer (2026-11-20): as recommended.**
+3. **Bar for done.** My recommendation: the rerun scores at least 30/40, with no heuristic lower than before. If it scores lower, I stop and report, and I do not fix more in this plan. **Answer (2026-11-20): as recommended.**
 
 ## Tasks
 
