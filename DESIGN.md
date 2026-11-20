@@ -252,7 +252,7 @@ The sidecar records the built shadows, timings and easing curves. Sheet entry mo
 
 The balanced-books message uses a green double rule with a 5px band and one-pixel top and bottom strokes. In count-up, only the existing balanced state makes it eligible for a 600ms left-to-right reveal. A localStorage marker records the set per browser, keeping reloads and later polls static; unavailable storage leaves the rule static. Final results use the static rule. Reduced motion suppresses the reveal while keeping its message.
 
-The closing recap reuses the shared sheet. Its fact lines reveal with a 360ms clip, staggered by 60ms, finishing within 540ms for four lines. Reduced motion leaves them static; accepted money appears immediately without a count animation. Automatic opening is consumed once per session and signed-in viewer in each browser, before opening; manual reopening remains available. Storage failure suppresses only automatic opening.
+The closing recap reuses the shared sheet. Its fact lines reveal with a 360ms clip, staggered by 60ms, finishing within 540ms for four lines. Reduced motion leaves them static; accepted money appears immediately without a count animation. Since 2026-11-20 the recap never opens by itself: it opens from the recap card under the lead (see "Session page, the money first").
 
 **The Accepted Change Rule.** Recorded figures change only to accepted server values. A separately labelled local count preview may update directly from unsaved input; it never presents that input as recorded money. Highlight accepted changes without interpolating the amount. The count preview adds no movement.
 
@@ -326,9 +326,9 @@ Aggregate results remain separate from transfers and payments, using frozen fina
 
 ### Closing recap
 
-A closed session offers “View session recap” and inline facts when dialog enhancement is unavailable. Recorded play time sums known finalized-set durations only, says Not recorded when none are known and labels partial sums. Total bought in explicitly covers current finalization snapshots across finalized sets, independent of transfers. Top session result names every tied highest positive standing; all-zero results say Everyone broke even. Your session result appears only for a viewer with a standing.
+A closed session offers the recap card under the lead, and inline facts when dialog enhancement is unavailable. Recorded play time sums known finalized-set durations only, says Not recorded when none are known and labels partial sums. Total bought in explicitly covers current finalization snapshots across finalized sets, independent of transfers. Top session result names every tied highest positive standing; all-zero results say Everyone broke even. Your session result appears only for a viewer with a standing.
 
-The browser key includes session and signed-in viewer. Automatic opening happens once per key and is consumed before opening; since 2026-11-10 the session finale plays first (see "Session finale"); storage refusal leaves manual access. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the manual trigger. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
+The browser key includes session and signed-in viewer. Since 2026-11-20 it marks only that the session finale has played; storage refusal skips the finale and leaves the card. Close, Escape and backdrop dismissal preserve native modal keyboard navigation and return focus to the card. No JavaScript leaves recap facts and every native form in the document. The recap inherits shared focus, target, sheet geometry and reduced-motion behavior.
 
 ### Group and home navigation
 
@@ -969,7 +969,7 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 [Plan](doc/plan/1791630963_count_up_and_settle_up_revamp.md). This replaces the overview and the transfer card described in "Session overview and settle-up" and the transfer-alignment rules that followed it, for a closed session. The open session page keeps its overview. What Mark paid and Undo record is unchanged.
 
-- **Order on a phone:** overview, Who pays whom, Session results, Sets, Payment records, then "View session recap" and "Manage this session". From 900px the overview and the last two share the 400px column and the rest take the flexible column.
+- **Order on a phone:** overview, the recap card, Who pays whom, Session results, Sets, Payment records, then Share results and "Manage this session". From 900px the overview, the recap card and the last two share the 400px column and the rest take the flexible column.
 - **The headline depends on the viewer.** A player reads "You pay" or "You receive" over their unpaid amount, "You're settled" with a tick once their transfers are paid, or "Nothing to pay". The host reads "Still to pay" over the table's amount, or "Settled". The figure is 48px; formatted lengths above 10 use 32px and above 17 use 24px, on one line.
 - **Under it:** a player's own transfers in words with Paid or Not paid; then the progress bar and one line, "₱2,000 of ₱4,650 marked paid · 1 of 5 transfers", which a player's page prefixes with "Table:". Rake shows only when rake was collected. The viewer's session result is one line with its sign and arrow. A playing host's own transfers follow that line.
 - **A transfer is one row** between Rule lines: 28px chips with names, a drawn arrow between them (read as "pays"), and the amount at the right at 20px. Beneath: "Not paid" in Brass, or a small Up tick with "Paid", the time and "marked by the host" in Bone Dim. The host's Mark paid (bone) or Undo (quiet) is at the right of that line, 48px high. 99px for the host, 71px for a player.
@@ -998,7 +998,7 @@ Reduced motion and a missing Motion file move nothing; the page is complete eith
 
 [Plan](doc/plan/1791701751_share_results.md). No new colour, font or asset; one new set of keyframes.
 
-- **The opener** is a neutral full-width button under the quiet "View session recap", and the last control of the recap sheet, where it swaps the sheet's content.
+- **The opener** is a neutral full-width button in the share card, which leads the block after the session's records, and the last control of the recap sheet, where it swaps the sheet's content.
 - **The card** (a 1080px-wide picture) is the Rack at poster size: Ground, a Rail panel with a Rule edge and 52px corners, a short Brass tab on its top edge. The mark and "PokerNights" in Bone Dim; the table name in Bone at 96px weight 800 (down to 60px, then two lines); two Bone Dim fact lines. "Results" and "Who pays whom" are Bone Dim headings under a Rule line. Result rows carry place, the player's chip, the name, and the signed amount in the condensed money width with its arrow, in the win or loss colour; a 6px bar shows the size of the result. A winning first place is one step larger. Transfer rows are payer, a Brass arrow, payee and a Bone amount. The foot is one Bone Dim line.
 - **The sheet.** The card's preview, at most 46% of the screen's height so that it and the three actions fit together on a phone; one primary (Share, or Save image where pictures cannot be shared), then neutral and quiet; a status line; "Results as text" as a closed disclosure under a Line rule.
 - **Motion.** One moment per opening: the card is dealt (from 16px low, 96% and −1.5°, with the `arrive` spring over 520ms) while its shadow fades in, and from 160ms it is uncovered top to bottom over 460ms. The picture is complete before it shows; nothing in it moves or counts. An accepted action pulses once as its label changes to Shared, Saved or Copied for two seconds. Only transform, opacity and clip-path animate. Reduced motion shows the card at rest.
@@ -1132,9 +1132,9 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 
 [Plan](doc/plan/1794301755_thats_the_night_finale.md), [study](doc/study/1794301535_more_flair.md). Mode: Operate, with one Experience moment. It is the bookend of the set start overture: the night has a start and an end. No new colour, font, raster file or dependency.
 
-**A third recorded exception to "a signature moment within 900ms"** (changed 2026-11-10, after the first release). The first build stayed inside 900ms by raising the recap at 490ms, over the stage. On a phone the human saw it as a fault: "the session finale animation gets cut off by the auto recap. can you make the recap pop up after the finale animation." The finale now plays in full and holds, and the recap rises only when the stage has gone. The stage takes about 1.3 seconds and the recap is at rest about 1.7 seconds after the first frame. Any tap or key still ends it at once. There is no vibration and no sound.
+**A third recorded exception to "a signature moment within 900ms"** (changed 2026-11-10, after the first release). The first build stayed inside 900ms by raising the recap at 490ms, over the stage. On a phone the human saw it as a fault: "the session finale animation gets cut off by the auto recap. can you make the recap pop up after the finale animation." The finale now plays in full and holds. The stage takes about 1.3 seconds. Since 2026-11-20 no sheet follows it: the recap card rises under the lead. Any tap or key still ends it at once. There is no vibration and no sound.
 
-**When.** It plays before the recap that opens by itself: once for each session, signed-in viewer and browser, under the recap's own key. That is the host's close, a player's phone on the session page at its next redraw, or a viewer's first visit later. The recap opened with "View session recap" has no finale.
+**When.** It plays once for each session, signed-in viewer and browser, under the recap's own key. That is the host's close, a player's phone on the session page at its next redraw, or a viewer's first visit later. The recap opened from its card has no finale.
 
 **The stage.** A layer over the whole screen, in `#table-sheets`, built by `stage.js` as the overture's is. The page under it is the closed session: every figure is at its accepted value in every frame, and the page shows faintly through Ground at 97%. In the middle, at 44% of the height, the players' 44px chips make one stack, each 6px above the one before (less for a full table: the stack is 84px tall at most). Under it is "That's the night" in Brass (1.75rem, width 75%, weight 800), as "Shuffle up and deal" is. The stage shows no figure and no name.
 
@@ -1146,13 +1146,13 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 | 340 to 640ms | With a top result: one Brass ring opens from the top chip and fades (3px, 50% to 220%). A timer starts it: a delayed animation would draw its first keyframe from 0ms |
 | 640 to 1,100ms | The whole picture holds, so the words can be read |
 | 1,100 to 1,260ms | The ground, the stack and the words fade |
-| 1,280ms to about 1,680ms | The stage has gone. The recap rises (`sheet`). Focus starts on its Close, as before |
+| 1,280ms to about 1,700ms | The stage has gone. The page stays at its top and the recap card rises 16px (`arrive`, 420ms). No sheet opens and focus does not move |
 
 - **The top result.** The chip of the highest positive result lands last and has a 3px Brass edge. Tied top results land last, one after the other, under one ring. The page marks them (`data-top` on the recap's ranking); the script works out nothing.
 - **No loss is ranked.** The other chips land in the order of their members, not of their results. When nobody finished ahead there is no ring and no marked chip.
 - **A skip does only that.** A tap, a key or a hidden tab ends the stage in that frame. The recap opens when the tap or the key is over, so the same tap cannot close it or press what is under the stage. This holds also for a tap that the browser reports outside the stage, as during a screen change. Enter or Space does not press the focused control, and a held key that repeats presses nothing.
 - **The screen is taken.** `pokerStage.taken()` is true while a stage is on the page and until the tap or key that ended it is over. The session page does not redraw then, and the install sheet, the table alerts question and the make-up of a figure wait, as they do behind an open sheet. A page that is left before the recap is due gives the recap's key back, so the next visit still opens it.
-- **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload or when storage is refused. The recap opens by itself as before in the first three cases. Without JavaScript the recap's facts are in the page.
+- **It does not play** under reduced motion, without Motion, in a hidden tab, on a reload or when storage is refused. The recap card is there, still, in the first three cases. Without JavaScript the recap's facts are in the page.
 - Only `transform` and `opacity` move.
 
 **Measured.** `finale.mjs`, 45 checks at 390 × 844, 320 × 568 and 1280 × 800: the first frame, the words, one chip for each player in one stack, the top result last with the edge, the other chips out of result order, one ring that is not there before 300ms, a tie, an even session, the whole picture held for 500ms or more, the recap opened only after the stage's last frame and at rest within 1.8 seconds, on the host's phone and on a player's phone after its redraw, no replay on a reload or from the button, a skipping tap over a control, a skipping Enter on a link with the key held, a tap after a screen change in the same document, the screen taken and free again, a hidden tab, reduced motion, a blocked Motion file, no JavaScript, and no frame over 50ms with the processor slowed four times (worst 17ms).
@@ -1172,7 +1172,7 @@ The light, the dimming, the glow and the ring are their own elements, moved by `
 | A box is ticked or unticked | Its words settle 4px from the side they moved to (`drop`); the count line fades up 3px (`fade`) |
 | The disclosure is opened by a tap | Its rows rise 6px in turn, 45ms apart (`shift`). Opened any other way: nothing |
 | An earlier transfer turns Carried on an open page | The arrow springs in from below-left (`drop`), the state fades in, the names and amount dim as for Paid. Once |
-| The make-up is first seen | Its lines rise 8px in turn, 70ms apart, and "To settle" pulses once. Once per list and browser, after the recap that opens by itself has closed. Under 900ms |
+| The make-up is first seen | Its lines rise 8px in turn, 70ms apart, and "To settle" pulses once. Once per list and browser, after the finale and with no sheet open. Under 900ms |
 
 No figure counts. Reduced motion and a missing Motion file move nothing.
 
@@ -1373,7 +1373,7 @@ Reported by the human: marking a player in was awkward. The pill left the row's 
 - **Finish set.** When the confirmed counts balance the books and nobody is left to count, the set page's dock button says **Review and finish**. The review is headed Finish set N. It has the good verdict "The books balance.", one muted line ("Records 4 cash-outs. Results freeze. A host can reopen the set."), and the bone **Finish set N**. It asks nothing further. A review that does not balance keeps its warning and **Cash out N players**.
 - **Results.** Set and session results run best to worst, ties by name, as in the recap. Both signs use the same size and weight. Only the sign's colour and icon differ.
 - **Result row.** On a final set the whole row is the disclosure: token, name, signed result, and a muted 16 px Lucide `chevron-down` that turns over 180 ms (`--t-fast`). It has 12 px above and below, so a row with a one-line name is 68 px. The facts line and the records open under it. A session result row stays a plain row, and its second line drops the word "played".
-- **Closing the recap.** A recap that opened by itself closes onto Who pays whom, with focus on the heading, which draws no ring because it is no control. The page moves under the rising sheet, so nothing jumps on closing. A page that already shows the heading in its top half does not move. A recap opened from its button returns focus to the button. Closing a session sends no toast.
+- **Closing the recap.** The recap returns focus to its card, and the page does not move. Closing a session sends no toast.
 - **Measured.** `results.mjs`, at 320, 390 and 1280 px.
 
 ### 2026-11-01 addendum — Find things
@@ -1473,3 +1473,13 @@ Before the start the dock holds one primary action. [Plan](doc/plan/1795103143_h
 - **Keyboard.** Above the keyboard a dock with no toggle is not shown.
 - **Unchanged.** In play and in the count-up the toggle and the folded bar stay as before. From 900px the dock is a column, and Join is in the Players head there too.
 - **Measured.** `dock_before_start.mjs`, 28 checks at 320, 390 and 1280px.
+
+### Session page, the money first (2026-11-20)
+
+[Plan](doc/plan/1795134971_session_money_first.md), [critique](doc/study/1795101392_ui_critique.md) issue 3. No new colour, font or keyframes.
+
+- **Nothing covers the money.** On a closed session the recap never opens by itself. The first screen shows "Still to pay", "You pay", "You receive" or "Your part", with the recap card under it.
+- **The recap card** is a Rail row card directly under the felt: "Session recap" in bold, then one muted 14px line with the top result's name and signed figure in Up, the number of players and the number of sets. Each count keeps its word on one line; a long name wraps. A chevron at the right. 62px high with one line of facts. It presses like the home row cards. It is the only way into the recap. Without sheets it is hidden and the recap's facts are in the page.
+- **The finale ends on the page.** When its stage goes, the card rises 16px once with `arrive` (420ms). Reduced motion, a hidden tab, no Motion or a refused storage: no finale, and the card is there, still.
+- **Cost.** At 390 × 844 the host sees three whole transfers on the first screen, not four.
+

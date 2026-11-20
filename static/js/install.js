@@ -111,7 +111,7 @@
     if (main && main.hasAttribute("data-came-in")) write(sessionStorage, DUE, main.hasAttribute("data-install-wait") ? "wait" : "1");
     if (read(sessionStorage, DUE) === "wait" && document.querySelector("#live, .night-layout")) write(sessionStorage, DUE, "1");
     if (phone() && !installed && read(sessionStorage, DUE) === "1" && main && !main.classList.contains("entry-page")) {
-      // After the arrival has played; a page that opens its own sheet (the recap) keeps the turn.
+      // After the arrival has played; a page that plays its own stage (the finale) keeps the turn.
       timers.push(setTimeout(function () {
         if (signal.aborted || read(sessionStorage, DUE) !== "1") return;
         if (open(null)) write(sessionStorage, DUE, null);

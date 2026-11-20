@@ -105,7 +105,7 @@ try{
  await G.js(`document.querySelector('main form [type=submit], main form button').click()`);await sleep(600);
  check('…and the suggestion shows on the page after it',await G.until(`!location.pathname.startsWith('/join/')&&${OPEN}`,3500),await G.js('location.pathname'));
  const H=await user('iphone',390);await H.login('ben',`/n/${M.night}/`);await sleep(2200);
- check('a session whose recap opens by itself keeps the screen',await H.js(`!${OPEN}&&!!document.querySelector('dialog.sheet[open]:not(#install-sheet)')`));
+ check('a session that plays its finale keeps the screen, and no sheet opens after it',await H.js(`!${OPEN}&&!document.querySelector('dialog.sheet[open]')&&!!document.querySelector('[data-recap-card].is-rising')`));
  await H.go('/');
  check('…and the suggestion shows on the next page',await H.until(OPEN,3000));
 

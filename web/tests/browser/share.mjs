@@ -12,7 +12,7 @@ let url;for(let i=0;i<40&&!url;i++){try{url=(await(await fetch('http://127.0.0.1
 const ws=new WebSocket(url);await new Promise(r=>ws.onopen=r);let id=0;const wait=new Map();
 ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&wait.has(m.id)){const [ok,no]=wait.get(m.id);wait.delete(m.id);m.error?no(Error(JSON.stringify(m.error))):ok(m.result)}};
 const send=(method,params={},sessionId)=>new Promise((ok,no)=>{wait.set(++id,[ok,no]);ws.send(JSON.stringify({id,method,params,sessionId}))});
-// The recap opens by itself once per browser; these checks are about the share sheet, so it is marked seen.
+// The finale plays once per browser; these checks are about the share sheet, so the session is marked seen.
 // "phone" gives the page a share sheet that takes files and records what it was handed; mode 'cancel' closes it as a person would.
 const BOOT=phone=>`window.__errors=[];addEventListener('error',e=>__errors.push(e.message));
  const _set=Storage.prototype.getItem;Storage.prototype.getItem=function(k){return String(k).startsWith('rack-recap:')?'1':_set.call(this,k)};
@@ -42,8 +42,8 @@ const facts=`(async()=>{const img=${Q('[data-share-preview]')};const c=document.
 async function phone(width){
  const W=`${width}px phone`,A=await user('hana',width,{phone:true});
  await A.go(`/n/${M.small}/`);
- // Since the parlor revamp (2026-11-18) the button sits in the share card, which follows the recap opener.
- check(`${W} Share results sits with the recap opener, 48px, page fits`,await A.js(`(()=>{const b=document.querySelector('.night-after [data-sheet-open=share]');return !!b&&b.getBoundingClientRect().height>=48&&b.closest('.share-panel').previousElementSibling.classList.contains('recap-opener')&&document.documentElement.scrollWidth<=${width}})()`));
+ // Since 2026-11-20 the share card opens the after-session block; the recap opens from its card under the lead.
+ check(`${W} Share results leads the after-session block, 48px, page fits`,await A.js(`(()=>{const b=document.querySelector('.night-after [data-sheet-open=share]');return !!b&&b.getBoundingClientRect().height>=48&&b.closest('.share-panel')===document.querySelector('.night-after').firstElementChild&&document.documentElement.scrollWidth<=${width}})()`));
  await A.open(M.small);
  // The first frames of the deal, before it lands.
  await A.until(`${ready}`);

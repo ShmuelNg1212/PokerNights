@@ -42,6 +42,7 @@
       {% endif %}
       {% endif %}
     </section>
+    {% if recap %}{% include "web/_recap_card.html" %}{% endif %}
     {% if board or announce %}{% include "web/_rsvp.html" %}{% endif %}
     {% include "web/_chip_values.html" %}
     {% if me.is_host and not night.is_closed %}{% include "web/_next_step.html" %}{% endif %}
@@ -49,7 +50,7 @@
   <div class="night-detail">
     {% if night.is_closed and outcome.plan %}
     <section aria-labelledby="transfers-title">
-      <h2 id="transfers-title" tabindex="-1" data-recap-lands>Who pays whom</h2>
+      <h2 id="transfers-title">Who pays whom</h2>
       <p class="small muted">The app records payments; it does not move money.</p>
       {% if replaced_plans %}{% with last=replaced_plans|last %}<p class="small muted">Worked out again after the session was reopened on {{ last.voided_at|date:"M j" }}. This list replaces the earlier one.</p>{% endwith %}{% endif %}
       <ul class="transfer-list">
@@ -168,11 +169,8 @@
     </section>
     {% endif %}
   </div>
-  {% if recap or manage %}
+  {% if share or manage %}
   <div class="night-after">
-    {% if recap %}
-    <button type="button" class="btn btn-quiet btn-block recap-opener" data-sheet-open="recap">View session recap</button>
-    {% endif %}
     {% if share %}
     {# A look at what goes to the group chat; the sheet holds the picture, the full text and the ways to send it. #}
     <section class="share-panel" aria-labelledby="share-title">

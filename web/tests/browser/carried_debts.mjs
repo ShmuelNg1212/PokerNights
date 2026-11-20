@@ -33,7 +33,7 @@ async function user(name,{width=390,height=844,reduce=false,scripts=true}={}){co
  if(!scripts)await send('Emulation.setScriptExecutionDisabled',{value:true},s);
  return {s,js,go,shot,until,name};}
 const results=[];function check(name,ok,detail){results.push({name,ok:!!ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail===undefined?'':JSON.stringify(detail)}`)}
-// The first automatic recap follows the session finale (finale.js): the stage goes before the sheet is closed.
+// The finale plays on a first visit (finale.js); no sheet opens by itself. dismiss waits for the stage and closes any open sheet.
 const dismiss=async U=>{for(let i=0;i<60&&await U.js(`!!(window.pokerStage&&pokerStage.taken())`);i++)await sleep(50);await sleep(120);if(await U.js(`!!document.querySelector('dialog[open]')`)){await U.js(`document.querySelector('.sheet-head button').click()`);await sleep(450)}};
 const list=`[...document.querySelectorAll('.transfer-list .transfer-line')].map(r=>r.querySelector('.transfer-parties').getAttribute('aria-label')+' '+r.querySelector('.transfer-amount').textContent.trim())`;
 const row=id=>`document.querySelector('[data-transfer="${id}"]')`;
@@ -67,7 +67,8 @@ const closed=await H.js(list);
 check('one list settles tonight and the two ticked debts',JSON.stringify(closed)===JSON.stringify(['Dee pays Carlo ₱200','Ana pays Carlo ₱130','Ben pays Carlo ₱20']),closed);
 check('the list says what it includes',/^Includes 2 unpaid transfers from earlier sessions$/.test(await H.js(`document.querySelector('.night-carried summary').textContent.replace(/\\s+/g,' ').trim()`)));
 await H.js(`document.querySelector('.night-carried summary').click()`);
-check('opened by a tap, the carried rows come in',await H.js(`document.getAnimations().filter(a=>!(a instanceof CSSTransition)&&a.effect.target.closest('.carried-list')).length>=2`));
+// Motion starts a frame late, and later still while the recap card rises: wait for it, do not read the same instant.
+check('opened by a tap, the carried rows come in',await H.until(`document.getAnimations().filter(a=>!(a instanceof CSSTransition)&&a.effect.target.closest('.carried-list')).length>=2`,600)>0);
 await sleep(1100);
 check('each carried transfer is listed with a link to its session, on one line each',await H.js(`(()=>{const li=[...document.querySelectorAll('.carried-list > li')];return li.length===2&&li[0].querySelector('.carried-who').textContent==='Ana owed Ben'&&li[1].querySelector('.carried-who').textContent==='Ben owed Ana'&&li[0].querySelector('a').getAttribute('href')==='${first}'&&li[1].querySelector('a').getAttribute('href')==='${second}'&&li.every(x=>x.querySelector('.carried-who').getBoundingClientRect().height<30)&&li.every(x=>!x.getAttribute('style'))})()`),await H.js(`[...document.querySelectorAll('.carried-list > li')].map(x=>[x.querySelector('.carried-who').textContent,x.querySelector('a').getAttribute('href'),Math.round(x.querySelector('.carried-who').getBoundingClientRect().height),x.getAttribute('style')])`));
 await H.js(`document.querySelector('#transfers-title').scrollIntoView()`);await H.shot('carried-closed-host-390');
@@ -84,10 +85,10 @@ check('the host is told the order of reopening there',await H.js(`/Reopen that s
 
 // --- The player's own figure.
 await B.go(tonight);await sleep(300);
-check('the make-up waits behind the finale and the recap that opens by itself',await B.js(`(!!document.querySelector('dialog[open]')||pokerStage.taken())&&!localStorage.getItem('rack-makeup:'+document.querySelector('.makeup').dataset.makeup)`));
+check('the make-up waits behind the finale',await B.js(`pokerStage.taken()&&!localStorage.getItem('rack-makeup:'+document.querySelector('.makeup').dataset.makeup)`));
 await dismiss(B);
 const rose=await B.until(`document.getAnimations().some(a=>!(a instanceof CSSTransition)&&a.effect.target.closest('.makeup'))`,1500);
-check('after the recap closes the make-up arrives once',rose>0,rose);
+check('after the finale the make-up arrives once, with no sheet open',rose>0&&await B.js(`!document.querySelector('dialog[open]')`),rose);
 await sleep(900);
 check('the player reads how the figure is made up',JSON.stringify(await B.js(`[...document.querySelectorAll('.makeup > div')].map(d=>d.querySelector('dt').textContent.replace(/\\s+/g,' ').trim().replace(/ · [A-Z][a-z]+ \\d+/,'')+' '+d.querySelector('dd').textContent.trim())`))===JSON.stringify(['This session −₱400','Ana owed you +₱500','You owed Ana −₱120','To settle −₱20']),await B.js(`[...document.querySelectorAll('.makeup > div')].map(d=>d.textContent.replace(/\\s+/g,' ').trim())`));
 check('it leaves no inline style and the lead figure is what is paid',await B.js(`[...document.querySelectorAll('.makeup *')].every(e=>!e.getAttribute('style'))&&document.querySelector('[data-my-part]').dataset.myPart==='pay:2000'`));

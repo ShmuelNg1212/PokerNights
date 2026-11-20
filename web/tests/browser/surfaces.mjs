@@ -76,7 +76,7 @@ try{
  const sheet=async(U,name,path,open)=>{await U.go(path);await U.js(open);await sleep(500);const m=await U.js(MEASURE);m.name=name;m.overflow=m.scrollW>U.width;m.titleGap=null;m.sheet=true;table.push(m);await U.shot(name)};
  await sheet(H,'sheet-rebuy','/s/3/',`[...document.querySelectorAll('.player-row button')].find(b=>b.textContent.trim()==='Rebuy').click()`);
  await sheet(H,'sheet-player','/s/3/',`document.querySelector('.player-opener').click()`);
- await sheet(H,'sheet-recap',`/n/${NIGHTS.partly}/`,`document.querySelector('.recap-opener').click()`);
+ await sheet(H,'sheet-recap',`/n/${NIGHTS.partly}/`,`document.querySelector('[data-recap-card] button').click()`);
  const N=await user('hana',320);await walk(N,[['group-sessions','/g/1/'],['set-in-play','/s/3/'],['set-final','/s/1/'],['session-closed-partly',`/n/${NIGHTS.partly}/`]],'320-');
  const D=await user('hana',1280);await walk(D,[['set-recount','/s/9/'],['group-sessions','/g/1/'],['set-in-play','/s/3/'],['session-closed-partly',`/n/${NIGHTS.partly}/`],['group-settings','/g/1/?view=settings']],'1280-');
  console.log('page | frames/deepest | title gap | tabs end | title | back');

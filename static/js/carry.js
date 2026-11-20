@@ -60,7 +60,7 @@
     });
   });
 
-  // How a figure is made up: once per session and browser, after any sheet that opened by itself has closed.
+  // How a figure is made up: once per session and browser, after the finale and with no sheet open.
   function makeup() {
     var list = document.querySelector(".makeup[data-makeup]");
     if (!list) return;
@@ -74,6 +74,7 @@
     go(total, { transform: ["scale(1)", "scale(1.08)", "scale(1)"] }, "pulse", { delay: rows.length * 0.07 + 0.1 });
   }
   document.addEventListener("close", function (event) { if (event.target.matches && event.target.matches("dialog")) setTimeout(makeup, 220); }, true);
+  document.addEventListener("finale:over", function () { setTimeout(makeup, 220); }); // sheets.js, as the recap card rises
 
   window.pokerPage.register(function () {
     var pick = document.querySelector("[data-carry-pick]");

@@ -77,16 +77,15 @@ try{
  await P.js(`const _n=Date.now;Date.now=()=>_n()+130000;window.__n=__asked.length`);await sleep(11500);
  check('after two quiet minutes it asks less often',await P.js(`__asked.length-__n<=1`),await P.js(`__asked.length-__n`));
 
- // An open session: the close arrives, and the recap opens by itself as on a fresh load.
+ // An open session: the close arrives, the finale plays as on a fresh load, then the recap card rises. No sheet opens.
  const Q=await user('ben',390,false);await Q.go(`/n/${open}/`);
  check('a player waiting on an open session',await Q.js(`/In progress/.test(document.body.textContent)&&!document.querySelector('.night-settle')`));
  await Q.js(`window.__mark='same document'`);
  host(`settlement.close_night(${open}, host)`);
  const t=await Q.until(`!!document.querySelector('.night-settle')&&document.querySelectorAll('[data-transfer]').length>0`);
  check('the close reaches the player within about 5 seconds, without a reload',t>0&&t<7500&&await Q.js(`window.__mark==='same document'`),t);
- check('…and the recap opens by itself, once',await Q.until(`!!document.querySelector('dialog.sheet[open] .recap')`,4000)>0);
+ check('…and the recap card rises, with no sheet and the page at the top',await Q.until(`!!document.querySelector('[data-recap-card].is-rising')&&!pokerStage.taken()`,4000)>0&&await Q.js(`!document.querySelector('dialog[open]')&&scrollY===0`));
  await Q.shot('nightlive-390-3-closed');
- await Q.js(`document.querySelector('dialog.sheet .sheet-head button').click()`);await sleep(600);
  host(`settlement.reopen_night(${open}, host, 'One more set')`);
  check('a reopening reaches the player with its reason',await Q.until(`!document.querySelector('.night-settle')&&/In progress/.test(document.body.textContent)&&/One more set/.test((document.querySelector('.night-overview .correction')||{}).textContent||'')`)>0);
  check('…and no recap opens over it',await Q.js(`!document.querySelector('dialog[open]')`));

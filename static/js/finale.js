@@ -1,7 +1,7 @@
-// The end of a session (DESIGN.md, "Session finale"). sheets.js decides that the recap opens by itself, once
-// per session and viewer, and calls play() first. The players' chips slide into one stack, the top result
-// lands last under a Brass ring, "That's the night" stamps in and stays to be read. Then the stage goes, and only
-// then does the recap rise: the sheet never covers the finale (the human, 2026-11-10).
+// The end of a session (DESIGN.md, "Session finale"). sheets.js decides that it plays, once per session and
+// viewer. The players' chips slide into one stack, the top result lands last under a Brass ring, "That's the
+// night" stamps in and stays to be read. Then the stage goes and the page stays, with the recap card rising
+// under the lead; the recap itself opens only from that card (the human, 2026-11-20).
 // The page under the stage is the closed session, with every figure at its accepted value. play() calls
 // done exactly once: when the stage has gone, on a skip, or at once when the finale cannot play.
 (function () {
@@ -57,7 +57,7 @@ function perform(stage, page) {
     // Started by a timer, not by a delay: the first keyframe is written at once, and the ring is not there yet.
     stage.later(RING_AT, function () { stage.run(ring, {opacity: [0.9, 0], transform: [at(crown, 0.5), at(crown, 2.2)]}, {duration: 0.3, ease: OUT}); });
   }
-  // The whole picture holds, then the stage fades and goes. Its end is what opens the recap (then: due).
+  // The whole picture holds, then the stage fades and goes. Its end raises the recap card (then: due).
   stage.later(LEAVE_AT, function () {
     if (!stage.live()) return;
     moving.forEach(function (part) { stage.run(part, {opacity: [1, 0]}, {duration: FADE, ease: "easeOut"}); });

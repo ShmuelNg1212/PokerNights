@@ -354,4 +354,6 @@ class ResultsAtAGlanceTests(TestCase):
         page = self.client.post(reverse("night_close", args=[night.pk]), follow=True)
         self.assertEqual(page.status_code, 200)
         self.assertEqual([str(message) for message in page.context["messages"]], [])
-        self.assertContains(page, 'id="transfers-title" tabindex="-1" data-recap-lands')
+        # Nothing covers the money: the recap opens only from its card under the lead.
+        self.assertContains(page, 'data-recap-card')
+        self.assertNotContains(page, 'data-recap-lands')

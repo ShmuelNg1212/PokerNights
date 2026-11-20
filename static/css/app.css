@@ -498,8 +498,18 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-sets li, .payment-records li { padding: 12px 0; overflow-wrap: anywhere; }
 .set-link { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); }
 .table-page > .center a { display: inline-flex; align-items: center; min-height: var(--tap); }
-.recap-opener { display: none; margin-top: 16px; }
-.sheets-enabled .recap-opener { display: flex; }
+/* The recap card under the lead: the only way into the recap (2026-11-20). Without sheets the recap is inline. */
+.row-card.recap-card { display: none; margin-top: var(--s-3); padding: 0 var(--s-3); }
+.sheets-enabled .recap-card { display: block; }
+.recap-card .card-link { display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 60px; padding: var(--s-2) 0; border: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.recap-card .card-link .icon { flex: none; color: var(--muted); }
+.recap-card-line { display: block; color: var(--muted); font-size: .875rem; font-weight: 500; overflow-wrap: anywhere; }
+.recap-card-line .amount { font-size: inherit; white-space: nowrap; }
+.recap-card-fact { white-space: nowrap; }
+.recap-card:has(> .card-link:active) { background: color-mix(in oklch, var(--bone) 6%, var(--rail)); }
+/* As the finale's stage goes, the card rises once (finale.js). */
+.recap-card.is-rising { animation: welcome-rise 420ms var(--spring-arrive) backwards; }
+@media (prefers-reduced-motion: reduce) { .recap-card.is-rising { animation: none; } }
 .recap { display: grid; gap: var(--s-5); }
 .recap-part { min-width: 0; overflow-wrap: anywhere; }
 .recap-part + .recap-part { padding-top: var(--s-5); border-top: 1px solid var(--rule); }
@@ -1804,7 +1814,6 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .night-records > summary .icon { color: var(--muted); transition: transform var(--t-fast) var(--ease-out); }
 .night-records[open]:not([data-disclosure-closing]) > summary .icon { transform: rotate(180deg); }
 .night-after { min-width: 0; margin-top: var(--s-5); }
-.night-after .recap-opener { margin-top: 0; }
 @media (max-width: 359px) { .transfer-line .chip { width: 24px; height: 24px; flex-basis: 24px; } }
 @media (min-width: 900px) {
   .night-layout > .night-overview { grid-column: 1; grid-row: 1; }

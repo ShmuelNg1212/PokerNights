@@ -46,10 +46,13 @@ class NightDesignTests(TestCase):
         self.assertContains(page, 'Not final')
         self.assertNotContains(page, 'Still to pay')
         self.assertNotContains(page, 'data-recap=')
+        self.assertNotContains(page, 'data-recap-card')
         self.close()
         page = self.client.get(self.url)
         self.assertContains(page, f'data-recap="{self.night.pk}:{self.two.host.user_id}"')
-        self.assertContains(page, 'View session recap')
+        self.assertNotContains(page, 'View session recap')
+        self.assertContains(page, 'data-sheet-open="recap"', count=1)
+        self.assertContains(page, '<strong>Session recap</strong>')
         self.assertContains(page, '>Final</span>')
 
     def test_recap_sums_frozen_buy_ins_and_handles_unknown_time(self):
@@ -272,8 +275,8 @@ class SettlePageTests(TestCase):
         transfer = queries.night_outcome(GameNight.objects.get(pk=self.night_id)).transfers[0]
         services.mark_paid(self.night_id, self.host, transfer.pk, uuid.uuid4())
         html = self.page(self.host.user)
-        marks = ['class="felt hero"', 'id="transfers-title"', 'id="results-title"', 'id="sets-title"', 'id="payments-title"',
-                 'class="night-after"', 'data-sheet-open="recap"', 'id="manage"']
+        marks = ['class="felt hero"', 'data-sheet-open="recap"', 'id="transfers-title"', 'id="results-title"', 'id="sets-title"',
+                 'id="payments-title"', 'class="night-after"', 'id="manage"']
         order = [html.index(mark) for mark in marks]
         self.assertEqual(order, sorted(order))
         self.assertIn('<details class="night-records" data-key="payment-records"><summary><h2 id="payments-title">Payment records <span class="muted small">1</span>', html)
@@ -281,6 +284,19 @@ class SettlePageTests(TestCase):
         self.assertIn('>Undo</button>', html)
         self.assertIn('<span class="paid-word">Paid</span>', html)
         self.assertIn('marked by the host', html)
+
+    def test_the_recap_card_names_the_top_result_players_and_sets(self):
+        self.closed(ben_cash=600, a_cash=1400)
+        html = self.page(self.host.user)
+        card = html[html.index('data-recap-card'):]
+        card = card[:card.index('</div>')]
+        recap = queries.night_recap(GameNight.objects.get(pk=self.night_id), queries.night_outcome(GameNight.objects.get(pk=self.night_id)).standings)
+        top = recap.winners[0]
+        self.assertIn(top.member.display_name, card)
+        self.assertIn(f'{recap.players} players', card)
+        self.assertIn(f'{recap.set_count} set', card)
+        self.assertIn('class="amount plus"', card)
+        self.assertNotIn('data-recap-lands', html)
 
     @override_settings(DEBTS_VIEW=True)
     def test_a_paid_row_names_its_recorder_with_debts_view(self):

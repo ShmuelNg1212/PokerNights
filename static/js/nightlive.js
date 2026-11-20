@@ -10,13 +10,13 @@
   var BASE_MS = 5000, QUIET_MS = 20000, QUIET_AFTER_MS = 120000, MAX_MS = 30000, WAIT_MS = 1000;
   var mine = null; // the redraw this script asked for: {paid: {transfer id: "0" | "1"}}
 
-  // After our redraw the page's scripts start again: the sheet, the recap that opens once, the
+  // After our redraw the page's scripts start again: the sheet, the finale that plays once, the
   // "Settled" arrival and this script all read the page as it is now.
   document.addEventListener("turbo:render", function (event) {
     if (!mine) return;
     var before = mine; mine = null;
     // A redraw in place restarts nothing by itself (turbo-setup.js); a swapped page already has.
-    // Starting twice would close the recap that the first start opened.
+    // Starting twice would end the finale that the first start began.
     if (event.detail.renderMethod === "morph") window.pokerPage.start();
     document.dispatchEvent(new CustomEvent("night:refreshed", { detail: before }));
   });
@@ -31,7 +31,7 @@
     var refused = null, failures = 0, due = false, changedAt = Date.now();
 
     function busy() {
-      if (document.querySelector("dialog[open]") || (window.pokerStage && window.pokerStage.taken())) return true; // a sheet, or the finale before the recap
+      if (document.querySelector("dialog[open]") || (window.pokerStage && window.pokerStage.taken())) return true; // a sheet, or the finale
       var active = document.activeElement;
       if (active && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName) && active.type !== "hidden") return true;
       // An open form whose state a redraw would not keep (New group): it is in use.

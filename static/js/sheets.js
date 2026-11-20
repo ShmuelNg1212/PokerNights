@@ -258,7 +258,6 @@ dialog.addEventListener("close", function () {
 me.stopDrag(); dialog.style.transform = ""; dialog.style.removeProperty("--sheet-drag");
 putBack(me);
 if (S !== me) return; // the page is being left; there is nothing to focus
-if (me.lands) { me.lands.focus({preventScroll: true}); me.lands = null; return; } // the recap that opened by itself
 var target = me.opener && me.opener.isConnected ? me.opener : me.region.querySelector('[data-sheet-open="' + me.key + '"]');
 if (target) target.focus(); else (me.region.querySelector("[data-sheet-return-focus]") || me.region.querySelector("h1"))?.focus();
 });
@@ -282,14 +281,13 @@ try {
 var seen = "rack-recap:" + recap.dataset.recap;
 if (!localStorage.getItem(seen)) {
 localStorage.setItem(seen, "1");
-// Closing leaves who pays whom in view. The page moves now, under the rising sheet, so nothing jumps later.
-me.lands = region.querySelector("[data-recap-lands]");
-if (me.lands && me.lands.getBoundingClientRect().top > innerHeight / 2) me.lands.scrollIntoView({block: "start"});
-// The finale plays first, then the recap rises (finale.js). Without it the recap opens at once.
-// A page that is left before the recap is due gives the turn back, so the next visit still opens it.
+// The finale plays once (finale.js), then the page stays: what this person pays or gets is in view,
+// and the recap card under it rises. The recap opens only from the card (the human, 2026-11-20).
+// A page that is left before the stage has gone gives the turn back, so the next visit still plays it.
 me.owed = seen;
-var show = function () { if (S !== me || dialog.open) return; me.owed = null; open("recap", region.querySelector('[data-sheet-open="recap"]')); };
-if (window.pokerFinale) window.pokerFinale.play(region, show); else show();
+var card = region.querySelector("[data-recap-card]");
+var rise = function () { if (S !== me) return; me.owed = null; if (card) card.classList.add("is-rising"); document.dispatchEvent(new CustomEvent("finale:over")); };
+if (window.pokerFinale) window.pokerFinale.play(region, rise); else rise();
 }
 } catch (_) {}
 return stop;
