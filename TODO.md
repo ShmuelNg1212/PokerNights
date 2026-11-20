@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: words, formats and the home card (not released: branch feat/words-formats-home)
+## Phone checks: words, formats and the home card (released 2026-11-20)
 
 - [ ] As a player, Your groups: no gear on a group you do not host; the chips are the people who played last, without you. As host the gear is there.
 - [ ] A buy-in sheet: the field reads "1,000" and the quick button says Usual. Type 1650.50 on the keys: it reads "1,650.50" as you type, and the row shows ₱1,650.50 after Confirm. Records in the player's sheet show "11:07 PM", not "23:07".
