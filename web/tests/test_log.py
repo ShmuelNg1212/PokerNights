@@ -57,3 +57,25 @@ class SessionLogTests(TestCase):
     def test_non_member_gets_404(self):
         self.client.force_login(make_user("stranger"))
         self.assertEqual(self.client.get(self.url).status_code, 404)
+
+
+class TwelveHourTimeTests(TestCase):
+    """Every screen shows a time as "11:07 PM", never as "23:07"."""
+
+    def test_log_and_set_records_show_twelve_hour_times(self):
+        import datetime
+        from zoneinfo import ZoneInfo
+
+        from ledger.models import BuyIn
+
+        night = worked_example((1600, 700, None))
+        night.cash("C", 200)
+        settlement.finalize(night.session.pk, night.host)
+        late = datetime.datetime(2026, 11, 19, 23, 7, tzinfo=ZoneInfo("Asia/Manila"))
+        BuyIn.objects.filter(session=night.session).update(created_at=late)
+        self.client.force_login(night.host.user)
+        for name in ("session_log", "session"):
+            page = self.client.get(reverse(name, args=[night.session.pk]))
+            with self.subTest(page=name):
+                self.assertContains(page, "11:07 PM")
+                self.assertNotContains(page, "23:07")

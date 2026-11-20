@@ -2,13 +2,13 @@
 <div class="player-tools" id="manage">
 {% if new_reset_link %}
 <div class="notice notice-good">
-  <p><strong>Reset link for {{ new_reset_link.name }}.</strong> Send it to {{ new_reset_link.name }} only. Whoever opens it can set the password. It works once and expires {{ new_reset_link.expires_at|date:"M j, H:i" }}.</p>
+  <p><strong>Reset link for {{ new_reset_link.name }}.</strong> Send it to {{ new_reset_link.name }} only. Whoever opens it can set the password. It works once and expires {{ new_reset_link.expires_at|date:"M j, g:i A" }}.</p>
   {% include "web/_copy_field.html" with id="new-reset-link" url=new_reset_link.url label="Password reset link for "|add:new_reset_link.name %}
 </div>
 {% endif %}
 {% if new_claim_link %}
 <div class="notice notice-good">
-  <p><strong>Claim link for {{ new_claim_link.name }}.</strong> Send it to {{ new_claim_link.name }} only. Whoever opens it becomes {{ new_claim_link.name }} in this group. It works once and expires {{ new_claim_link.expires_at|date:"M j, H:i" }}.</p>
+  <p><strong>Claim link for {{ new_claim_link.name }}.</strong> Send it to {{ new_claim_link.name }} only. Whoever opens it becomes {{ new_claim_link.name }} in this group. It works once and expires {{ new_claim_link.expires_at|date:"M j, g:i A" }}.</p>
   {% include "web/_copy_field.html" with id="new-claim-link" url=new_claim_link.url label="Claim link for "|add:new_claim_link.name %}
 </div>
 {% endif %}
@@ -48,7 +48,7 @@
     </form>
     {% if reset_links %}
     {% if reset_link %}
-    <p class="small muted">Reset link active until {{ reset_link.expires_at|date:"M j, H:i" }}.</p>
+    <p class="small muted">Reset link active until {{ reset_link.expires_at|date:"M j, g:i A" }}.</p>
     <form method="post" action="{% url 'member_reset_link_cancel' group.pk member.pk %}">
       {% csrf_token %}<input type="hidden" name="keep" value="{{ keep }}">
       <button type="submit" class="btn btn-block">Cancel link</button>
@@ -64,7 +64,7 @@
     {% if claim_links and not member.has_login %}
     <div class="roster-actions">
     {% if claim_link %}
-    <p class="small muted">Claim link active until {{ claim_link.expires_at|date:"M j, H:i" }}.</p>
+    <p class="small muted">Claim link active until {{ claim_link.expires_at|date:"M j, g:i A" }}.</p>
     <form method="post" action="{% url 'member_claim_link_cancel' group.pk member.pk %}">
       {% csrf_token %}<input type="hidden" name="keep" value="{{ keep }}">
       <button type="submit" class="btn btn-block">Cancel link</button>

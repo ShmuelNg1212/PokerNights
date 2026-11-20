@@ -23,7 +23,7 @@
 <h2 id="players">Players</h2>
 <ul class="list log-records">
   {% for p in participants %}
-  <li class="row"><span class="grow">{{ p.join_order }}. {{ p.member.display_name }}</span><span class="muted">{{ p.get_status_display }}{% if p.left_at %} at {{ p.left_at|date:"H:i" }}{% endif %}</span></li>
+  <li class="row"><span class="grow">{{ p.join_order }}. {{ p.member.display_name }}</span><span class="muted">{{ p.get_status_display }}{% if p.left_at %} at {{ p.left_at|date:"g:i A" }}{% endif %}</span></li>
   {% empty %}<li class="muted">No players.</li>
   {% endfor %}
 </ul>
@@ -31,7 +31,7 @@
 <h2 id="settings">Settings</h2>
 <ul class="list log-records">
   {% for v in settings_versions %}
-  <li>Version {{ v.number }} · {{ v.created_at|date:"M j, H:i" }} · {{ v.created_by.username }}<br>
+  <li>Version {{ v.number }} · {{ v.created_at|date:"M j, g:i A" }} · {{ v.created_by.username }}<br>
     <span class="muted">Blinds {{ v.small_blind|amount:session.unit }}/{{ v.big_blind|amount:session.unit }} · buy-in {{ v.min_buy_in|amount:session.unit }}–{{ v.max_buy_in|amount:session.unit }} · usually {{ v.default_buy_in|amount:session.unit }} · {% include "web/_rake_rule.html" with settings=v unit=session.unit %}</span></li>
   {% endfor %}
 </ul>
@@ -40,9 +40,9 @@
 <ul class="list log-records">
   {% for b in buy_ins %}
   <li>
-    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"H:i" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:b.recorded_unit }}</span></div>
+    <div class="row"><span class="grow {% if b.reversal %}struck{% endif %}">{{ b.created_at|date:"g:i A" }} · {{ b.participant.member.display_name }}</span><span class="num {% if b.reversal %}struck{% endif %}">{{ b.amount|amount:b.recorded_unit }}</span></div>
     <p class="small muted">Rake {{ b.rake_amount|amount:b.recorded_unit }} · in play {{ b.playable_amount|amount:b.recorded_unit }}{% if b.reversal %} · rake also reversed{% endif %}</p>
-    <span class="muted">Recorded by {{ b.recorded_by.username }}{% if b.reversal %} · reversed by {{ b.reversal.recorded_by.username }} at {{ b.reversal.created_at|date:"H:i" }}: {{ b.reversal.reason }}{% endif %}</span>
+    <span class="muted">Recorded by {{ b.recorded_by.username }}{% if b.reversal %} · reversed by {{ b.reversal.recorded_by.username }} at {{ b.reversal.created_at|date:"g:i A" }}: {{ b.reversal.reason }}{% endif %}</span>
   </li>
   {% empty %}<li class="muted">No buy-ins.</li>
   {% endfor %}
@@ -52,8 +52,8 @@
 <ul class="list log-records">
   {% for c in cash_outs %}
   <li>
-    <div class="row"><span class="grow {% if c.reversal %}struck{% endif %}">{{ c.created_at|date:"H:i" }} · {{ c.participant.member.display_name }}</span><span class="num {% if c.reversal %}struck{% endif %}">{{ c.amount|amount:session.unit }}</span></div>
-    <span class="muted">Recorded by {{ c.recorded_by.username }}{% if c.reversal %} · reversed by {{ c.reversal.recorded_by.username }} at {{ c.reversal.created_at|date:"H:i" }}: {{ c.reversal.reason }}{% endif %}</span>
+    <div class="row"><span class="grow {% if c.reversal %}struck{% endif %}">{{ c.created_at|date:"g:i A" }} · {{ c.participant.member.display_name }}</span><span class="num {% if c.reversal %}struck{% endif %}">{{ c.amount|amount:session.unit }}</span></div>
+    <span class="muted">Recorded by {{ c.recorded_by.username }}{% if c.reversal %} · reversed by {{ c.reversal.recorded_by.username }} at {{ c.reversal.created_at|date:"g:i A" }}: {{ c.reversal.reason }}{% endif %}</span>
   </li>
   {% empty %}<li class="muted">No cash-outs.</li>
   {% endfor %}
@@ -63,14 +63,14 @@
 <h2>Balance overrides</h2>
 <ul class="list log-records">
   {% for a in adjustments %}
-  <li><span class="{% if a.voided_at %}struck{% endif %}">{{ a.created_at|date:"H:i" }} · {{ a.participant.member.display_name }} {{ a.amount|signed_amount:session.unit }} ({{ a.get_mode_display }})</span><br>
-    <span class="muted">By {{ a.recorded_by.username }}. Note: {{ a.note }}{% if a.voided_at %} · removed at {{ a.voided_at|date:"H:i" }}{% endif %}</span></li>
+  <li><span class="{% if a.voided_at %}struck{% endif %}">{{ a.created_at|date:"g:i A" }} · {{ a.participant.member.display_name }} {{ a.amount|signed_amount:session.unit }} ({{ a.get_mode_display }})</span><br>
+    <span class="muted">By {{ a.recorded_by.username }}. Note: {{ a.note }}{% if a.voided_at %} · removed at {{ a.voided_at|date:"g:i A" }}{% endif %}</span></li>
   {% endfor %}
 </ul>
 {% endif %}
 
 {% if outcome %}
-<h2>Results <span class="badge">Final</span> <span class="muted small">revision {{ outcome.finalization.revision }} · {{ outcome.finalization.created_at|date:"M j, H:i" }} · {{ outcome.finalization.finalized_by.username }}</span></h2>
+<h2>Results <span class="badge">Final</span> <span class="muted small">revision {{ outcome.finalization.revision }} · {{ outcome.finalization.created_at|date:"M j, g:i A" }} · {{ outcome.finalization.finalized_by.username }}</span></h2>
 <ul class="list log-records">
   {% for r in outcome.results %}
   <li class="row"><span class="grow">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount {{ r.net|sign_class }}">{% include "web/_result_icon.html" with net=r.net %} {{ r.net|signed_amount:session.unit }}</span></li>
@@ -81,8 +81,8 @@
 {% endif %}
 
 {% for old in replaced %}
-<h2>Results <span class="badge">Replaced</span> <span class="muted small">revision {{ old.revision }} · {{ old.created_at|date:"M j, H:i" }} · {{ old.finalized_by.username }}</span></h2>
-<p class="small muted">Reopened {{ old.voided_at|date:"M j, H:i" }} by {{ old.voided_by.username }}. Reason: {{ old.void_reason }}</p>
+<h2>Results <span class="badge">Replaced</span> <span class="muted small">revision {{ old.revision }} · {{ old.created_at|date:"M j, g:i A" }} · {{ old.finalized_by.username }}</span></h2>
+<p class="small muted">Reopened {{ old.voided_at|date:"M j, g:i A" }} by {{ old.voided_by.username }}. Reason: {{ old.void_reason }}</p>
 <ul class="list log-records">
   {% for r in old.results.all %}
   <li class="row"><span class="grow struck">{{ r.participant.member.display_name }}<br><span class="muted">In {{ r.buy_in_total|amount:session.unit }} · out {{ r.cash_out|amount:session.unit }}</span></span><span class="amount struck">{{ r.net|signed_amount:session.unit }}</span></li>
@@ -95,7 +95,7 @@
 <h2 id="audit">Who did what</h2>
 <ul class="list log-records">
   {% for e in events %}
-  <li>{{ e.created_at|date:"M j, H:i:s" }} · <strong>{{ e.actor.username }}</strong> · {{ e.summary }}{% if e.reason %}<br><span class="muted">Reason: {{ e.reason }}</span>{% endif %}</li>
+  <li>{{ e.created_at|date:"M j, g:i:s A" }} · <strong>{{ e.actor.username }}</strong> · {{ e.summary }}{% if e.reason %}<br><span class="muted">Reason: {{ e.reason }}</span>{% endif %}</li>
   {% endfor %}
 </ul>
 {% endblock %}

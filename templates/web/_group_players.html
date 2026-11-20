@@ -50,7 +50,7 @@
   <ul class="list">
     {% for invite in invites %}
     <li class="row">
-      <span class="grow small muted">Expires {{ invite.expires_at|date:"M j, H:i" }} · used {{ invite.use_count }} of {{ invite.max_uses }}</span>
+      <span class="grow small muted">Expires {{ invite.expires_at|date:"M j, g:i A" }} · used {{ invite.use_count }} of {{ invite.max_uses }}</span>
       <form method="post" action="{% url 'invite_revoke' group.pk invite.pk %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-small btn-danger">Revoke</button>

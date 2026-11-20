@@ -1,6 +1,6 @@
 # Words, formats and the home card
 
-Status: waiting for approval. Reconstituted 2026-11-20 from the queued plan ui_6_words_formats_home (removed from the queue with this plan), critique issues 7 and 8 (P3) and the minor observations in the [UI critique](../study/1795101392_ui_critique.md). Mode: design, with two small technical parts (time format, token order). Skills: `/impeccable clarify` in execute; `tdd` for task 5; at rendezvous `code-review`, `break-ui`, `/impeccable critique`.
+Status: approved 2026-11-20 with the recommended answers. Reconstituted 2026-11-20 from the queued plan ui_6_words_formats_home (removed from the queue with this plan), critique issues 7 and 8 (P3) and the minor observations in the [UI critique](../study/1795101392_ui_critique.md). Mode: design, with two small technical parts (time format, token order). Skills: `/impeccable clarify` in execute; `tdd` for task 5; at rendezvous `code-review`, `break-ui`, `/impeccable critique`.
 
 ## Goal
 
@@ -23,23 +23,23 @@ The app uses the same words and the same formats on every screen. The home card 
 
 ## OPEN QUESTIONS
 
-1. **Who the home tokens show.** My recommendation: the members who played in the group's most recent sessions, latest first, then the others by name. The viewer is not shown (they know they are in it). A new group with no sessions keeps the order by name.
-2. **A player who left: the colour of the net.** My recommendation: the net is large and signed ("+₱1,650", "−₱350") in the existing plus and minus amount colours, with "In ₱1,000 · out ₱2,650" small under it. Only the player's own row and rows of players who left change. Players still at the table keep the buy-in total.
-3. **Grouping while typing.** My recommendation: group digits in the field as the person types ("1,000"), and show "₱" before or "chips" after the field as a fixed part of the field. The keypad and the server already handle commas. The risk is the caret position on an iPhone; if a browser probe shows a jump, fall back to grouping on blur.
+1. **Who the home tokens show.** My recommendation: the members who played in the group's most recent sessions, latest first, then the others by name. The viewer is not shown (they know they are in it). A new group with no sessions keeps the order by name. **Answer (2026-11-20): as recommended.**
+2. **A player who left: the colour of the net.** My recommendation: the net is large and signed ("+₱1,650", "−₱350") in the existing plus and minus amount colours, with "In ₱1,000 · out ₱2,650" small under it. Only the player's own row and rows of players who left change. Players still at the table keep the buy-in total. **Answer (2026-11-20): as recommended.**
+3. **Grouping while typing.** My recommendation: group digits in the field as the person types ("1,000"), and show "₱" before or "chips" after the field as a fixed part of the field. The keypad and the server already handle commas. The risk is the caret position on an iPhone; if a browser probe shows a jump, fall back to grouping on blur. **Answer (2026-11-20): as recommended.**
 
 ## Tasks
 
 ### 1. One word for the usual buy-in — `tests: alongside`
 
-- [ ] Change the quick amount "Default" to "Usual" in `_buy_in_form.html`.
+- [x] Change the quick amount "Default" to "Usual" in `_buy_in_form.html`.
 
 Acceptance: no screen says "Default" for the buy-in. Completion: `grep -rn '>Default<' templates` is empty; the buy-in tests pass.
 
 ### 2. 12-hour times everywhere — `tests: alongside`
 
-- [ ] Replace each `H:i` display format with `g:i A` (and `H:i:s` with `g:i:s A`) in the seven templates above.
-- [ ] Do not change `datetime-local` values (`_host_controls.html:101`). They need the 24-hour form.
-- [ ] Add a test that renders the session log and the player sheet with a record at 23:07 Manila time and finds "11:07 PM".
+- [x] Replace each `H:i` display format with `g:i A` (and `H:i:s` with `g:i:s A`) in the seven templates above.
+- [x] Do not change `datetime-local` values (`_host_controls.html:101`). They need the 24-hour form.
+- [x] Add a test that renders the session log and the player sheet with a record at 23:07 Manila time and finds "11:07 PM".
 
 Acceptance: no screen shows a 24-hour time. Completion: `grep -rnE 'date:"[^"]*H:i' templates` is empty; the new test fails on old code and passes.
 

@@ -7,22 +7,22 @@
         <ul class="list small">
           {% for b in line.buy_ins %}
           <li>
-            <div class="row"><span class="grow">{% if forloop.first %}Buy-in{% else %}Rebuy{% endif %} · {{ b.created_at|date:"H:i" }}</span><span class="num">{{ b.amount|amount:b.recorded_unit }}</span></div>
+            <div class="row"><span class="grow">{% if forloop.first %}Buy-in{% else %}Rebuy{% endif %} · {{ b.created_at|date:"g:i A" }}</span><span class="num">{{ b.amount|amount:b.recorded_unit }}</span></div>
             <p class="muted">Rake {{ b.rake_amount|amount:b.recorded_unit }} · in play {{ b.playable_amount|amount:b.recorded_unit }}</p>
             {% if can_reverse %}{% include "web/_reverse_form.html" with kind="buy-in" record=b record_unit=b.recorded_unit %}{% endif %}
           </li>
           {% endfor %}
           {% for b in line.reversed_buy_ins %}
-          <li><span class="struck">{{ b.created_at|date:"H:i" }} · {{ b.amount|amount:b.recorded_unit }}</span> <span class="muted">Reversed: {{ b.reversal.reason }} · rake {{ b.rake_amount|amount:b.recorded_unit }} also reversed</span></li>
+          <li><span class="struck">{{ b.created_at|date:"g:i A" }} · {{ b.amount|amount:b.recorded_unit }}</span> <span class="muted">Reversed: {{ b.reversal.reason }} · rake {{ b.rake_amount|amount:b.recorded_unit }} also reversed</span></li>
           {% endfor %}
           {% for c in line.cash_outs %}
           <li>
-            <div class="row"><span class="grow">{% if c.kind == 'final' %}Final cash-out{% else %}Cash-out{% endif %} · {{ c.created_at|date:"H:i" }}</span><span class="num">{{ c.amount|amount:unit }}</span></div>
+            <div class="row"><span class="grow">{% if c.kind == 'final' %}Final cash-out{% else %}Cash-out{% endif %} · {{ c.created_at|date:"g:i A" }}</span><span class="num">{{ c.amount|amount:unit }}</span></div>
             {% if can_cash_out %}{% include "web/_reverse_form.html" with kind="cash-out" record=c record_unit=unit %}{% endif %}
           </li>
           {% endfor %}
           {% for c in line.reversed_cash_outs %}
-          <li><span class="struck">{{ c.created_at|date:"H:i" }} · {{ c.amount|amount:unit }}</span> <span class="muted">Reversed: {{ c.reversal.reason }}</span></li>
+          <li><span class="struck">{{ c.created_at|date:"g:i A" }} · {{ c.amount|amount:unit }}</span> <span class="muted">Reversed: {{ c.reversal.reason }}</span></li>
           {% endfor %}
         </ul>
         </div>
