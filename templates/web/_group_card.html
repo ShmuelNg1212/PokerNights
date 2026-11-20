@@ -3,7 +3,7 @@
 <article class="group-home" aria-labelledby="group-{{ card.group.pk }}">
   <header class="group-home-head">
     <h2 id="group-{{ card.group.pk }}"><a href="{% url 'group' card.group.pk %}">{{ card.group.name }}</a></h2>
-    <a class="btn btn-round btn-quiet group-gear" href="{% url 'group' card.group.pk %}?view=settings" aria-label="Group settings for {{ card.group.name }}">{% icon 'settings' %}</a>
+    {% if card.me.is_host %}<a class="btn btn-round btn-quiet group-gear" href="{% url 'group' card.group.pk %}?view=settings" aria-label="Group settings for {{ card.group.name }}">{% icon 'settings' %}</a>{% endif %}
     <p class="token-row"><span class="token-stack">{% for m in card.tokens %}{% member_token m card.members %}{% endfor %}{% if card.more_members %}<span class="chip-more" aria-hidden="true">+{{ card.more_members }}</span>{% endif %}</span><span class="visually-hidden">{{ card.members|length }} player{{ card.members|length|pluralize }}</span>{% if card.me.is_host %}<span class="badge badge-host">{% icon 'star' %}{{ card.me.get_role_display }}</span>{% else %}<span class="badge">{{ card.me.get_role_display }}</span>{% endif %}</p>
   </header>
 
@@ -39,7 +39,7 @@
       <li class="row-card press-card"><a class="card-link" href="{% if due.url %}{{ due.url }}{% else %}{% url 'night' due.night.pk %}{% endif %}">{% member_token due.other card.members %}<span class="grow">{% if due.cancels %}You and <strong>{{ due.other.display_name }}</strong> cancel out{% elif due.owes %}You owe <strong>{{ due.other.display_name }}</strong>{% else %}<strong>{{ due.other.display_name }}</strong> owes you{% endif %} {% if not card.debts_view %}<span class="home-when">{{ due.night.game_date|date:"M j" }}</span>{% endif %}</span><span class="amount {% if due.owes %}minus{% else %}plus{% endif %}">{{ due.amount|amount:due.unit }}</span></a></li>
       {% endfor %}
     </ul>
-    {% if card.debts_view %}<a class="btn btn-quiet btn-block" href="{% url 'group' card.group.pk %}#debts">See all debts{% if card.more_dues %} · {{ card.more_dues }} more{% endif %}</a>{% elif card.more_dues %}<p class="home-when">And {{ card.more_dues }} more unpaid transfer{{ card.more_dues|pluralize }} in past sessions.</p>{% endif %}
+    {% if card.debts_view %}<a class="btn btn-quiet btn-block" href="{% url 'group' card.group.pk %}#debts">See all debts{% if card.more_dues %} · {{ card.more_dues }} more{% endif %}</a>{% elif card.more_dues %}<p class="home-when"><a href="{% url 'group' card.group.pk %}?past=unsettled#past-sessions">And {{ card.more_dues }} more unpaid transfer{{ card.more_dues|pluralize }} in past sessions.</a></p>{% endif %}
   </section>
   {% endif %}
 

@@ -8,7 +8,7 @@ import datetime
 from dataclasses import dataclass, field
 
 from django.conf import settings
-from django.db.models import Count, OuterRef, Subquery
+from django.db.models import Count, Max, OuterRef, Q, Subquery
 from django.urls import reverse
 
 from games import clock
@@ -43,6 +43,7 @@ class Due:
 class Card:
     me: Member
     members: list = field(default_factory=list)
+    others: list = field(default_factory=list)  # the members but the viewer, who played last first
     kind: str = "quiet"  # play, open or quiet
     night: GameNight = None
     set: GameSession = None
@@ -67,11 +68,11 @@ class Card:
 
     @property
     def tokens(self):
-        return self.members[:TOKENS_SHOWN]
+        return self.others[:TOKENS_SHOWN]
 
     @property
     def more_members(self):
-        return max(0, len(self.members) - TOKENS_SHOWN)
+        return max(0, len(self.others) - TOKENS_SHOWN)
 
 
 def home_cards(user) -> list:
@@ -84,8 +85,17 @@ def home_cards(user) -> list:
     cards = {m.group_id: Card(me=m) for m in memberships}
     group_ids, my_ids = list(cards), [m.pk for m in memberships]
 
-    for member in Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE):
+    # A seat in a set that was not canceled, in a session that is not archived, is play.
+    played = Q(participations__session__night__archived_at__isnull=True) & ~Q(participations__session__state=State.CANCELED)
+    roster = Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE).annotate(
+        last_played=Max("participations__session__night__game_date", filter=played)).order_by("display_name", "id")  # an aggregate drops Meta.ordering
+    for member in roster:
         cards[member.group_id].members.append(member)
+    for card in cards.values():
+        others = [m for m in card.members if m.pk != card.me.pk]
+        # Latest play first; a tie and the members who never played keep the order by name.
+        others.sort(key=lambda m: -(m.last_played or datetime.date.min).toordinal())
+        card.others = others
 
     open_nights = (
         GameNight.objects.filter(group_id__in=group_ids, status=GameNight.Status.OPEN, archived_at__isnull=True)

@@ -174,12 +174,12 @@ class HomePageTests(TestCase):
 
     def test_each_card_has_one_settings_button_and_its_name_opens_the_group(self):
         group = self.club.group
-        for user in (self.club.host.user, self.user_a):
+        for user, gears in ((self.club.host.user, 1), (self.user_a, 0)):  # a player reaches Settings by the group's tab
             self.client.force_login(user)
             html = self.client.get(self.url).content.decode()
             settings = reverse("group", args=[group.pk]) + "?view=settings"
-            self.assertEqual(html.count(f'href="{settings}"'), 1)
-            self.assertIn(f'<a class="btn btn-round btn-quiet group-gear" href="{settings}" aria-label="Group settings for {group.name}">', html)
+            self.assertEqual(html.count(f'href="{settings}"'), gears)
+            self.assertEqual(html.count(f'<a class="btn btn-round btn-quiet group-gear" href="{settings}" aria-label="Group settings for {group.name}">'), gears)
             self.assertRegex(html, rf'<h2 id="group-{group.pk}"><a href="{reverse("group", args=[group.pk])}">')
             self.assertNotIn("home-links", html)
 
@@ -190,7 +190,7 @@ class HomePageTests(TestCase):
         html = self.client.get(self.url).content.decode()
         total = len(card_for(self.club.host.user, self.club.group).members)
         self.assertEqual(html.count('class="chip k'), 6)
-        self.assertIn(f'<span class="chip-more" aria-hidden="true">+{total - 6}</span>', html)
+        self.assertIn(f'<span class="chip-more" aria-hidden="true">+{total - 1 - 6}</span>', html)  # the viewer has no chip
         self.assertIn(f'<span class="visually-hidden">{total} players</span>', html)
 
     def test_my_figures_are_mine_only(self):
@@ -301,3 +301,72 @@ class HomePageTests(TestCase):
         refused = self.client.post(reverse("group_create"), {"name": "G" * 61}, follow=True)
         self.assertContains(refused, '<details class="home-create" open>')
         self.assertContains(refused, "G" * 61)
+
+
+class HomeTokenTests(TestCase):
+    """The card's chips show who played last, not the first names by the alphabet."""
+
+    def setUp(self):
+        self.club = Club()
+        for name in ("Aaron", "Abby"):  # in the group, never played
+            self.club.member(name)
+
+    def names(self, user):
+        card = card_for(user, self.club.group)
+        return [m.display_name for m in card.tokens], card.more_members
+
+    def test_latest_session_first_then_earlier_then_the_rest_by_name(self):
+        self.club.session(SEP_30, {"D": (1000, 1000), "C": (1000, 1000)})
+        self.club.session(OCT_1, {"F": (1000, 1000), "E": (1000, 1000)})
+        tokens, more = self.names(self.club.host.user)
+        self.assertEqual(tokens, ["E", "F", "C", "D", "Aaron", "Abby"])
+        self.assertEqual(more, 0)
+
+    def test_the_viewer_is_not_a_token(self):
+        self.club.session(OCT_1, {"E": (1000, 1000), "F": (1000, 1000)})
+        viewer = make_user("eve")
+        Member.objects.filter(pk=self.club.member("E").pk).update(user=viewer)
+        tokens, _ = self.names(viewer)
+        self.assertNotIn("E", tokens)
+        self.assertEqual(tokens[0], "F")
+
+    def test_a_canceled_set_is_not_play(self):
+        self.club.session(SEP_30, {"C": (1000, 1000), "D": (1000, 1000)})
+        self.club.session(OCT_1, {"Abby": (0, 0)}, cancel=True)
+        tokens, _ = self.names(self.club.host.user)
+        self.assertEqual(tokens[:2], ["C", "D"])
+
+    def test_more_counts_the_others_not_shown(self):
+        for name in "BCDEFGH":
+            self.club.member(name)
+        tokens, more = self.names(self.club.host.user)
+        self.assertEqual(len(tokens), 6)
+        self.assertEqual(more, 3)  # 9 others than the host, 6 shown
+
+    def test_a_group_with_no_play_keeps_the_order_by_name(self):
+        tokens, _ = self.names(self.club.host.user)
+        self.assertEqual(tokens, ["Aaron", "Abby"])
+
+
+class HomeCardForPlayersTests(TestCase):
+    def setUp(self):
+        self.club = Club()
+        self.player = make_user("pia")
+        Member.objects.filter(pk=self.club.member("P").pk).update(user=self.player)
+
+    def test_the_gear_is_for_hosts_only(self):
+        self.client.force_login(self.club.host.user)
+        self.assertContains(self.client.get(reverse("home")), "group-gear")
+        self.client.force_login(self.player)
+        self.assertNotContains(self.client.get(reverse("home")), "group-gear")
+
+    def test_more_unpaid_transfers_link_to_the_not_settled_list(self):
+        from django.test import override_settings
+        for day in range(1, 6):
+            self.club.session(datetime.date(2026, 9, day), {"P": (1000, 0), "Q": (1000, 2000)})
+        self.client.force_login(self.player)
+        with override_settings(DEBTS_VIEW=False):
+            page = self.client.get(reverse("home"))
+        url = reverse("group", args=[self.club.group.pk]) + "?past=unsettled#past-sessions"
+        self.assertContains(page, f'href="{url}"')
+        self.assertContains(page, "2 more unpaid transfers")

@@ -62,9 +62,9 @@ Acceptance: "1,000" reads the same in the field and on the row. A saved amount i
 
 ### 5. The home card for players — `tests: first` for the token order
 
-- [ ] The gear shows to hosts only.
-- [ ] The tokens follow OPEN QUESTION 1. Write the order tests in `web/tests/` first. Keep the query count of Your groups the same or lower (`assertNumQueries`).
-- [ ] "And 3 more unpaid transfers in past sessions." links to `?past=unsettled#past-sessions`.
+- [x] The gear shows to hosts only.
+- [x] The tokens follow OPEN QUESTION 1. Write the order tests in `web/tests/` first. Keep the query count of Your groups the same or lower (`assertNumQueries`).
+- [x] "And 3 more unpaid transfers in past sessions." links to `?past=unsettled#past-sessions`.
 
 Acceptance: a player sees no gear; the tokens show who played last; the line opens the Not settled list. Completion: the order tests fail first, then pass; `home.mjs` passes.
 
