@@ -61,3 +61,14 @@ Acceptance: the addendum has the score, the table and the change against 29/40. 
 ## Completion criterion
 
 All tasks ticked, the rendezvous checks recorded here, and a verified branch `feat/final-polish` from main.
+
+## Rendezvous (2026-11-20)
+
+- SQLite suite: 1847 OK (23 skipped). The new count test fails on the old code and passes on the branch.
+- Browser probes on fresh databases: `home.mjs` 63/63, `reverse_apart.mjs` 24/24, `dock_before_start.mjs` 28/28, `night.mjs` 88/88.
+- Measured in the browser: the pill reads "7 · 2 seats free" and stays clear of Add players at 320 px; the session page's left column follows the lead by 28 px at 1280 px (was 133 px); the link under To settle has 16 px side padding at 390 and 320 px.
+- `code-review` (low) on `main..feat/final-polish`: no findings.
+- Known behaviour: the pill's brass line (`arrivals.js`) now also draws when a player leaves, because the seated count changes then. Before, only an arrival changed the count.
+- PostgreSQL suite: not run yet; run it before the release.
+
+Status: verified on branch `feat/final-polish`; frozen.
