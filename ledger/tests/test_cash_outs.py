@@ -126,8 +126,8 @@ class CashOutViewTests(TestCase):
         self.night.cash("ben", 250)
         self.client.force_login(self.ben.user)
         page = self.client.get(reverse("session", args=[self.night.session.pk]))
-        self.assertContains(page, "In ₱1,000 · out ₱250")
-        self.assertRegex(page.content.decode(), r'class="player-figure amount minus">−₱750<small>')
+        self.assertContains(page, "Cashed out ₱250")  # a partial cash-out: still at the table, so no net
+        self.assertNotContains(page, "−₱750")
         self.assertNotContains(page, "cashouts/add")
         response = self.client.post(self.url, {"participant_id": self.night.players["ben"].pk, "amount": "99999"})
         self.assertEqual(response.status_code, 403)

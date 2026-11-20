@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from django.conf import settings
 from django.db.models import Count, Max, OuterRef, Q, Subquery
 from django.urls import reverse
+from django.utils import timezone
 
 from games import clock
 from games.models import GameNight, GameSession, Participant, Rsvp
@@ -85,8 +86,10 @@ def home_cards(user) -> list:
     cards = {m.group_id: Card(me=m) for m in memberships}
     group_ids, my_ids = list(cards), [m.pk for m in memberships]
 
-    # A seat in a set that was not canceled, in a session that is not archived, is play.
-    played = Q(participations__session__night__archived_at__isnull=True) & ~Q(participations__session__state=State.CANCELED)
+    # A seat in a set that started and was not canceled, in a session that is not archived and not in the future, is play.
+    played = (Q(participations__session__night__archived_at__isnull=True)
+              & Q(participations__session__night__game_date__lte=timezone.localdate())
+              & ~Q(participations__session__state__in=[State.CANCELED, State.SETUP]))
     roster = Member.objects.filter(group_id__in=group_ids, status=Member.Status.ACTIVE).annotate(
         last_played=Max("participations__session__night__game_date", filter=played)).order_by("display_name", "id")  # an aggregate drops Meta.ordering
     for member in roster:

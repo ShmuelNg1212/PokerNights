@@ -16,9 +16,9 @@
           </div>
           {% if p.status == 'left' %}<span class="badge">Left</span>{% endif %}
         </div>
-        {# "No buy-in yet" under the name says it; a zero beside it says it twice. A player who left shows the net first: it is what they take home. #}
-        {% if line.has_cash_out %}<div class="player-figure amount {{ line.cash_net|sign_class }}">{{ line.cash_net|signed_amount:unit }}<small>In {{ line.buy_in_total|amount:unit }} · out {{ line.cashed_out|amount:unit }}</small></div>
-        {% else %}<div class="player-figure amount">{% if line.has_money %}{{ line.buy_in_total|amount:unit }}<small>bought in</small>{% endif %}</div>{% endif %}
+        {# "No buy-in yet" under the name says it; a zero beside it says it twice. A player who left shows the net first; after a partial cash-out the player still plays, so no net. #}
+        {% if p.status == 'left' and line.has_cash_out %}<div class="player-figure amount {{ line.cash_net|sign_class }}">{{ line.cash_net|signed_amount:unit }}<small>In {{ line.buy_in_total|amount:unit }} · out {{ line.cashed_out|amount:unit }}</small></div>
+        {% else %}<div class="player-figure amount">{% if line.has_money or line.has_cash_out %}{{ line.buy_in_total|amount:unit }}<small>{% if line.has_cash_out %}Cashed out {{ line.cashed_out|amount:unit }}{% else %}bought in{% endif %}</small>{% endif %}</div>{% endif %}
       </div>
       {% if line.can_buy_in or line.can_cash_out_now %}
       <div class="player-actions">

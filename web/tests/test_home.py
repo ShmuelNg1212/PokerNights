@@ -336,6 +336,16 @@ class HomeTokenTests(TestCase):
         tokens, _ = self.names(self.club.host.user)
         self.assertEqual(tokens[:2], ["C", "D"])
 
+    def test_a_draft_set_or_a_future_session_is_not_play(self):
+        self.club.session(SEP_30, {"C": (1000, 1000), "D": (1000, 1000)})
+        draft = make_session(self.club.host, table=self.club.table, state="setup", game_date=OCT_1)
+        games.add_participants(draft.pk, self.club.host, [self.club.member("Abby").pk], uuid.uuid4())
+        later = make_session(self.club.host, table=make_table(self.club.host, name="Later"), state="open",
+                             game_date=datetime.date.today() + datetime.timedelta(days=7))
+        games.add_participants(later.pk, self.club.host, [self.club.member("Aaron").pk], uuid.uuid4())
+        tokens, _ = self.names(self.club.host.user)
+        self.assertEqual(tokens[:2], ["C", "D"])
+
     def test_more_counts_the_others_not_shown(self):
         for name in "BCDEFGH":
             self.club.member(name)
