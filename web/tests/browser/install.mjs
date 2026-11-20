@@ -46,7 +46,7 @@ try {
  check('a changed page is served fresh, never from the worker',!before&&await js(`document.querySelector('main').textContent.includes('Fresh Table 77')`));
  // Every screen has a way back in standalone display mode.
  await send('Emulation.setEmulatedMedia',{features:[{name:'display-mode',value:'standalone'}]},s);
- const screens=['/g/1/','/g/1/?view=stats','/g/1/?view=settings','/g/1/sessions/new/','/g/1/presets/new/','/g/1/archive/','/g/1/delete/','/n/1/','/n/1/archive/','/n/1/delete/','/s/3/','/s/3/log/','/s/3/settings/','/s/3/players/add-several/','/s/2/','/s/2/cash-out-counted/','/s/1/'];let dead=[];
+ const screens=['/g/1/','/g/1/?view=stats','/g/1/?view=settings','/g/1/sessions/new/','/g/1/presets/new/','/g/1/archive/','/g/1/delete/','/n/1/','/n/1/archive/','/n/1/delete/','/s/3/','/s/3/log/','/s/3/settings/','/s/3/players/add-several/','/s/2/','/s/6/cash-out-counted/','/s/1/'];let dead=[];
  for(const p of screens){await go(p);const ok=await js(`[...document.querySelectorAll('a[href]')].some(a=>a.getClientRects().length&&(a.matches('.brand')||a.closest('.table-bar')||/back|keep the/i.test(a.textContent)||a.closest('p.small')))`);if(!ok)dead.push(p)}
  console.log('  screens walked',screens.length,'without a way back',JSON.stringify(dead));check('every screen has a way back in standalone mode',dead.length===0);
  await send('Emulation.setEmulatedMedia',{features:[]},s);

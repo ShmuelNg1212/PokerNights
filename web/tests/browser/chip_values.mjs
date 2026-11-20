@@ -71,7 +71,7 @@ await A.click(`document.querySelector('dialog .btn-primary')`);await sleep(500);
 await A.click(`document.querySelector('button[form=counts-form].confirm-all')`);
 check('host confirms own chip count',await A.js(`!document.querySelector('dialog[open]')&&document.body.textContent.includes('1 count confirmed')`));
 await A.go(`/s/${ids.set}/cash-out-counted/`);
-check('cash-out review balances with breakdowns',await A.js(`document.body.textContent.includes('The books balance.')&&document.querySelectorAll('.chip-breakdown').length===2`));
+check('finish review balances with breakdowns',await A.js(`document.body.textContent.includes('The books balance.')&&document.querySelectorAll('.chip-breakdown').length===2`));
 await A.click(`document.querySelector('.batch-review button[type=submit]')`);
 check('real finish preserves balanced books',await A.js(`!!document.querySelector('.final-results')&&document.querySelector('.final-proof').textContent.includes('The books balance.')`));
 // A closed draft keeps its original revision across another host's edit.

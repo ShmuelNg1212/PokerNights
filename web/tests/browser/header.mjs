@@ -51,7 +51,7 @@ const caretOnToken=`(()=>{const p=document.querySelector('.account-panel'),b=doc
  return Math.abs((p.getBoundingClientRect().right-c)-(b.left+b.width/2))<=2})()`;
 const outButton=`(()=>{const b=document.querySelector('.account-out');return b.getClientRects().length>0&&b.offsetHeight>=48})()`;
 
-const pages={home:'/',group:'/g/1/',night:'/n/1/',set:'/s/3/',counted:'/s/7/cash-out-counted/'};
+const pages={home:'/',group:'/g/1/',night:'/n/1/',set:'/s/3/',counted:'/s/6/cash-out-counted/'};
 for(const width of (process.env.PN_BELL?[]:(process.env.PN_WIDTHS||'320,390,1280').split(',').map(Number))){
  const A=await user('hana',width);
  for(const [name,path] of Object.entries(pages)){

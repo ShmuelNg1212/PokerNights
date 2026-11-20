@@ -6,7 +6,7 @@
 - [x] Confirm the last count so the counts balance: "Review and finish" rises into the dock once. Reload: it is simply there. Tap it: the counts arrive row after row; Finish set N lands on the final set.
 - [x] Make the counts ₱50 short: the button is "Find the ₱50 difference" and the books say "The counts are ₱50 short". More host controls, "Finish with an override", note and Finish: the set is final in one tap.
 - [x] Reduce Motion on: the marks, the button and the review rows are there without movement.
-- [ ] Follow-up: `end_set.mjs`, `chip_values.mjs`, `counts.mjs`, `header.mjs` and `install.mjs` still open the review before the set can finish or post the old partial batch. Walk them through Review and finish.
+- [x] Follow-up: the five probes walk Review and finish (end_set 48/48, counts 35/35, header 106/106; chip_values and install keep failures known before this change).
 
 ## Phone checks: final polish (released 2026-11-20)
 

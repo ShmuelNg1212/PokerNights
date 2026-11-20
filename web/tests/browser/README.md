@@ -397,7 +397,7 @@ Since Slice B (2026-10-31):
 
 Since Slice C (2026-10-31):
 
-- A review whose counts balance the books says "The books balance." and its one button is Finish set N. `end_set.mjs`, `chip_values.mjs`, `rake.mjs` and `rake_extra.mjs` finish the set that way. `count_flow.mjs` and `counts.mjs` remove the form's `action` first, so the review's older POST records only the cash-outs and they can still check Finalize results.
+- A review whose counts balance the books says "The books balance." and its one button is Finish set N. `end_set.mjs`, `chip_values.mjs`, `rake.mjs` and `rake_extra.mjs` finish the set that way. Since 2026-11-20 count-up has no cash-out step: `count_flow.mjs` and `counts.mjs` also walk Review and finish, and `count_flow.mjs` checks Finalize results on a set whose players were cashed out during play.
 - `journey.mjs` walks Review and finish, then Finish set 1. It also checks that closing the recap leaves Who pays whom on the first screen with no toast.
 - `night.mjs` expects focus on Who pays whom after the recap that opened by itself, and on the button after a recap opened by a tap. Its runtime error check now prints the error's description.
 - The server sends no message on closing a session. This replaces the earlier note about "Session closed."
@@ -471,3 +471,9 @@ The fixture is host `hana`, not seated: joining sets of 8 of 12, 2 of 2, 11 of 1
 Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_sheet_drag.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/reverse_apart.mjs`. The probe reverses Miguel's buy-in: reseed before a repeat.
 
 The 24 checks cover the host's player sheet at 390 and 320 px (no red button and no reason field on open, the hairline and the heading, 48px or more from Cash out to the first Reverse…, a 48px quiet target, the opened fold, no overflow), an empty reason that reverses nothing, a reversal with its reason, the tap hint at 1280 px, the count-up sheet and a player's sheet. Visibility uses `checkVisibility()`: `getClientRects()` reports boxes inside a closed `<details>`. Captures are in `/private/tmp/pn-reverse-review/`, or `PN_REVIEW_DIR`.
+
+## Count-up without a cash-out step (2026-11-20)
+
+The finish review (`/s/<id>/cash-out-counted/`) opens only when the set can finish and answers GET only. `end_set.mjs` (48), `counts.mjs` (35), `header.mjs` (106) and `install.mjs` use set 6 of `seed_end_set.py` (chips, balanced) for it. `end_set.mjs` checks a stale finish review on set 6: another host changes both counts so they still balance. Run `install.mjs` with `PN_DB` set to the seeded database: it restarts the server itself.
+
+These fail the same on 8a7d22b, before this change: `chip_values.mjs` "player sheet fills the card" (35/36), and `install.mjs` "a session page reloads on return", "Your groups reloads on return" and "a failed form post shows the offline page".
