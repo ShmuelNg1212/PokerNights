@@ -124,3 +124,37 @@ class ChipFieldTests(TestCase):
         self.assertIn('inputmode="numeric"', tag)
         form = re.search(r"<form[^>]*data-chip-count.*?</form>", page.content.decode(), re.S).group(0)
         self.assertIn("data-numpad-slot", form)
+
+
+class AmountFormatTests(TestCase):
+    """Amount fields carry their unit marks, and an amount typed with commas is the same amount."""
+
+    def setUp(self):
+        self.night = Night("Ben", state="open")
+        self.client.force_login(self.night.host.user)
+
+    def test_stakes_fields_carry_both_unit_marks_for_the_stylesheet_to_choose(self):
+        page = self.client.get(reverse("session_settings", args=[self.night.session.pk]))
+        html = page.content.decode()
+        for name in ("small_blind", "default_buy_in", "rake_flat"):
+            self.assertRegex(html, r'<span class="unit-field"><span class="unit-pre" aria-hidden="true">₱</span><input[^>]*name="' + name
+                             + r'"[^>]*>\s*<span class="unit-post" aria-hidden="true">chips</span></span>', name)
+
+    def test_new_session_shows_the_date_in_words(self):
+        import datetime
+        page = self.client.get(reverse("session_create", args=[self.night.group.pk]))
+        from django.utils import timezone
+        today = timezone.localdate()
+        self.assertContains(page, f'<p class="hint date-words" data-date-words>{today:%a}, {today:%b} {today.day}</p>')
+        self.assertIsInstance(today, datetime.date)
+
+    def test_stakes_typed_with_commas_save_the_same_amounts(self):
+        from games.services import current_settings
+        url = reverse("session_settings", args=[self.night.session.pk])
+        data = {"request_id": uuid.uuid4(), "unit": "php", "small_blind": "1,000", "big_blind": "2,000", "min_buy_in": "10,000",
+                "max_buy_in": "1,000,000", "default_buy_in": "20,000.50", "rake_mode": "off", "rake_percentage": "", "rake_flat": ""}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302, response.content.decode()[-3000:] if response.status_code != 302 else "")
+        stakes = current_settings(self.night.session).stakes()
+        self.assertEqual(stakes, {"small_blind": 100000, "big_blind": 200000, "min_buy_in": 1000000,
+                                  "max_buy_in": 100000000, "default_buy_in": 2000050})

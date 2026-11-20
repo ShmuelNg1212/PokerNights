@@ -10,10 +10,17 @@ from .models import GameType, RakeMode, StakesFields, Unit
 
 # data-numpad: on a phone the app's own number keys write into the field (static/js/numpad.js).
 # "amount" follows the form's Unit choice: pesos take a decimal point, chips do not.
+class AmountInput(forms.TextInput):
+    """A text field with the unit beside it: "₱" before or "chips" after. app.css shows the one that
+    matches the form's unit choice, and neither when the form has none."""
+
+    template_name = "games/widgets/amount_input.html"
+
+
 def amount_field(label, help_text="", required=True):
     return forms.CharField(
         label=label, help_text=help_text, required=required,
-        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
+        widget=AmountInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
     )
 
 
@@ -93,7 +100,7 @@ class RakeForm(StakesForm):
     )
     rake_flat = forms.CharField(
         label="Flat amount per buy-in", required=False,
-        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
+        widget=AmountInput(attrs={"inputmode": "decimal", "autocomplete": "off", "data-numpad": "amount"}),
         help_text="For Flat amount: enter pesos for a pesos game, or whole chips for a chips game.",
     )
 

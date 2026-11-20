@@ -291,13 +291,16 @@
     if (document.activeElement === field) { try { field.setSelectionRange(caret, caret); } catch (_) {} }
     writing = true;
     try { field.dispatchEvent(new Event("input", { bubbles: true })); } finally { writing = false; }
-    figure(field, before, value);
+    figure(field, before, field.value); // an amount is grouped during "input" (grouping.js), so draw what the field shows
   }
   function press(key, button) {
     var field = target;
     if (!field || !field.isConnected) { hide(); return; }
     var value = field.value, from = value.length, to = value.length;
     if (document.activeElement === field && field.selectionStart !== null) { from = field.selectionStart; to = field.selectionEnd; }
+    // A grouped amount ("1,000") is edited as its digits ("1000"); the caret counts digits only.
+    var G = window.pokerGroup;
+    if (G && G.grouped(field)) { from = G.raw(value.slice(0, from)).length; to = G.raw(value.slice(0, to)).length; value = G.raw(value); }
     if (key === "del") {
       if (from === to) from = Math.max(0, from - 1);
       if (from !== to) write(field, value.slice(0, from) + value.slice(to), from);

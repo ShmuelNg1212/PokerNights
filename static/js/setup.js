@@ -4,6 +4,21 @@
   "use strict";
   var root = document.documentElement;
 
+  // The date field shows the phone's own format ("11/19/2026"); the line under it reads as the app does: "Thu, Nov 19".
+  window.pokerPage.register(function () {
+    var field = document.querySelector("input[name=game_date]"), words = document.querySelector("[data-date-words]");
+    if (!field || !words) return;
+    var life = new AbortController();
+    var show = function () {
+      var parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(field.value);
+      words.textContent = parts ? new Date(+parts[1], parts[2] - 1, +parts[3]).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
+    };
+    field.addEventListener("input", show, { signal: life.signal });
+    field.addEventListener("change", show, { signal: life.signal });
+    show();
+    return function () { life.abort(); };
+  });
+
   window.pokerPage.register(function () {
     var chooser = document.querySelector("[data-preset-form]"), form = document.querySelector("[data-preset-target]");
     if (!chooser || !form) return;

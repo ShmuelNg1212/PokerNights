@@ -54,7 +54,7 @@ try {
  check('buy-in sheet: keys are 8px apart',await A.js(`(()=>{const k=[...${PAD}.querySelectorAll('.numpad-key')].map(e=>e.getBoundingClientRect());return Math.round(k[1].left-k[0].right)===8&&Math.round(k[3].top-k[0].bottom)===8})()`));
  check('buy-in sheet: pesos get a decimal point',await A.js(`${key('alt')}.textContent`)==='.');
  check('buy-in sheet: delete has a name',await A.js(`${key('del')}.getAttribute('aria-label')`)==='Delete');
- check('buy-in sheet: the amount has focus with its default selected',await A.js(`document.activeElement===${F}&&${F}.selectionStart===0&&${F}.selectionEnd===${F}.value.length&&${F}.value==='1000'`));
+ check('buy-in sheet: the amount has focus with its default selected',await A.js(`document.activeElement===${F}&&${F}.selectionStart===0&&${F}.selectionEnd===${F}.value.length&&${F}.value==='1,000'`));
  check('buy-in sheet: fits the screen without scrolling at 390 by 844',await A.js(`${D}.scrollHeight<=${D}.clientHeight&&${D}.getBoundingClientRect().top>=0`));
  check('buy-in sheet: the confirm button is on screen',await A.js(`${D}.querySelector('[type=submit]').getBoundingClientRect().bottom<=innerHeight`));
  check('buy-in sheet: one help line',await A.js(`${D}.querySelectorAll('.hint').length`)===1);
@@ -85,14 +85,14 @@ try {
  await type(['del','del','0','7']);
  check('a leading zero is dropped',await value()==='7');
  await type(['del','1','0','0','0','0','0','0','0','0','0']);
- check('one billion pesos is the largest amount',await value()==='1000000000');
+ check('one billion pesos is the largest amount, grouped as it is typed',await value()==='1,000,000,000');
  await type(['0']);
- check('a digit past the largest amount is refused',await value()==='1000000000');
+ check('a digit past the largest amount is refused',await value()==='1,000,000,000');
  // The caret: a key writes where the caret is.
  await A.js(`${F}.value='1250';${F}.setSelectionRange(1,1)`);await type(['9']);
- check('a key writes at the caret',await value()==='19250'&&await A.js(`${F}.selectionStart`)===2);
+ check('a key writes at the caret, and the caret stays after the same digit once grouped',await value()==='19,250'&&await A.js(`${F}.selectionStart`)===2);
  await type(['del']);
- check('delete removes before the caret',await value()==='1250');
+ check('delete removes before the caret',await value()==='1,250');
  // Quick amounts still fill the field; a key then continues.
  await A.tap(`${D}.querySelector('[data-amount]')`);
  check('a quick amount fills the field and keeps the keys',await value()==='500'&&await A.js(`${D}.contains(${PAD})`));
@@ -172,7 +172,7 @@ try {
  check('a live update arrived under the open sheet',await A.js(`document.getElementById('live').dataset.version`)!==version);
  check('the open sheet keeps its amount and keys',await A.js(`${D}.open&&${F}.value==='800'&&${D}.contains(${PAD})`));
  await type(['5']);
- check('the keys still write after the update',await value()==='8005');
+ check('the keys still write after the update',await value()==='8,005');
  await closeSheet();
 
  // Leaving the page takes the keys with it; coming back builds them once.
@@ -222,7 +222,7 @@ try {
  check('a key pressed while its row is still rising types at once',mvEarly&&(await value())!==mvWas&&(await value()).endsWith('7'));await sleep(500);
  await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
  for(const k of ['1','0','0','0','0','0','0','0','0','0'])await A.tap(key(k),0);
- check('ten taps with no pause between them type ten digits',await value()==='1000000000');await sleep(400);
+ check('ten taps with no pause between them type ten digits',await value()==='1,000,000,000');await sleep(400);
  await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
  const mvSize=`JSON.stringify([${F}.offsetWidth,${F}.offsetHeight])`,mvBefore=await A.js(mvSize);
  await A.down(key('5'));
@@ -235,10 +235,10 @@ try {
  check('the digit has arrived within a quarter second, and the copy is gone soon after',fgFirst.landed&&fgFirst.rest);
  check('the drawn figure sits exactly on the field\'s own text (left-aligned sheet amount)',await figSame(F,['1','2','alt','5','0']));
  await empty(F);
- const fgTen=await A.js(`(async()=>{${WAIT}${['1','0','0','0','0','0','0','0','0','0'].map(hit).join('')}await wait(260);const c=${CH};return c.length===10&&c.map(e=>e.textContent).join('')===${F}.value&&c.every(e=>getComputedStyle(e.firstChild).opacity==='1')})()`);
- check('ten taps at once draw ten digits, every one fully shown',fgTen&&await value()==='1000000000');
+ const fgTen=await A.js(`(async()=>{${WAIT}${['1','0','0','0','0','0','0','0','0','0'].map(hit).join('')}await wait(260);const c=${CH}.sort((a,b)=>a.getBoundingClientRect().left-b.getBoundingClientRect().left);/* read as seen: a comma that moves is drawn in place, not in page order */return c.length===13&&c.map(e=>e.textContent).join('')===${F}.value&&c.every(e=>getComputedStyle(e.firstChild).opacity==='1')})()`);
+ check('ten taps at once draw ten digits and their commas, every one fully shown',fgTen&&await value()==='1,000,000,000');
  const fgDel=await A.js(`(async()=>{${WAIT}${hit('del')}const r={value:${F}.value,leaving:${CH}.length};await wait(170);r.left=${CH}.map(e=>e.textContent).join('');return r})()`);
- check('Delete: the digit is seen leaving, then only the field\'s value is drawn',fgDel.value==='100000000'&&fgDel.leaving===10&&fgDel.left==='100000000');
+ check('Delete: the digit is seen leaving, then only the field\'s value is drawn',fgDel.value==='100,000,000'&&fgDel.leaving===13&&fgDel.left==='100,000,000');
  const fgSwap=await A.js(`(()=>{${F}.focus();${F}.select();${hit('5')}return ${CH}.map(e=>e.textContent).join('')+'|'+${F}.value})()`);
  check('a digit that replaces a selection never overlaps what it replaced',fgSwap==='5|5');
  const fgLive=await A.js(`(()=>{${hit('6')}const up=!!${FIG};document.dispatchEvent(new CustomEvent('live:updated'));return up&&!${FIG}&&!${figured(F)}&&${F}.value==='56'})()`);
@@ -246,7 +246,7 @@ try {
  const fgOther=await A.js(`(()=>{${hit('7')}const up=!!${FIG};${F}.value='5671';${F}.dispatchEvent(new Event('input',{bubbles:true}));return up&&!${FIG}&&!${figured(F)}})()`);
  check('typing that is not from the keys is shown by the field itself',fgOther);
  await empty(F);
- const fgWide=await A.js(`(()=>{${F}.style.width='70px';${['1','2','3','4','5','6'].map(hit).join('')}const r=!${FIG}&&!${figured(F)}&&${F}.value==='123456';${F}.style.width='';return r})()`);
+ const fgWide=await A.js(`(()=>{${F}.style.width='70px';${['1','2','3','4','5','6'].map(hit).join('')}const r=!${FIG}&&!${figured(F)}&&${F}.value==='123,456';${F}.style.width='';return r})()`);
  check('a figure wider than its field gets no copy and types as a plain field',fgWide);
  await empty(F);
  const fgRefused=await A.js(`(async()=>{${WAIT}${['1','alt','2','3','4'].map(hit).join('')}await wait(60);const r=${FIG}.getAnimations().length===1&&${F}.value==='1.23'&&${CH}.length===4;await wait(800);return r&&!${FIG}})()`);
@@ -266,7 +266,7 @@ try {
  await type(['9','9']);await A.down(key('del'));await sleep(260);await A.shot('numpad-motion-hold-390');await A.up();await sleep(300);
  await A.shot('numpad-motion-rest-390');
  await empty(F);await A.js(`(()=>{${['1','2'].map(hit).join('')}})()`);await sleep(60);await A.shot('numpad-figure-arriving-390');await sleep(400);
- const fgFail=await A.js(`(async()=>{${WAIT}window.__ferr=0;addEventListener('error',e=>{if(/figure check/.test(e.message)){__ferr++;e.preventDefault()}});const real=document.createRange;document.createRange=()=>{throw new Error('figure check: forced failure')};${hit('8')}await wait(60);document.createRange=real;${hit('9')}await wait(60);return {typed:${F}.value==='1289',plain:!${FIG}&&!${figured(F)},keys:!!${PAD}&&${PAD}.isConnected,reported:__ferr}})()`);
+ const fgFail=await A.js(`(async()=>{${WAIT}window.__ferr=0;addEventListener('error',e=>{if(/figure check/.test(e.message)){__ferr++;e.preventDefault()}});const real=document.createRange;document.createRange=()=>{throw new Error('figure check: forced failure')};${hit('8')}await wait(60);document.createRange=real;${hit('9')}await wait(60);return {typed:${F}.value==='1,289',plain:!${FIG}&&!${figured(F)},keys:!!${PAD}&&${PAD}.isConnected,reported:__ferr}})()`);
  check('the figure failing leaves a plain field and working keys, and the error is reported once',fgFail.typed&&fgFail.plain&&fgFail.keys&&fgFail.reported===1);
  await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
  await closeSheet();await A.go(`/s/${PESOS}/`);await openBuy();await A.js(`${F}.value='';${F}.dispatchEvent(new Event('input',{bubbles:true}))`);
