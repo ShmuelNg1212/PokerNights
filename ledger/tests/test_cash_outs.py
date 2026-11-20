@@ -109,12 +109,17 @@ class CashOutViewTests(TestCase):
         self.client.force_login(self.night.host.user)
         page = self.client.post(self.url, {"participant_id": self.night.players["A"].pk, "amount": "1,600", "left": "1"}, follow=True)
         self.assertContains(page, "In ₱1,000 · out ₱1,600")  # a player who left shows the net first
-        self.assertRegex(page.content.decode(), r'class="player-figure amount plus">\+₱600<small>')
+        self.assertRegex(page.content.decode(), r'class="player-figure amount plus"><span class="visually-hidden">Net </span>\+₱600<small>')
         self.assertContains(page, "Still in play")
         self.assertContains(page, ">₱400<")
         self.assertContains(page, "Left")
         self.assertContains(page, "Cash-out in pesos")
         self.assertNotContains(page, "chips")
+
+    def test_a_player_who_left_even_reads_even(self):
+        self.client.force_login(self.night.host.user)
+        page = self.client.post(self.url, {"participant_id": self.night.players["A"].pk, "amount": "1,000", "left": "1"}, follow=True)
+        self.assertRegex(page.content.decode(), r'class="player-figure amount "><span class="visually-hidden">Net </span>Even<small>In ₱1,000 · out ₱1,000</small>')
 
     def test_bad_input_shows_a_message(self):
         self.client.force_login(self.night.host.user)

@@ -1002,7 +1002,7 @@ input[type="datetime-local"], input[type="email"], select, textarea {
 }
 /* An amount field shows its unit: "₱" inside the box before the digits, or "chips" after them. The marks
    follow the form's unit choice; a form with no unit choice, or an engine without :has(), shows neither. */
-.date-words { margin-top: 4px; }
+.date-words { margin-top: var(--s-1); }
 .date-words:empty { display: none; }
 .unit-field { position: relative; display: block; }
 .unit-pre, .unit-post { display: none; position: absolute; top: 0; bottom: 0; align-items: center; color: var(--muted); pointer-events: none; }

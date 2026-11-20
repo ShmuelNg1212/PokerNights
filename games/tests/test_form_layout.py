@@ -113,7 +113,7 @@ class FormLayoutTests(TestCase):
         page = self.client.get(url)
         self.assertContains(page, "Buy-ins are recorded, so the unit cannot change.")
         self.assertContains(page, "Rake is locked")
-        self.assertContains(page, "This set has money recorded, so the rake stays as it is.")
+        self.assertContains(page, "This set has money recorded, so the rake cannot change.")
         self.assertNotContains(page, "Set the rake before the first buy-in.")
         self.assertRegex(page.content.decode(), r'<select[^>]*name="unit"[^>]*disabled')
 

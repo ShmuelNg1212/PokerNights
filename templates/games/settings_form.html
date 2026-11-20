@@ -6,7 +6,7 @@
 {% block header_start %}<nav class="table-bar"><a href="{% url 'session' session.pk %}">{% icon 'arrow-left' %}<span class="back-words">Set {{ session.set_number }}</span></a></nav>{% endblock %}
 {% block content %}
 <h1>Set settings</h1>
-<p class="hint">{% if has_money %}This set has money recorded, so the rake stays as it is. New blinds and buy-in limits apply from the next buy-in.{% else %}Set the rake before the first buy-in. After it, the rake stays as it is.{% endif %}</p>
+<p class="hint">{% if has_money %}This set has money recorded, so the rake cannot change. New blinds and buy-in limits apply from the next buy-in.{% else %}Set the rake before the first buy-in. After the first buy-in, the rake cannot change.{% endif %}</p>
 <form method="post" class="form-section form-groups">
   {% csrf_token %}
   <input type="hidden" name="request_id" value="{{ request_id }}">

@@ -39,7 +39,7 @@
       <li class="row-card press-card"><a class="card-link" href="{% if due.url %}{{ due.url }}{% else %}{% url 'night' due.night.pk %}{% endif %}">{% member_token due.other card.members %}<span class="grow">{% if due.cancels %}You and <strong>{{ due.other.display_name }}</strong> cancel out{% elif due.owes %}You owe <strong>{{ due.other.display_name }}</strong>{% else %}<strong>{{ due.other.display_name }}</strong> owes you{% endif %} {% if not card.debts_view %}<span class="home-when">{{ due.night.game_date|date:"M j" }}</span>{% endif %}</span><span class="amount {% if due.owes %}minus{% else %}plus{% endif %}">{{ due.amount|amount:due.unit }}</span></a></li>
       {% endfor %}
     </ul>
-    {% if card.debts_view %}<a class="btn btn-quiet btn-block" href="{% url 'group' card.group.pk %}#debts">See all debts{% if card.more_dues %} · {{ card.more_dues }} more{% endif %}</a>{% elif card.more_dues %}<p class="home-when"><a href="{% url 'group' card.group.pk %}?past=unsettled#past-sessions">And {{ card.more_dues }} more unpaid transfer{{ card.more_dues|pluralize }} in past sessions.</a></p>{% endif %}
+    {% if card.debts_view %}<a class="btn btn-quiet btn-block" href="{% url 'group' card.group.pk %}#debts">See all debts{% if card.more_dues %} · {{ card.more_dues }} more{% endif %}</a>{% elif card.more_dues %}<a class="btn btn-quiet btn-block" href="{% url 'group' card.group.pk %}?past=unsettled#past-sessions">And {{ card.more_dues }} more unpaid transfer{{ card.more_dues|pluralize }} in past sessions</a>{% endif %}
   </section>
   {% endif %}
 
