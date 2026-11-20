@@ -355,7 +355,8 @@ The [parent plan](../plan/1791046015_visual_redesign.md) records remaining slice
 - Stakes and flat-rake fields show "₱" before or "chips" after the amount, for the form's unit choice (`games.forms.AmountInput`, CSS `:has()`). A form with no unit choice shows neither.
 - New session shows the chosen date as "Thu, Nov 19" under the date field.
 - Set settings says "Set the rake before the first buy-in" before money, and that the rake cannot change after it.
-- On a set in play, a player who left shows the net large ("+₱1,650", "−₱350", or "Even") and "In ₱1,000 · out ₱2,650" small. After a partial cash-out the player still plays, so the row keeps the buy-in total and "Cashed out ₱X".
+- On a set in play, a player who left shows the net large ("+₱1,650", "−₱350", or "Even") and "In ₱1,000 · out ₱2,650" small; "In" and "out" each stay whole. After a partial cash-out the player still plays, so the row keeps the buy-in total and "Cashed out ₱X".
+- The players count beside Players ("7 · 2 seats free") counts the people at the table, as the Your groups card does ("7 at the table"). A player who left has a row but is not counted (since 2026-11-20).
 - On Stats, the order pills fade at the right edge while more are off screen. A member with no closed session reads "You have not played in a closed session yet."
 - Secondary text that a player reads at the table (`.facts`, `.ledger-meta`, `.count-pill`) is 13 px (`--h-label`).
 
