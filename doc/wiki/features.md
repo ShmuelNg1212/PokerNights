@@ -88,7 +88,7 @@ The individual cash-out still exists: tap the row's Cash out button during play 
 5. **Live view.** Each member sees the player count, buy-in count, the total bought in and the amount still in play. A change by someone else appears within about 5 seconds.
 6. **Cash-outs.** The host types the amount a player leaves with, in the game's unit. A player can cash out in several steps and can leave early.
 7. **Balance check.** After play ends, the screen compares cash-outs plus collected rake with gross buy-ins. A difference is shown as an amount, with its direction and likely causes.
-8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log.
+8. **Corrections.** A wrong buy-in or cash-out is reversed with a reason. The reversed row stays in the log. In the player's sheet the records sit under a hairline and a "Records and corrections" heading, below Cash out. Each entry has a quiet "Reverse…". It opens the reason field and a red button that names the amount ("Reverse ₱1,000"). The reason is required.
 9. **Override.** If the error cannot be found, the host opens More host controls, then "Finalize with an override", and records a note and who absorbs the difference: one named player or all players equally.
 10. **Finalize the set.** Its results are frozen. Each player sees profit or loss for the set.
 11. **Close the session.** The app lists who pays whom with the minimum number of transfers, after it subtracts the payments made at the table. The host marks each transfer paid, and can undo it. With `DEBTS_VIEW=True`, the receiver can also confirm a payment; see "Debts across sessions". The session shows unsettled, partly settled or settled.
@@ -614,7 +614,7 @@ The pulse of the whole field was replaced ([plan](../plan/1791538209_numpad_digi
 **Count-up**
 
 - A player's row is one line: chip, name with what they bought in, and the count field. An empty field is awaiting; a confirmed count shows dim in the field with a tick; a player's own entry shows dim and the row says "entered ₱450". A cashed-out player has no field and shows the amount.
-- Tapping a name opens the player's sheet with records, reversals, the exception cash-out and Clear the count. Without JavaScript each row has a Details disclosure.
+- Tapping a name opens the player's sheet with records, reversals (each behind a quiet "Reverse…"), the exception cash-out and Clear the count. Without JavaScript each row has a Details disclosure.
 - The overview has one small mark per player with a buy-in, filled as each is counted or cashed out.
 - "The books" lists total bought in, total cashed out, rake when collected, an override when recorded and the set timer, then where the books stand. On the host's screen it also lists "Counted, not cashed out", from confirmed counts only. A typed count, or a player's own count that the host has not confirmed, does not change it (2026-11-19). The count verdict ("₱3,000 still to account for. 3 still to count.") is in the host's dock only, under "Accounted for ₱X of ₱Y" (2026-11-20). A player's books have the confirmed count total instead. A discrepancy leads the section on a neutral panel, with only the amount in Down. Once every player is cashed out, a player's books move under the overview; the host keeps the player counts first. "Finalize with an override" is in More host controls while the books are off; "Remove the override" stays in the books (2026-11-20).
 - The help sentence above the list stays in place, so a field never moves when a count is accepted.

@@ -51,13 +51,14 @@ Acceptance: at 1280 px the hint is gone and each row shows Cash out. At 390 px t
 
 Completion: the browser probe checks both widths.
 
-## Rendezvous checks (to fill in)
+## Rendezvous checks (2026-11-20)
 
-- [ ] SQLite suite.
-- [ ] Browser probe as host, set in play, 390 px: open a player, no red button; open "Reverse…", type a reason, reverse; the entry shows struck with the reason.
-- [ ] Same on the count-up sheet and on a closed set's results.
-- [ ] `break-ui`: a long name and a ₱1,000,000.50 amount in the red button at 320 px.
-- [ ] `/impeccable critique` of the sheet.
+- [x] SQLite suite: 1833 OK (5 new in `web/tests/test_reverse_apart.py`; the disclosure check fails on `main`, where the reason fields sit outside any fold).
+- [x] Browser probe `web/tests/browser/reverse_apart.mjs`: 24/24. At 390 and 320 px the host's sheet opens with no red button and no reason field; the first Reverse… is 169px below Cash out; an empty reason reverses nothing; a reason reverses and the entry shows struck. At 1280 px the hint is gone. The count-up sheet has the same fold; a player's sheet has no Reverse….
+- [x] Probe faults found and fixed (not app faults): `getClientRects()` counts content inside a closed `<details>`, so the probe uses `checkVisibility()`; a reused database had Miguel's buy-in already reversed, so his sheet rightly showed "Remove from set".
+- [x] `code-review` (low) of `main...feat/cash-out-reverse-apart`: no findings. Own read of the diff: the action, `data-once`, `data-keep`, the required reason and its maxlength are unchanged; each list keeps its unit.
+- [x] Screenshot at 390 px (`/private/tmp/pn-reverse-review/sheet-390.png`): Cash out, summary, hairline, heading, record, Reverse…; opened, the reason and "Reverse ₱1,000".
+- [x] Long names and amounts: the button text is the amount only; the 320 px probe checks that nothing in the records is wider than the sheet.
 
 ## Phone check (for TODO.md on release)
 

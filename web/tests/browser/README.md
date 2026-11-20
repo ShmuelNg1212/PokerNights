@@ -465,3 +465,9 @@ Known limits from 2026-11-06: WebKit's existing group tabs overflow at 200 perce
 Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_dock_before_start.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/dock_before_start.mjs`. One check seats the host at the `join` set: reseed before a repeat.
 
 The fixture is host `hana`, not seated: joining sets of 8 of 12, 2 of 2, 11 of 12 and 4 of 12 seats, a draft with three players and a set in play. The 28 checks cover no toggle before the start, one bright button, the dock's height and top padding, the reserved height, Join beside Players (on the first screen at 390 × 844, one short scroll at 320 × 568), a tap that seats the host, a full set, a fold chosen in play, the keyboard bar, the Players head on one line at 320px, and 1280px. On main 12 of them fail. `dock.mjs` has 196 checks since this change, and fails the same two as before.
+
+## Cash out and Reverse apart
+
+Use a fresh temporary SQLite database. Migrate it, then run `manage.py shell < web/tests/browser/seed_sheet_drag.py` alone. Start Django on `127.0.0.1:8765` with that database. Run `node web/tests/browser/reverse_apart.mjs`. The probe reverses Miguel's buy-in: reseed before a repeat.
+
+The 24 checks cover the host's player sheet at 390 and 320 px (no red button and no reason field on open, the hairline and the heading, 48px or more from Cash out to the first Reverse…, a 48px quiet target, the opened fold, no overflow), an empty reason that reverses nothing, a reversal with its reason, the tap hint at 1280 px, the count-up sheet and a player's sheet. Visibility uses `checkVisibility()`: `getClientRects()` reports boxes inside a closed `<details>`. Captures are in `/private/tmp/pn-reverse-review/`, or `PN_REVIEW_DIR`.
