@@ -53,12 +53,12 @@ Acceptance: each state shows its own line. Completion: a view test for each stat
 
 ### 4. Dates and amounts that read like the rest — `tests: alongside`
 
-- [ ] New session: show "Thu, Nov 19" next to the date field. A small script updates it on `change`. Without the script, the native field stays.
-- [ ] Amount fields (buy-in and cash-out sheets, Set settings, New session, presets): group digits as the person types, per OPEN QUESTION 3.
-- [ ] Each blinds and buy-in field shows its unit: "₱" before the field in a pesos game, "chips" after it in a chips game. On New session the unit follows the unit choice.
-- [ ] Keep the 48 px targets. Use DESIGN.md tokens only.
+- [x] New session: show "Thu, Nov 19" next to the date field. A small script updates it on `change`. Without the script, the native field stays.
+- [x] Amount fields (buy-in and cash-out sheets, Set settings, New session, presets): group digits as the person types, per OPEN QUESTION 3.
+- [x] Each blinds and buy-in field shows its unit: "₱" before the field in a pesos game, "chips" after it in a chips game. On New session the unit follows the unit choice.
+- [x] Keep the 48 px targets. Use DESIGN.md tokens only.
 
-Acceptance: "1,000" reads the same in the field and on the row. A saved amount is the same as before. Completion: a browser probe types 1000 and 1650.50 in a pesos sheet and 2500 in a chips sheet, then submits; the recorded amounts are 100000 centavos, 165050 centavos and 2500 chips.
+Acceptance: "1,000" reads the same in the field and on the row. A saved amount is the same as before. Completion: a browser probe types 1000 and 1650.50 in a pesos sheet and 2500 in a chips sheet, then submits; the recorded amounts are 100000 centavos, 165050 centavos and 2500 chips. (In execute: set 5 allows at most 2,000 chips, so the probe types 1,500 chips. Probe: `web/tests/browser/amounts.mjs`. A count of one chip colour stays ungrouped, because `denominations.js` reads plain digits.)
 
 ### 5. The home card for players — `tests: first` for the token order
 
