@@ -22,17 +22,29 @@ The screens that items 1 to 8 changed look like one app again: same spacing, sam
 
 ### 1. Polish pass on the changed screens — `tests: alongside`
 
-- [ ] Seed a fresh SQLite database with the study's seeds (`seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_opening.py`, `seed_home.py`).
-- [ ] Run `/impeccable polish` on each screen in the list above at 390 px, and at 1280 px for the set in play and the session page.
-- [ ] Fix only alignment, spacing, type steps, state styles, focus rings and motion presets. Stay inside DESIGN.md tokens. No new words, no new layout.
-- [ ] Record each fix in this plan as one line with `file:line`.
+- [x] Seed a fresh SQLite database with the study's seeds (`seed.py`, `seed_end_set.py`, `seed_night.py`, `seed_opening.py`, `seed_home.py`).
+- [x] Run `/impeccable polish` on each screen in the list above at 390 px, and at 1280 px for the set in play and the session page.
+- [x] Fix only alignment, spacing, type steps, state styles, focus rings and motion presets. Stay inside DESIGN.md tokens. No new words, no new layout.
+- [x] Record each fix in this plan as one line with `file:line`.
+
+Fixes (commits `a624925`, `814b223`):
+
+- A player who left: "In ₱X" and "out ₱Y" each stay whole (`templates/web/_player_row.html:20`). At 390 px "out" was alone at the end of a line.
+- A player with no buy-in: the empty edge stack took a slot before "No buy-in yet" (`static/css/app.css`, `.buy-stack:empty`).
+- The player sheet: the records were 36 px under "Records and corrections"; now 16 px (`.records > .section-label + .list`).
+- The session page: a set's badge sits on its name's line, and the first set row starts under the label (`.night-sets li.row`).
+- The session page from 900 px: the left column had a 133 px gap under the lead, because the detail column spans two grid rows. The second row now takes the extra height (`.night-layout { grid-template-rows: auto 1fr }`). Gap now 28 px.
+- Your groups, as a player: "And 3 more unpaid transfers in past sessions" touched its card's edges. The dues row rule took its padding (`.home-dues a.btn`).
+- Looked at and kept: count-up from 900 px has about 54 px above "The books" (row gap, the heading's 24 px margin and some grid slack). Set settings says twice that the rake is locked; a word change is outside polish.
+
+Checks: SQLite 1847 OK. `home.mjs` 63/63, `reverse_apart.mjs` 24/24, `dock_before_start.mjs` 28/28, `night.mjs` 88/88.
 
 Acceptance: each listed screen was looked at, and each fix is in the list. Completion: SQLite suite passes; the browser probes for the changed screens pass at the same counts as main or better.
 
 ### 2. The two minor items (if question 1 is yes) — `tests: alongside`
 
-- [ ] Make the home card and the set count the same thing, or name what each counts.
-- [ ] Give the count-up bar segments a second cue besides colour (a pattern or a label).
+- [x] Make the home card and the set count the same thing, or name what each counts. The pill now counts the people at the table, as Your groups does: "7 · 2 seats free" (`web/views.py`, `templates/web/_players.html:8`). "7 at the table · 2 seats free" ran into Add players at 320 px, so the short form stays. Test: `games/tests/test_participants.py` `test_count_leaves_out_a_player_who_left` fails on the old code.
+- [x] Give the count-up bar segments a second cue besides colour (a pattern or a label). Already met: since the calm count-up release (plan 1795105635) a ready mark is half filled and a cashed-out mark is full, and a hidden line gives the counts in words (`templates/web/_count_v2.html:12`). No change.
 
 Acceptance: a colour-blind simulation of the bar still tells each segment apart; the two counts read as the same people. Completion: a browser probe checks the new word and the second cue.
 
