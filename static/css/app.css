@@ -2581,7 +2581,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .section-label > .icon { width: 1rem; height: 1rem; }
 .label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: 32px; margin: var(--s-5) 0 var(--s-2); }
 .label-row > :first-child { min-width: 0; }
-.count-pill { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--r-pill); background: var(--rail-2); color: var(--bone-dim); font-size: .75rem; font-weight: 600; font-stretch: 100%; letter-spacing: 0; text-transform: none; line-height: 1.5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.count-pill { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--r-pill); background: var(--rail-2); color: var(--bone-dim); font-size: var(--h-label); font-weight: 600; font-stretch: 100%; letter-spacing: 0; text-transform: none; line-height: 1.5; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .label-aside { color: var(--muted); font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .label-aside .amount { font-weight: 700; }
 
@@ -2589,9 +2589,9 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .facts { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0,1fr)); gap: var(--s-2); margin: var(--s-3) 0 0; padding: 0; }
 .facts-3 { --cols: 3; }
 .facts > div { min-width: 0; padding: 10px 12px; border-radius: var(--r-field); background: var(--ground); }
-.facts dt { margin: 0; color: var(--muted); font-size: .75rem; font-weight: 600; line-height: 1.3; }
+.facts dt { margin: 0; color: var(--muted); font-size: var(--h-label); font-weight: 600; line-height: 1.3; }
 .facts dd { margin: 2px 0 0; font-size: 1.375rem; font-weight: 800; font-stretch: var(--w-money); line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.facts dd small { display: block; margin-top: 2px; font-size: .75rem; font-weight: 500; font-stretch: 100%; color: var(--muted); }
+.facts dd small { display: block; margin-top: 2px; font-size: var(--h-label); font-weight: 500; font-stretch: 100%; color: var(--muted); }
 .felt .facts > div { background: var(--felt-deep); }
 .felt .facts dt, .felt .facts dd small { color: var(--felt-ink); }
 @media (max-width: 339px) { .facts-3 { --cols: 1; } }
@@ -2784,7 +2784,7 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .ledger-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .ledger-who .chip { width: 28px; height: 28px; flex: 0 0 28px; font-size: .6875rem; }
 .ledger-text { display: grid; min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
-.ledger-meta { color: var(--muted); font-size: .75rem; font-weight: 500; }
+.ledger-meta { color: var(--muted); font-size: var(--h-label); font-weight: 500; }
 .ledger-table tfoot tr { border-top: 1px solid var(--rule); }
 .ledger-table tfoot th { font-weight: 700; color: var(--muted); font-size: .8125rem; }
 .ledger-table tfoot .ledger-total :is(th, td) { padding-block: 10px; color: var(--text); font-weight: 800; background: var(--ground); }

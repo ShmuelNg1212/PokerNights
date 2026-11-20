@@ -84,9 +84,9 @@ Acceptance: the cue shows only when the row overflows. Completion: a browser pro
 
 ### 8. Small text at the table — `tests: alongside`
 
-- [ ] Raise to `--h-label` (13 px) the 12 px text that a player reads during play: `.facts dt`, `.facts dd small`, `.ledger-meta`, `.count-pill`.
-- [ ] Keep chip letters, `.badge-host` and uppercase table heads as they are. They are marks, not reading text.
-- [ ] Check no row wraps worse at 320 px.
+- [x] Raise to `--h-label` (13 px) the 12 px text that a player reads during play: `.facts dt`, `.facts dd small`, `.ledger-meta`, `.count-pill`.
+- [x] Keep chip letters, `.badge-host` and uppercase table heads as they are. They are marks, not reading text.
+- [x] Check no row wraps worse at 320 px. (In execute: at 13 px a past session line left "pay" alone at 320 px; the amount and "still to pay" now stay together.)
 
 Acceptance: no reading text during play is under 13 px. Completion: a browser probe counts elements under 13 px on a set in play, before and after; `break-ui` worst-case names at 320 px show no new overlap.
 

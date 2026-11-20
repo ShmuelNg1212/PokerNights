@@ -97,11 +97,11 @@ class SettledIndicatorPagesTests(TestCase):
     def test_past_sessions_row_and_heading_follow_the_paid_marks(self):
         # The status is quiet words on the row's date line; colour belongs to the viewer's own debts (2026-10-17).
         page = self.client.get(self.group_url)
-        self.assertContains(page, f'1 set · <span class="ledger-status">{format_amount(self.first.amount + self.second.amount, 'php')} still to pay</span>')
+        self.assertContains(page, f'1 set · <span class="ledger-status"><span class="nowrap">{format_amount(self.first.amount + self.second.amount, 'php')} still to pay</span></span>')
         self.assertContains(page, "1 not settled")
         services.mark_paid(self.night_id, self.host, self.first.pk, uuid.uuid4())
         page = self.client.get(self.group_url)
-        self.assertContains(page, f'<span class="ledger-status">Partly paid, {format_amount(self.second.amount, 'php')} still to pay</span>')
+        self.assertContains(page, f'<span class="ledger-status">Partly paid, <span class="nowrap">{format_amount(self.second.amount, 'php')} still to pay</span></span>')
         services.mark_paid(self.night_id, self.host, self.second.pk, uuid.uuid4())
         page = self.client.get(self.group_url)
         self.assertContains(page, "icon-check")
