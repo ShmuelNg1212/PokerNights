@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: count-up without a cash-out step (unreleased, feat/count-up-no-cash-out)
+## Phone checks: count-up without a cash-out step (released 2026-11-20)
 
 - [ ] End play and confirm some counts. Each confirmed player reads "Counted" and its mark fills fully, once. No "Cash out counted players" button. The line reads "N of M players counted".
 - [ ] Confirm the last count so the counts balance: "Review and finish" rises into the dock once. Reload: it is simply there. Tap it: the counts arrive row after row; Finish set N lands on the final set.
