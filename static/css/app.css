@@ -2864,3 +2864,15 @@ p.alerts-text:last-child { margin-bottom: 0; }
 .pick-form .check > .name-fit { flex: 1 1 auto; max-width: calc(100% - 34px); } /* beside the 22px box and its 12px gap */
 .pick-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto; }
 .pick-tags:not(:has(*)) { display: none; }
+
+/* A player's records (2026-11-20): under a hairline, apart from Cash out. A reversal opens from a quiet "Reverse…". */
+.records { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--rule); }
+.records > .section-label { margin-bottom: var(--s-1); }
+.reverse-entry { margin-top: var(--s-2); }
+.reverse-entry > summary.btn { list-style: none; color: var(--muted); }
+.reverse-entry > summary.btn::-webkit-details-marker { display: none; }
+.reverse-entry[open]:not([data-disclosure-closing]) > summary.btn { background: var(--surface-2); color: var(--text); margin-bottom: var(--s-2); }
+.reverse-entry form { margin: 0; }
+.reverse-entry form > p { margin: 0; }
+/* From 900px each row has its own Cash out, so the hint says nothing new. */
+@media (min-width: 900px) { .row-hint { display: none; } }

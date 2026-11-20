@@ -1,0 +1,9 @@
+{% load money_tags %}{# A correction for one entry. The red button and the reason show only when the host opens it, so a thumb aimed at Cash out cannot land on Reverse. #}
+            <details class="reverse-entry" data-key="reverse-{{ kind }}-{{ record.pk }}">
+              <summary class="btn btn-small btn-quiet">Reverse…</summary>
+              <form method="post" data-turbo="true" action="{% if kind == 'buy-in' %}{% url 'buy_in_reverse' session.pk record.pk %}{% else %}{% url 'cash_out_reverse' session.pk record.pk %}{% endif %}" class="stack" data-once>{% csrf_token %}
+                <p class="small muted">This adds a reversal. The record stays in the log.</p>
+                <input type="text" name="reason" data-keep="reverse-{{ kind }}-{{ record.pk }}" maxlength="255" required placeholder="Reason for reversal" aria-label="Reason for reversal">
+                <button type="submit" class="btn btn-danger">Reverse {{ record.amount|amount:record_unit }}</button>
+              </form>
+            </details>
