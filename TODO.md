@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: final polish (not released, branch `feat/final-polish`)
+## Phone checks: final polish (released 2026-11-20)
 
 - [ ] A set in play where one player left: the count beside Players leaves them out ("7 · 2 seats free", as the home card says "7 at the table"). Their row shows "In ₱1,000 ·" and "out ₱2,650" whole. A player with no buy-in reads "No buy-in yet" in line with the names above. Open a player: the first record is close under "Records and corrections".
 - [ ] A closed session on a computer: Share results follows the recap card with no large gap. Under Sets, the Finalized badge is on the "Set 1" line. As a player with more than three unpaid transfers: "And N more unpaid transfers" has space at both sides.

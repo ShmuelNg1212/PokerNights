@@ -69,6 +69,6 @@ All tasks ticked, the rendezvous checks recorded here, and a verified branch `fe
 - Measured in the browser: the pill reads "7 · 2 seats free" and stays clear of Add players at 320 px; the session page's left column follows the lead by 28 px at 1280 px (was 133 px); the link under To settle has 16 px side padding at 390 and 320 px.
 - `code-review` (low) on `main..feat/final-polish`: no findings.
 - Known behaviour: the pill's brass line (`arrivals.js`) now also draws when a player leaves, because the seated count changes then. Before, only an arrival changed the count.
-- PostgreSQL suite: not run yet; run it before the release.
+- PostgreSQL suite: 1847 OK before the release. Released 2026-11-20 as main `8d1cfe5`.
 
 Status: verified on branch `feat/final-polish`; frozen.
