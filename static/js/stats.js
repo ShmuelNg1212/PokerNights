@@ -136,6 +136,16 @@
       month.querySelector("select").addEventListener("change", function () { month.requestSubmit(); }, { signal: life.signal });
     }
     if (held && held.path === location.pathname) arrived(held);
+    // The order pills scroll sideways on a phone. While more pills are off to the right, the row fades
+    // out at that edge (app.css, .stat-sort[data-more]); at the end of the row the fade goes.
+    var row = sortRow();
+    if (row) {
+      var cue = function () { row.toggleAttribute("data-more", row.scrollWidth - row.scrollLeft - row.clientWidth > 1); };
+      row.addEventListener("scroll", cue, { passive: true, signal: life.signal });
+      window.addEventListener("resize", cue, { signal: life.signal });
+      cue();
+      requestAnimationFrame(cue);  // after the row is put back where it was
+    }
     return function () { life.abort(); };
   });
 })();

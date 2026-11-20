@@ -93,9 +93,9 @@ class StatsPagesTests(TestCase):
         self.assertEqual((AuditEvent.objects.count(), PlayerResult.objects.count()), before)
 
     def test_your_summary(self):
-        self.assertContains(self.stats(), "You have no closed session")
+        self.assertContains(self.stats(), "You have not played in a closed session yet. Your figures show here after you do.")
         self.client.force_login(self.viewer.user)
-        self.assertContains(self.stats(), "You have no closed session")
+        self.assertContains(self.stats(), "You have not played in a closed session yet. Your figures show here after you do.")
         user = make_user("ana-login")
         type(self.ana).objects.filter(pk=self.ana.pk).update(user=user)
         self.client.force_login(user)

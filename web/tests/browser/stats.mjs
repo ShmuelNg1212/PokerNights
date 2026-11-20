@@ -35,6 +35,14 @@ try {
  check('the first ranked row is within 350px at 390',await A.js(`document.querySelector('.stat-row').getBoundingClientRect().top<=350`));
  check('one control states the unit and the period, whole',await A.js(`(()=>{const b=document.querySelector('.stat-choice');const t=b.querySelector('.grow');return b.getClientRects().length>0&&t.textContent.trim()==='Pesos · All time'&&t.scrollWidth<=t.clientWidth+1&&!document.querySelector('[data-stat-pills=period] a').getClientRects().length})()`));
  check('all five orders are reachable beside it',await A.js(`(()=>{const n=document.querySelector('[data-stat-pills=sort]'),all=[...n.querySelectorAll('a')];const was=n.scrollLeft;n.scrollLeft=9999;const last=all.at(-1).getBoundingClientRect(),box=n.getBoundingClientRect();n.scrollLeft=was;return n.getClientRects().length>0&&all.length===5&&last.right<=box.right+1&&last.left>=box.left})()`));
+ // The order pills scroll sideways on a phone: a fade at the right edge says more are there.
+ const cue=`(()=>{const n=document.querySelector('[data-stat-pills=sort]');return {more:n.hasAttribute('data-more'),over:n.scrollWidth-n.scrollLeft-n.clientWidth>1,mask:getComputedStyle(n).maskImage!=='none'}})()`;
+ for(const w of [320,390]){await A.size(w);await sleep(250);const c=await A.js(cue);check(`${w}px: the order row overflows and fades at the right edge`,c.over&&c.more&&c.mask,c);
+  await A.js(`(()=>{const n=document.querySelector('[data-stat-pills=sort]');n.scrollLeft=n.scrollWidth;n.dispatchEvent(new Event('scroll'))})()`);await sleep(150);
+  const e=await A.js(cue);check(`${w}px: at the end of the row the fade goes`,!e.over&&!e.more&&!e.mask,e);
+  await A.js(`(()=>{const n=document.querySelector('[data-stat-pills=sort]');n.scrollLeft=0;n.dispatchEvent(new Event('scroll'))})()`);}
+ await A.size(1280);await sleep(250);{const c=await A.js(cue);check('1280px: the whole row fits and has no fade',!c.over&&!c.more&&!c.mask,c);}
+ await A.size(390);await sleep(250);
 
  // The sheet: what shows, what a choice does.
  await A.click(`document.querySelector('.stat-choice')`);

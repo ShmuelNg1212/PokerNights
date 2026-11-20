@@ -77,8 +77,8 @@ Acceptance: on a set in play, a player who left reads "+₱1,650" large. Complet
 
 ### 7. Stats cues — `tests: alongside`
 
-- [ ] The sort pills fade at the right edge while more pills are off screen. The fade goes when the row is scrolled to the end.
-- [ ] A host with no closed session as a player reads: "You have not played in a closed session yet. Your figures show here after you do."
+- [x] The sort pills fade at the right edge while more pills are off screen. The fade goes when the row is scrolled to the end.
+- [x] A member with no closed session reads: "You have not played in a closed session yet. Your figures show here after you do." (Changed in execute: the line is true for every member, so it is not for hosts only. `profile.html` keeps its own line.)
 
 Acceptance: the cue shows only when the row overflows. Completion: a browser probe at 320 px and 900 px.
 

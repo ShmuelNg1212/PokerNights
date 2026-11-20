@@ -1375,6 +1375,8 @@ body:has(#live[data-state="finalized"]) .site-header .live-status { display: non
 .sheets-enabled .stat-bar .stat-controls { flex: 0 1 auto; max-width: 58%; margin: 0; }
 .sheets-enabled .stat-bar .stat-choice { width: auto; max-width: 100%; }
 .stat-bar .stat-sort { flex: 1 1 0; min-width: 0; margin: 0; padding-bottom: 0; }
+/* More order pills off to the right: the row fades at that edge (stats.js sets data-more). */
+.stat-sort[data-more] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
 .btn.stat-choice { justify-content: space-between; gap: var(--s-1); width: 100%; padding-inline: var(--s-3); font-weight: 600; font-size: .9rem; line-height: 1.15; text-align: left; }
 .stat-choice .grow { flex: 0 1 auto; min-width: 0; }
 .stat-choice .icon { flex: none; width: 18px; height: 18px; color: var(--muted); }
