@@ -50,6 +50,20 @@ try {
  check('pesos: "1,650.50" is recorded as 165050 centavos',r.after==='165050',r);
  r=await buy(5,['1','5','0','0'],'1,500');
  check('chips: "1,500" is recorded as 1500 chips',r.after==='1500',r);
+ // The server's value is grouped as the field's default too, so the page does not treat it as typed.
+ await A.go('/s/3/');await A.tap(`document.querySelector('.buy-opener')`,700);
+ let f=await A.js(`({v:${F}.value,d:${F}.defaultValue})`);
+ check('buy-in sheet: the usual amount reads "1,000" and still counts as untouched',f.v==='1,000'&&f.d==='1,000',f);
+ await A.js(`${D}.querySelector('.quick-amounts [data-amount]:last-child').click()`);await sleep(50);
+ f=await A.js(`({v:${F}.value,focused:document.activeElement===${F}})`);
+ check('a quick amount is grouped at once',/^\d{1,3}(,\d{3})+$/.test(f.v),f);
+ // A keyboard: Backspace just after a comma removes the digit before it.
+ await A.computer();await A.js(`${F}.value='12,345';${F}.focus();${F}.setSelectionRange(3,3)`);
+ await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8},A.s);await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8},A.s);await sleep(50);
+ f=await A.js(`({v:${F}.value,at:${F}.selectionStart})`);
+ check('keyboard: Backspace after the comma in "12,345" leaves "1,345" with the caret after the 1',f.v==='1,345'&&f.at===1,f);
+ await A.phone();
+
  // New session: the unit marks follow the unit choice, and the date reads as the app writes dates.
  await A.go('/g/1/sessions/new/');await A.js(`document.querySelectorAll('details').forEach(d=>d.open=true)`);
  const marks=`(()=>{const f=document.querySelector('[name=small_blind]').closest('.unit-field'),v=e=>getComputedStyle(f.querySelector(e)).display!=='none';return {pre:v('.unit-pre'),post:v('.unit-post'),value:document.querySelector('[name=max_buy_in]').value}})()`;

@@ -42,19 +42,19 @@ try {
  check('host: the sheet offers Use count before any quantity',await H.js(`${D}.querySelector('.chip-count-send .btn-primary').textContent.trim()`)==='Use count');
  await H.tap(`${D}.querySelector('[data-chip-quantity]')`);
  for(const k of ['4']) await H.tap(key(D,k),80);
- await H.tap(`${D}.querySelectorAll('[data-chip-quantity]')[2]`);await H.tap(key(D,'3'),80);
+ await H.tap(`${D}.querySelectorAll('[data-chip-quantity]')[2]`);await H.tap(key(D,'1'),80);await H.tap(key(D,'3'),80); // ₱1,320: a total the count field groups
  const label=await H.js(`${D}.querySelector('.chip-count-send .btn-primary').textContent.trim()`);
- check('host: the button names the total',label==='Use ₱320',label);
+ check('host: the button names the total',label==='Use ₱1,320',label);
  await H.shot('host-sheet');
  await H.tap(`${D}.querySelector('.chip-count-send .btn-primary')`);await sleep(900);
  check('host: Use closes the sheet without a write',await H.js(`!document.querySelector('dialog[open]')&&!document.querySelector('.message-success')`));
  check('host: an unsaved chip count has no confirmation tick',await H.js(`getComputedStyle(document.querySelector('#count-row-${ids.a} .count-tick')).opacity==='0'`));
- check('host: the field shows the total',await H.js(`document.querySelector('#count-${ids.a}').value`)==='320');
+ check('host: the field shows the total',await H.js(`document.querySelector('#count-${ids.a}').value`)==='1,320');
  check('host: focus is back in the field',await H.js(`document.activeElement?.id`)===`count-${ids.a}`);
  check('host: the row says by chips',await H.js(`!document.querySelector('#count-row-${ids.a} [data-chip-note]').hidden`));
  const carry=JSON.parse(await H.js(`document.querySelector('[name=chips_${ids.a}]').value`));
- check('host: the chip field holds the quantities',JSON.stringify(carry.quantities)===JSON.stringify([['white','4'],['green','3']])&&carry.empty_stack===false,carry);
- check('host: the dock preview counts the filled total',await H.js(`document.querySelector('[data-count-preview]')?.textContent.includes('₱320')`));
+ check('host: the chip field holds the quantities',JSON.stringify(carry.quantities)===JSON.stringify([['white','4'],['green','13']])&&carry.empty_stack===false,carry);
+ check('host: the dock preview counts the filled total',await H.js(`document.querySelector('[data-count-preview]')?.textContent.includes('₱1,320')`));
  // Reopen: the quantities are still there.
  await H.tap(`document.querySelector('.numpad-panel [data-numpad-chips]:not([hidden])')`);await sleep(900);
  check('host: reopening shows the quantities',await H.js(`${D}.querySelector('[data-chip-quantity]').value`)==='4');
@@ -74,7 +74,7 @@ try {
  await send('Emulation.setEmulatedMedia',{features:[]},H.s);
  await H.js(`const count=document.querySelector('#count-${ids.a}');count.value='321';count.dispatchEvent(new Event('input',{bubbles:true}))`);
  check('host: editing a confirmed count hides its check',await H.js(`getComputedStyle(document.querySelector('#count-row-${ids.a} .count-tick')).opacity==='0'`));
- check('host: A is counted with a chip breakdown',await H.js(`(()=>{const r=document.querySelector('#count-row-${ids.a}');return r.textContent.includes('₱320')&&!!r.querySelector('.chip-breakdown')})()`));
+ check('host: A is counted with a chip breakdown',await H.js(`(()=>{const r=document.querySelector('#count-row-${ids.a}');return r.textContent.includes('₱1,320')&&!!r.querySelector('.chip-breakdown')})()`));
  check('host: no chip note after the save',await H.js(`[...document.querySelectorAll('[data-chip-note]')].every(n=>n.hidden)`));
  // Host, second set: typing over a filled total drops the chips.
  await H.go(`/s/${ids.second}/`);await sleep(500);

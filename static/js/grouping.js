@@ -28,18 +28,39 @@
   function apply(field) {
     var before = field.value, after = group(before);
     if (after === before) return;
+    // The server's own value is grouped as the field's default too, so live.js, turbo-setup.js and
+    // app.js still see a field nobody has typed in.
+    var untouched = before === field.defaultValue;
     var focused = document.activeElement === field, caret = focused && field.selectionStart !== null ? field.selectionStart : before.length;
     var kept = raw(before.slice(0, caret)).length;
+    if (untouched) field.defaultValue = after;
     field.value = after;
     if (focused) { try { var at = place(after, kept); field.setSelectionRange(at, at); } catch (_) {} }
   }
+  function applyAll() { document.querySelectorAll("input[data-numpad]").forEach(function (field) { if (grouped(field)) apply(field); }); }
 
   window.pokerGroup = { grouped: grouped, group: group, raw: raw, apply: apply };
 
   document.addEventListener("input", function (event) { if (grouped(event.target)) apply(event.target); }, true);
-  // A value written by a script or by the server: a quick amount, a preset, a kept draft.
+  // Values written by a script: a preset (setup.js sends "change"), a quick amount (sheets.js sets the value
+  // on a click), a redrawn page (live.js, turbo-setup.js). focusout is the last net.
+  document.addEventListener("change", function (event) { if (grouped(event.target)) apply(event.target); }, true);
   document.addEventListener("focusout", function (event) { if (grouped(event.target)) apply(event.target); }, true);
-  window.pokerPage.register(function () {
-    document.querySelectorAll("input[data-numpad]").forEach(function (field) { if (grouped(field)) apply(field); });
+  document.addEventListener("click", function (event) {
+    var quick = event.target.closest && event.target.closest("[data-amount]"), form = quick && quick.closest("form");
+    var field = form && form.querySelector("[name=amount]");
+    if (grouped(field)) apply(field);
   });
+  document.addEventListener("live:updated", applyAll);
+  document.addEventListener("inplace:updated", applyAll);
+  // With a keyboard, Backspace just after a comma (or Delete just before one) removes the digit beyond it:
+  // a comma alone would come straight back.
+  document.addEventListener("beforeinput", function (event) {
+    var field = event.target;
+    if (!grouped(field) || field.selectionStart === null || field.selectionStart !== field.selectionEnd) return;
+    var at = field.selectionStart;
+    if (event.inputType === "deleteContentBackward" && field.value[at - 1] === ",") field.setSelectionRange(at - 1, at - 1);
+    else if (event.inputType === "deleteContentForward" && field.value[at] === ",") field.setSelectionRange(at + 1, at + 1);
+  }, true);
+  window.pokerPage.register(applyAll);
 })();

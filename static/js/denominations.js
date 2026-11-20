@@ -142,7 +142,9 @@
     var kept = {};
     document.querySelectorAll("[data-chip-carry]").forEach(function (carry) {
       var key = carry.dataset.chipCarry, field = document.querySelector('[data-sheet-return="' + key + '"]');
-      if (carry.value && (!field || field.value.trim() !== shownBy(carry))) carry.value = "";
+      // The count field may show the total grouped ("1,500"; grouping.js): compare its digits.
+      var typed = field ? field.value.trim().replace(/,/g, "") : null;
+      if (carry.value && (!field || typed !== shownBy(carry))) carry.value = "";
       if (carry.value) kept[key] = carry.value;
       var note = document.querySelector('[data-chip-note="' + key + '"]');
       if (note) note.hidden = !carry.value;
