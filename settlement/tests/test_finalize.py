@@ -60,7 +60,7 @@ class FinalizeTests(TestCase):
         with self.assertRaisesMessage(RuleError, "₱50 too much"):
             services.finalize(night.session.pk, night.host)
         missing = worked_example((1600, 900, None))
-        with self.assertRaisesMessage(RuleError, "Not cashed out yet: C"):
+        with self.assertRaisesMessage(RuleError, "Still to count: C"):
             services.finalize(missing.session.pk, missing.host)
         self.assertEqual(Finalization.objects.count(), 0)
         self.assertEqual(night.refresh().state, "reconciliation")

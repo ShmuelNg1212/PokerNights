@@ -72,7 +72,7 @@ class PlayerLine:
 
     @property
     def status_label(self) -> str:
-        return {"cashed_out": "Cashed out", "ready": "Ready to cash out", "awaiting": "Awaiting count"}[self.status]
+        return {"cashed_out": "Cashed out", "ready": "Counted", "awaiting": "Awaiting count"}[self.status]
 
     @property
     def entered(self):
@@ -310,11 +310,12 @@ class Balance:
             names = ", ".join(line.participant.member.display_name for line in self.stray_cash_outs)
             return f"{names} has a cash-out but no buy-in. Record the buy-in, or reverse the cash-out."
         if self.missing_cash_outs:
-            names = ", ".join(line.participant.member.display_name for line in self.missing_cash_outs)
-            return (
-                f"Not cashed out yet: {names}. Confirm each player's final count and cash them out. "
-                "A count of 0 is valid for a player who lost everything."
-            )
+            # Count-up asks for counts only; finishing the set records the cash-outs from them.
+            uncounted = [line for line in self.missing_cash_outs if line.count is None]
+            if not uncounted:
+                return "Every player is counted. Finish the set to record the results."
+            names = ", ".join(line.participant.member.display_name for line in uncounted)
+            return f"Still to count: {names}. A count of 0 is valid for a player who lost everything."
         if self.difference > 0:
             return (
                 f"{self.difference_text} too much: {self._flow} exceed buy-ins. "
@@ -329,12 +330,23 @@ class Balance:
 
 
 def finishes_the_set(found: Summary) -> bool:
-    """Recording every confirmed count leaves nobody to count and the books balanced, so one action can finish the set.
+    """Every player with money is counted or cashed out, and the counts balance, so one action can finish the set.
 
-    An override does not qualify: it is disclosed on the Finalize sheet, so that set keeps its two steps.
+    An active override counts towards the balance; the review discloses it.
     """
     remaining = count_total(found)
-    return bool(found.ready_lines) and remaining.matches and not remaining.has_overrides
+    return bool(found.ready_lines) and remaining.complete and remaining.difference + found.adjustment == 0
+
+
+def counts_off(found: Summary) -> int:
+    """The gap left once every player is counted, after active overrides; 0 while counting or when they balance.
+
+    Only confirmed counts and cash-outs count. A set with nothing to review (everyone cashed out) uses ``balance``.
+    """
+    remaining = count_total(found)
+    if not (found.ready_lines and remaining.complete):
+        return 0
+    return remaining.difference + found.adjustment
 
 
 def balance(session_or_summary) -> Balance:

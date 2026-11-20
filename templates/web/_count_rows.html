@@ -21,7 +21,7 @@
           {% else %}
           <span class="count-sub">{% if line.has_money %}{{ line.buy_in_total|amount:unit }} in{% else %}No buy-in{% endif %}{% if p.status == 'left' %} · left{% endif %}{% if line.has_cash_out and line.status != 'cashed_out' %} · {{ line.cashed_out|amount:unit }} cashed out{% endif %}{% if line.entered %} · <span class="count-from">entered {{ line.entered.amount|amount:unit }}</span>{% endif %}{% if line.count_net is not None %} <span class="count-net {{ line.count_net|sign_class }}">{% include "web/_result_icon.html" with net=line.count_net %}<span class="visually-hidden">net </span>{% if line.count_net == 0 %}Even{% else %}{{ line.count_net|signed_amount:unit }}{% endif %}</span>{% endif %}{% if me.is_host and line.chip_form %}<span class="count-chip-note" data-chip-note="{{ line.chip_form.key }}"{% if not line.chip_draft %} hidden{% endif %}> · by chips</span>{% endif %}</span>
           {% endif %}
-          {% if line.has_money %}<span class="visually-hidden" data-status="{% if line.entered %}entered{% else %}{{ line.status }}{% endif %}">{{ line.status_label }}{% if line.status == 'ready' %}. Counted {{ line.count.amount|amount:unit }}{% endif %}</span>{% endif %}
+          {% if line.has_money %}<span class="visually-hidden" data-status="{% if line.entered %}entered{% else %}{{ line.status }}{% endif %}">{% if line.status == 'ready' %}Counted {{ line.count.amount|amount:unit }}{% else %}{{ line.status_label }}{% endif %}</span>{% endif %}
         </div>
         {% if me.is_host and line.has_money and line.status != 'cashed_out' %}
         {# These fields belong to the one counts form above, so one tap sends every typed count. A confirmed count shows as the field's placeholder. #}

@@ -25,9 +25,8 @@
         </ul>
         </div>
         {% endif %}
+        {# Count-up asks for counts only: the finishing action records the cash-outs from them. #}
         {% if me.is_host and session.state == 'reconciliation' and line.has_money and not line.is_cashed_out %}
-        <p class="small muted">Exception: cash this player out now, without a confirmed count.</p>
-        {% include "web/_cash_out_form.html" %}
         {% if line.status == 'ready' %}
         <form method="post" data-turbo="true" action="{% url 'count_clear' session.pk p.pk %}">{% csrf_token %}
           <button type="submit" class="btn btn-small btn-quiet">Clear the count</button>

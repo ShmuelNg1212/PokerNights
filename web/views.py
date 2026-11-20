@@ -299,6 +299,9 @@ def session_context(session, me, *, later=UNSET) -> dict:
         "reopen_on": settings.REOPENING,
         "balance": ledger_queries.balance(summary) if session.state == GameSession.State.RECONCILIATION else None,
         "finishes_the_set": session.state == GameSession.State.RECONCILIATION and ledger_queries.finishes_the_set(summary),
+        # Every count is in and they do not add up: the host finds the gap from the counts, or finishes with an override.
+        "counts_off": ledger_queries.counts_off(summary) if session.state == GameSession.State.RECONCILIATION else 0,
+        "finish_request_id": uuid.uuid4(),
         "seated": seated,
         "seats_free": session.seat_count - seated,
         "can_configure_rake": me.is_host and session.state in ("setup", "open") and not games.has_money(session),
@@ -359,6 +362,8 @@ def session_context(session, me, *, later=UNSET) -> dict:
                 line = summary.line_for(pk)
                 line.count_gap, line.count_gap_full, line.count_gap_moved = gap, moved == books.difference, abs(moved)
                 line.count_gap_word = "more" if moved > 0 else "less"
+    if context["counts_off"]:
+        context["counts_off_text"] = money.format_amount(abs(context["counts_off"]), session.unit)
     context["set_seconds"], context["set_running"] = clock.timers([session.pk]).get(session.pk, (None, False))
     if session.state == GameSession.State.FINALIZED:
         outcome = settlement_queries.outcome(session)

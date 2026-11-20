@@ -27,12 +27,18 @@ def finalize(request, session_id):
 
 @require_POST
 def finish_set(request, session_id):
-    """The review's one button. A refusal returns to a fresh review, while there is still one to show."""
+    """The review's one button, or the override form on the set page. A refusal returns to where the host was."""
     session, actor = session_for(request.user, session_id)
+    override = None
+    if "absorber" in request.POST:
+        absorber = request.POST.get("absorber", "")
+        override = {"note": request.POST.get("note", ""), "mode": "equal" if absorber == "equal" else "player",
+                    "participant_id": absorber}
     done = attempt(request, services.finish_set, session.pk, actor, request.POST.getlist("count_id"), request_id_from(request),
-                   success=f"Set {session.set_number} is final.")
+                   override=override, success=f"Set {session.set_number} is final.")
     session.refresh_from_db()
-    if done is None and session.state == services.State.RECONCILIATION and ledger_queries.summary(session).ready_lines:
+    if (done is None and override is None and session.state == services.State.RECONCILIATION
+            and ledger_queries.finishes_the_set(ledger_queries.summary(session))):
         return redirect("cash_out_counted", session_id=session.pk)
     return redirect("session", session_id=session.pk)
 

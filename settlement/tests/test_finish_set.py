@@ -43,10 +43,18 @@ def covered_by_an_override():
     return night
 
 
-def finish(night, ids=None, request_id=None, actor=None):
+def finish(night, ids=None, request_id=None, actor=None, override=None):
     return services.finish_set(
-        night.session.pk, actor or night.host, ready_ids(night) if ids is None else ids, request_id or uuid.uuid4()
+        night.session.pk, actor or night.host, ready_ids(night) if ids is None else ids, request_id or uuid.uuid4(),
+        override=override,
     )
+
+
+def short(night):
+    """A ₱50 short: every count is in and they do not add up."""
+    count(night, "A", 1200)
+    count(night, "B", 750)
+    return night
 
 
 class FinishSetTests(TestCase):
@@ -115,7 +123,7 @@ class FinishSetTests(TestCase):
     def test_a_player_still_to_count_refuses_and_records_nothing(self):
         night = counting("A", "B")
         count(night, "A", 1000)
-        with self.assertRaisesMessage(RuleError, "Not cashed out yet: B"):
+        with self.assertRaisesMessage(RuleError, "Still to count: B"):
             finish(night)
         self.nothing_recorded(night)
 
@@ -127,13 +135,46 @@ class FinishSetTests(TestCase):
             finish(night, reviewed, request_id)
         self.assertEqual((night.refresh().state, Finalization.objects.count()), ("reconciliation", 0))
 
-    def test_an_override_stays_on_the_finalize_path(self):
+    def test_an_override_in_place_lets_the_set_finish(self):
         night = covered_by_an_override()
-        self.assertFalse(queries.finishes_the_set(queries.summary(night.session)))
-        batches = CashOutBatch.objects.count()
-        with self.assertRaisesMessage(RuleError, "An override covers this set"):
-            finish(night)
-        self.assertEqual((night.refresh().state, CashOutBatch.objects.count(), Finalization.objects.count()), ("reconciliation", batches, 0))
+        self.assertTrue(queries.finishes_the_set(queries.summary(night.session)))
+        finalization = finish(night)
+        self.assertEqual(night.refresh().state, "finalized")
+        self.assertEqual({r.participant.member.display_name: r.net for r in finalization.results.all()}, {"A": 10000, "B": -10000})
+
+    def test_counts_that_do_not_balance_finish_with_an_override_in_one_action(self):
+        night = short(counting("A", "B"))
+        finalization = finish(night, override={"note": "lost chip", "mode": "player", "participant_id": night.players["B"].pk})
+        self.assertEqual(night.refresh().state, "finalized")
+        self.assertEqual(CashOut.objects.filter(kind="final", batch__isnull=False).count(), 2)
+        self.assertEqual(AuditEvent.objects.filter(action="balance.overridden").count(), 1)
+        self.assertEqual({r.participant.member.display_name: r.net for r in finalization.results.all()}, {"A": 20000, "B": -20000})
+
+    def test_an_equal_override_splits_the_gap(self):
+        night = short(counting("A", "B"))
+        finalization = finish(night, override={"note": "lost chip", "mode": "equal", "participant_id": ""})
+        self.assertEqual({r.participant.member.display_name: r.net for r in finalization.results.all()}, {"A": 22500, "B": -22500})
+
+    def test_an_override_without_a_note_records_nothing(self):
+        night = short(counting("A", "B"))
+        with self.assertRaisesMessage(RuleError, "Write a note"):
+            finish(night, override={"note": " ", "mode": "player", "participant_id": night.players["B"].pk})
+        self.nothing_recorded(night)
+
+    def test_an_override_on_balanced_counts_records_nothing(self):
+        night = balanced()
+        with self.assertRaisesMessage(RuleError, "No override is needed"):
+            finish(night, override={"note": "x", "mode": "player", "participant_id": night.players["B"].pk})
+        self.nothing_recorded(night)
+
+    def test_a_retried_override_finish_records_nothing_more(self):
+        night = short(counting("A", "B"))
+        request_id = uuid.uuid4()
+        wanted = {"note": "lost chip", "mode": "player", "participant_id": night.players["B"].pk}
+        reviewed = ready_ids(night)
+        first = finish(night, reviewed, request_id, override=wanted)
+        self.assertEqual(finish(night, reviewed, request_id, override=wanted), first)
+        self.assertEqual((CashOut.objects.count(), AuditEvent.objects.filter(action="balance.overridden").count()), (2, 1))
 
     def test_a_set_another_host_finished_refuses_and_keeps_one_result(self):
         night = balanced()
@@ -207,6 +248,9 @@ class FinishesTheSetTests(TestCase):
         night.cash("B", 1000)
         self.assertFalse(self.finishes(night))  # nothing to review: Finalize results is the way
 
+    def test_counts_that_are_off_do_not_finish_without_an_override(self):
+        self.assertFalse(self.finishes(short(counting("A", "B"))))
+
 
 class FinishPageTests(TestCase):
     def setUp(self):
@@ -275,20 +319,32 @@ class FinishPageTests(TestCase):
         self.assertContains(page, "That review was already used. Nothing changed.")
         self.assertNotContains(page, "Set 1 is final.")
 
-    def test_an_overridden_review_warns_and_keeps_the_batch_button(self):
+    def test_an_overridden_review_discloses_the_override_and_finishes(self):
         night = covered_by_an_override()
         self.client.force_login(night.host.user)
         html = self.client.get(reverse("cash_out_counted", args=[night.session.pk])).content.decode()
-        self.assertIn('data-tone="warn">After this batch an override covers the difference.', html)
-        self.assertIn(">Cash out 1 player</button>", html)
-        self.assertNotIn("Finish set", html)
+        self.assertIn('data-tone="warn">An override covers the difference.', html)
+        self.assertIn(">Finish set 1</button>", html)
+        self.assertNotIn("Cash out", html)
 
-    def test_a_balance_that_needs_more_keeps_the_batch_button(self):
+    def test_a_review_that_cannot_finish_leads_to_the_set(self):
         count(self.night, "B", 750)
+        page = self.client.get(self.review, follow=True)
+        self.assertRedirects(page, reverse("session", args=[self.session.pk]))
+        self.assertNotContains(page, ">Cash out")
+
+    def test_a_post_to_the_review_records_nothing(self):
         html = self.client.get(self.review).content.decode()
-        self.assertIn(">Cash out 2 players</button>", html)
-        self.assertNotIn("Finish set", html)
-        self.assertNotIn(reverse("session_finish", args=[self.session.pk]), html)
+        self.client.post(self.review, {"count_id": re.findall(r'name="count_id" value="(\d+)"', html), "request_id": uuid.uuid4()})
+        self.assertEqual(CashOut.objects.count(), 0)
+
+    def test_the_review_says_nothing_about_cashing_out(self):
+        html = self.client.get(self.review).content.decode()
+        html = html[html.index('<main'):html.index('</main>')]
+        self.assertNotIn("Cash-out", html)
+        self.assertNotIn("cash-out", html)
+        self.assertNotIn("After this batch", html)
+        self.assertIn("Total counted", html)
 
     def test_a_player_gets_no_way_to_finish(self):
         player = add_player(self.night.group, "ben")
@@ -300,6 +356,60 @@ class FinishPageTests(TestCase):
     def test_a_get_changes_nothing(self):
         response = self.client.get(reverse("session_finish", args=[self.session.pk]))
         self.assertEqual(response.status_code, 405)
+
+
+class CountUpDockTests(TestCase):
+    """Count-up asks for counts and a confirmation. Cash-outs are recorded by the finishing action."""
+
+    def setUp(self):
+        self.night = counting("A", "B")
+        self.client.force_login(self.night.host.user)
+        self.url = reverse("session", args=[self.night.session.pk])
+
+    def page(self):
+        return self.client.get(self.url).content.decode()
+
+    def test_a_confirmed_count_reads_counted(self):
+        count(self.night, "A", 1000)
+        html = self.page()
+        self.assertIn("1 <span>of 2</span></strong> players counted<", html)
+        self.assertNotIn("Ready to cash out", html)
+        self.assertNotIn("Cash out counted players", html)
+        self.assertNotIn(reverse("cash_out_counted", args=[self.night.session.pk]), html)
+
+    def test_counts_that_are_off_lead_to_the_difference_and_an_override_finish(self):
+        short(self.night)
+        html = self.page()
+        self.assertIn("Find the ₱50 difference", html)
+        self.assertNotIn("Cash out counted players", html)
+        form = html[html.index('data-key="override"'):]
+        form = form[:form.index("</form>")]
+        self.assertIn(f'action="{reverse("session_finish", args=[self.night.session.pk])}"', form)
+        self.assertEqual(len(re.findall(r'name="count_id" value="\d+"', form)), 2)
+        self.assertIn("Finish with the override", form)
+
+    def test_the_override_form_finishes_the_set(self):
+        short(self.night)
+        html = self.page()
+        form = html[html.index('data-key="override"'):]
+        form = form[:form.index("</form>")]
+        page = self.client.post(reverse("session_finish", args=[self.night.session.pk]), {
+            "count_id": re.findall(r'name="count_id" value="(\d+)"', form),
+            "request_id": re.search(r'name="request_id" value="([^"]+)"', form).group(1),
+            "absorber": str(self.night.players["B"].pk), "note": "lost chip",
+        }, follow=True)
+        self.assertContains(page, "Set 1 is final.")
+        self.assertEqual(self.night.refresh().state, "finalized")
+
+    def test_an_override_finish_without_a_note_stays_on_the_set(self):
+        short(self.night)
+        page = self.client.post(reverse("session_finish", args=[self.night.session.pk]), {
+            "count_id": ready_ids(self.night), "request_id": uuid.uuid4(),
+            "absorber": str(self.night.players["B"].pk), "note": "",
+        }, follow=True)
+        self.assertRedirects(page, self.url)
+        self.assertContains(page, "Write a note")
+        self.assertEqual(CashOut.objects.count(), 0)
 
 
 class ResultsAtAGlanceTests(TestCase):

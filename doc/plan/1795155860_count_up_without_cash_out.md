@@ -7,6 +7,8 @@ Outcome: on count-up the host types counts and confirms them. Nothing else. One 
 
 ## OPEN QUESTIONS
 
+Approved 2026-11-20: all four as proposed.
+
 1. **Books off.** When every count is confirmed and the counts do not balance, the host now sees **Find the ₱X difference** straight away, from the counts. No cash-out first. Proposed: yes.
 2. **Override.** **Finalize with an override** becomes available as soon as every count is confirmed and the counts are off. One action records the cash-outs, the override and the results, or nothing. Proposed: yes. This changes a settlement rule, so it gets an ADR.
 3. **Players who cashed out during play** (left early). Their row keeps "Cashed out ₱X" and a full pip. They need no count. Proposed: keep.
@@ -14,16 +16,16 @@ Outcome: on count-up the host types counts and confirms them. Nothing else. One 
 
 ## Tasks
 
-- [ ] **1. Finish from confirmed counts, with or without an override.** `tests: first`
+- [x] **1. Finish from confirmed counts, with or without an override.** `tests: first`
   - `finish_set` accepts an optional override (note, mode, absorber). In one transaction: batch cash-out of the reviewed counts, then `record_override` when given, then `finalize`. Any refusal records nothing.
   - `finishes_the_set` is true when every player with money has a confirmed count or a cash-out, whatever the difference. The review page shows the verdict: balanced, or off by ₱X with the override form.
   - `ledger.services.cash_out_counted` stays as an internal step of `finish_set`. The view no longer posts a partial batch.
   - Done when: tests show a balanced finish, an override finish, a stale-count refusal and a repeated tap, each with the exact rows written or none.
-- [ ] **2. Books-off from counts.** `tests: first`
+- [x] **2. Books-off from counts.** `tests: first`
   - The count-up books and the dock read `count_total` (confirmed counts plus earlier cash-outs) for the gap. **Find the difference** appears when every count is in and they are off.
   - Rows show in / counted / net and the suspect mark from counts, as the cashed-out rows do now.
   - Done when: a set with all counts confirmed and off by ₱500 shows the gap action and the override, with no cash-out row in the database.
-- [ ] **3. Count-up words and dock.** `tests: alongside`
+- [x] **3. Count-up words and dock.** `tests: alongside`
   - Status `ready` reads "Counted", not "Ready to cash out". Progress reads "N of M players counted".
   - Remove **Cash out counted players (N)**. The dock action after confirming is **Review and finish** (balanced) or **Find the ₱X difference** (off).
   - The review page title is "Finish set N" in every case. Remove the "Cash out N players" button and "After this batch" wording.

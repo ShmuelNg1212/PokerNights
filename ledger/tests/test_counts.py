@@ -152,9 +152,9 @@ class CashOutKindTests(TestCase):
         balance = queries.balance(night.session)
         self.assertFalse(balance.ok)
         self.assertFalse(balance.counted)
-        self.assertIn("Not cashed out yet: A", balance.explanation)
+        self.assertIn("Still to count: A", balance.explanation)
         count(night, "A", 0)
-        self.assertIn("Not cashed out yet: A", queries.balance(night.session).explanation)  # counted is not cashed out
+        self.assertIn("Every player is counted. Finish the set", queries.balance(night.session).explanation)  # counted is not cashed out
         services.clear_count(night.session.pk, night.host, night.players["A"].pk)
         night.cash("A", 0)
         self.assertTrue(queries.balance(night.session).ok)
@@ -233,7 +233,7 @@ class CountPageTests(TestCase):
         self.post("A", "1600")
         self.night.cash("B", 700)
         page = self.client.get(self.page_url)
-        for text in ('data-status="ready">Ready to cash out', 'data-status="cashed_out">Cashed out', 'data-status="awaiting">Awaiting count',
+        for text in ('data-status="ready">Counted', 'data-status="cashed_out">Cashed out', 'data-status="awaiting">Awaiting count',
                      "Counted ₱1,600", "Payments come at the end of the session", "Confirm all counts"):
             self.assertContains(page, text)
 
@@ -246,10 +246,10 @@ class CountPageTests(TestCase):
         self.assertEqual(statuses(self.night), {"A": "awaiting", "B": "awaiting", "C": "ready"})
         self.assertContains(self.post("A", "lots"), "Enter an amount in pesos")
 
-    def test_individual_cash_out_is_under_details_while_counting(self):
+    def test_counting_offers_no_cash_out(self):
         page = self.client.get(self.page_url)
-        self.assertContains(page, "Exception: cash this player out now, without a confirmed count.")
-        self.assertContains(page, "cashouts/add")
+        self.assertNotContains(page, "Exception: cash this player out now")
+        self.assertNotContains(page, "cashouts/add")
 
     def test_clear_from_the_page(self):
         self.post("A", "1600")
@@ -272,7 +272,7 @@ class CountPageTests(TestCase):
     def test_finalize_names_who_is_not_cashed_out(self):
         self.post("A", "1600")
         page = self.client.post(reverse("session_finalize", args=[self.night.session.pk]), follow=True)
-        self.assertContains(page, "Not cashed out yet: A, B, C")
+        self.assertContains(page, "Still to count: B, C.")
 
 
 class ConfirmSeveralCountsTests(TestCase):

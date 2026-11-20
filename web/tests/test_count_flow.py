@@ -55,8 +55,16 @@ class CountUpStructureTests(TestCase):
         self.assertEqual(html.count("data-next-server"), 0)  # nothing counted yet: type first
         count(self.night, "A", 800)
         html = self.page()
+        self.assertEqual(html.count("data-next-server"), 0)  # B is still to count: no cash-out step in between
+        self.assertNotIn("Cash out counted players", html)
+        count(self.night, "B", 900)
+        html = self.page()
         self.assertEqual(html.count("data-next-server"), 1)
-        self.assertIn("Cash out counted players (1)", html)
+        self.assertIn("Find the ₱300 difference", html)
+        count(self.night, "B", 1200)
+        html = self.page()
+        self.assertEqual(html.count("data-next-server"), 1)
+        self.assertIn(">Review and finish</a>", html)
         dock = html[html.index('class="host-controls'):html.index('class="host-more"')]
         self.assertEqual(dock.count("btn-primary"), 1 + 1)  # that link, and the hidden confirm button that replaces it
         self.assertIn('class="btn btn-block confirm-all"', html)  # "Confirm all counts" is the fallback, never the main action
@@ -85,7 +93,7 @@ class CountUpStructureTests(TestCase):
     def test_the_host_books_follow_the_confirmed_counts(self):
         books = lambda: self.page()[self.page().index('id="balance"'):]
         html = books()
-        self.assertIn('<dt data-books-counted-label>Counted, not cashed out</dt><dd data-books-counted>₱0</dd>', html)
+        self.assertIn('<dt data-books-counted-label>Counted</dt><dd data-books-counted>₱0</dd>', html)
         self.assertNotIn("still to account for", html)  # the dock says what remains
         count(self.night, "A", 800)
         html = books()
@@ -110,7 +118,7 @@ class CountUpStructureTests(TestCase):
         self.assertEqual(html.count("Confirmed counts"), 1)
         self.assertNotIn("data-count-input", html)
         self.assertNotIn("Confirm each player", html)
-        self.assertIn("Not cashed out yet: A, B.", html)
+        self.assertIn("Still to count: A, B.", html)
         self.assertNotIn("Type what each player has left", html)
 
 
@@ -145,30 +153,25 @@ class ReviewVerdictTests(TestCase):
         self.assertIn('data-tone="good">The books balance.', verdict)
         self.assertIn("notice-good", verdict)
 
-    def test_a_batch_that_leaves_the_books_short_warns(self):
+    def test_counts_that_are_off_stay_on_the_set_page_with_the_gap(self):
         count(self.night, "A", 1200)
         count(self.night, "B", 750)
-        verdict = self.verdict()
-        self.assertIn('data-tone="warn">After this batch the books are ₱50 short.', verdict)
-        self.assertIn("Recount before recording, or record and fix it after.", verdict)
+        page = self.client.get(self.url, follow=True)
+        self.assertRedirects(page, reverse("session", args=[self.night.session.pk]))
+        self.assertContains(page, "Find the ₱50 difference")
+        self.assertContains(page, "The counts are off. Correct a count, or finish with an override in More host controls.")
 
-    def test_a_batch_that_puts_the_books_over_warns(self):
+    def test_a_player_still_to_count_keeps_the_review_closed(self):
         count(self.night, "A", 1200)
-        count(self.night, "B", 900)
-        self.assertIn("After this batch the books are ₱100 over.", self.verdict())
-
-    def test_players_still_to_count_are_named_as_the_reason(self):
-        count(self.night, "A", 1200)
-        verdict = self.verdict()
-        self.assertIn('data-tone="">After this batch 1 player is still to count.', verdict)
-        self.assertNotIn("notice", verdict)
+        self.assertEqual(self.client.get(self.url).status_code, 302)
 
     def test_the_grey_sentence_and_rake_rows_are_gone(self):
         count(self.night, "A", 1200)
+        count(self.night, "B", 800)
         page = self.client.get(self.url)
-        self.assertNotContains(page, "After this batch:")
+        self.assertNotContains(page, "After this batch")
         self.assertNotContains(page, "Collected rake")
-        self.assertContains(page, '<th scope="col" class="num">Cash-out</th>')
+        self.assertContains(page, '<th scope="col" class="num">Count</th>')
 
 
 class FinalizeAsksOnceTests(TestCase):
@@ -250,7 +253,7 @@ class CountRevampTests(TestCase):
         self.assertIn('data-sheet-source="player-', row)
         self.assertNotIn("Final count (₱)</label>", row)
         self.assertNotIn('class="badge', row)
-        self.assertIn('data-status="ready">Ready to cash out. Counted ₱800', row)
+        self.assertIn('data-status="ready">Counted ₱800', row)
         self.assertIn('data-watch="count-', row)
 
     def test_the_overview_has_one_mark_per_player_with_a_buy_in(self):
@@ -258,7 +261,7 @@ class CountRevampTests(TestCase):
         html = self.client.get(self.url).content.decode()
         self.assertEqual(html.count('<li data-status="ready" data-watch="count-'), 1)
         self.assertEqual(html.count('<li data-status="awaiting" data-watch="count-'), 1)
-        self.assertIn("1 awaiting count, 1 ready to cash out, 0 cashed out.", html)
+        self.assertIn("1 awaiting count, 1 counted, 0 cashed out during play.", html)
 
     def test_the_books_state_each_figure_once(self):
         html = self.client.get(self.url).content.decode()
@@ -267,7 +270,8 @@ class CountRevampTests(TestCase):
         self.assertNotIn("Balance check", html)
         books = html[html.index('id="balance"'):]
         self.assertEqual(books.count("Total bought in</dt>"), 1)
-        self.assertEqual(books.count("Total cashed out</dt>"), 1)
+        self.assertEqual(books.count("Total cashed out</dt>"), 0)  # nothing was cashed out during play
+        self.assertEqual(books.count("Counted</dt>"), 1)
 
     def test_a_cashed_out_player_has_no_field(self):
         self.night.cash("A", 900)

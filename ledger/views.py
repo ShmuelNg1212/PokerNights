@@ -206,60 +206,32 @@ def count_clear(request, session_id, participant_id):
 
 
 def cash_out_counted(request, session_id):
-    """Review the players with confirmed counts, then cash them all out with one confirmation."""
+    """The finish review: the confirmed counts and the verdict, with one button that finishes the set.
+
+    It records nothing. A set that cannot finish in one action goes back to the set page.
+    """
     session, actor = session_for(request.user, session_id)
     require_host(actor)
-    error = ""
-    if request.method == "POST":
-        try:
-            batch = services.cash_out_counted(
-                session.pk, actor, request.POST.getlist("count_id"), request_id_from(request)
-            )
-        except RuleError as refused:
-            error = str(refused)  # nothing was recorded; show a fresh review below
-        else:
-            done = batch.cash_outs.count()
-            waiting = len(queries.summary(session).awaiting_lines) + len(queries.summary(session).ready_lines)
-            rest = f", {waiting} to count" if waiting else ""
-            messages.success(request, f"{done} player{'' if done == 1 else 's'} cashed out{rest}.")
-            return redirect("session", session_id=session.pk)
-    session.refresh_from_db()
     if session.state != services.State.RECONCILIATION:
-        messages.error(request, "Counted players are cashed out after play has ended.")
         return redirect("session", session_id=session.pk)
     summary = queries.summary(session)
+    if not queries.finishes_the_set(summary):
+        return redirect("session", session_id=session.pk)
     ready = summary.ready_lines
-    batch_total = sum(line.count.amount for line in ready)
-    # What the books will say once this batch is recorded: the last cheap moment to catch a miscount.
-    difference = queries.count_total(summary).difference + summary.adjustment
-    finishes = queries.finishes_the_set(summary)
-    if finishes:
-        verdict = ("good", "The books balance.")
-    elif summary.awaiting_lines:
-        waiting = len(summary.awaiting_lines)
-        verdict = ("", f"After this batch {waiting} player{' is' if waiting == 1 else 's are'} still to count.")
-    elif difference == 0 and summary.adjustment:
-        verdict = ("warn", "After this batch an override covers the difference.")
-    elif difference == 0:
-        verdict = ("good", "After this batch the books balance.")
+    if summary.adjustment:
+        verdict = ("warn", "An override covers the difference.")
     else:
-        off = money.format_amount(abs(difference), session.unit)
-        verdict = ("warn", f"After this batch the books are {off} {'short' if difference < 0 else 'over'}. "
-                           "Recount before recording, or record and fix it after.")
+        verdict = ("good", "The books balance.")
     context = {
         "session": session,
         "unit": session.unit,
-        "error": error,
         "ready": ready,
         "participants": [line.participant for line in summary.lines],
-        "awaiting": summary.awaiting_lines,
         "cashed_out": summary.cashed_out_lines,
-        "batch_total": batch_total,
+        "batch_total": sum(line.count.amount for line in ready),
         "summary": summary,
-        "after_batch": summary.cashed_out + batch_total,
         "verdict_tone": verdict[0],
         "verdict": verdict[1],
-        "finishes": finishes,
         "reopening": services.is_reopened(session),
         "reopen_on": settings.REOPENING,
         "request_id": uuid.uuid4(),

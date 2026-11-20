@@ -24,9 +24,11 @@
   {% endif %}
   <dl class="set-totals books-lines">
     <div><dt>Total bought in</dt><dd>{{ summary.total|amount:unit }}</dd></div>
-    <div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Total cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>
+    {# While counting, a cash-out is one recorded during play; finishing records the rest from the counts. #}
+    {% if count_total and not balance.counted %}{% if summary.cashed_out %}<div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Cashed out during play</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>{% endif %}
+    {% else %}<div data-watch="recorded-cash" data-value="{{ summary.cashed_out }}"><dt>Total cashed out</dt><dd>{{ summary.cashed_out|amount:unit }}</dd></div>{% endif %}
     {# The host's books follow the count as it is typed and confirmed (counts.js); a player's books have the count total below. #}
-    {% if me.is_host and count_total and not balance.counted %}<div class="books-counted"><dt data-books-counted-label>Counted, not cashed out</dt><dd data-books-counted>{{ count_total.remaining|amount:unit }}</dd></div>{% endif %}
+    {% if me.is_host and count_total and not balance.counted %}<div class="books-counted"><dt data-books-counted-label>Counted</dt><dd data-books-counted>{{ count_total.remaining|amount:unit }}</dd></div>{% endif %}
     {% if summary.rake %}{% include "web/_rake_totals.html" %}{% endif %}
     {% if summary.adjustment %}<div><dt>Host override</dt><dd>{{ summary.adjustment|signed_amount:unit }}</dd></div>{% endif %}
     <div><dt>Set timer</dt><dd>{% clock_value set_seconds False %}</dd></div>
@@ -47,8 +49,8 @@
   {% elif balance.stray_cash_outs %}
   <div class="notice">{{ balance.explanation }}</div>
   {% else %}
-  {# Players still to be counted or cashed out are normal progress, not a warning. #}
-  <div class="notice notice-info">{% if me.is_host or not balance.missing_cash_outs %}{{ balance.explanation }}{% else %}Not cashed out yet: {% for line in balance.missing_cash_outs %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</div>
+  {# Players still to be counted are normal progress, not a warning. #}
+  <div class="notice notice-info">{% if me.is_host or not summary.awaiting_lines %}{{ balance.explanation }}{% else %}Still to count: {% for line in summary.awaiting_lines %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</div>
   {% endif %}
 
   {% for line in summary.lines %}{% for a in line.adjustments %}

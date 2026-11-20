@@ -55,12 +55,16 @@
   {% elif balance.counted %}
   {# gap.js turns the tap into a scroll to the record that looks wrong; without it the anchor leads to the books. #}
   <a class="btn btn-primary btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>Find the {{ balance.difference_text }} difference</a>
-  {% elif summary.ready_lines %}
-  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>{% if finishes_the_set %}Review and finish{% else %}Cash out counted players ({{ summary.ready_lines|length }}){% endif %}</a>
+  {% elif counts_off %}
+  {# Every count is in and they do not add up. The counts are the records to check; the books show the gap. #}
+  <a class="btn btn-primary btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>Find the {{ counts_off_text }} difference</a>
+  {% elif finishes_the_set %}
+  {# The review records the cash-outs from the counts and freezes the results in one action. #}
+  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>Review and finish</a>
   {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}
-    {% if balance.ok %}{% firstof "" as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override in More host controls." as hint %}{% elif summary.ready_lines %}{% firstof "" as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
+    {% if balance.ok %}{% firstof "" as hint %}{% elif balance.counted %}{% firstof "The books are off. Find the wrong record, or record an override in More host controls." as hint %}{% elif counts_off %}{% firstof "The counts are off. Correct a count, or finish with an override in More host controls." as hint %}{% elif finishes_the_set %}{% firstof "" as hint %}{% elif summary.awaiting_lines %}{% firstof "Type each player's final count, then confirm. 0 is a valid count." as hint %}{% else %}{% firstof "No buy-in is recorded, so there is nothing to finalize." as hint %}{% endif %}
     <p id="batch-why" class="dock-hint small muted" data-hint="{{ hint }}">{{ hint }}</p>
   {% endif %}
   <details class="host-more" data-key="host-more"><summary>More host controls</summary>
@@ -74,11 +78,19 @@
   </form>{% endif %}
   {% if session.state == 'reconciliation' %}
     {# A rare way out of a gap: it waits here, so the books stay a search. The form and its rules are unchanged. #}
-    {% if balance.counted and not balance.ok %}
+    {% if balance.counted and not balance.ok or counts_off %}
     <details data-key="override">
-      <summary class="btn btn-quiet btn-block">Finalize with an override</summary>
+      <summary class="btn btn-quiet btn-block">{% if counts_off %}Finish with an override{% else %}Finalize with an override{% endif %}</summary>
+      {% if counts_off %}
+      {# One action records the cash-outs from these counts, the override and the results, or nothing. #}
+      <form method="post" data-turbo="true" action="{% url 'session_finish' session.pk %}" class="stack" data-once>{% csrf_token %}
+        <input type="hidden" name="request_id" value="{{ finish_request_id }}">
+        {% for line in summary.ready_lines %}<input type="hidden" name="count_id" value="{{ line.count.pk }}">{% endfor %}
+        <p class="small muted">The counts{% if summary.rake %} plus rake{% endif %} must match buy-ins, so someone absorbs the {{ counts_off_text }}. This is recorded in the set log, and the results freeze.</p>
+      {% else %}
       <form method="post" data-turbo="true" action="{% url 'override_add' session.pk %}" class="stack" data-once>{% csrf_token %}{% request_id_field %}
         <p class="small muted">{% if summary.rake %}Cash-outs plus rake{% else %}Cash-outs{% endif %} must match buy-ins, so someone absorbs the {{ balance.difference_text }}. This is recorded in the set log.</p>
+      {% endif %}
         <div class="field">
           <label for="absorber">Who absorbs the difference?</label>
           <select id="absorber" name="absorber">
@@ -87,7 +99,7 @@
           </select>
         </div>
         <div class="field"><label for="override-note">Note</label><input id="override-note" type="text" name="note" data-keep="override-note" maxlength="255" required></div>
-        <button type="submit" class="btn btn-danger btn-block">Record override</button>
+        <button type="submit" class="btn btn-danger btn-block">{% if counts_off %}Finish with the override{% else %}Record override{% endif %}</button>
       </form>
     </details>
     {% endif %}

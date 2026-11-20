@@ -74,9 +74,9 @@ class ChipPagesTests(TestCase):
         self.assertEqual(count.chip_breakdown, entry.chip_breakdown)
         services.confirm_count(self.n.session.pk, self.n.host, self.n.players["A"].pk, 100000, uuid.uuid4())
         counts = FinalCount.objects.filter(session=self.n.session, is_current=True).values_list("pk", flat=True)
-        response = self.client.post(reverse("cash_out_counted", args=[self.n.session.pk]), {
+        response = self.client.post(reverse("session_finish", args=[self.n.session.pk]), {
             "count_id": list(counts), "request_id": uuid.uuid4()}, follow=True)
-        self.assertContains(response, "All counts match buy-ins.")
+        self.assertContains(response, "Set 1 is final.")
 
     def test_host_can_confirm_a_chip_count_directly(self):
         self.configure()

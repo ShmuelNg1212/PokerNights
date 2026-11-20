@@ -48,13 +48,14 @@ def finalize(session_id, actor: Member) -> Finalization:
 
 
 @transaction.atomic
-def finish_set(session_id, actor: Member, count_ids, request_id) -> Finalization:
-    """Record the reviewed cash-outs and freeze the results in one action: both, or neither.
+def finish_set(session_id, actor: Member, count_ids, request_id, override=None) -> Finalization:
+    """Record the reviewed cash-outs, an override when given, and freeze the results in one action: all, or nothing.
 
     The existing rules decide. ``ledger.cash_out_counted`` refuses a count that changed since the
-    review, and finalizing refuses books that do not balance; either refusal undoes the whole action.
-    An override is refused too, because the Finalize sheet is where it is disclosed. A repeated
-    request changes nothing: it returns the results, or is refused once the set was reopened.
+    review, ``ledger.record_override`` refuses an override that is not needed or has no note, and
+    finalizing refuses books that do not balance; any refusal undoes the whole action. ``override``
+    is ``{"note", "mode", "participant_id"}``. A repeated request changes nothing: it returns the
+    results, or is refused once the set was reopened.
     """
     require_host(actor)
     session = games.lock_session(session_id, actor.group_id)
@@ -65,9 +66,12 @@ def finish_set(session_id, actor: Member, count_ids, request_id) -> Finalization
     if session.state == State.FINALIZED:
         raise RuleError(f"Set {session.set_number} is already final. Nothing was recorded.")
     ledger.cash_out_counted(session.pk, actor, count_ids, request_id)
-    if ledger_queries.balance(session).overridden:
-        raise RuleError("An override covers this set. Cash out the players, then finalize on the set page. Nothing was recorded.")
     try:
+        if override is not None:
+            ledger.record_override(
+                session.pk, actor, override.get("note", ""), override.get("mode", ""),
+                override.get("participant_id"), request_id,
+            )
         return finalize(session.pk, actor)
     except RuleError as refused:
         raise RuleError(f"{refused} Nothing was recorded.") from refused

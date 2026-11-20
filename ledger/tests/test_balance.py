@@ -53,7 +53,7 @@ class BalanceCheckTests(TestCase):
         balance = queries.balance(worked_example((1600, 900, None)).session)
         self.assertFalse(balance.ok)
         self.assertFalse(balance.counted)
-        self.assertIn("Not cashed out yet: C", balance.explanation)
+        self.assertIn("Still to count: C", balance.explanation)
 
     def test_cash_out_without_a_buy_in_is_flagged(self):
         night = worked_example()
@@ -126,7 +126,7 @@ class OverrideTests(TestCase):
     def test_refused_when_balanced_or_not_fully_counted(self):
         with self.assertRaisesMessage(RuleError, "No override is needed"):
             override(worked_example())
-        with self.assertRaisesMessage(RuleError, "Not cashed out yet: C"):
+        with self.assertRaisesMessage(RuleError, "Still to count: C"):
             override(worked_example((1600, 700, None)))
 
     def test_only_a_host_and_only_while_counting(self):

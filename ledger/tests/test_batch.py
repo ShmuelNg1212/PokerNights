@@ -66,7 +66,7 @@ class BatchTests(TestCase):
         self.assertEqual(session.night.status, "open")
         balance = queries.balance(session)
         self.assertFalse(balance.ok)
-        self.assertIn("Not cashed out yet: E, F", balance.explanation)
+        self.assertIn("Still to count: E, F", balance.explanation)
 
     def test_the_rest_is_cashed_out_by_running_the_action_again(self):
         night = six_players()
@@ -198,83 +198,48 @@ class BatchTests(TestCase):
 
 
 class BatchPageTests(TestCase):
+    """Count-up has no partial batch: the review opens only when the set can finish, and records nothing itself."""
+
     def setUp(self):
         self.night = six_players()
         self.url = reverse("cash_out_counted", args=[self.night.session.pk])
         self.page_url = reverse("session", args=[self.night.session.pk])
         self.client.force_login(self.night.host.user)
 
-    def confirm(self, ids=None, **extra):
-        return self.client.post(self.url, {"count_id": ready_ids(self.night) if ids is None else ids, **extra}, follow=True)
-
-    def test_button_shows_the_number_of_ready_players(self):
+    def test_counted_players_wait_for_the_rest_without_a_cash_out_step(self):
         page = self.client.get(self.page_url)
-        self.assertContains(page, "Cash out counted players (4)")
-        self.assertContains(page, self.url)
+        self.assertNotContains(page, "Cash out counted players")
+        self.assertNotContains(page, self.url)
         self.assertContains(page, 'data-status="awaiting">Awaiting count', count=2)  # E and F
-        self.assertContains(page, "2 awaiting count")
+        self.assertContains(page, "2 awaiting count, 4 counted")
         self.assertNotContains(page, "notice-bad")  # players still to count are not an error
 
-    def test_no_cash_out_button_and_a_reason_when_nobody_is_ready(self):
+    def test_no_action_and_a_reason_when_nobody_is_ready(self):
         night = counting("A", "B")
         self.client.force_login(night.host.user)
         page = self.client.get(reverse("session", args=[night.session.pk]))
-        self.assertNotContains(page, "Cash out counted players")
         self.assertContains(page, "Type each player's final count, then confirm. 0 is a valid count.")
         self.assertNotContains(page, reverse("cash_out_counted", args=[night.session.pk]))
 
-    def test_review_lists_players_counts_cash_outs_total_and_who_is_pending(self):
-        page = self.client.get(self.url)
-        for text in ("confirmed final count", "Cash-out", "₱2,500", "₱1,500", "₱0", "₱800", "Total of this batch", "₱4,800",
-                     "Still to count", "Awaiting count", "Cash out 4 players"):
-            self.assertContains(page, text)
-        html = page.content.decode()
-        self.assertEqual(html.count('name="count_id"'), 4)
-        self.assertEqual(html.count("Awaiting count"), 2)  # E and F
-
-    def test_confirm_reports_the_result_and_leaves_the_set_counting(self):
-        page = self.confirm()
+    def test_the_review_waits_for_every_count(self):
+        page = self.client.get(self.url, follow=True)
         self.assertRedirects(page, self.page_url)
-        self.assertContains(page, "4 players cashed out, 2 to count.")
-        self.assertContains(page, "Counting up")
-        self.assertNotContains(page, "Cash out counted players (")
-        count(self.night, "E", 700)
-        count(self.night, "F", 500)
-        page = self.confirm()
-        self.assertContains(page, "2 players cashed out.")
-        self.assertContains(page, "Finalize results")
-        self.assertContains(page, "The books balance")
-
-    def test_stale_review_explains_and_shows_a_fresh_one(self):
-        reviewed = ready_ids(self.night)
-        count(self.night, "B", 1400)
-        page = self.confirm(reviewed)
-        self.assertContains(page, "The review is out of date: B&#x27;s count was changed or cleared. Nothing was recorded.")
-        self.assertContains(page, "₱1,400")  # the fresh review shows the new count
-        self.assertContains(page, "Cash out 4 players")
         self.assertEqual(CashOut.objects.count(), 0)
 
-    def test_resending_the_same_confirmation_records_once(self):
-        ids, request_id = ready_ids(self.night), str(uuid.uuid4())
-        self.confirm(ids, request_id=request_id)
-        page = self.confirm(ids, request_id=request_id)
-        self.assertContains(page, "4 players cashed out")
-        self.assertEqual((CashOut.objects.count(), CashOutBatch.objects.count()), (4, 1))
+    def test_a_post_to_the_review_records_nothing(self):
+        self.client.post(self.url, {"count_id": ready_ids(self.night)})
+        self.assertEqual((CashOut.objects.count(), CashOutBatch.objects.count()), (0, 0))
 
     def test_player_and_stranger_are_refused(self):
         ben = add_player(self.night.group, "ben")
         self.client.force_login(ben.user)
         self.assertEqual(self.client.get(self.url).status_code, 403)
-        self.assertEqual(self.client.post(self.url, {"count_id": ready_ids(self.night)}).status_code, 403)
         page = self.client.get(self.page_url)
-        self.assertNotContains(page, "Cash out counted players")
-        self.assertContains(page, "4 ready to cash out")  # players still see the statuses
+        self.assertContains(page, "4 counted")  # players still see the statuses
         self.client.force_login(make_user("stranger"))
         self.assertEqual(self.client.get(self.url).status_code, 404)
-        self.assertEqual(self.client.post(self.url, {"count_id": ready_ids(self.night)}).status_code, 404)
-        self.assertEqual(CashOut.objects.count(), 0)
 
     def test_review_is_closed_while_the_set_runs(self):
         games.transition(self.night.session.pk, self.night.host, "resume")
         page = self.client.get(self.url, follow=True)
-        self.assertContains(page, "after play has ended")
+        self.assertRedirects(page, self.page_url)

@@ -29,7 +29,7 @@ class EndSetPageTests(TestCase):
     def test_progress_excludes_no_money_and_partial_cash_out(self):
         page = self.client.get(self.url)
         self.assertContains(page, '<strong>0 <span>of 2</span></strong>')
-        self.assertContains(page, 'Total cashed out</dt><dd>₱200')
+        self.assertContains(page, 'Cashed out during play</dt><dd>₱200')
         self.assertNotContains(page, 'data-balance=')
         self.count('Ben', 800)
         page = self.client.get(self.url)
@@ -39,16 +39,17 @@ class EndSetPageTests(TestCase):
 
     def test_review_keeps_exact_count_ids_and_adds_to_earlier_cash_outs(self):
         count = self.count('Ben', 800)
+        self.count('Bea', 1000)
         page = self.client.get(reverse('cash_out_counted', args=[self.night.session.pk]))
         self.assertContains(page, f'name="count_id" value="{count.pk}"')
-        self.assertContains(page, 'After this batch</dt><dd>₱1,000')  # 800 counted + 200 cashed out earlier
+        self.assertContains(page, 'Accounted for</dt><dd>₱2,000')  # 1,800 counted + 200 cashed out earlier
         self.assertContains(page, 'Bought in</dt><dd>₱2,000')
         self.assertContains(page, 'name="request_id"')
 
     def test_equal_recorded_totals_with_missing_final_cash_out_do_not_balance(self):
         self.night.cash('Bea', 1800)
         page = self.client.get(self.url)
-        self.assertContains(page, 'Total cashed out</dt><dd>₱2,000')
+        self.assertContains(page, 'Cashed out during play</dt><dd>₱2,000')
         self.assertNotContains(page, 'data-balance=')
         self.assertNotContains(page, 'Finalize results')
         self.assertNotContains(page, 'role="alert"')

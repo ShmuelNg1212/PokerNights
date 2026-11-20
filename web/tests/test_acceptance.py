@@ -101,7 +101,7 @@ class GameNightAcceptanceTest(TestCase):
 
         # --- C is not counted yet: finalize is refused and says why.
         refused = host.post(reverse("session_finalize", args=[session.pk]), follow=True)
-        self.assertContains(refused, "Not cashed out yet: C")
+        self.assertContains(refused, "Still to count: C")
         host.post(add_cash_out, {"participant_id": seats["C"].pk, "amount": "250"})
         self.assertContains(host.get(page_url), "₱50 too much")
         wrong = session.cash_outs.get(participant=seats["C"])
@@ -242,41 +242,34 @@ class EndOfSetAcceptanceTest(TestCase):
         for name, amount in (("A", "2500"), ("B", "1500"), ("C", "0"), ("D", "800")):
             host.post(confirm, {"participant_id": seats[name].pk, "amount": amount})
         page = host.get(page_url)
-        self.assertContains(page, "Cash out counted players (4)")
+        self.assertNotContains(page, "Cash out counted players")  # count-up asks for counts only
+        self.assertContains(page, "4 <span>of 6</span></strong> players counted")
         self.assertContains(page, 'data-status="awaiting">Awaiting count', count=2)  # E and F
-
         review_url = reverse("cash_out_counted", args=[game.pk])
-        review = host.get(review_url)
-        for text in ("₱2,500", "₱1,500", "₱0", "₱800", "₱4,800", "Cash out 4 players"):
-            self.assertContains(review, text)
-        count_ids = re.findall(r'name="count_id" value="(\d+)"', review.content.decode())
-        self.assertEqual(len(count_ids), 4)
-        done = host.post(review_url, {"count_id": count_ids}, follow=True)
-        self.assertContains(done, "4 players cashed out, 2 to count.")
-        self.assertEqual(CashOut.objects.filter(kind="final").count(), 4)
-        self.assertEqual((GameSession.objects.get().state, Finalization.objects.count()), ("reconciliation", 0))
+        self.assertRedirects(host.get(review_url), page_url)  # nothing to finish yet
+        self.assertEqual(CashOut.objects.count(), 0)
 
-        # Finalizing now is refused: two players are not cashed out.
-        refused = host.post(reverse("session_finalize", args=[game.pk]), follow=True)
-        self.assertContains(refused, "Not cashed out yet: E, F")
-
-        # Later: the other two are counted and cashed out with the same action.
+        # Later: the other two are counted. One review records the cash-outs and freezes the results.
         for name, amount in (("E", "700"), ("F", "500")):
             host.post(confirm, {"participant_id": seats[name].pk, "amount": amount})
-        review = host.get(review_url)
-        count_ids = re.findall(r'name="count_id" value="(\d+)"', review.content.decode())
-        done = host.post(review_url, {"count_id": count_ids}, follow=True)
-        self.assertContains(done, "2 players cashed out.")
-        self.assertContains(done, "The books balance")
+        self.assertContains(host.get(page_url), ">Review and finish</a>")
+        review = host.get(review_url).content.decode()
+        for text in ("₱2,500", "₱1,500", "₱0", "₱800", "₱6,000", "The books balance."):
+            self.assertIn(text, review)
+        done = host.post(reverse("session_finish", args=[game.pk]), {
+            "count_id": re.findall(r'name="count_id" value="(\d+)"', review),
+            "request_id": re.search(r'name="request_id" value="([^"]+)"', review).group(1),
+        }, follow=True)
+        self.assertContains(done, "Set 1 is final.")
+        self.assertEqual(CashOut.objects.filter(kind="final").count(), 6)
 
         # However long counting took, each player played three hours.
         late = start + datetime.timedelta(minutes=260)
         self.assertEqual(set(clock.player_seconds(game, late).values()), {180 * 60})
         self.assertEqual(clock.set_seconds(game, late), 180 * 60)
-        host.post(reverse("session_finalize", args=[game.pk]))
         self.assertEqual(set(PlayerResult.objects.values_list("play_seconds", flat=True)), {180 * 60})
         log = host.get(reverse("session_log", args=[game.pk]))
-        for text in ("Play from", "Confirmed C&#x27;s final count: ₱0", "Cashed out 4 counted players: A, B, C, D", "Cashed out 2 counted players: E, F"):
+        for text in ("Play from", "Confirmed C&#x27;s final count: ₱0", "Cashed out 6 counted players: A, B, C, D, E, F"):
             self.assertContains(log, text)
 
 
@@ -291,10 +284,11 @@ class TwoSetSessionAcceptanceTest(TestCase):
         host.post(reverse("session_transition", args=[game.pk]), {"action": "end"})
         for name, (_, final) in figures.items():
             host.post(reverse("count_confirm", args=[game.pk]), {"participant_id": seats[name].pk, "amount": str(final)})
-        review_url = reverse("cash_out_counted", args=[game.pk])
-        count_ids = re.findall(r'name="count_id" value="(\d+)"', host.get(review_url).content.decode())
-        host.post(review_url, {"count_id": count_ids})
-        return host.post(reverse("session_finalize", args=[game.pk]), follow=True)
+        review = host.get(reverse("cash_out_counted", args=[game.pk])).content.decode()
+        return host.post(reverse("session_finish", args=[game.pk]), {
+            "count_id": re.findall(r'name="count_id" value="(\d+)"', review),
+            "request_id": re.search(r'name="request_id" value="([^"]+)"', review).group(1),
+        }, follow=True)
 
     def test_two_sets_one_settle_up(self):
         host = sign_up("hana")

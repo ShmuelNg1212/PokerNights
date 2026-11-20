@@ -61,8 +61,8 @@ class RemainingSentenceOnceTests(PageMixin, TestCase):
         self.assertNotIn("data-books-status", html)
         # The folded bar and the dock's count total; the books keep the table and the names.
         self.assertEqual(html.count("₱2,500 still to account for."), 2)
-        self.assertIn("Counted, not cashed out", books(html))
-        self.assertIn("Not cashed out yet: A, B, C.", books(html))
+        self.assertIn("Counted", books(html))
+        self.assertIn("Still to count: B, C.", books(html))
 
     def test_a_players_books_keep_their_count_total(self):
         night = counting(login="Carlo")
