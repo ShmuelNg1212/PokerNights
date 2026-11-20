@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: Cash out and Reverse apart (not released)
+## Phone checks: Cash out and Reverse apart (released 2026-11-20)
 
 - [ ] Open a player in a set in play: Cash out is at the top, the records are under a line with "Records and corrections", and no red button shows. Tap "Reverse…" on a rebuy: a reason field and "Reverse ₱1,000" appear. Reverse it: the rebuy is struck through with the reason. On a computer the "Tap a player" line is gone.
 
