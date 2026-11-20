@@ -5,7 +5,7 @@
 <section class="table-players" aria-label="Players at the table">
   {# Players can join now, and so can the host: beside the seat count it changes, near the top, where the dock never covers it. In play it is under the list. #}
   {% if session.state == 'open' and can_join and me.is_host and not my_participant and seats_free > 0 %}{% firstof "1" as host_join %}{% endif %}
-  {% if summary.player_count or not prep or host_join %}<div class="section-heading label-row"><h2 class="section-label">{% icon 'users' %}Players <span class="count-pill" data-player-count="{{ summary.player_count }}">{{ summary.player_count }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
+  {% if summary.player_count or not prep or host_join %}<div class="section-heading label-row"><h2 class="section-label">{% icon 'users' %}Players <span class="count-pill" data-player-count="{{ seated }}">{{ seated }} · {{ seats_free }} seat{{ seats_free|pluralize }} free</span></h2>
     {# While a set is prepared the checklist's first step adds players; in play this is the way to seat a late arrival. #}
     {% if can_manage_players and not prep %}<a class="btn btn-small btn-quiet" href="{% url 'participants_add' session.pk %}">{% icon 'plus' %} Add players</a>{% endif %}
     {% if host_join %}<form method="post" data-turbo="true" action="{% url 'participant_add' session.pk %}" class="host-join">{% csrf_token %}<button class="btn btn-small" type="submit" aria-label="Join this set">{% icon 'plus' %} Join</button></form>{% endif %}

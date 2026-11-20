@@ -127,6 +127,16 @@ class JoinViewTests(TestCase):
         self.assertNotContains(page, "Join this set")
         self.assertContains(page, "1 seat free")
 
+    def test_count_leaves_out_a_player_who_left(self):
+        # The pill counts the people at the table, as Your groups does ("1 at the table").
+        session = make_session(self.host, state="running", seat_count=2, table_name="Late table")
+        services.add_participant(session.pk, self.host, self.host.pk)
+        ben = services.add_participant(session.pk, self.host, self.ben.pk)
+        services.set_left(session.pk, self.host, ben.pk)
+        self.client.force_login(self.host.user)
+        page = self.client.get(reverse("session", args=[session.pk]))
+        self.assertContains(page, 'data-player-count="1">1 · 1 seat free</span>')
+
     def test_full_table_message(self):
         services.add_participant(self.session.pk, self.host, self.host.pk)
         services.add_participant(self.session.pk, self.host, groups.add_roster_player(self.host, "Guest").pk)

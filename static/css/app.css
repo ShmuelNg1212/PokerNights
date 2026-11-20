@@ -236,6 +236,8 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .player-figure small { display: block; font-weight: 500; font-size: .8125rem; color: var(--muted); max-width: 9rem; }
 .player-left .player-name { color: var(--muted); }
 .buy-stack { display: inline-flex; flex-direction: column-reverse; gap: 1px; flex: none; }
+/* No buy-in yet: no edges, so no empty slot pushes the words right. */
+.buy-stack:empty { display: none; }
 .buy-stack i { width: 13px; height: 3px; border-radius: 1px; background: repeating-linear-gradient(90deg, var(--bone) 0 3px, var(--bone-dim) 3px 6px); }
 .chip { --c: var(--c1); display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #fff; font-size: .9375rem; font-weight: 800; background: radial-gradient(circle, var(--c) 0 56%, oklch(0 0 0 / .28) 57% 60%, transparent 61%), repeating-conic-gradient(from -12deg, var(--bone) 0 24deg, var(--c) 24deg 60deg); }
 .k1 { --c: var(--c1); } .k2 { --c: var(--c2); } .k3 { --c: var(--c3); } .k4 { --c: var(--c4); } .k5 { --c: var(--c5); }
@@ -493,6 +495,10 @@ input[aria-invalid=true] { border: 2px solid var(--down); }
 .night-results .row { flex-wrap: wrap; }
 @media (max-width:359px) { .night-results .amount { font-size: 1.125rem; } }
 .night-sets li, .payment-records li { padding: 12px 0; overflow-wrap: anywhere; }
+/* A set's badge sits on the line of its name, not halfway down its timer. */
+.night-sets li.row { align-items: start; }
+.night-sets li.row > .badge { margin-top: 12px; }
+.night-sets li.row:first-child { padding-top: 0; }
 .set-link { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); }
 .table-page > .center a { display: inline-flex; align-items: center; min-height: var(--tap); }
 /* The recap card under the lead: the only way into the recap (2026-11-20). Without sheets the recap is inline. */
@@ -1827,6 +1833,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .night-after { min-width: 0; margin-top: var(--s-5); }
 @media (max-width: 359px) { .transfer-line .chip { width: 24px; height: 24px; flex-basis: 24px; } }
 @media (min-width: 900px) {
+  /* The detail spans both rows; the second row takes its extra height, so the left column has no gap under the lead (polish 2026-11-20). */
+  .night-layout { grid-template-rows: auto 1fr; }
   .night-layout > .night-overview { grid-column: 1; grid-row: 1; }
   .night-layout > .night-detail { grid-column: 2; grid-row: 1 / span 2; }
   .night-layout > .night-after { grid-column: 1; grid-row: 2; margin-top: 0; }
@@ -2882,6 +2890,8 @@ p.alerts-text:last-child { margin-bottom: 0; }
 /* A player's records (2026-11-20): under a hairline, apart from Cash out. A reversal opens from a quiet "Reverse…". */
 .records { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--rule); }
 .records > .section-label { margin-bottom: var(--s-1); }
+/* The records follow their label as a group, 16px from it with the first row's own padding (polish 2026-11-20). */
+.records > .section-label + .list { margin-top: 0; }
 .reverse-entry { margin-top: var(--s-2); }
 .reverse-entry > summary.btn { list-style: none; color: var(--muted); }
 .reverse-entry > summary.btn::-webkit-details-marker { display: none; }
