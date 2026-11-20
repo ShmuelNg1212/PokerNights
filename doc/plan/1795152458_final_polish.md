@@ -50,9 +50,11 @@ Acceptance: a colour-blind simulation of the bar still tells each segment apart;
 
 ### 3. Rerun the whole-app critique — `tests: alongside`
 
-- [ ] Run `/impeccable critique` with the study's method: host `hana`, player `ben`, viewer `mara`; 390 px every screen, 1280 px main screens, 320 px one set in play; two assessments that do not see each other.
-- [ ] Write the new score and the per-heuristic table as a dated addendum in the [study](../study/1795101392_ui_critique.md).
-- [ ] Put new P1 and P2 issues in TODO.md "Next". Do not fix them in this plan.
+- [x] Run `/impeccable critique` with the study's method: host `hana`, player `ben`, viewer `mara`; 390 px every screen, 1280 px main screens, 320 px one set in play; two assessments that do not see each other.
+- [x] Write the new score and the per-heuristic table as a dated addendum in the [study](../study/1795101392_ui_critique.md).
+- [x] Put new P1 and P2 issues in TODO.md "Next". Do not fix them in this plan.
+
+Result: 29/40, the same total. Heuristic 4 and 10 went up one point; 7 and 9 went down one point. The bar (question 3) is not met, so no more fixes were made. One P2 is a measured polish defect: the viewer's own transfer cards are 4 px from the screen edge (`static/css/app.css:1823`).
 
 Acceptance: the addendum has the score, the table and the change against 29/40. Completion: the addendum is committed as `docs:`.
 

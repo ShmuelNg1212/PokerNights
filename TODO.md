@@ -121,6 +121,7 @@
 
 ## Next (each needs its own study and plan)
 
+- [ ] Critique rerun 2026-11-20 (29/40, [study addendum](doc/study/1795101392_ui_critique.md)): P1 the sticky felt on a short phone; P2 a count-up with no money is a dead end; P2 the viewer's own transfer cards leave the gutter (`app.css:1823`); P2 To settle rows give a date only. Each needs its own plan.
 - [ ] A fast "same rebuy again" for the host (UI critique heuristic 7). Needs its own study.
 - [ ] First-time help for a player: stripes, hatching, "Counting up" (UI critique heuristic 10). Needs its own study.
 - [ ] More flair: the queue is empty. The next ideas are in the [study](doc/study/1794301535_more_flair.md) (season review, group milestones).
