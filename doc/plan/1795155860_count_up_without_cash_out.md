@@ -34,7 +34,7 @@ Approved 2026-11-20: all four as proposed.
   - A confirmed count fills its pip fully (bone). A cash-out during play stays full green. Drop the half-filled state.
   - `pip-fill` and the row tick run on confirm. No second fill step. Reduced motion: none.
   - Done when: a browser probe confirms two counts and sees two full pips animate once; under reduced motion it sees no animation.
-- [ ] **5. Records.** ADR for question 2. Update spec.md and features.md in sync docs. Phone check in TODO.md.
+- [x] **5. Records.** ADR for question 2. Update spec.md and features.md in sync docs. Phone check in TODO.md.
 
 ## Completion
 
@@ -42,4 +42,10 @@ All tasks ticked. SQLite and PostgreSQL suites pass. Count-flow browser probe pa
 
 ## Checks
 
-(Filled in at rendezvous.)
+Rendezvous, 2026-11-20, branch `feat/count-up-no-cash-out`:
+
+- SQLite suite: 1858 tests OK (23 skipped). New `tests: first` cases fail on the old code: an override finish, an override replacing an older one, counts-off text in the books, a GET-only review.
+- `code-review` (medium): 3 important and 4 nits. All 7 fixed in the `fix:` commit: the books stated "Finish the set" when the counts were off; Find the difference had no `#books-gap`; an override finish stacked on an older override; a silent redirect; POST to the review; a second copy of the count-up cash-out form; the missing ADR (0016).
+- `count_flow.mjs` on a fresh database and a restarted server: 106/108. The two failures (48px panel keys, 320 × 568) are known on main. Three old expectations were updated for the digit grouping released in e553235 ("2,000", "1,500"). New checks: full marks, no cash-out button, counts off leads to the gap and the override finish, Review and finish rises once and rests with no inline style, a later visit is still, review rows 40 ms apart, reduced motion still, Finish set 1 lands on the final set.
+- `review-animations` cannot be run by the agent; the human runs `/review-animations`.
+- Not run: the PostgreSQL suite (before release). Five other probes still use the old step; listed in TODO.md.

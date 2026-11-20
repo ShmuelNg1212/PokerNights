@@ -1,5 +1,13 @@
 # TODO
 
+## Phone checks: count-up without a cash-out step (unreleased, feat/count-up-no-cash-out)
+
+- [ ] End play and confirm some counts. Each confirmed player reads "Counted" and its mark fills fully, once. No "Cash out counted players" button. The line reads "N of M players counted".
+- [ ] Confirm the last count so the counts balance: "Review and finish" rises into the dock once. Reload: it is simply there. Tap it: the counts arrive row after row; Finish set N lands on the final set.
+- [ ] Make the counts ₱50 short: the button is "Find the ₱50 difference" and the books say "The counts are ₱50 short". More host controls, "Finish with an override", note and Finish: the set is final in one tap.
+- [ ] Reduce Motion on: the marks, the button and the review rows are there without movement.
+- [ ] Follow-up: `end_set.mjs`, `chip_values.mjs`, `counts.mjs`, `header.mjs` and `install.mjs` still open the review before the set can finish or post the old partial batch. Walk them through Review and finish.
+
 ## Phone checks: final polish (released 2026-11-20)
 
 - [ ] A set in play where one player left: the count beside Players leaves them out ("7 · 2 seats free", as the home card says "7 at the table"). Their row shows "In ₱1,000 ·" and "out ₱2,650" whole. A player with no buy-in reads "No buy-in yet" in line with the names above. Open a player: the first record is close under "Records and corrections".

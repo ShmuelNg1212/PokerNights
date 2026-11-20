@@ -183,6 +183,7 @@ try {
  await sleep(300);await A.shot('count-flow-toast-390');
  const verdict=`document.querySelector('.review-verdict')`;
  check('counts ₱50 short: the set page leads to the difference, the review stays closed',await A.js(`JSON.stringify(${primaries})`)==='["Find the ₱50 difference"]'&&await A.js(`fetch('/s/${M.finish}/cash-out-counted/',{redirect:'manual'}).then(r=>r.type==='opaqueredirect'||r.status===302)`));
+ check('counts ₱50 short: the books state the gap that Find the difference leads to',await A.js(`(()=>{const g=document.getElementById('books-gap');return !!g&&/The counts are ₱50 short/.test(g.textContent)&&!/Finish the set/.test(document.getElementById('balance').textContent)})()`));
  check('counts ₱50 short: the override finishes the set from the counts',await A.js(`(()=>{const f=document.querySelector('details[data-key=override] form');return !!f&&f.getAttribute('action')==='/s/${M.finish}/finish/'&&f.querySelectorAll('[name=count_id]').length===2&&/Finish with the override/.test(f.textContent)})()`));
  await A.js(`try{localStorage.removeItem('rack-finish:${M.finish}')}catch(e){}`);
  await confirmCounts([null,'1000']);

@@ -2,7 +2,7 @@
 
 Date: 2026-10-05, Asia/Manila.
 
-**Trigger.** Confirm a typed count in place on a phone. The new Ready to cash out badge and saved amount wrap onto an extra line above the field.
+**Trigger.** Confirm a typed count in place on a phone. The new status badge and saved amount wrap onto an extra line above the field.
 
 **Observed behavior.** The document keeps its scroll position, but the field moves down. After the count-up redesign, `inplace.mjs` measured 324px before confirmation and 358px after it. The former per-row Confirm selector also had to change to the shared `data-confirm-typed` button.
 
