@@ -143,9 +143,9 @@ try {
 
  // ===== Fail safe.
  const R=await page({reduce:true});await R.login('hana');await R.go(`/n/${N.eight}/`);await sleep(1200);
- check('reduced motion: no finale, no sheet, the card is there and does not move',await R.js(`__fi.n===0&&!document.querySelector('.finale')&&${NOSHEET}&&document.querySelector('[data-recap-card]').getAnimations().length===0`)&&await R.js(FIRST));
+ check('reduced motion: no finale, no sheet, the card is there and does not move',await R.js(`__fi.n===0&&!document.querySelector('.finale')&&${NOSHEET}&&!${CARD}&&document.querySelector('[data-recap-card]').getAnimations().length===0`)&&await R.js(FIRST));
  const before=errors.length;const X=await page({block:true});await X.login('hana');await X.go(`/n/${N.eight}/`);await sleep(1200);
- check('Motion blocked: no finale, no sheet, the card is there, no script error',await X.js(`!window.Motion&&__fi.n===0&&${NOSHEET}&&${CARD}`)&&errors.length===before,errors.slice(before).join('; '));
+ check('Motion blocked: no finale, no sheet, the card is there and still, no script error',await X.js(`!window.Motion&&__fi.n===0&&${NOSHEET}&&!${CARD}&&document.querySelector('[data-recap-card]').getAnimations().length===0`)&&await X.js(FIRST)&&errors.length===before,errors.slice(before).join('; '));
  const J=await page({nojs:true});await J.login('hana');await J.go(`/n/${N.eight}/`);await sleep(600);
  await send('Emulation.setScriptExecutionDisabled',{value:false},J.s);
  check('no JavaScript: the recap facts are in the page, and the card is hidden',await J.js(`!document.querySelector('.finale')&&!document.querySelector('dialog[open]')&&document.querySelector('.recap-source .recap').getClientRects().length>0&&document.querySelector('[data-recap-card]').getClientRects().length===0`));

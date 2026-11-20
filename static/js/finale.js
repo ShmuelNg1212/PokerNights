@@ -3,7 +3,7 @@
 // night" stamps in and stays to be read. Then the stage goes and the page stays, with the recap card rising
 // under the lead; the recap itself opens only from that card (the human, 2026-11-20).
 // The page under the stage is the closed session, with every figure at its accepted value. play() calls
-// done exactly once: when the stage has gone, on a skip, or at once when the finale cannot play.
+// done exactly once: when the stage has gone, on a skip, or at once (with false) when the finale cannot play.
 (function () {
 "use strict";
 var S = null;
@@ -25,11 +25,12 @@ function read(region) {
 
 function play(region, done) {
   var called = false, left = false;
-  function due() { if (called) return; called = true; if (!left) done(); }
+  // done(played): played is true when a stage was on the page, so the recap card rises after it.
+  function due(played) { if (called) return; called = true; if (!left) done(!!played); }
   var St = window.pokerStage, page = St && read(region);
-  if (!page || !page.chips.length) { due(); return; }
-  var stage = St.open({name: "finale", html: STAGE, guard: 2500, end: function () { S = null; }, then: due});
-  if (!stage) { due(); return; }
+  if (!page || !page.chips.length) { due(false); return; }
+  var stage = St.open({name: "finale", html: STAGE, guard: 2500, end: function () { S = null; }, then: function () { due(true); }});
+  if (!stage) { due(false); return; }
   S = stage; stage.leave = function () { left = true; stage.finish(); };
   try { perform(stage, page); } catch (_) { stage.finish(); }
 }

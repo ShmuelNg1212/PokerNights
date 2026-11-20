@@ -286,8 +286,9 @@ localStorage.setItem(seen, "1");
 // A page that is left before the stage has gone gives the turn back, so the next visit still plays it.
 me.owed = seen;
 var card = region.querySelector("[data-recap-card]");
-var rise = function () { if (S !== me) return; me.owed = null; if (card) card.classList.add("is-rising"); document.dispatchEvent(new CustomEvent("finale:over")); };
-if (window.pokerFinale) window.pokerFinale.play(region, rise); else rise();
+// The card moves only after a stage that played; without one (no Motion, reduced motion) it is simply there.
+var rise = function (played) { if (S !== me) return; me.owed = null; if (card && played) card.classList.add("is-rising"); document.dispatchEvent(new CustomEvent("finale:over")); };
+if (window.pokerFinale) window.pokerFinale.play(region, rise); else rise(false);
 }
 } catch (_) {}
 return stop;
