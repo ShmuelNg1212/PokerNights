@@ -1,5 +1,9 @@
 # TODO
 
+## Phone checks: session page, the money first (not released)
+
+- [ ] Close a session as host with a player's phone on the session page. On both: the finale plays, then no sheet opens. "Still to pay" or "You pay ₱X" is at the top, and the "Session recap" card rises under it with the top result, players and sets. Tap the card: the recap opens. Close it: you are back on the card, at the top. Reload: no finale, the card is still. Reduce Motion on: no finale, the card is there.
+
 ## Phone checks: calm count-up (released 2026-11-20)
 
 - [ ] Count up as host, fold the dock: it reads "Accounted for ₱X of ₱Y" on one line, then "₱Y still to account for." The books do not repeat that line. Ready marks are half filled, cashed-out marks full.
@@ -63,7 +67,7 @@
 
 ## Phone checks: session finale (released 2026-11-10)
 
-- [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in and stays for a moment. Only after the stage has gone does the recap rise. Once on each phone. Tap during it: the recap opens and stays open, and nothing else is pressed. Reload: no replay. Reduce Motion on: the recap alone.
+- [ ] Close a session with two other phones on the session page: the chips stack, the top result lands last with a Brass ring, "That's the night" stamps in and stays for a moment. When the stage has gone, no sheet opens and the recap card rises under the money (since the money-first release). Once on each phone. Tap during it: it ends, no sheet opens, and nothing else is pressed. Reload: no replay. Reduce Motion on: no finale, the card alone.
 
 ## Phone checks: felt light after the overture (released 2026-11-06)
 
@@ -87,7 +91,7 @@
 - [ ] A/B: A repeat game fits one screen and matches last session. Start the set from the draft: four players show above the bar. Start on two phones: figures are exact. Reload and Resume do not replay the start.
 - [ ] C: Confirm counts that balance: the bottom bar says Review and finish, and the review has one button, Finish set 1. One tap lands on the final set. Confirm counts that do not balance: the review warns and says Cash out N players. Nothing finishes.
 - [ ] C: A final set of six: best result first, one short row each, and a tap on the row opens its facts. The chevron turns.
-- [ ] C: Close a session: the recap opens. Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
+- [ ] C: Close a session: the recap opens (after the money-first release: the recap card rises instead). Close it: Who pays whom is on the screen and no message covers it. The recap does not open a second time.
 - [ ] D: The group page has four tabs. On the smallest phone every word is whole, and the marker slides between them. New session is above the cards. A set that lets players join says Joining.
 - [ ] D: From Your groups, tap a group, then Players: Invite is at the top. Copy and Share work. D: Tap a player: Manage is above the record. Create a reset link: the link is on the screen, not above it. The arrow goes back to the same row.
 - [ ] D: Settings is six short rows. Open Tables and add a table: it comes back open. Refuse a table: the typing stays.
