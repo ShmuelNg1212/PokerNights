@@ -167,6 +167,15 @@ class FinishSetTests(TestCase):
             finish(night, override={"note": "x", "mode": "player", "participant_id": night.players["B"].pk})
         self.nothing_recorded(night)
 
+    def test_an_override_finish_replaces_an_older_override(self):
+        night = covered_by_an_override()  # ₱100 short, covered on B; A recounted at 1,100
+        count(night, "A", 1050)  # now ₱150 short
+        finalization = finish(night, override={"note": "recount", "mode": "player", "participant_id": night.players["A"].pk})
+        from ledger.models import BalanceAdjustment
+        active = BalanceAdjustment.objects.filter(session=night.session, voided_at__isnull=True)
+        self.assertEqual([(a.participant.member.display_name, a.amount, a.note) for a in active], [("A", 15000, "recount")])
+        self.assertEqual({r.participant.member.display_name: r.net for r in finalization.results.all()}, {"A": 20000, "B": -20000})
+
     def test_a_retried_override_finish_records_nothing_more(self):
         night = short(counting("A", "B"))
         request_id = uuid.uuid4()
@@ -332,10 +341,12 @@ class FinishPageTests(TestCase):
         page = self.client.get(self.review, follow=True)
         self.assertRedirects(page, reverse("session", args=[self.session.pk]))
         self.assertNotContains(page, ">Cash out")
+        self.assertContains(page, "The set finishes when every count is in and the counts add up.")
 
-    def test_a_post_to_the_review_records_nothing(self):
+    def test_a_post_to_the_review_is_refused_and_records_nothing(self):
         html = self.client.get(self.review).content.decode()
-        self.client.post(self.review, {"count_id": re.findall(r'name="count_id" value="(\d+)"', html), "request_id": uuid.uuid4()})
+        response = self.client.post(self.review, {"count_id": re.findall(r'name="count_id" value="(\d+)"', html), "request_id": uuid.uuid4()})
+        self.assertEqual(response.status_code, 405)
         self.assertEqual(CashOut.objects.count(), 0)
 
     def test_the_review_says_nothing_about_cashing_out(self):
@@ -387,6 +398,22 @@ class CountUpDockTests(TestCase):
         self.assertIn(f'action="{reverse("session_finish", args=[self.night.session.pk])}"', form)
         self.assertEqual(len(re.findall(r'name="count_id" value="\d+"', form)), 2)
         self.assertIn("Finish with the override", form)
+        books = html[html.index('id="balance"'):]
+        self.assertIn('id="books-gap"', books)
+        self.assertIn("The counts are ₱50 short. Correct a count, or finish with an override.", books)
+        self.assertNotIn("Finish the set to record", books)
+
+    def test_a_player_reads_that_the_counts_are_off(self):
+        night = Night("A", "B")
+        carlo = night.add_login_player("Carlo")  # at the table with no buy-in: a viewer of the books
+        night.buy("A", 1000)
+        night.buy("B", 1000)
+        night.go("reconciliation")
+        short(night)
+        self.client.force_login(carlo.user)
+        html = self.client.get(reverse("session", args=[night.session.pk])).content.decode()
+        self.assertIn("The counts are ₱50 short. The host is checking them.", html)
+        self.assertNotIn("Finish the set to record", html)
 
     def test_the_override_form_finishes_the_set(self):
         short(self.night)

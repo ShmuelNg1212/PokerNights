@@ -227,7 +227,7 @@ class BatchPageTests(TestCase):
         self.assertEqual(CashOut.objects.count(), 0)
 
     def test_a_post_to_the_review_records_nothing(self):
-        self.client.post(self.url, {"count_id": ready_ids(self.night)})
+        self.assertEqual(self.client.post(self.url, {"count_id": ready_ids(self.night)}).status_code, 405)
         self.assertEqual((CashOut.objects.count(), CashOutBatch.objects.count()), (0, 0))
 
     def test_player_and_stranger_are_refused(self):

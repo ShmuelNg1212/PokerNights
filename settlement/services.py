@@ -68,6 +68,8 @@ def finish_set(session_id, actor: Member, count_ids, request_id, override=None) 
     ledger.cash_out_counted(session.pk, actor, count_ids, request_id)
     try:
         if override is not None:
+            # One override explains the gap: an older one, recorded before a count changed, is voided first.
+            ledger.void_override(session.pk, actor)
             ledger.record_override(
                 session.pk, actor, override.get("note", ""), override.get("mode", ""),
                 override.get("participant_id"), request_id,

@@ -48,6 +48,9 @@
   {% elif balance.counted %}
   {% elif balance.stray_cash_outs %}
   <div class="notice">{{ balance.explanation }}</div>
+  {% elif counts_off %}
+  {# Every count is in and they do not add up: the statement "Find the difference" leads to. #}
+  <div class="notice" id="books-gap">{% if me.is_host %}{{ balance.explanation }}{% else %}The counts are {{ counts_off_text }} {% if counts_off > 0 %}over{% else %}short{% endif %}. The host is checking them.{% endif %}</div>
   {% else %}
   {# Players still to be counted are normal progress, not a warning. #}
   <div class="notice notice-info">{% if me.is_host or not summary.awaiting_lines %}{{ balance.explanation }}{% else %}Still to count: {% for line in summary.awaiting_lines %}{{ line.participant.member.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</div>

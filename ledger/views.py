@@ -4,7 +4,7 @@ import json
 import uuid
 
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from games.access import session_for
 from groups.access import require_host
@@ -205,6 +205,7 @@ def count_clear(request, session_id, participant_id):
     return redirect("session", session_id=session.pk)
 
 
+@require_GET
 def cash_out_counted(request, session_id):
     """The finish review: the confirmed counts and the verdict, with one button that finishes the set.
 
@@ -216,6 +217,7 @@ def cash_out_counted(request, session_id):
         return redirect("session", session_id=session.pk)
     summary = queries.summary(session)
     if not queries.finishes_the_set(summary):
+        messages.info(request, "The set finishes when every count is in and the counts add up.")
         return redirect("session", session_id=session.pk)
     ready = summary.ready_lines
     if summary.adjustment:

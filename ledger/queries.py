@@ -313,6 +313,10 @@ class Balance:
             # Count-up asks for counts only; finishing the set records the cash-outs from them.
             uncounted = [line for line in self.missing_cash_outs if line.count is None]
             if not uncounted:
+                gap = counts_off(self.summary)
+                if gap:
+                    return (f"The counts are {self._show(gap)} {'over' if gap > 0 else 'short'}. "
+                            "Correct a count, or finish with an override.")
                 return "Every player is counted. Finish the set to record the results."
             names = ", ".join(line.participant.member.display_name for line in uncounted)
             return f"Still to count: {names}. A count of 0 is valid for a player who lost everything."
