@@ -1,6 +1,6 @@
 # TODO
 
-## Phone checks: session page, the money first (not released)
+## Phone checks: session page, the money first (released 2026-11-20)
 
 - [ ] Close a session as host with a player's phone on the session page. On both: the finale plays, then no sheet opens. "Still to pay" or "You pay ₱X" is at the top, and the "Session recap" card rises under it with the top result, players and sets. Tap the card: the recap opens. Close it: you are back on the card, at the top. Reload: no finale, the card is still. Reduce Motion on: no finale, the card is there.
 
