@@ -101,7 +101,7 @@ class ChipsGameTests(TestCase):
         self.assertContains(page, "Enter a whole number of chips")
         self.assertEqual(night.session.cash_outs.count(), 0)
         page = self.client.post(url, {"participant_id": night.players["A"].pk, "amount": "1,600"}, follow=True)
-        self.assertContains(page, "Cashed out 1,600 chips")
+        self.assertContains(page, "In 1,000 chips · out 1,600 chips")
         page = self.client.post(reverse("buy_in_add", args=[night.session.pk]), {"participant_id": night.players["A"].pk, "amount": "₱1000"}, follow=True)
         self.assertContains(page, "Enter a whole number of chips")
 

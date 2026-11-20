@@ -70,8 +70,8 @@ Acceptance: a player sees no gear; the tokens show who played last; the line ope
 
 ### 6. A player who left shows the net — `tests: alongside`
 
-- [ ] In `_player_row.html`, a player who cashed out shows the net per OPEN QUESTION 2.
-- [ ] Count-up rows and the results table do not change.
+- [x] In `_player_row.html`, a player who cashed out shows the net per OPEN QUESTION 2.
+- [x] Count-up rows and the results table do not change.
 
 Acceptance: on a set in play, a player who left reads "+₱1,650" large. Completion: a view test for a left player's row; `table.mjs` stays at its current count.
 

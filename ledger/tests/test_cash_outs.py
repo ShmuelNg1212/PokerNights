@@ -108,7 +108,8 @@ class CashOutViewTests(TestCase):
     def test_host_types_a_peso_amount(self):
         self.client.force_login(self.night.host.user)
         page = self.client.post(self.url, {"participant_id": self.night.players["A"].pk, "amount": "1,600", "left": "1"}, follow=True)
-        self.assertContains(page, "Cashed out ₱1,600")
+        self.assertContains(page, "In ₱1,000 · out ₱1,600")  # a player who left shows the net first
+        self.assertRegex(page.content.decode(), r'class="player-figure amount plus">\+₱600<small>')
         self.assertContains(page, "Still in play")
         self.assertContains(page, ">₱400<")
         self.assertContains(page, "Left")
@@ -125,7 +126,8 @@ class CashOutViewTests(TestCase):
         self.night.cash("ben", 250)
         self.client.force_login(self.ben.user)
         page = self.client.get(reverse("session", args=[self.night.session.pk]))
-        self.assertContains(page, "Cashed out ₱250")
+        self.assertContains(page, "In ₱1,000 · out ₱250")
+        self.assertRegex(page.content.decode(), r'class="player-figure amount minus">−₱750<small>')
         self.assertNotContains(page, "cashouts/add")
         response = self.client.post(self.url, {"participant_id": self.night.players["ben"].pk, "amount": "99999"})
         self.assertEqual(response.status_code, 403)

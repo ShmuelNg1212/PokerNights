@@ -72,7 +72,7 @@ async function story(width,key){
  const after=await A.js(`(()=>{const d=${dialog};return {open:d.open,title:d.querySelector('h2').textContent}})()`);
  const gap=f.rows[2].y;
  check(`${W} cash-out: rows below start displaced by the height the row changed (${gap}px)`,Math.abs(gap)>10&&f.rows.slice(2).every(r=>r.y===gap)&&f.rows.slice(0,2).every(r=>r.y===0));
- check(`${W} cash-out: the row shows the accepted amount on the first frame`,row(f,p1).t.includes('Cashed out ₱650')&&row(f,p1).o===1);
+ check(`${W} cash-out: the row shows the accepted amount on the first frame`,row(f,p1).t.includes('out ₱650')&&row(f,p1).o===1);
  check(`${W} a tap on a button of a moving row opens its sheet`,after.open&&/Buy-in|Rebuy/.test(after.title)&&await A.js(`window.__tapAt`)===gap);
  check(`${W} cash-out: the Left badge springs in and the name dims`,await A.js(`__runs.some(r=>r.el==='badge'&&r.keys.join()==='opacity,transform')&&getComputedStyle(document.querySelector('.just-left .player-name')).animationName==='name-dim'`));
  await A.shot(`flow-shift-${width}`);
