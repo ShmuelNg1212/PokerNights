@@ -60,7 +60,7 @@
   <a class="btn btn-primary btn-block next-action" href="#balance" data-turbo="false" data-next-server data-books-gap>Find the {{ counts_off_text }} difference</a>
   {% elif finishes_the_set %}
   {# The review records the cash-outs from the counts and freezes the results in one action. #}
-  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server>Review and finish</a>
+  <a class="btn btn-primary btn-block next-action" href="{% url 'cash_out_counted' session.pk %}" data-next-server data-finish-ready="{{ session.pk }}">Review and finish</a>
   {% endif %}
   {% endif %}
   {% if session.state == 'reconciliation' %}

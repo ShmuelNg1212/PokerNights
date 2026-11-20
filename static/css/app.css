@@ -1754,7 +1754,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
 .count-v2 .count-workspace > .section-heading { padding: var(--s-2) 0 0; }
 .count-pips li { width: 22px; height: 6px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--line); }
 /* Ready is half filled, cashed out is full: the shape tells them apart, not the colour alone (2026-11-20). */
-.count-pips li[data-status="ready"] { background: linear-gradient(90deg, var(--bone) 50%, transparent 50%); box-shadow: inset 0 0 0 1px var(--bone); }
+/* A confirmed count is the end of a player's count-up: its mark is full. Green stays for a cash-out during play. */
+.count-pips li[data-status="ready"] { background: var(--bone); box-shadow: none; }
 .count-pips li[data-status="cashed_out"] { background: var(--good); box-shadow: none; }
 /* Stacked under the overview on a phone, the card keeps clear of that panel's rounded corners. */
 .own-count-lead { margin: var(--s-4) 0 var(--s-5); }
@@ -1855,6 +1856,8 @@ html:not(.sheets-enabled) .count-v2 .player-opens .icon { display: none; }
   /* A count the server just accepted: its tick is drawn, row after row, and its mark in the overview fills. */
   .count-row.just-changed.is-ready .count-tick path { stroke-dasharray: 24; animation: tick-draw 320ms var(--ease-out) both; animation-delay: calc(min(var(--row, 0), 7) * 40ms); }
   .count-pips li.just-changed:not([data-status="awaiting"]) { transform-origin: 0 50%; animation: pip-fill 360ms var(--ease-out) both; }
+  /* The finish review: the counts that become the results arrive row after row, as added players do. */
+  .review-layout table.review tbody tr { animation: settle-in 260ms var(--ease-out) both; animation-delay: calc(min(var(--row, 0), 7) * 40ms); }
   /* A transfer the server just marked paid: the tick is drawn, the row settles, the bar moves to the new amount. */
   .transfer-line.just-paid .transfer-mark .icon path { stroke-dasharray: 24; animation: tick-draw 320ms var(--ease-out) both; }
   .transfer-line.just-paid .transfer-party strong, .transfer-line.just-paid .transfer-amount { animation: settle-dim 520ms var(--ease-out) both; }

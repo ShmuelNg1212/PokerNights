@@ -30,7 +30,7 @@ Approved 2026-11-20: all four as proposed.
   - Remove **Cash out counted players (N)**. The dock action after confirming is **Review and finish** (balanced) or **Find the ₱X difference** (off).
   - The review page title is "Finish set N" in every case. Remove the "Cash out N players" button and "After this batch" wording.
   - Done when: no count-up screen, page or message says "cash out" except a row for a player who cashed out during play.
-- [ ] **4. Pips and motion.** `tests: alongside`
+- [x] **4. Pips and motion.** `tests: alongside`
   - A confirmed count fills its pip fully (bone). A cash-out during play stays full green. Drop the half-filled state.
   - `pip-fill` and the row tick run on confirm. No second fill step. Reduced motion: none.
   - Done when: a browser probe confirms two counts and sees two full pips animate once; under reduced motion it sees no animation.

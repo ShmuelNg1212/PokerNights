@@ -89,7 +89,7 @@ try {
  check('typed counts: the bar says Preview',await A.js(`document.querySelector('.dock-count').textContent.replace(/\\s+/g,' ').trim()`)==='Preview · Accounted for ₱3,000 of ₱9,000');
  check('typed counts: the hint says they are not saved',await A.js(`/not saved until you confirm/.test(document.getElementById('batch-why').textContent)`));
  // The books are records: they keep the confirmed counts, as the server renders them, while counts are typed.
- check('typed counts: the books keep the confirmed counts',await A.js(`fetch(location.href).then(r=>r.text()).then(t=>{const d=new DOMParser().parseFromString(t,'text/html'),q=s=>[...[document,d].map(x=>x.querySelector(s)?.textContent.trim())];const [a,b]=q('[data-books-counted]'),[c,e]=q('[data-books-counted-label]');return !!a&&a===b&&c===e&&c==='Counted, not cashed out'&&!document.querySelector('[data-books-status]')})`));
+ check('typed counts: the books keep the confirmed counts',await A.js(`fetch(location.href).then(r=>r.text()).then(t=>{const d=new DOMParser().parseFromString(t,'text/html'),q=s=>[...[document,d].map(x=>x.querySelector(s)?.textContent.trim())];const [a,b]=q('[data-books-counted]'),[c,e]=q('[data-books-counted-label]');return !!a&&a===b&&c===e&&c==='Counted'&&!document.querySelector('[data-books-status]')})`));
  await A.js(`window.scrollTo(0,0)`);await sleep(300);await A.shot('count-flow-typed-390');
  // An invalid count (from a physical keyboard) blocks the confirm.
  await A.js(`${field(2)}.focus()`);await send('Input.insertText',{text:'9x'},A.s);await A.js(`document.activeElement.blur()`);await sleep(400);
@@ -98,7 +98,7 @@ try {
  await A.js(`${field(2)}.value='';${field(2)}.dispatchEvent(new Event('input',{bubbles:true}))`);
  // Typed counts survive leaving the page.
  await A.js(`Turbo.visit('/')`);await sleep(1000);await A.js(`Turbo.visit('/s/${M.eight}/')`);await sleep(1300);
- check('typed counts survive leaving the page and coming back',await A.js(`${field(0)}.value==='900'&&${field(1)}.value==='2000'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Confirm 2 counts"]');
+ check('typed counts survive leaving the page and coming back',await A.js(`${field(0)}.value==='900'&&${field(1)}.value==='2,000'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Confirm 2 counts"]');
  // A live update from another host does not disturb the open panel.
  const B=await user('hana');await B.go(`/s/${M.eight}/`);
  await A.tap(field(3),600);await type(['5','0','0']);
@@ -106,7 +106,7 @@ try {
  await B.js(`(()=>{const f=document.getElementById('counts-form'),i=document.querySelectorAll('[data-count-input]')[7];i.value='1000';f.requestSubmit()})()`);await sleep(6500);
  check('while a count is typed the live update waits; the panel and the count stay',await A.js(`!!${PANEL}&&${field(3)}.value==='500'&&document.activeElement===${field(3)}`));
  await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,5500);
- check('after Done the update arrives and the typed counts are kept',await A.js(`document.getElementById('live').dataset.version`)!==version&&await A.js(`${field(0)}.value==='900'&&${field(1)}.value==='2000'&&${field(3)}.value==='500'`));
+ check('after Done the update arrives and the typed counts are kept',await A.js(`document.getElementById('live').dataset.version`)!==version&&await A.js(`${field(0)}.value==='900'&&${field(1)}.value==='2,000'&&${field(3)}.value==='500'`));
  check('the other host\'s confirmed count shows in its field',await A.js(`${field(7)}.placeholder==='1000'&&${field(7)}.dataset.saved==='100000'&&${field(7)}.getAttribute('inputmode')==='none'`));
  // Tapping away from the field puts the panel away.
  await A.tap(field(4),600);await A.tap(`document.querySelector('.felt h1')`,600);
@@ -114,9 +114,10 @@ try {
  // Confirm the typed counts with the main button.
  await A.tap(`document.querySelector('[data-confirm-typed]')`,1800);
  // The moment: each accepted count gets its tick drawn and its mark in the overview fills. Figures are whole from the first frame.
+ check('confirmed counts: each mark in the overview is full, not half',await A.js(`[...document.querySelectorAll('.count-pips li[data-status=ready]')].every(li=>getComputedStyle(li).backgroundImage==='none'&&getComputedStyle(li).backgroundColor!=='rgba(0, 0, 0, 0)')`));
  check('confirmed counts: a tick is drawn on each accepted row and its mark fills',await A.js(`(()=>{const rows=[...document.querySelectorAll('.count-row.just-changed.is-ready')];return rows.length>=1&&rows.every(r=>getComputedStyle(r.querySelector('.count-tick path')).animationName==='tick-draw'&&getComputedStyle(r.querySelector('.count-tick')).opacity==='1')&&document.querySelectorAll('.count-pips li.just-changed').length===rows.length})()`));
  check('confirmed counts: the accepted figure is in its field and nothing is written inline',await A.js(`[...document.querySelectorAll('.count-row.just-changed.is-ready')].every(r=>{const f=r.querySelector('[data-count-input]');return f.placeholder!==''&&f.value===''&&!r.querySelector('.count-tick').getAttribute('style')})`));
- check('confirming records the counts and the main button becomes the cash-out',await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]'&&await A.js(`${field(0)}.value===''&&${field(0)}.placeholder==='900'`));
+ check('confirming records the counts and no cash-out step follows: no main button while four are still to count',await A.js(`JSON.stringify(${primaries})`)==='[]'&&await A.js(`!/Cash out/.test(document.getElementById('live').textContent)`)&&await A.js(`${field(0)}.value===''&&${field(0)}.placeholder==='900'`));
  check('nothing typed: the bar is no longer a preview',await A.js(`document.querySelector('[data-dock-prefix]').textContent`)==='');
  check('confirmed fields are still served by the numpad',await A.js(`${fields}.every(f=>f.getAttribute('inputmode')==='none')`));
  await A.js(`window.scrollTo(0,0)`);await sleep(6500);await A.shot('count-flow-ready-390');
@@ -145,7 +146,7 @@ try {
  await A.go(`/s/${M.chips}/`);await A.tap(field(1),600);
  check('chips: double zero in place of the decimal point',await A.js(`${key('alt')}.textContent`)==='00');
  await type(['1','5','alt']);
- check('chips: keys write whole chips',await A.js(`${field(1)}.value`)==='1500');
+ check('chips: keys write whole chips',await A.js(`${field(1)}.value`)==='1,500');
  check('chips: the panel total is in chips',await A.js(`/^Preview · 1,600 chips of 9,000 chips · 7 to count/.test(${PANEL}.querySelector('[data-numpad-note]').textContent)`));
  await A.tap(`${PANEL}.querySelector('[data-numpad-done]')`,500);await A.js(`sessionStorage.clear()`);
 
@@ -180,20 +181,34 @@ try {
  await A.go(`/s/${M.finish}/`);await confirmCounts(['1000','950']);
  check('a success message sits above the bottom bar, never on it',await A.js(`!!${TOAST}&&${TOAST}.getBoundingClientRect().bottom<=${DOCK}.getBoundingClientRect().top`));
  await sleep(300);await A.shot('count-flow-toast-390');
- await A.go(`/s/${M.finish}/cash-out-counted/`);
  const verdict=`document.querySelector('.review-verdict')`;
- check('review, ₱50 short: a warning directly above the button',await A.js(`/the books are ₱50 short/.test(${verdict}.textContent)&&${verdict}.querySelector('.verdict').dataset.tone==='warn'&&${verdict}.nextElementSibling.matches('button[type=submit]')`));
+ check('counts ₱50 short: the set page leads to the difference, the review stays closed',await A.js(`JSON.stringify(${primaries})`)==='["Find the ₱50 difference"]'&&await A.js(`fetch('/s/${M.finish}/cash-out-counted/',{redirect:'manual'}).then(r=>r.type==='opaqueredirect'||r.status===302)`));
+ check('counts ₱50 short: the override finishes the set from the counts',await A.js(`(()=>{const f=document.querySelector('details[data-key=override] form');return !!f&&f.getAttribute('action')==='/s/${M.finish}/finish/'&&f.querySelectorAll('[name=count_id]').length===2&&/Finish with the override/.test(f.textContent)})()`));
+ await A.js(`try{localStorage.removeItem('rack-finish:${M.finish}')}catch(e){}`);
+ await confirmCounts([null,'1000']);
+ // The one moment the question changes: "Review and finish" rises into the dock, once per set and browser.
+ check('balanced: Review and finish is the one action',await A.js(`JSON.stringify(${primaries})`)==='["Review and finish"]');
+ check('balanced: Review and finish rises once (opacity and y only), then rests with no inline style',await A.js(`(()=>{const a=document.querySelector('[data-finish-ready]');return localStorage.getItem('rack-finish:${M.finish}')==='1'})()`)&&await A.js(`new Promise(r=>setTimeout(()=>{const a=document.querySelector('[data-finish-ready]');r(!a.getAnimations().length&&!a.style.transform&&!a.style.opacity&&getComputedStyle(a).opacity==='1')},700))`));
+ await A.go(`/s/${M.finish}/`);
+ check('balanced, seen again: Review and finish is simply there',await A.js(`(()=>{const a=document.querySelector('[data-finish-ready]');return !!a&&!a.getAnimations().length&&!a.style.opacity})()`));
+ await A.go(`/s/${M.finish}/cash-out-counted/`);
+ check('review: the counts arrive row after row, 40ms apart',await A.js(`(()=>{const rows=[...document.querySelectorAll('.review tbody tr')];return rows.length===2&&rows.every(r=>getComputedStyle(r).animationName==='settle-in')&&rows.map(r=>getComputedStyle(r).animationDelay).join()==='0s,0.04s'})()`));
+ check('review, balanced: says the books balance, and its one button finishes the set',await A.js(`${verdict}.textContent.trim()==='The books balance.'&&${verdict}.querySelector('.verdict').dataset.tone==='good'&&document.querySelector('.batch-review button[type=submit]').textContent.trim()==='Finish set 1'`));
+ check('review: nothing on it says cash out',await A.js(`!/cash.?out/i.test(document.querySelector('main').textContent)`));
  check('review: the verdict has a mark as well as a colour',await A.js(`getComputedStyle(${verdict}.querySelector('.verdict'),'::before').content!=='none'`));
  check('review: the verdict is readable',await A.js(contrast('.review-verdict .verdict'))>=4.5);
- check('review: the button is 48px and the page fits 390 wide',await A.js(`${verdict}.nextElementSibling.getBoundingClientRect().height>=48&&${R}.scrollWidth<=390`));
- await A.js(`document.querySelector('.review-verdict').scrollIntoView({block:'center'})`);await sleep(300);await A.shot('count-flow-review-short-390');
- await A.go(`/s/${M.finish}/`);await confirmCounts([null,'1000']);
+ check('review: the button is 48px and the page fits 390 wide',await A.js(`document.querySelector('.batch-review button[type=submit]').getBoundingClientRect().height>=48&&${R}.scrollWidth<=390`));
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},A.s);
  await A.go(`/s/${M.finish}/cash-out-counted/`);
- check('review, balanced: says the books balance, and its one button finishes the set',await A.js(`${verdict}.textContent.trim()==='The books balance.'&&${verdict}.querySelector('.verdict').dataset.tone==='good'&&document.querySelector('.batch-review button[type=submit]').textContent.trim()==='Finish set 1'`));
- await A.js(`document.querySelector('.review-verdict').scrollIntoView({block:'center'})`);await sleep(300);await A.shot('count-flow-review-balanced-390');
- // Finish set is walked by journey.mjs. This walks the path that still reaches Finalize: the review's older POST records only the cash-outs.
- await A.js(`document.querySelector('.batch-review').removeAttribute('action')`);await A.tap(`document.querySelector('.batch-review button[type=submit]')`,2000);
- check('after the cash-outs: the message is above the bar and Finalize is clear of it',await A.js(`!!${TOAST}&&${TOAST}.getBoundingClientRect().bottom<=${DOCK}.getBoundingClientRect().top`)&&await A.js(`JSON.stringify(${primaries})`)==='["Finalize results"]');
+ check('reduced motion: the review rows are simply there',await A.js(`[...document.querySelectorAll('.review tbody tr')].every(r=>getComputedStyle(r).animationName==='none')`));
+ await send('Emulation.setEmulatedMedia',{features:[]},A.s);
+ await A.go(`/s/${M.finish}/cash-out-counted/`);
+ await A.js(`document.querySelector('.review-verdict').scrollIntoView({block:'center'})`);await sleep(400);await A.shot('count-flow-review-balanced-390');
+ await A.tap(`document.querySelector('.batch-review button[type=submit]')`,2200);
+ check('Finish set 1: the final page arrives in one action',await A.js(`document.getElementById('live').dataset.state==='finalized'&&!!document.querySelector('.final-layout')`));
+ // Finalize results stays for a set whose players were all cashed out during play.
+ await A.go(`/s/${M.balanced}/`);
+ check('everyone cashed out during play: Finalize results is the action',await A.js(`JSON.stringify(${primaries})`)==='["Finalize results"]');
  await sleep(300);await A.shot('count-flow-finalize-ready-390');
  await A.tap(`document.querySelector('.finalize-opener')`,800);
  check('Finalize asks first: a sheet restates the books',await A.js(`${SHEET}.open&&${SHEET}.querySelector('h2').textContent==='Finalize set 1?'&&/Players\\s*2/.test(${SHEET}.textContent)&&/Total bought in\\s*₱2,000/.test(${SHEET}.textContent)&&/Total cashed out\\s*₱2,000/.test(${SHEET}.textContent)&&/The books balance\\./.test(${SHEET}.textContent)`));
@@ -222,8 +237,8 @@ try {
  // --- A computer: two columns, the action beside the fields' top, no panel.
  await A.computer();await A.go(`/s/${M.eight}/`);
  check('computer: players at the right, the action directly under the overview',await A.js(`(()=>{const f=document.querySelector('.felt').getBoundingClientRect(),w=document.querySelector('.count-workspace').getBoundingClientRect(),d=${DOCK}.getBoundingClientRect(),t=document.querySelector('.end-balance').getBoundingClientRect();return w.left>f.right&&Math.abs(w.top-f.top)<4&&d.top>=f.bottom&&d.top<f.bottom+40&&t.top>=d.bottom&&d.left===f.left})()`));
- check('pips: ready is half filled, cashed out is full',await A.js(`(()=>{const r=document.querySelector('.count-pips li[data-status=ready]'),c=document.querySelector('.count-pips li[data-status=cashed_out]');return !!r&&/linear-gradient/.test(getComputedStyle(r).backgroundImage)&&(!c||getComputedStyle(c).backgroundImage==='none')})()`));
- check('computer: one total, and the cash-out button',await A.js(`${shownIn('[data-count-accounted],[data-dock-accounted]')}.length===1`)&&await A.js(`JSON.stringify(${primaries})`)==='["Cash out counted players (4)"]');
+ check('pips: a confirmed count is full, as a cash-out is',await A.js(`(()=>{const r=document.querySelector('.count-pips li[data-status=ready]'),c=document.querySelector('.count-pips li[data-status=cashed_out]');return !!r&&getComputedStyle(r).backgroundImage==='none'&&(!c||getComputedStyle(c).backgroundImage==='none')})()`));
+ check('computer: one total, and no main button while players are still to count',await A.js(`${shownIn('[data-count-accounted],[data-dock-accounted]')}.length===1`)&&await A.js(`JSON.stringify(${primaries})`)==='[]');
  await A.js(`${field(4)}.focus()`);await send('Input.insertText',{text:'750'},A.s);await sleep(300);
  check('computer: typing with the keyboard, no panel, the button confirms',await A.js(`!${PANEL}&&${field(4)}.getAttribute('inputmode')==='decimal'`)&&await A.js(`JSON.stringify(${primaries})`)==='["Confirm 1 count"]');
  check('computer: focus goes from the fields to the action',await A.js(`(()=>{const order=[...document.querySelectorAll('#live input:not([type=hidden]), #live button, #live a[href], #live summary')].filter(e=>e.getClientRects().length);return order.indexOf(${field(0)})<order.indexOf(document.querySelector('[data-confirm-typed]'))})()`));
